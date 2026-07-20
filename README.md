@@ -8,16 +8,29 @@ Colab.
 Each session is a single self-contained folder. Session 1 is complete; later
 sessions are added as the course is built.
 
+## Live site
+
+This repository is published:
+
+- **Home page (put this link on the learning platform):**
+  <https://theill95.github.io/mlfin-2026/>
+- Interactive lecture:
+  <https://theill95.github.io/mlfin-2026/session_01/session_01.html>
+- Repository: <https://github.com/theill95/mlfin-2026>
+
+The home page shows a menu with the interactive lecture and the exercises/case
+notebooks (which open in Google Colab). Every push to `main` updates the site
+automatically within a minute or two.
+
 ## Giving students one simple link (recommended)
 
 Students should never need a terminal, a script, or a download to get an
-interactive version. **Publish the repository to GitHub Pages once**, and then
-put a single link on the learning platform: the site's home page
-(`index.html`). It shows a clean menu with one button for the **interactive
-lecture** and one button each for the **exercises** and **case** that open
-straight in Google Colab.
+interactive version. The repository is already published to **GitHub Pages**;
+just put the home-page link above on the learning platform. It shows a clean
+menu with one button for the **interactive lecture** and one button each for
+the **exercises** and **case** that open straight in Google Colab.
 
-One-time setup:
+If you ever recreate the site from scratch, the one-time setup is:
 
 1. Put this repository on GitHub as a **public** repo (Colab can only open
    notebooks from public repos).
