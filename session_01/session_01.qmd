@@ -1,0 +1,1430 @@
+---
+title: "Beginning Python for Financial Data"
+subtitle: "Machine Learning in Finance · Session 1"
+# Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
+# from a data: URI, so embed-resources is off. Ship session_01.html together
+# with session_01_files/ and SERVE OVER HTTP (double-click serve.cmd, or
+# publish to a URL — see README). The live code cells do not run from file://.
+format:
+  live-revealjs:
+    theme: [default, ../theme/mlfin.scss]
+    width: 1280
+    height: 720
+    margin: 0.06
+    center: false
+    transition: fade
+    transition-speed: fast
+    background-transition: none
+    slide-number: c/t
+    controls: false
+    progress: true
+    hash: true
+    history: false
+    code-line-numbers: false
+    highlight-style: github
+    auto-stretch: false
+engine: jupyter
+pyodide:
+  cell-options:
+    autorun: true
+    startover: true
+execute:
+  echo: true
+  warning: false
+---
+
+# Welcome {.divider}
+
+::: {.divider-kicker}
+Machine Learning in Finance · Session 1
+:::
+
+::: {.divider-note}
+Programming and machine learning for people who have never written a line of
+code. We start from zero.
+:::
+
+
+# Who is teaching this
+
+<div class="whoami">
+<div class="who-col">
+<h3>The academic part</h3>
+<ul>
+<li><strong>Jonas Theill Bøjstrup</strong>, PhD student</li>
+<li>Research: <strong>image-based prediction in finance</strong> and deep learning</li>
+<li>Teaching this course for the <strong>second time</strong></li>
+<li>Supervised <strong>6+</strong> master's theses</li>
+</ul>
+</div>
+<div class="who-col who-personal">
+<h3>The rest of me</h3>
+<ul>
+<li>Art collector</li>
+<li>Video games</li>
+<li>Becoming a <strong>dad in December</strong></li>
+</ul>
+</div>
+</div>
+
+<div class="who-contact">Questions any time — in class, or by email at <code>jobo@econ.au.dk</code>. The second lecturer, <strong>Bezirgen Veliyev</strong>, teaches the later weeks.</div>
+
+
+# Why Python?
+
+<div class="why-grid">
+<div class="why-point"><strong>Everyone uses it</strong><span>The dominant language in data science and quantitative finance. What you learn transfers to a real job.</span></div>
+<div class="why-point"><strong>Batteries included</strong><span>Free libraries for data, statistics, and machine learning — pandas, scikit-learn, and many more.</span></div>
+<div class="why-point"><strong>Readable</strong><span>Python code reads close to plain English. That matters enormously when you are starting out.</span></div>
+<div class="why-point"><strong>Endless help</strong><span>A vast community. Almost any error you hit has been asked and answered somewhere already.</span></div>
+</div>
+
+<div class="tagline">Free, open, and runs anywhere — including, later in the course, on your own laptop with no internet.</div>
+
+
+# Why learn machine learning?
+
+Finance has become a **data discipline**.
+
+- Asset management, risk, trading, credit, fintech — all increasingly run on
+  models fit to data.
+- Job postings that used to ask for "econometrics" now ask for **machine
+  learning**.
+- You already know one such model: **ordinary least squares**. This course
+  extends that instinct to more flexible tools.
+
+::: {.keypoint}
+The goal is not to make you a computer scientist. It is to let you **read,
+build, and judge** the models that finance now runs on.
+:::
+
+
+# What even is machine learning?
+
+::: {.diagram}
+<svg width="1120" height="440" viewBox="0 0 1120 440" role="img" aria-label="Nested circles: Artificial Intelligence contains Machine Learning, which contains Deep Learning">
+  <circle cx="270" cy="220" r="205" fill="#f2f7fd" stroke="#b9d2f0" stroke-width="1.5"/>
+  <circle cx="270" cy="248" r="145" fill="#dcebfd" stroke="#86b6ef" stroke-width="1.5"/>
+  <circle cx="270" cy="290" r="72" fill="#2a78d6" stroke="#1c5cab" stroke-width="1.5"/>
+  <text x="270" y="52" text-anchor="middle" font-size="23" fill="#0d366b" font-weight="700">Artificial Intelligence</text>
+  <text x="270" y="150" text-anchor="middle" font-size="22" fill="#16385f" font-weight="700">Machine Learning</text>
+  <text x="270" y="285" text-anchor="middle" font-size="16" fill="#ffffff" font-weight="700">Deep</text>
+  <text x="270" y="305" text-anchor="middle" font-size="16" fill="#ffffff" font-weight="700">Learning</text>
+  <line x1="500" y1="200" x2="600" y2="200" stroke="#c3c2b7" stroke-width="1"/>
+  <text x="620" y="180" font-size="19" fill="#33322f" font-weight="600">Machine learning</text>
+  <text x="620" y="208" font-size="17" fill="#52514e">a model that learns patterns from</text>
+  <text x="620" y="232" font-size="17" fill="#52514e">data, instead of being given</text>
+  <text x="620" y="256" font-size="17" fill="#52514e">explicit rules.</text>
+  <text x="620" y="300" font-size="17" fill="#898781">Deep learning is one family of ML</text>
+  <text x="620" y="324" font-size="17" fill="#898781">methods; ML is one route to AI.</text>
+</svg>
+:::
+
+::: {.muted .small}
+Your OLS regression is already a simple machine-learning model: it *learns* its
+coefficients from data. We build outward from there.
+:::
+
+
+# Where this course is going
+
+<div class="timeline">
+<div class="tl-row tl-now"><span class="tl-week">Week 36</span><span class="tl-topic">Programming in Python</span><span class="tl-who">JTB</span></div>
+<div class="tl-row tl-now"><span class="tl-week">Week 37</span><span class="tl-topic">Foundations of machine learning</span><span class="tl-who">JTB</span></div>
+<div class="tl-row tl-future"><span class="tl-week">Week 38</span><span class="tl-topic">Model selection and cross-validation</span><span class="tl-who">BV</span></div>
+<div class="tl-row tl-future"><span class="tl-week">Week 39</span><span class="tl-topic">Shrinkage methods</span><span class="tl-who">BV</span></div>
+<div class="tl-row tl-future"><span class="tl-week">Week 40</span><span class="tl-topic">Classification methods</span><span class="tl-who">BV</span></div>
+<div class="tl-row tl-future"><span class="tl-week">Week 41</span><span class="tl-topic">Tree-based methods</span><span class="tl-who">BV</span></div>
+<div class="tl-row tl-future"><span class="tl-week">Week 42</span><span class="tl-topic">Tree-based methods · course wrap-up</span><span class="tl-who">BV</span></div>
+</div>
+
+::: {.muted .small}
+Teaching begins the week of **31 August 2026** (week 36). I take the first two
+weeks — Python and the foundations of ML; Bezirgen takes the methods that
+follow. **Later topics may still change.**
+:::
+
+
+# How the course works
+
+<div class="pillars">
+<div class="pillar pillar-live"><div class="pillar-tag">In class</div><div class="pillar-title">Lectures</div><div class="pillar-body">We work through concepts together, with live code you can see running. This is where ideas are introduced.</div></div>
+<div class="pillar"><div class="pillar-tag">At home</div><div class="pillar-title">Exercises</div><div class="pillar-body">A notebook of short practice tasks each week, with hints and solutions folded in. This is where the learning sticks.</div></div>
+<div class="pillar"><div class="pillar-tag">At home</div><div class="pillar-title">The case</div><div class="pillar-body">One financial investigation that grows across the four sessions. You carry it forward each week.</div></div>
+</div>
+
+::: {.keypoint}
+Lectures are for watching and understanding. **You learn to code by doing the
+exercises and the case yourself, between sessions.**
+:::
+
+
+# This is a demanding course
+
+<div class="zero-to">
+<div class="zt-node zt-start"><span class="zt-big">Zero</span><span class="zt-sub">no code, no ML</span></div>
+<div class="zt-arrow"><span class="zt-arrow-line">———▶</span><span class="zt-arrow-label">7 weeks</span></div>
+<div class="zt-node"><span class="zt-big">Python + ML</span><span class="zt-sub">foundations you can build on</span></div>
+</div>
+
+Going from **no programming** to machine learning in seven weeks is a steep
+climb. Be ready for it.
+
+- I can explain ideas and show code — but **watching is not learning to code**.
+- You become fluent by **doing it yourself**. The exercises and case are where
+  that happens.
+
+::: {.keypoint}
+My job is to teach the concepts and point the way. **Your job is to do the work.**
+:::
+
+
+# Using AI on this course
+
+AI assistants are useful and are not banned. Use them **to learn**, not to
+avoid learning.
+
+<div class="dodont">
+<div class="do-col">
+<h3>Helpful</h3>
+<ul>
+<li>Explain an error message you do not understand</li>
+<li>Explain a concept a different way</li>
+<li>Suggest what a line of code does</li>
+<li>Generate extra practice problems</li>
+</ul>
+</div>
+<div class="dont-col">
+<h3>Harmful</h3>
+<ul>
+<li>Pasting in solutions you cannot reproduce</li>
+<li>Submitting code you do not understand</li>
+<li>Leaning on it instead of building skill</li>
+<li>Relying on it for the exam — you cannot</li>
+</ul>
+</div>
+</div>
+
+::: {.muted .small}
+A good test: if you could not rewrite it from memory afterwards, you have not
+learned it yet.
+:::
+
+
+# The exam
+
+<div class="exam-facts">
+<div class="exam-fact"><span class="ef-big">3 hours</span><div class="ef-label">on site, at a fixed time</div></div>
+<div class="exam-fact"><span class="ef-big">No internet</span><div class="ef-label">no AI, no web search, no Colab</div></div>
+<div class="exam-fact"><span class="ef-big">Your laptop</span><div class="ef-label">Python running locally</div></div>
+</div>
+
+The exam runs **on your own machine, offline**. We begin in Google Colab
+because it is the easiest place to start, and later move to a local setup — a
+**VS Code tutorial comes in a later session**.
+
+::: {.keypoint}
+Because the exam is offline, the skill has to be **yours**. That is the whole
+reason the exercises matter.
+:::
+
+
+# Today
+
+By the end of this session you can:
+
+- run Python in a **notebook** and say what the *runtime* remembers
+- store values in **variables** and use the basic **types** of data
+- hold many prices in a **list** and pick out any day or window
+- compute a **simple return** from two prices
+- read a Python **error message** calmly
+
+<br>
+
+And you meet the course **case**: a four-part risk report on real US stocks.
+
+
+# 1 · Notebooks {.divider}
+
+::: {.divider-kicker}
+Part 1
+:::
+
+::: {.divider-note}
+Where our code lives, and how a code cell shows its result.
+:::
+
+
+# A notebook is a stack of cells
+
+<div class="nb-mock">
+<div class="nb-cell nb-text"><div class="nb-gutter">text</div><div class="nb-body">Compute this week's return</div></div>
+<div class="nb-cell nb-code"><div class="nb-gutter">[ ]</div><div class="nb-body">(248.83 - 183.56) / 183.56</div></div>
+<div class="nb-out">0.3556</div>
+</div>
+
+A **notebook** is a document read top to bottom, made of two kinds of cell. The
+result of a code cell appears **directly beneath it**.
+
+
+# Two kinds of cell
+
+- **Text cells** hold explanation — headings, sentences, the story.
+- **Code cells** hold Python, and can be **run**. Their output appears below.
+
+<br>
+
+That is the whole idea. A lecture, a calculation, and its result can live in
+one scrollable document — which is exactly what these slides are.
+
+::: {.muted .small}
+We begin in **Google Colab**, which runs notebooks in your browser with
+nothing to install. You need only a Google account.
+:::
+
+
+# Running a cell
+
+Click a cell and press **Shift + Enter**. The cell runs and shows the value of
+its **last line** — only the last one.
+
+These slides run Python too. Run this: just one number appears.
+
+```{pyodide}
+183.56
+248.83
+```
+
+::: {.muted .small}
+A real Python cell, running in your browser. Change the numbers and run it
+again. The same thing works identically in Colab.
+:::
+
+
+# Showing more than the last line
+
+To show **several** values, use `print(...)`:
+
+```{pyodide}
+print(183.56)
+print(248.83)
+```
+
+`print` is our first **function**: a named tool you use by writing its name and
+round brackets. It displays whatever you put inside — each on its own line. We
+will lean on it constantly.
+
+
+# 2 · Python as a calculator {.divider}
+
+::: {.divider-kicker}
+Part 2
+:::
+
+::: {.divider-note}
+Expressions, and leaving notes to yourself.
+:::
+
+
+# Expressions
+
+An **expression** is code that produces a value. The text after a `#` is a
+**comment** — Python ignores it; it is a note for humans.
+
+```{pyodide}
+120 * 45.50    # a comment: 120 shares at 45.50 each
+```
+
+Change the numbers and run it. Arithmetic works as you would expect.
+
+
+# The arithmetic you have
+
+| write | meaning |
+|---|---|
+| `+`  `-`  `*`  `/` | add, subtract, multiply, divide |
+| `**` | power: `1.05 ** 10` is ten years of 5% growth |
+| `( )` | grouping, exactly as in mathematics |
+
+<br>
+
+::: {.muted .small}
+Order of operations is the usual one: powers, then `*` and `/`, then `+` and
+`-`. Parentheses override it.
+:::
+
+
+# Powers: compound growth
+
+1,000 invested at 4% for five years is a single expression:
+
+```{pyodide}
+1000 * (1 + 0.04) ** 5
+```
+
+::: {.muted .small}
+Change the rate to `0.06` and run again. Compounding is just repeated
+multiplication, written with `**`.
+:::
+
+
+# 3 · Variables {.divider}
+
+::: {.divider-kicker}
+Part 3
+:::
+
+::: {.divider-note}
+Giving a value a name, so you can use it again.
+:::
+
+
+# Variables: naming a value
+
+A **variable** gives a value a name. The `=` sign means **assign** — "store
+this under that name" — not "equals".
+
+```{pyodide}
+price = 150.25
+shares = 40
+price * shares
+```
+
+::: {.diagram}
+<svg width="720" height="120" viewBox="0 0 720 120" role="img" aria-label="The name price points to the value 150.25 in memory">
+  <rect x="20" y="34" width="170" height="56" rx="6" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.5"/>
+  <text x="105" y="69" text-anchor="middle" font-size="24" fill="#0d366b" font-family="Cascadia Mono, monospace">price</text>
+  <line x1="195" y1="62" x2="290" y2="62" stroke="#52514e" stroke-width="2"/>
+  <polygon points="290,62 277,55 277,69" fill="#52514e"/>
+  <rect x="295" y="34" width="190" height="56" rx="6" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="390" y="69" text-anchor="middle" font-size="24" fill="#141413" font-family="Cascadia Mono, monospace">150.25</text>
+  <text x="510" y="68" font-size="17" fill="#898781">a value held in memory</text>
+</svg>
+:::
+
+
+# Once named, it stands for the value
+
+Anywhere you write the name, Python uses the value:
+
+```{pyodide}
+price = 150.25
+shares = 40
+holding_value = price * shares
+holding_value
+```
+
+::: {.muted .small}
+`holding_value` now holds the result, ready to reuse — no need to retype the
+multiplication.
+:::
+
+
+# Assignment can overwrite
+
+Assigning to a name that already exists **replaces** its value. The old one is
+gone.
+
+Read `price = price * 1.02` from the **right**:
+
+> take the current `price`, multiply by 1.02, and store the result back into
+> `price`.
+
+
+# Overwrite in action [predict]{.chip .chip-predict}
+
+Line 2 uses `price` on **both sides** at once. What do you think that does —
+and what is `price` at the end? Reason it out before you run.
+
+```{pyodide}
+#| autorun: false
+price = 150.25
+price = price * 1.02
+price
+```
+
+::: {.muted .small}
+Can a name really appear on both sides of `=`?
+:::
+
+
+# Naming rules
+
+Python **requires**:
+
+- letters, digits, and underscores only
+- a name may **not start with a digit**
+- no spaces: `share price` fails, `share_price` works
+- case matters: `Price` and `price` are two different names
+
+
+# Naming: your judgment
+
+Both are legal. Only one will make sense to you next week:
+
+```python
+x = 0.0212
+weekly_return = 0.0212
+```
+
+::: {.keypoint}
+Write names for the person who reads the code later. That person is usually
+**you**, a week from now.
+:::
+
+
+# Your turn [1]{.chip .chip-turn} {.your-turn}
+
+You bought 120 shares at 45.50 and sold at 48.10. Complete the cell to compute
+the **profit**.
+
+```{pyodide}
+#| autorun: false
+shares = 120
+buy_price = 45.50
+sell_price = 48.10
+
+profit = ...
+profit
+```
+
+::: {.muted .small}
+The result should be a little over 300.
+:::
+
+
+# 4 · The notebook's memory {.divider}
+
+::: {.divider-kicker}
+Part 4
+:::
+
+::: {.divider-note}
+Now that you can make variables — the notebook remembers them between cells.
+:::
+
+
+# The runtime remembers — 1
+
+Run this cell. It stores a value in memory under the name `portfolio_value`:
+
+```{pyodide}
+portfolio_value = 100 * 150.25
+portfolio_value
+```
+
+The value is now **held in memory**. This memory is called the **runtime**.
+
+
+# The runtime remembers — 2
+
+A *later* cell can use what an earlier cell defined — without repeating it:
+
+```{pyodide}
+portfolio_value * 1.10
+```
+
+This works only because the cell above **ran first** and left
+`portfolio_value` in memory.
+
+::: {.keypoint}
+A notebook is not just text on a page. It has a **memory** that fills up as you
+run cells.
+:::
+
+
+# Order of execution matters
+
+Cells can be run in **any order** you click them — and the runtime only knows
+what it has been *told so far*.
+
+Run a page top to bottom and all is well. Jump around, and a cell may look for
+something that does not exist **yet**. The next two cells show it.
+
+
+# A cell that runs too early [predict]{.chip .chip-predict}
+
+Fresh runtime — nothing has defined `bonus` yet. **What do you think happens
+when you run this?** Talk it through before you press Run.
+
+```{pyodide}
+#| autorun: false
+bonus * 2
+```
+
+::: {.muted .small}
+Does Python guess a value? Refuse? Something else?
+:::
+
+
+# Define it, then it works
+
+Give `bonus` a value, and the very same expression works:
+
+```{pyodide}
+#| autorun: false
+bonus = 1200
+bonus * 2
+```
+
+The error before was not a fault in the code — the runtime simply had
+**nothing stored** under that name. Define it first, and all is well.
+
+
+# The safe habit
+
+When a notebook gets confusing, reset it: **Runtime → Restart and run all**.
+
+A notebook is only trustworthy if it runs cleanly **top to bottom from a fresh
+start**. We will hold to that all course.
+
+::: {.callout-tip appearance="simple"}
+Restarting clears the runtime's memory and re-runs every cell in order. It fixes
+almost every "but it worked a minute ago" mystery.
+:::
+
+
+# 5 · Every value has a type {.divider}
+
+::: {.divider-kicker}
+Part 5
+:::
+
+::: {.divider-note}
+Numbers, text, and true/false — and why the difference costs money.
+:::
+
+
+# Two kinds of number
+
+Python tells you the type of any value with the `type(...)` function:
+
+```{pyodide}
+print(type(40))
+print(type(150.25))
+```
+
+- `int` — whole numbers: share counts, trading days
+- `float` — numbers with a decimal point: prices, returns, rates
+
+
+# Division always gives a float
+
+Even when it divides evenly:
+
+```{pyodide}
+100 / 4
+```
+
+::: {.muted .small}
+The result is `25.0`, a float — not `25`. Division in Python always produces a
+decimal number.
+:::
+
+
+# Text: strings
+
+A **string** is text inside quotes — tickers, names, dates:
+
+```{pyodide}
+ticker = "AAPL"
+print(ticker)
+print(type(ticker))
+```
+
+
+# Gluing strings together
+
+`+` between strings joins them. It does **not** add:
+
+```{pyodide}
+ticker = "AAPL"
+ticker + " is a US stock"
+```
+
+::: {.callout-warning appearance="simple"}
+`"150"` in quotes is *text that looks like a number*. It is not a number — and
+that difference causes real bugs, because prices read from files often arrive
+as text.
+:::
+
+
+# Numbers in disguise [predict]{.chip .chip-predict}
+
+Both values are wrapped in quotes. **What will `+` do here** — and is it what
+you would want? Decide before you run.
+
+```{pyodide}
+#| autorun: false
+"10" + "5"
+```
+
+::: {.muted .small}
+Talk to your neighbour first.
+:::
+
+
+# Numbers in disguise — the fix
+
+`float(...)` turns text into a number. Now it really adds:
+
+```{pyodide}
+float("10") + float("5")
+```
+
+::: {.keypoint}
+No error is **not** the same as no mistake. `"10" + "5"` gave `"105"` with no
+complaint — a silently wrong answer is the dangerous kind.
+:::
+
+
+# Showing results nicely
+
+An **f-string** builds text with values dropped in. Put an `f` before the
+quotes, and variables inside `{ }`:
+
+```{pyodide}
+price = 248.83
+f"Apple closed at {price}"
+```
+
+::: {.muted .small}
+Useful, but that number could be tidier. Next slide.
+:::
+
+
+# The two recipes we will reuse
+
+A colon inside the braces sets the **format**:
+
+```{pyodide}
+price = 248.83
+r = 0.0231457
+print(f"Price: {price:.2f}")
+print(f"Return: {r:.2%}")
+```
+
+- `:.2f` — a plain number, 2 decimals
+- `:.2%` — a percentage, 2 decimals
+
+::: {.muted .small}
+These two cover almost everything we need all course.
+:::
+
+
+# True or False: booleans
+
+A **comparison** asks a yes/no question. The answer is a `bool`:
+
+```{pyodide}
+price = 248.83
+price > 250
+```
+
+Change `250` to `240` and run again.
+
+
+# Comparison operators
+
+| ask | write |
+|---|---|
+| equal? | `==`  (two signs — a single `=` *assigns*) |
+| not equal? | `!=` |
+| greater / less? | `>`  `<`  `>=`  `<=` |
+
+```{pyodide}
+ticker = "AAPL"
+ticker == "AAPL"
+```
+
+::: {.muted .small}
+Booleans look modest now. Later they select rows of data, and later still they
+become the thing a model predicts.
+:::
+
+
+# Your turn [2]{.chip .chip-turn} {.your-turn}
+
+This cell runs with **no error** — and gives nonsense. Run it, look closely,
+then fix it so `total_cost` is a real number.
+
+```{pyodide}
+#| autorun: false
+price_text = "52.40"    # arrived from a file, as text
+quantity = 4
+
+total_cost = price_text * quantity
+total_cost
+```
+
+::: {.muted .small}
+What is `"52.40" * 4`? Then reach for `float(...)`.
+:::
+
+
+# 6 · Functions and methods {.divider}
+
+::: {.divider-kicker}
+Part 6
+:::
+
+::: {.divider-note}
+You have met `print` and `type`. Here are more, and the pattern behind them.
+:::
+
+
+# More functions
+
+A **function** takes input in parentheses and returns a value. Two new ones:
+
+```{pyodide}
+print(round(3.14159, 2))
+print(len("JPMorgan"))
+```
+
+`round` rounds to a number of decimals; `len` counts characters.
+
+
+# Functions we will use constantly
+
+| function | returns |
+|---|---|
+| `print(x)` | displays a value *(already using it)* |
+| `type(x)` | the type of a value *(already using it)* |
+| `round(x, n)` | `x` rounded to `n` decimals |
+| `len(x)` | how many characters or items |
+| `min(...)` `max(...)` `sum(...)` | smallest, largest, total |
+
+
+# Methods: a function with a home
+
+A **method** belongs to a value and is called with a **dot**:
+
+```{pyodide}
+ticker = "aapl"
+ticker.upper()
+```
+
+The pattern is `value.method(arguments)`.
+
+
+# One pattern, the whole course
+
+That same dot-grammar runs everything ahead:
+
+```python
+ticker.upper()      # today: text
+prices.sort()       # today: lists
+returns.mean()      # Session 2: data tables
+```
+
+Different objects, identical shape. Learn `value.method(...)` once, and later
+tools feel familiar. Try it live:
+
+```{pyodide}
+"Machine Learning in Finance".count("in")
+```
+
+
+# Your turn [3]{.chip .chip-turn} {.your-turn}
+
+Build exactly this text with an f-string: `Total return: 35.56%`
+
+```{pyodide}
+#| autorun: false
+jan = 183.56
+dec = 248.83
+
+total_return = ...
+message = ...
+message
+```
+
+::: {.muted .small}
+First the return `(dec - jan) / jan`, then wrap it: `f"Total return: {…:.2%}"`.
+:::
+
+
+# 7 · Lists {.divider}
+
+::: {.divider-kicker}
+Part 7
+:::
+
+::: {.divider-note}
+The workhorse of the day — and the doorway to data tables next week.
+:::
+
+
+# One year is 252 numbers
+
+Apple's closing price, first week of 2024, in a single **list**:
+
+```{pyodide}
+closes = [183.56, 182.19, 179.87, 179.15, 183.48]
+len(closes)
+```
+
+A list collects values, in order, under one name.
+
+
+# Why lists matter
+
+One variable per day would be absurd — a year has about **252 trading days**.
+A list holds them all together.
+
+::: {.keypoint}
+Next week a data table will hold ten years of eleven stocks at once. It is
+built directly on this idea: many values, in order, under one name.
+:::
+
+
+# Indexing: pick one day
+
+Positions count **from zero** — the index is the distance from the start.
+
+::: {.diagram}
+<svg width="900" height="200" viewBox="0 0 900 200" role="img" aria-label="A list of five prices with indices 0 to 4 above and -5 to -1 below">
+  <text x="55" y="50" font-size="18" fill="#1c5cab" font-weight="600">index</text>
+  <text x="45" y="182" font-size="18" fill="#898781">from the end</text>
+  <g font-family="Cascadia Mono, monospace">
+    <text x="230" y="50" text-anchor="middle" font-size="21" fill="#1c5cab">0</text>
+    <text x="370" y="50" text-anchor="middle" font-size="21" fill="#1c5cab">1</text>
+    <text x="510" y="50" text-anchor="middle" font-size="21" fill="#1c5cab">2</text>
+    <text x="650" y="50" text-anchor="middle" font-size="21" fill="#1c5cab">3</text>
+    <text x="790" y="50" text-anchor="middle" font-size="21" fill="#1c5cab">4</text>
+    <rect x="168" y="66" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+    <rect x="308" y="66" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+    <rect x="448" y="66" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+    <rect x="588" y="66" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+    <rect x="728" y="66" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+    <text x="231" y="103" text-anchor="middle" font-size="20" fill="#141413">183.56</text>
+    <text x="371" y="103" text-anchor="middle" font-size="20" fill="#141413">182.19</text>
+    <text x="511" y="103" text-anchor="middle" font-size="20" fill="#141413">179.87</text>
+    <text x="651" y="103" text-anchor="middle" font-size="20" fill="#141413">179.15</text>
+    <text x="791" y="103" text-anchor="middle" font-size="20" fill="#141413">183.48</text>
+    <text x="231" y="172" text-anchor="middle" font-size="20" fill="#898781">-5</text>
+    <text x="371" y="172" text-anchor="middle" font-size="20" fill="#898781">-4</text>
+    <text x="511" y="172" text-anchor="middle" font-size="20" fill="#898781">-3</text>
+    <text x="651" y="172" text-anchor="middle" font-size="20" fill="#898781">-2</text>
+    <text x="791" y="172" text-anchor="middle" font-size="20" fill="#898781">-1</text>
+  </g>
+</svg>
+:::
+
+
+# Indexing in action
+
+```{pyodide}
+closes = [183.56, 182.19, 179.87, 179.15, 183.48]
+print(closes[0])
+print(closes[2])
+```
+
+`[0]` is the first trading day, `[2]` the third. Change the index and run.
+
+
+# Counting from the end
+
+`[-1]` is the last item — whatever the list's length:
+
+```{pyodide}
+closes = [183.56, 182.19, 179.87, 179.15, 183.48]
+closes[-1]
+```
+
+::: {.muted .small}
+`[-1]` is worth loving. You rarely know a list's exact length; you always know
+you want the most recent value.
+:::
+
+
+# Off the end [predict]{.chip .chip-predict}
+
+Five prices sit at positions 0 to 4. **What will asking for `closes[5]` give
+you?** Commit to an answer, then run.
+
+```{pyodide}
+#| autorun: false
+closes = [183.56, 182.19, 179.87, 179.15, 183.48]
+closes[5]
+```
+
+::: {.muted .small}
+Positions run 0 to 4 — so what lives at position 5?
+:::
+
+
+# Slicing: pick a window
+
+`list[start:stop]` — **start included, stop excluded.**
+
+::: {.diagram}
+<svg width="900" height="190" viewBox="0 0 900 190" role="img" aria-label="Slice 0 to 3 selects the first three cells; index 3 is excluded">
+  <g font-family="Cascadia Mono, monospace">
+    <text x="231" y="36" text-anchor="middle" font-size="20" fill="#1c5cab">0</text>
+    <text x="371" y="36" text-anchor="middle" font-size="20" fill="#1c5cab">1</text>
+    <text x="511" y="36" text-anchor="middle" font-size="20" fill="#1c5cab">2</text>
+    <text x="651" y="36" text-anchor="middle" font-size="20" fill="#898781">3</text>
+    <text x="791" y="36" text-anchor="middle" font-size="20" fill="#898781">4</text>
+    <rect x="168" y="52" width="126" height="58" rx="4" fill="#dcebfd" stroke="#1c5cab" stroke-width="2"/>
+    <rect x="308" y="52" width="126" height="58" rx="4" fill="#dcebfd" stroke="#1c5cab" stroke-width="2"/>
+    <rect x="448" y="52" width="126" height="58" rx="4" fill="#dcebfd" stroke="#1c5cab" stroke-width="2"/>
+    <rect x="588" y="52" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+    <rect x="728" y="52" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+    <text x="231" y="89" text-anchor="middle" font-size="20" fill="#141413">183.56</text>
+    <text x="371" y="89" text-anchor="middle" font-size="20" fill="#141413">182.19</text>
+    <text x="511" y="89" text-anchor="middle" font-size="20" fill="#141413">179.87</text>
+    <text x="651" y="89" text-anchor="middle" font-size="20" fill="#898781">179.15</text>
+    <text x="791" y="89" text-anchor="middle" font-size="20" fill="#898781">183.48</text>
+  </g>
+  <text x="450" y="152" text-anchor="middle" font-size="22" fill="#0d366b" font-family="Cascadia Mono, monospace">closes[0:3]</text>
+  <text x="450" y="178" text-anchor="middle" font-size="16" fill="#898781">three items: 3 − 0 = 3 · the stop index is not included</text>
+</svg>
+:::
+
+
+# Slicing in action
+
+```{pyodide}
+closes = [183.56, 182.19, 179.87, 179.15, 183.48]
+closes[0:3]
+```
+
+Three items — positions 0, 1, 2. Position 3 is left out.
+
+
+# Open-ended slices
+
+Leave an end blank to mean "from the start" or "to the end":
+
+```{pyodide}
+closes = [183.56, 182.19, 179.87, 179.15, 183.48]
+print(closes[:2])
+print(closes[2:])
+```
+
+
+# Lists can grow
+
+`.append(...)` adds a value to the end:
+
+```{pyodide}
+closes = [183.56, 182.19, 179.87, 179.15, 183.48]
+closes.append(185.56)
+closes
+```
+
+::: {.muted .small}
+`.append` is a **method** — `closes.append(...)`, the dot-grammar again.
+:::
+
+
+# Where does a value sit?
+
+`.index(...)` reports the **position** of a value:
+
+```{pyodide}
+closes = [183.56, 182.19, 179.87, 179.15, 183.48]
+closes.index(179.15)
+```
+
+::: {.muted .small}
+It found `179.15` at position 3. We will use this to locate a stock's worst
+day.
+:::
+
+
+# Summaries over a whole list
+
+The functions from earlier accept a list:
+
+```{pyodide}
+closes = [183.56, 182.19, 179.87, 179.15, 183.48]
+print(min(closes), max(closes))
+print(sum(closes) / len(closes))
+```
+
+::: {.muted .small}
+`sum(...) / len(...)` is the average price of the week — your first statistic,
+from raw parts.
+:::
+
+
+# Your turn [4]{.chip .chip-turn} {.your-turn}
+
+From ten days, compute the **range** (highest minus lowest) of the **last
+five** days only.
+
+```{pyodide}
+#| autorun: false
+closes = [92.10, 93.45, 91.80, 94.20, 95.10,
+          96.30, 94.85, 97.60, 96.90, 98.25]
+
+last_five = ...
+day_range = ...
+day_range
+```
+
+::: {.muted .small}
+Slice the last five first, then `max(...) - min(...)`. The answer is 3.40.
+:::
+
+
+# 8 · Errors are information {.divider}
+
+::: {.divider-kicker}
+Part 8
+:::
+
+::: {.divider-note}
+An error message is a diagnosis, not a scolding.
+:::
+
+
+# An error is a diagnosis
+
+Run this deliberately broken cell and read what comes back:
+
+```{pyodide}
+prices = [183.56, 182.19, 179.87]
+prices[10]
+```
+
+Nothing is damaged. Your other variables are fine. The runtime is fine.
+
+
+# Read it bottom-up
+
+In Colab you get the **full traceback**. Read it from the bottom:
+
+```text
+IndexError                          Traceback (most recent call last)
+      1 prices = [183.56, 182.19, 179.87]
+----> 2 prices[10]
+
+IndexError: list index out of range
+```
+
+- the **last line** names the error type and what went wrong
+- the arrow **`---->`** marks the exact line that failed
+
+::: {.keypoint}
+Read the last line, look at the arrow, fix that line, run again. That resolves
+most errors before you search for anything.
+:::
+
+
+# The four errors of week one
+
+| error | usually means | first thing to check |
+|---|---|---|
+| `NameError` | name never assigned | typo? case? did that cell run? |
+| `TypeError` | operation meets the wrong type | is a "number" secretly text? |
+| `SyntaxError` | Python cannot parse the line | missing quote, bracket, or comma |
+| `IndexError` | that position does not exist | off by one? empty list? |
+
+
+# Error playground [optional]{.chip .chip-optional} {.your-turn}
+
+Each line has one classic mistake. Remove one `#` at a time, run, and read the
+message before fixing it.
+
+```{pyodide}
+#| autorun: false
+price = 100.5
+ticker = "AAPL"
+week = [1.2, -0.4, 0.8]
+
+# pirce + 1
+# ticker + price
+# week[3]
+```
+
+::: {.muted .small}
+Which of the four error types does each one produce?
+:::
+
+
+# 9 · A week of Apple, by hand {.divider}
+
+::: {.divider-kicker}
+Part 9
+:::
+
+::: {.divider-note}
+Everything from today, on real market data — and the course case begins.
+:::
+
+
+# The simple return
+
+Yesterday's close $p_0$, today's close $p_1$. The **simple return** is
+
+$$ r = \frac{p_1 - p_0}{p_0} $$
+
+the percentage change in price — what one unit invested earned in a day. It is
+the basic object of this whole course.
+
+::: {.muted .small}
+Deliberately familiar: the same percentage change you know from econometrics
+growth rates.
+:::
+
+
+# Apple's first week of 2024
+
+Two lists, kept in step — a date and a price at each position:
+
+```{pyodide}
+dates  = ["Jan 02", "Jan 03", "Jan 04", "Jan 05", "Jan 08"]
+closes = [183.56, 182.19, 179.87, 179.15, 183.48]
+closes[0]
+```
+
+
+# One day's return
+
+From the first close to the second:
+
+```{pyodide}
+closes = [183.56, 182.19, 179.87, 179.15, 183.48]
+(closes[1] - closes[0]) / closes[0]
+```
+
+::: {.muted .small}
+Apple lost about three-quarters of a percent on the first trading day of 2024.
+:::
+
+
+# Format it properly
+
+The same return, as a clean percentage with the day attached:
+
+```{pyodide}
+dates  = ["Jan 02", "Jan 03", "Jan 04", "Jan 05", "Jan 08"]
+closes = [183.56, 182.19, 179.87, 179.15, 183.48]
+r1 = (closes[1] - closes[0]) / closes[0]
+f"Return on {dates[1]}: {r1:.2%}"
+```
+
+
+# The whole week, combined
+
+Return over the week, plus the lowest day — using indexing, `min`, and
+`.index` together:
+
+```{pyodide}
+dates  = ["Jan 02", "Jan 03", "Jan 04", "Jan 05", "Jan 08"]
+closes = [183.56, 182.19, 179.87, 179.15, 183.48]
+week_return = (closes[-1] - closes[0]) / closes[0]
+lowest = min(closes)
+low_day = dates[closes.index(lowest)]
+f"Week: {week_return:.2%}, low of {lowest} on {low_day}"
+```
+
+::: {.muted .small}
+`closes.index(lowest)` finds *where* the minimum sits; `dates[...]` reads the
+same position in the other list.
+:::
+
+
+# Two lists, kept in step
+
+::: {.keypoint}
+Dates in one list, prices in another, connected only by position. Next week a
+data **table** keeps them in one object, so they can never drift apart.
+:::
+
+That single idea — many aligned columns in one structure — is what makes
+pandas, and everything after it, possible.
+
+
+# The year that week came from
+
+```{python}
+#| echo: false
+#| fig-align: center
+from pathlib import Path
+import pandas as pd
+import matplotlib.pyplot as plt
+
+plt.rcParams.update({
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "savefig.facecolor": "#fcfcfb", "font.family": ["Segoe UI", "Arial", "sans-serif"],
+    "font.size": 12, "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413", "axes.titlesize": 13,
+    "axes.spines.top": False, "axes.spines.right": False, "axes.grid": True,
+    "grid.color": "#e6e5df", "grid.linewidth": 0.8, "xtick.color": "#898781",
+    "ytick.color": "#898781", "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+})
+
+data_file = Path("../data/aapl_2024_closes.csv")
+if not data_file.exists():
+    raise FileNotFoundError(
+        "Missing ../data/aapl_2024_closes.csv - clone the full course "
+        "repository, or run tools/build_dataset.py from the repository root."
+    )
+aapl = pd.read_csv(data_file, parse_dates=["date"])
+
+fig, ax = plt.subplots(figsize=(9.6, 3.5))
+ax.plot(aapl["date"], aapl["close"], color="#2a78d6", linewidth=2)
+ax.axvspan(pd.Timestamp("2024-01-02"), pd.Timestamp("2024-01-08"),
+           color="#cde2fb", alpha=0.9, zorder=0)
+ax.set_ylim(155, 275)
+ax.annotate("the week you just analysed",
+            xy=(pd.Timestamp("2024-01-06"), 184),
+            xytext=(pd.Timestamp("2024-01-22"), 250),
+            fontsize=10.5, color="#52514e",
+            arrowprops=dict(arrowstyle="-", color="#898781", linewidth=1))
+ax.set_title("Apple (AAPL) daily closing price, 2024", loc="left")
+ax.set_ylabel("US dollars")
+ax.margins(x=0.01)
+fig.tight_layout()
+plt.show()
+```
+
+252 trading days; our five are the shaded sliver. Doing a whole year by hand
+would be miserable — which is exactly why Session 2 brings in **pandas**.
+
+
+# The course case [case]{.chip .chip-case}
+
+**The Analyst's Notebook** — one investigation, four chapters, done at home.
+
+You are a junior analyst building a **risk report** on a small universe of US
+stocks. The running question:
+
+::: {.keypoint}
+How much do these stocks move, how does that differ across them — and could
+that movement be **predicted** at all?
+:::
+
+By the end of these four sessions you will have framed that question
+precisely, with real data. The actual model-building comes in the weeks after.
+
+
+# The case: four chapters
+
+| | data | your tools |
+|---|---|---|
+| Part 1 · today | Apple & Coca-Cola, 2024 daily closes | lists, indexing, returns |
+| Part 2 | 11 stocks, 2015–2024 | data tables and plots |
+| Part 3 | the same, seen as a prediction problem | features and targets, as ideas |
+| Part 4 | the same | why honest prediction is hard |
+
+::: {.muted .small}
+No live downloads: every price ships with the course. Results are identical
+for everyone. Descriptive analysis first; the language of prediction comes in
+carefully, later.
+:::
+
+
+# Case Part 1: this week
+
+`session_01_case.ipynb`, about 7 questions — done at home, before Session 2:
+
+- load Apple's 252 closing prices of 2024 *(loader provided)*
+- first close, last close, best day, worst day
+- slice January and measure its return
+- one broken cell to diagnose and fix
+- the finish: the same measurements for Coca-Cola, and a first judgment —
+  **which of the two moved more in 2024?**
+
+::: {.muted .small}
+Hints and full solutions are folded into the notebook. Work first, then check.
+:::
+
+
+# What stays with you {.smaller}
+
+::: {.recap-grid}
+::: {.recap-item}
+**Runtime state**
+Cells share a memory; "correct" means correct top-to-bottom from a fresh start.
+:::
+::: {.recap-item}
+**Variables**
+`=` assigns a name to a value; assigning again overwrites.
+:::
+::: {.recap-item}
+**Types**
+`int`, `float`, `str`, `bool` — and `"150"` is not 150.
+:::
+::: {.recap-item}
+**Formatting**
+`f"{r:.2%}"` and `f"{p:.2f}"` — the two recipes we reuse.
+:::
+::: {.recap-item}
+**Functions & methods**
+`round(x, 2)` versus `ticker.upper()` — the dot-grammar runs the course.
+:::
+::: {.recap-item}
+**Lists**
+Index from 0, `[-1]` is the end, slice `[a:b]` excludes `b`.
+:::
+::: {.recap-item}
+**Errors**
+Read the last line first. Nothing is broken.
+:::
+::: {.recap-item}
+**Simple return**
+`(p1 - p0) / p0` — the object this course is about.
+:::
+:::
+
+
+# Quick check [optional]{.chip .chip-optional} {.smaller}
+
+Without running anything — what does each line produce? *(a value, or which
+error?)*
+
+```python
+a = [10, 20, 30]
+
+a[3]                # 1
+"5" + "5"           # 2
+a[-1] > 25          # 3
+share_count         # 4    (never assigned)
+a[1:3]              # 5
+```
+
+::: {.muted .small}
+Answers on the next slide — argue with your neighbour first.
+:::
+
+
+# Quick check — answers {.smaller}
+
+| | expression | result |
+|---|---|---|
+| 1 | `a[3]` | `IndexError` — positions are 0, 1, 2 |
+| 2 | `"5" + "5"` | `"55"` — strings glue |
+| 3 | `a[-1] > 25` | `True` — 30 > 25 |
+| 4 | `share_count` | `NameError` — never assigned |
+| 5 | `a[1:3]` | `[20, 30]` — stop excluded |
+
+
+# Before Session 2
+
+<div class="pillars">
+<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Exercises</div><div class="pillar-body"><code>session_01_exercises.ipynb</code> — about 24 short tasks. Hints and solutions folded in.</div></div>
+<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Case Part 1</div><div class="pillar-body"><code>session_01_case.ipynb</code> — the Apple versus Coca-Cola report.</div></div>
+<div class="pillar"><div class="pillar-tag">If stuck</div><div class="pillar-title">Get help</div><div class="pillar-body">Ask a friend, ask an AI for a hint, or email me at <code>jobo@econ.au.dk</code>. Stuck over 15 minutes? Note it and bring it next session.</div></div>
+</div>
+
+::: {.muted .small}
+**Next session:** from five prices in a list to 27,676 in a table — pandas,
+plots, and the first real look at how risk differs across stocks.
+:::
+
+
+# Live: getting set up {.divider}
+
+::: {.divider-kicker}
+Now, together
+:::
+
+::: {.divider-note}
+Opening Google Colab, saving your own copy, and running your first cells — live.
+:::

@@ -1,0 +1,19 @@
+# Machine Learning in Finance - Python environment
+# Install with:  pip install -r requirements.txt
+#
+# Versions are those the materials were built and tested against. Later
+# patch releases are normally fine; these are pinned loosely on the minor
+# version so a fresh install stays reproducible.
+
+pandas>=2.2,<2.3
+numpy>=1.26,<2.0
+matplotlib>=3.9,<3.10
+scikit-learn>=1.5,<1.6
+
+# Needed to build and run the notebooks and to render the Quarto lecture.
+jupyter>=1.0
+nbformat>=5.10
+
+# Only needed to REBUILD the dataset from source (tools/build_dataset.py).
+# Students never need this; the CSVs are already in data/.
+# yfinance>=0.2

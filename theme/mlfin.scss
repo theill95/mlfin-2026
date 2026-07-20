@@ -1,0 +1,854 @@
+/*
+  Machine Learning in Finance — shared Reveal.js theme.
+  Light, spacious, academic. One blue family + sparing amber.
+  System font stack only (no webfonts, works offline).
+*/
+
+/*-- scss:defaults --*/
+
+$font-family-sans-serif: "Segoe UI", system-ui, -apple-system, "Helvetica Neue",
+  Arial, sans-serif;
+$font-family-monospace: "Cascadia Mono", Consolas, Menlo, "Courier New", monospace;
+
+$presentation-font-size-root: 34px;
+$presentation-line-height: 1.5;
+$presentation-slide-text-align: left;
+
+$body-bg: #fcfcfb;
+$body-color: #141413;
+$link-color: #1c5cab;
+
+$presentation-heading-color: #0d366b;
+$presentation-heading-font-weight: 650;
+$presentation-h1-font-size: 1.5em;
+$presentation-h2-font-size: 1.1em;
+$presentation-h3-font-size: 0.92em;
+
+$code-color: #0d366b;
+$code-block-bg: #f4f4f1;
+$code-block-font-size: 0.72em;
+$code-block-border-color: #e6e5df;
+
+$selection-background-color: #dcebfd;
+
+/*-- scss:rules --*/
+
+// ---------- base rhythm ----------
+
+.reveal .slides section {
+  padding-top: 0.1em;
+}
+
+.reveal h1 {
+  margin-bottom: 0.5em;
+  letter-spacing: -0.01em;
+}
+
+.reveal h2 {
+  margin-bottom: 0.7em;
+}
+
+.reveal p,
+.reveal li {
+  color: #141413;
+}
+
+.reveal ul,
+.reveal ol {
+  margin-left: 0.2em;
+}
+
+.reveal li {
+  margin-bottom: 0.5em;
+}
+
+// custom list markers — a small squared accent, not a plain black disc.
+// Scoped to top-level content lists and the instructor-intro columns, so
+// component lists with their own markers (do/don't ticks) are untouched.
+.reveal .slides section > ul,
+.reveal .whoami ul {
+  list-style: none;
+  margin-left: 0.1em;
+}
+
+.reveal .slides section > ul > li,
+.reveal .whoami ul > li {
+  position: relative;
+  padding-left: 1.2em;
+}
+
+.reveal .slides section > ul > li::before,
+.reveal .whoami ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0.05em;
+  top: 0.52em;
+  width: 0.4em;
+  height: 0.4em;
+  background: #6f9bd1;
+  border-radius: 1.5px;
+}
+
+// nested sub-lists get a lighter, hollow marker
+.reveal .slides section > ul ul {
+  list-style: none;
+  margin-top: 0.3em;
+}
+
+.reveal .slides section > ul ul > li::before {
+  background: transparent;
+  border: 1.5px solid #a9bfdd;
+}
+
+.reveal strong {
+  color: #0b2a54;
+}
+
+.reveal .slide-number {
+  color: #a8a69f;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.reveal .progress {
+  color: #1c5cab;
+  height: 3px;
+}
+
+// ---------- text helpers ----------
+
+.muted {
+  color: #52514e;
+}
+
+.faint {
+  color: #898781;
+}
+
+.small {
+  font-size: 0.72em;
+}
+
+.big {
+  font-size: 1.18em;
+  line-height: 1.4;
+}
+
+.lead {
+  font-size: 1.05em;
+  color: #2d2c2a;
+}
+
+.center-block {
+  text-align: center;
+}
+
+.spacer {
+  height: 0.6em;
+}
+
+.gap-lg {
+  height: 1.5em;
+}
+
+// faint, centered "tagline" box for a closing aside (why-python, etc.)
+.tagline {
+  margin: 1.3em auto 0;
+  max-width: 40em;
+  text-align: center;
+  color: #52514e;
+  font-size: 0.78em;
+  padding: 0.55em 1.2em;
+  background: #faf9f6;
+  border: 1px solid #ece9e2;
+  border-radius: 8px;
+}
+
+// instructor email line
+.who-contact {
+  margin-top: 1.4em;
+  font-size: 0.74em;
+  color: #52514e;
+}
+
+.who-contact code {
+  color: #0d366b;
+  font-size: 0.95em;
+}
+
+// ---------- section divider slides ----------
+
+.reveal .slides section.divider {
+  h1 {
+    font-size: 1.75em;
+    margin-top: 1.4em;
+    margin-bottom: 0.35em;
+  }
+
+  .divider-kicker {
+    color: #a8794b;
+    font-size: 0.66em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 0.2em;
+  }
+
+  .divider-note {
+    color: #52514e;
+    font-size: 0.82em;
+    margin-top: 0.9em;
+    max-width: 24em;
+  }
+
+  h1::before {
+    content: "";
+    display: block;
+    width: 58px;
+    height: 5px;
+    background: #1c5cab;
+    border-radius: 3px;
+    margin-bottom: 0.5em;
+  }
+}
+
+// ---------- chips (small labels) ----------
+
+.chip {
+  display: inline-block;
+  font-size: 0.5em;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 0.28em 0.8em;
+  border-radius: 1em;
+  vertical-align: middle;
+  position: relative;
+  top: -0.18em;
+}
+
+.chip-turn {
+  background: #1c5cab;
+  color: #ffffff;
+}
+
+.chip-predict {
+  background: #fbf1dc;
+  color: #96631c;
+}
+
+.chip-optional {
+  background: #efeeea;
+  color: #6c6a64;
+}
+
+.chip-case {
+  background: #0d366b;
+  color: #ffffff;
+}
+
+.chip-new {
+  background: #e7f2ec;
+  color: #1b7a4b;
+}
+
+// ---------- "your turn" slides ----------
+
+.reveal .slides section.your-turn {
+  h1 {
+    border-bottom: 3px solid #dce7f4;
+    padding-bottom: 0.25em;
+  }
+}
+
+// ---------- callouts (restrained) ----------
+
+.reveal .callout {
+  border-radius: 7px;
+  font-size: 0.82em;
+}
+
+.reveal .callout.callout-style-simple {
+  padding: 0.45em 1em;
+}
+
+.reveal .callout-warning {
+  border-left: 5px solid #d99a1c;
+  background: #fbf4e4;
+}
+
+.reveal .callout-tip {
+  border-left: 5px solid #1c5cab;
+  background: #eef4fc;
+}
+
+.reveal .callout-note {
+  border-left: 5px solid #9a9891;
+  background: #f4f4f1;
+}
+
+// ---------- code: static blocks ----------
+
+.reveal div.sourceCode {
+  margin: 0.5em 0;
+  border-radius: 8px;
+  overflow: hidden;              // no stray horizontal scrollbar on the wrapper
+}
+
+.reveal pre {
+  box-shadow: none;
+  border-radius: 8px;
+  line-height: 1.55;
+  margin: 0.5em 0;
+}
+
+.reveal pre code {
+  padding: 0.8em 1em;
+  max-height: none;              // let short blocks size naturally
+  overflow: hidden;              // kill the horizontal "sliding bar"
+  border-radius: 8px;
+  background: #f6f6f3;
+  border: 1px solid #ececE6;
+}
+
+// no line numbers on static code blocks
+.reveal pre code.sourceCode,
+.reveal pre.numberSource code {
+  counter-reset: none;
+}
+.reveal pre.numberSource code > span > a:first-child::before {
+  content: "" !important;
+}
+.reveal .sourceCode .lineNumbers,
+.reveal pre.numberSource {
+  padding-left: 0 !important;
+}
+
+// output cells: hairline, no scrollbar
+.reveal .cell-output pre,
+.reveal .cell-output-stdout pre {
+  background: #ffffff;
+  border: 1px solid #e6e5df;
+  border-left: 3px solid #cdd9ea;
+  color: #26333f;
+  overflow: hidden;
+}
+
+.reveal .cell-output-error pre,
+.reveal .cell-output-stderr pre {
+  background: #fdf4f3;
+  border: 1px solid #f0d4d2;
+  border-left: 3px solid #d98a86;
+  color: #8a3129;
+  overflow-x: auto;              // tracebacks may be wide; allow if truly needed
+}
+
+// ---------- code: live (quarto-live / pyodide) cells ----------
+
+// hide the CodeMirror line-number gutter everywhere
+.reveal .cm-editor .cm-gutters {
+  display: none !important;
+}
+
+.reveal .cm-editor {
+  background: #ffffff;
+  font-size: 0.78em;
+  border-radius: 6px;
+}
+
+.reveal .cm-editor .cm-content {
+  padding: 0.5em 0.2em;
+}
+
+// the "Python Code" header row + buttons
+.reveal .exercise-editor,
+.reveal .qwebr-editor,
+.reveal .exercise-cell {
+  border: 1px solid #e2e1db;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0.4em 0;
+  background: #ffffff;
+}
+
+.reveal .exercise-editor .card-header,
+.reveal .exercise-cell .card-header {
+  background: #f6f6f3;
+  border-bottom: 1px solid #e6e5df;
+  padding: 0.25em 0.7em;
+  font-size: 0.62em;
+  color: #6c6a64;
+}
+
+// run button in the deck accent colour
+.reveal .exercise-editor button.btn-primary,
+.reveal .exercise-cell button.btn-primary,
+.reveal button.qwebr-button-run {
+  background: #1c5cab;
+  border-color: #1c5cab;
+  font-size: 0.9em;
+}
+
+// live-cell result area matches static output styling, no scrollbar
+.reveal .exercise-cell .exercise-result pre,
+.reveal .cell-output.exercise-result pre {
+  background: #ffffff;
+  border: 1px solid #e6e5df;
+  border-left: 3px solid #cdd9ea;
+  overflow: hidden;
+}
+
+.reveal code {
+  font-size: 0.94em;
+}
+
+// ---------- tables ----------
+
+.reveal table {
+  font-size: 0.82em;
+  border-collapse: collapse;
+  margin: 0.4em 0;
+}
+
+.reveal table th {
+  color: #0d366b;
+  border-bottom: 2px solid #c3c2b7;
+  padding: 0.35em 1em;
+  text-align: left;
+}
+
+.reveal table td {
+  border-bottom: 1px solid #ececE6;
+  padding: 0.35em 1em;
+}
+
+// ---------- course timeline (7-week map) ----------
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 0.5em;
+}
+
+.tl-row {
+  display: grid;
+  grid-template-columns: 150px 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 0.42em 0.9em;
+  border-radius: 7px;
+  border: 1px solid #edece7;
+  font-size: 0.6em;
+  background: #ffffff;
+}
+
+.tl-row .tl-week {
+  font-weight: 700;
+  color: #0d366b;
+}
+
+.tl-row .tl-topic {
+  color: #33322f;
+}
+
+.tl-row .tl-who {
+  color: #a8a69f;
+  font-size: 0.85em;
+  letter-spacing: 0.05em;
+}
+
+.tl-row.tl-now {
+  background: #eef4fc;
+  border-color: #b9d2f0;
+}
+
+.tl-row.tl-now .tl-topic {
+  font-weight: 600;
+  color: #16385f;
+}
+
+.tl-row.tl-future {
+  color: #6c6a64;
+}
+
+.tl-row.tl-future .tl-week {
+  color: #6f7d8c;
+}
+
+// ---------- course structure (three pillars) ----------
+
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 0.7em;
+}
+
+.pillar {
+  border: 1px solid #e6e5df;
+  border-top: 4px solid #86b6ef;
+  border-radius: 8px;
+  padding: 0.7em 0.85em;
+  background: #ffffff;
+}
+
+.pillar .pillar-tag {
+  font-size: 0.58em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a8794b;
+  font-weight: 700;
+  margin-bottom: 0.25em;
+}
+
+.pillar .pillar-title {
+  font-weight: 650;
+  color: #0d366b;
+  font-size: 0.82em;
+  margin-bottom: 0.3em;
+}
+
+.pillar .pillar-body {
+  font-size: 0.64em;
+  color: #52514e;
+  line-height: 1.45;
+}
+
+.pillar.pillar-live {
+  border-top-color: #1c5cab;
+  background: #f7fafd;
+}
+
+// ---------- notebook mock (what is a notebook) ----------
+
+.nb-mock {
+  max-width: 22em;
+  margin: 0.6em 0;
+  border: 1px solid #e2e1db;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 0.68em;
+}
+
+.nb-cell {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid #edece7;
+}
+
+.nb-cell:last-child {
+  border-bottom: none;
+}
+
+.nb-gutter {
+  flex: 0 0 62px;
+  padding: 0.5em 0.4em;
+  font-family: $font-family-monospace;
+  font-size: 0.7em;
+  color: #a8a69f;
+  background: #faf9f6;
+  border-right: 1px solid #edece7;
+  text-align: right;
+}
+
+.nb-body {
+  flex: 1;
+  padding: 0.55em 0.8em;
+}
+
+.nb-cell.nb-text .nb-body {
+  color: #33322f;
+}
+
+.nb-cell.nb-code .nb-body {
+  font-family: $font-family-monospace;
+  font-size: 0.82em;
+  color: #0d366b;
+  background: #ffffff;
+}
+
+.nb-out {
+  padding: 0.4em 0.8em 0.5em 62px;
+  font-family: $font-family-monospace;
+  font-size: 0.72em;
+  color: #26333f;
+  background: #ffffff;
+}
+
+.nb-tag {
+  display: inline-block;
+  font-size: 0.62em;
+  color: #a8a69f;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+// ---------- instructor intro ----------
+
+.whoami {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 26px;
+  margin-top: 0.5em;
+}
+
+.whoami .who-col h3 {
+  color: #0d366b;
+  font-size: 0.72em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.4em;
+  font-weight: 700;
+}
+
+.whoami .who-col ul {
+  font-size: 0.74em;
+  line-height: 1.5;
+}
+
+.whoami .who-personal {
+  border-left: 3px solid #ece4d6;
+  padding-left: 1.1em;
+}
+
+// ---------- motivation two-column (why python / why ml) ----------
+
+.why-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 26px;
+  margin-top: 0.6em;
+}
+
+.why-point {
+  font-size: 0.78em;
+}
+
+.why-point strong {
+  color: #0d366b;
+  display: block;
+  margin-bottom: 0.1em;
+}
+
+.why-point span {
+  color: #52514e;
+  font-size: 0.92em;
+}
+
+// ---------- demanding-course "0 to Python+ML" band ----------
+
+.zero-to {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  margin: 0.7em 0 0.5em;
+}
+
+.zero-to .zt-node {
+  border: 1px solid #e6e5df;
+  border-radius: 8px;
+  padding: 0.5em 1em;
+  text-align: center;
+  background: #ffffff;
+}
+
+.zero-to .zt-node .zt-big {
+  font-size: 1.05em;
+  font-weight: 700;
+  color: #0d366b;
+  display: block;
+}
+
+.zero-to .zt-node .zt-sub {
+  font-size: 0.58em;
+  color: #898781;
+}
+
+.zero-to .zt-arrow {
+  text-align: center;
+  color: #1c5cab;
+}
+
+.zero-to .zt-arrow .zt-arrow-line {
+  font-size: 1.3em;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+.zero-to .zt-arrow .zt-arrow-label {
+  display: block;
+  font-size: 0.56em;
+  color: #a8794b;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.zero-to .zt-start .zt-big {
+  color: #898781;
+}
+
+// ---------- do / don't columns (AI policy) ----------
+
+.dodont {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-top: 0.6em;
+}
+
+.do-col,
+.dont-col {
+  border-radius: 8px;
+  padding: 0.6em 0.9em;
+  font-size: 0.72em;
+}
+
+.do-col {
+  background: #eef7f0;
+  border: 1px solid #cbe6d3;
+}
+
+.dont-col {
+  background: #fbf1f0;
+  border: 1px solid #f0d4d1;
+}
+
+.do-col h3,
+.dont-col h3 {
+  font-size: 0.9em;
+  margin-bottom: 0.35em;
+  letter-spacing: 0.02em;
+}
+
+.do-col h3 {
+  color: #1b7a4b;
+}
+
+.dont-col h3 {
+  color: #b23c33;
+}
+
+.do-col ul,
+.dont-col ul {
+  margin-left: 0;
+  list-style: none;
+}
+
+.do-col li,
+.dont-col li {
+  margin-bottom: 0.3em;
+  padding-left: 1.3em;
+  position: relative;
+}
+
+.do-col li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #1b7a4b;
+  font-weight: 700;
+}
+
+.dont-col li::before {
+  content: "✕";
+  position: absolute;
+  left: 0;
+  color: #b23c33;
+  font-weight: 700;
+}
+
+// ---------- exam highlight ----------
+
+.exam-facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 0.7em 0;
+}
+
+.exam-fact {
+  border: 1px solid #e6e5df;
+  border-top: 4px solid #d99a1c;
+  border-radius: 8px;
+  padding: 0.6em 0.7em;
+  text-align: center;
+}
+
+.exam-fact .ef-big {
+  font-size: 1.15em;
+  font-weight: 700;
+  color: #0d366b;
+  display: block;
+}
+
+.exam-fact .ef-label {
+  font-size: 0.62em;
+  color: #52514e;
+  margin-top: 0.15em;
+}
+
+// ---------- key-point band ----------
+
+.keypoint {
+  border-left: 4px solid #1c5cab;
+  background: #f2f7fd;
+  padding: 0.5em 1em;
+  border-radius: 0 7px 7px 0;
+  font-size: 0.92em;
+  margin: 0.5em 0;
+}
+
+// ---------- diagrams ----------
+
+.diagram {
+  display: flex;
+  justify-content: center;
+  margin: 0.7em 0;
+}
+
+.diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.diagram-note {
+  text-align: center;
+  color: #898781;
+  font-size: 0.7em;
+  margin-top: 0.2em;
+}
+
+// ---------- recap grid ----------
+
+.recap-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 22px;
+  margin-top: 0.4em;
+}
+
+.recap-item {
+  border-left: 4px solid #86b6ef;
+  padding: 0.15em 0 0.15em 0.7em;
+  font-size: 0.66em;
+}
+
+.recap-item strong {
+  color: #0d366b;
+  display: block;
+  margin-bottom: 0.1em;
+}
+
+.recap-item code {
+  font-size: 0.95em;
+}
+
+// ---------- fragments: keep it calm ----------
+
+.reveal .slides section .fragment.highlight-current-blue.current-fragment {
+  color: #1c5cab;
+}

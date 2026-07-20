@@ -1,0 +1,12 @@
+__pycache__/
+.ipynb_checkpoints/
+.quarto/
+/.venv/
+*.pyc
+
+# session_*_files/ holds the rendered deck's JS/CSS/plot assets and is
+# required for the HTML to work (quarto-live cannot be self-contained) -
+# keep it tracked, do not ignore it.
+**/*.quarto_ipynb
+
+/.quarto/

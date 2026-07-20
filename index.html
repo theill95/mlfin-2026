@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Machine Learning in Finance</title>
+<style>
+  :root {
+    --ink: #141413; --ink-soft: #52514e; --faint: #898781;
+    --blue: #1c5cab; --blue-deep: #0d366b; --blue-pale: #eef4fc;
+    --line: #e6e5df; --bg: #fbfaf7; --card: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 3.2rem 1.4rem 4rem; }
+  header .eyebrow {
+    color: var(--faint); font-size: 0.78rem; letter-spacing: 0.16em;
+    text-transform: uppercase; font-weight: 600;
+  }
+  header h1 {
+    color: var(--blue-deep); font-size: 2.1rem; margin: 0.2rem 0 0.4rem;
+    letter-spacing: -0.01em;
+  }
+  header p { color: var(--ink-soft); max-width: 46ch; margin: 0; }
+  .accent { width: 58px; height: 5px; background: var(--blue); border-radius: 3px; margin-bottom: 1.1rem; }
+
+  .banner {
+    margin: 1.6rem 0 0; padding: 0.7rem 1rem; border-radius: 8px;
+    background: #fbf4e4; border: 1px solid #f0e2c2; color: #6b5312;
+    font-size: 0.85rem; display: none;
+  }
+
+  .card {
+    margin-top: 2rem; background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 1.5rem 1.6rem; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .card h2 { margin: 0 0 0.2rem; color: var(--blue-deep); font-size: 1.25rem; }
+  .card .sub { color: var(--ink-soft); font-size: 0.92rem; margin: 0 0 1.2rem; }
+
+  .actions { display: grid; grid-template-columns: 1fr; gap: 0.7rem; }
+  @media (min-width: 620px) { .actions { grid-template-columns: 1.3fr 1fr 1fr; } }
+
+  a.btn {
+    display: flex; flex-direction: column; justify-content: center;
+    text-decoration: none; border-radius: 9px; padding: 0.9rem 1rem;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    transition: border-color .12s, background .12s, transform .06s;
+  }
+  a.btn:hover { border-color: #b9d2f0; background: #fcfdff; }
+  a.btn:active { transform: translateY(1px); }
+  a.btn .label { font-weight: 650; color: var(--blue-deep); font-size: 1rem; }
+  a.btn .hint { font-size: 0.78rem; color: var(--faint); margin-top: 0.15rem; }
+  a.btn.primary { background: var(--blue-pale); border-color: #b9d2f0; }
+  a.btn.primary .label { color: var(--blue-deep); }
+  a.btn.disabled { opacity: 0.55; pointer-events: none; }
+
+  .how { margin-top: 2.2rem; color: var(--ink-soft); font-size: 0.9rem; }
+  .how h3 { color: var(--blue-deep); font-size: 0.95rem; margin: 0 0 0.4rem; }
+  .how ul { margin: 0; padding-left: 1.1rem; }
+  .how li { margin-bottom: 0.35rem; }
+  code { background: #f4f4f1; padding: 0.05em 0.35em; border-radius: 4px; font-size: 0.88em; }
+  footer { margin-top: 2.6rem; color: var(--faint); font-size: 0.8rem; }
+  footer a { color: var(--blue); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="accent"></div>
+    <div class="eyebrow">Aarhus University · Master's course</div>
+    <h1>Machine Learning in Finance</h1>
+    <p>Programming and machine learning for finance and economics students —
+       starting from zero. Everything you need for each session is below.</p>
+  </header>
+
+  <div id="local-banner" class="banner">
+    You appear to be viewing this file from your computer. The lecture's live
+    code and the “Open in Colab” buttons work best from the <strong>online
+    version</strong> your instructor links on the learning platform.
+  </div>
+
+  <section class="card">
+    <h2>Session 1 — Beginning Python for Financial Data</h2>
+    <p class="sub">The lecture runs in your browser; the exercises and case open
+       directly in Google Colab. Save your own copy in Colab before you start.</p>
+    <div class="actions">
+      <a class="btn primary" href="session_01/session_01.html">
+        <span class="label">▶ Interactive lecture</span>
+        <span class="hint">slides with runnable code — no install</span>
+      </a>
+      <a class="btn" id="ex-link" href="#" target="_blank" rel="noopener">
+        <span class="label">Exercises</span>
+        <span class="hint">~24 tasks · open in Colab</span>
+      </a>
+      <a class="btn" id="case-link" href="#" target="_blank" rel="noopener">
+        <span class="label">The case</span>
+        <span class="hint">Part 1 · open in Colab</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="how">
+    <h3>How to use these materials</h3>
+    <ul>
+      <li><strong>Lecture:</strong> click <em>Interactive lecture</em>. Arrow keys move between slides; the code cells run in your browser — edit them and press Run.</li>
+      <li><strong>Exercises &amp; case:</strong> click a button to open the notebook in Colab, then <strong>File → Save a copy in Drive</strong> so your work is your own. Hints and solutions are folded inside each task.</li>
+      <li><strong>Nothing to install.</strong> You only need a browser and a Google account.</li>
+    </ul>
+  </div>
+
+  <footer>
+    Questions: <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
+    Later sessions appear here as the course progresses.
+  </footer>
+</div>
+
+<script>
+  // Build "Open in Colab" links automatically from the GitHub Pages address,
+  // so this page needs no manual editing once published. If you host somewhere
+  // else, set REPO_OVERRIDE below to "user/repo".
+  const REPO_OVERRIDE = "";      // e.g. "jbojstrup/mlfin-2026"
+  const BRANCH = "main";
+  const NOTEBOOKS = {
+    "ex-link":   "session_01/session_01_exercises.ipynb",
+    "case-link": "session_01/session_01_case.ipynb",
+  };
+
+  const CONTENT_DIRS = ["session_01", "session_02", "session_03", "session_04",
+                        "data", "theme", "tools", "index.html"];
+
+  function repoSlug() {
+    if (REPO_OVERRIDE) return REPO_OVERRIDE;
+    const h = location.hostname, p = location.pathname.split("/").filter(Boolean);
+    if (h.endsWith("github.io")) {
+      const user = h.split(".")[0];
+      const first = p[0];
+      // project pages serve under /<repo>/... ; user/org pages serve at the
+      // root, so the first path segment (if any) is course content, not a repo.
+      if (!first || CONTENT_DIRS.includes(first)) return user + "/" + user + ".github.io";
+      return user + "/" + first;
+    }
+    return null;
+  }
+
+  const slug = repoSlug();
+  for (const [id, path] of Object.entries(NOTEBOOKS)) {
+    const el = document.getElementById(id);
+    if (slug) {
+      el.href = `https://colab.research.google.com/github/${slug}/blob/${BRANCH}/${path}`;
+    } else {
+      el.classList.add("disabled");
+      el.querySelector(".hint").textContent = "available once published to GitHub";
+    }
+  }
+
+  // Show a gentle banner if opened from a file:// path (no live features).
+  if (location.protocol === "file:") {
+    document.getElementById("local-banner").style.display = "block";
+  }
+</script>
+</body>
+</html>
