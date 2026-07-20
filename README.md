@@ -57,7 +57,7 @@ session_01/
 ├── session_01.qmd            # the lecture: source for the slides + live code
 ├── session_01.html           # the rendered Reveal.js presentation (open this to teach)
 ├── session_01_files/         # assets the rendered HTML needs (keep alongside the .html)
-├── session_01_exercises.ipynb    # ~24 exercises, with folded hints and solutions
+├── session_01_exercises.ipynb    # ~50 exercises, with folded hints and solutions
 ├── session_01_case.ipynb         # the longitudinal case, Part 1, with folded solutions
 └── data/                     # the small CSV files this session uses
 ```
@@ -165,9 +165,9 @@ Daily closing prices for eleven US instruments (AAPL, MSFT, NVDA, JPM, KO, PG,
 XOM, JNJ, WMT, DIS, and the S&P 500 ETF SPY), 2015–2024.
 
 - `data/prices.csv` — all eleven, tidy long format (`date, ticker, close,
-  volume`); used from Session 2 onward.
+  volume`); used from Session 3 onward, once pandas is introduced.
 - `data/aapl_2024_closes.csv`, `data/ko_2024_closes.csv` — small single-stock
-  extracts used in Session 1, before pandas is introduced. Also copied into
+  extracts used in Sessions 1 and 2, before pandas. Also copied into
   `session_01/data/`.
 
 **Provenance.** Prices are split- and dividend-adjusted closes, obtained once
@@ -181,8 +181,10 @@ python tools/build_dataset.py
 
 ## Course case
 
-A single financial investigation — a **risk report** on this stock universe —
+A single financial investigation, a **risk report** on this stock universe,
 runs across Sessions 1–4. It starts (Session 1) with two stocks analysed as
-plain Python lists, grows into pandas tables and plots (Session 2), becomes a
-prediction problem with features and a target (Session 3), and ends with an
-honest evaluation of a simple volatility-forecasting model (Session 4).
+plain Python lists; uses functions and loops to measure volatility properly
+(Session 2); scales up to all eleven stocks with pandas tables and plots
+(Session 3); and is reframed as a machine-learning prediction problem, with
+features and a target, in Session 4. Building the models themselves comes later
+in the course.

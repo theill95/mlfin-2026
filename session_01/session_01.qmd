@@ -815,7 +815,7 @@ That same dot-grammar runs everything ahead:
 ```python
 ticker.upper()      # today: text
 prices.sort()       # today: lists
-returns.mean()      # Session 2: data tables
+returns.mean()      # Session 3: data tables
 ```
 
 Different objects, identical shape. Learn `value.method(...)` once, and later
@@ -852,7 +852,7 @@ Part 7
 :::
 
 ::: {.divider-note}
-The workhorse of the day — and the doorway to data tables next week.
+The workhorse of the day, and the foundation for the data tables that come later.
 :::
 
 
@@ -874,8 +874,8 @@ One variable per day would be absurd — a year has about **252 trading days**.
 A list holds them all together.
 
 ::: {.keypoint}
-Next week a data table will hold ten years of eleven stocks at once. It is
-built directly on this idea: many values, in order, under one name.
+Later in the course a data table will hold ten years of eleven stocks at once.
+It is built directly on this idea: many values, in order, under one name.
 :::
 
 
@@ -1285,7 +1285,7 @@ plt.show()
 ```
 
 252 trading days; our five are the shaded sliver. Doing a whole year by hand
-would be miserable — which is exactly why Session 2 brings in **pandas**.
+would be painful, which is why Session 3 brings in **pandas**.
 
 
 # The course case [case]{.chip .chip-case}
@@ -1309,9 +1309,9 @@ precisely, with real data. The actual model-building comes in the weeks after.
 | | data | your tools |
 |---|---|---|
 | Part 1 · today | Apple & Coca-Cola, 2024 daily closes | lists, indexing, returns |
-| Part 2 | 11 stocks, 2015–2024 | data tables and plots |
-| Part 3 | the same, seen as a prediction problem | features and targets, as ideas |
-| Part 4 | the same | why honest prediction is hard |
+| Part 2 | the same, measured properly | functions, loops, dictionaries |
+| Part 3 | 11 stocks, 2015–2024 | pandas tables and plots |
+| Part 4 | the same, as a prediction problem | features, targets, evaluation |
 
 ::: {.muted .small}
 No live downloads: every price ships with the course. Results are identical
@@ -1322,7 +1322,7 @@ carefully, later.
 
 # Case Part 1: this week
 
-`session_01_case.ipynb`, about 7 questions — done at home, before Session 2:
+`session_01_case.ipynb`, about 10 questions — done at home, before Session 2:
 
 - load Apple's 252 closing prices of 2024 *(loader provided)*
 - first close, last close, best day, worst day
@@ -1408,14 +1408,14 @@ Answers on the next slide — argue with your neighbour first.
 # Before Session 2
 
 <div class="pillars">
-<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Exercises</div><div class="pillar-body"><code>session_01_exercises.ipynb</code> — about 24 short tasks. Hints and solutions folded in.</div></div>
+<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Exercises</div><div class="pillar-body"><code>session_01_exercises.ipynb</code> — about 50 short tasks. Hints and solutions folded in.</div></div>
 <div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Case Part 1</div><div class="pillar-body"><code>session_01_case.ipynb</code> — the Apple versus Coca-Cola report.</div></div>
 <div class="pillar"><div class="pillar-tag">If stuck</div><div class="pillar-title">Get help</div><div class="pillar-body">Ask a friend, ask an AI for a hint, or email me at <code>jobo@econ.au.dk</code>. Stuck over 15 minutes? Note it and bring it next session.</div></div>
 </div>
 
 ::: {.muted .small}
-**Next session:** from five prices in a list to 27,676 in a table — pandas,
-plots, and the first real look at how risk differs across stocks.
+**Next session:** functions, loops, and dictionaries, the tools that let you
+repeat a calculation over hundreds of prices at once instead of by hand.
 :::
 
 

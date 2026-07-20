@@ -1131,7 +1131,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <p>That same dot-grammar runs everything ahead:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="" aria-hidden="true" tabindex="-1"></a>ticker.upper()      <span class="co"># today: text</span></span>
 <span id="cb2-2"><a href="" aria-hidden="true" tabindex="-1"></a>prices.sort()       <span class="co"># today: lists</span></span>
-<span id="cb2-3"><a href="" aria-hidden="true" tabindex="-1"></a>returns.mean()      <span class="co"># Session 2: data tables</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-3"><a href="" aria-hidden="true" tabindex="-1"></a>returns.mean()      <span class="co"># Session 3: data tables</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Different objects, identical shape. Learn <code>value.method(...)</code> once, and later tools feel familiar. Try it live:</p>
 <div>
 <div id="pyodide-26" class="exercise-cell">
@@ -1165,7 +1165,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIi
 <p>Part 7</p>
 </div>
 <div class="divider-note">
-<p>The workhorse of the day — and the doorway to data tables next week.</p>
+<p>The workhorse of the day, and the foundation for the data tables that come later.</p>
 </div>
 </section>
 
@@ -1187,7 +1187,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <h1>Why lists matter</h1>
 <p>One variable per day would be absurd — a year has about <strong>252 trading days</strong>. A list holds them all together.</p>
 <div class="keypoint">
-<p>Next week a data table will hold ten years of eleven stocks at once. It is built directly on this idea: many values, in order, under one name.</p>
+<p>Later in the course a data table will hold ten years of eleven stocks at once. It is built directly on this idea: many values, in order, under one name.</p>
 </div>
 </section>
 
@@ -1531,7 +1531,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="the-year-that-week-came-from" class="title-slide slide level1 center">
 <h1>The year that week came from</h1>
-<div id="e3498d74" class="cell" data-execution_count="1">
+<div id="ede35508" class="cell" data-execution_count="1">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1540,7 +1540,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 </div>
 </div>
 </div>
-<p>252 trading days; our five are the shaded sliver. Doing a whole year by hand would be miserable — which is exactly why Session 2 brings in <strong>pandas</strong>.</p>
+<p>252 trading days; our five are the shaded sliver. Doing a whole year by hand would be painful, which is why Session 3 brings in <strong>pandas</strong>.</p>
 </section>
 
 <section id="the-course-case-case" class="title-slide slide level1 center">
@@ -1576,18 +1576,18 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 </tr>
 <tr class="even">
 <td>Part 2</td>
-<td>11 stocks, 2015–2024</td>
-<td>data tables and plots</td>
+<td>the same, measured properly</td>
+<td>functions, loops, dictionaries</td>
 </tr>
 <tr class="odd">
 <td>Part 3</td>
-<td>the same, seen as a prediction problem</td>
-<td>features and targets, as ideas</td>
+<td>11 stocks, 2015–2024</td>
+<td>pandas tables and plots</td>
 </tr>
 <tr class="even">
 <td>Part 4</td>
-<td>the same</td>
-<td>why honest prediction is hard</td>
+<td>the same, as a prediction problem</td>
+<td>features, targets, evaluation</td>
 </tr>
 </tbody>
 </table>
@@ -1598,7 +1598,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="case-part-1-this-week" class="title-slide slide level1 center">
 <h1>Case Part 1: this week</h1>
-<p><code>session_01_case.ipynb</code>, about 7 questions — done at home, before Session 2:</p>
+<p><code>session_01_case.ipynb</code>, about 10 questions — done at home, before Session 2:</p>
 <ul>
 <li>load Apple’s 252 closing prices of 2024 <em>(loader provided)</em></li>
 <li>first close, last close, best day, worst day</li>
@@ -1707,7 +1707,7 @@ Homework
 Exercises
 </div>
 <div class="pillar-body">
-<code>session_01_exercises.ipynb</code> — about 24 short tasks. Hints and solutions folded in.
+<code>session_01_exercises.ipynb</code> — about 50 short tasks. Hints and solutions folded in.
 </div>
 </div>
 <div class="pillar">
@@ -1734,7 +1734,7 @@ Ask a friend, ask an AI for a hint, or email me at <code>jobo@econ.au.dk</code>.
 </div>
 </div>
 <div class="muted small">
-<p><strong>Next session:</strong> from five prices in a list to 27,676 in a table — pandas, plots, and the first real look at how risk differs across stocks.</p>
+<p><strong>Next session:</strong> functions, loops, and dictionaries, the tools that let you repeat a calculation over hundreds of prices at once instead of by hand.</p>
 </div>
 </section>
 
