@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Downloads · Machine Learning in Finance</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+
+  <nav class="sidenav" aria-label="Course pages">
+    <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
+    <ul>
+      <li><a href="index.html">Sessions</a></li>
+      <li><a href="cheatsheet.html">Cheatsheet</a></li>
+      <li><a href="setup.html">Setup &amp; tools</a></li>
+      <li><a href="resources.html">Resources</a></li>
+      <li><a href="downloads.html" aria-current="page">Downloads</a></li>
+    </ul>
+    <div class="nav-foot">Aarhus University<br><a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a></div>
+  </nav>
+
+  <main class="wrap" id="main">
+  <header>
+    <div class="accent"></div>
+    <div class="eyebrow">Everything, as files</div>
+    <h1>Downloads</h1>
+    <p class="lede">You do not need any of this to follow the course: the lectures run in
+       your browser and the notebooks open in Colab with the data loading by itself. This
+       page is for working offline, on your own machine, which is what you will do at the
+       exam.</p>
+  </header>
+
+  <section class="card">
+    <h2>The whole course, in one file</h2>
+    <p class="sub">Every notebook, every data file, every rendered lecture, as a single
+       ZIP. Always the current version.</p>
+    <div class="actions">
+      <a class="btn primary" href="https://github.com/theill95/mlfin-2026/archive/refs/heads/main.zip">
+        <span class="label">↓ Download everything (ZIP)</span>
+        <span class="hint">about 30 MB · unzip it anywhere</span>
+      </a>
+      <a class="btn" href="https://github.com/theill95/mlfin-2026" target="_blank" rel="noopener">
+        <span class="label">The repository</span>
+        <span class="hint">browse it on GitHub</span>
+      </a>
+    </div>
+    <p class="card-foot">Unzip it, then in VS Code use <em>File → Open Folder</em> and pick
+       the unzipped folder. Opening the folder rather than a single file is what makes
+       <code>data/prices.csv</code> resolve. See the
+       <a href="setup.html#files">setup guide</a>.</p>
+  </section>
+
+  <h2 id="session-1">Session 1 · Beginning Python for Financial Data</h2>
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th>File</th><th>What it is</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><code>session_01_exercises.ipynb</code></td><td>53 exercises, hints and solutions folded in</td>
+          <td><a href="session_01/session_01_exercises.ipynb" download>download</a></td></tr>
+      <tr><td><code>session_01_case.ipynb</code></td><td>The case, Part 1</td>
+          <td><a href="session_01/session_01_case.ipynb" download>download</a></td></tr>
+      <tr><td><code>aapl_2024_closes.csv</code></td><td>Apple's 2024 closing prices</td>
+          <td><a href="data/aapl_2024_closes.csv" download>download</a></td></tr>
+      <tr><td><code>ko_2024_closes.csv</code></td><td>Coca-Cola's 2024 closing prices</td>
+          <td><a href="data/ko_2024_closes.csv" download>download</a></td></tr>
+      <tr><td><code>session_01.html</code></td><td>The lecture. Needs its <code>session_01_files</code> folder, so take the ZIP for this one.</td>
+          <td><a href="session_01/session_01.html">open</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="session-2">Session 2 · Functions, Loops, and Dictionaries</h2>
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th>File</th><th>What it is</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><code>session_02_exercises.ipynb</code></td><td>60 exercises</td>
+          <td><a href="session_02/session_02_exercises.ipynb" download>download</a></td></tr>
+      <tr><td><code>session_02_case.ipynb</code></td><td>The case, Part 2</td>
+          <td><a href="session_02/session_02_case.ipynb" download>download</a></td></tr>
+      <tr><td colspan="2">Five single-stock 2024 files: Apple, Coca-Cola, Nvidia, Johnson &amp; Johnson, JPMorgan</td>
+          <td><a href="data/aapl_2024_closes.csv" download>AAPL</a> ·
+              <a href="data/ko_2024_closes.csv" download>KO</a> ·
+              <a href="data/nvda_2024_closes.csv" download>NVDA</a> ·
+              <a href="data/jnj_2024_closes.csv" download>JNJ</a> ·
+              <a href="data/jpm_2024_closes.csv" download>JPM</a></td></tr>
+      <tr><td><code>session_02.html</code></td><td>The lecture</td>
+          <td><a href="session_02/session_02.html">open</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="session-3">Session 3 · Packages: NumPy, pandas, and matplotlib</h2>
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th>File</th><th>What it is</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><code>session_03_exercises.ipynb</code></td><td>70 exercises</td>
+          <td><a href="session_03/session_03_exercises.ipynb" download>download</a></td></tr>
+      <tr><td><code>session_03_case.ipynb</code></td><td>The case, Part 3</td>
+          <td><a href="session_03/session_03_case.ipynb" download>download</a></td></tr>
+      <tr><td><code>prices.csv</code></td><td>All eleven instruments, 2015 to 2024, 27,676 rows</td>
+          <td><a href="data/prices.csv" download>download</a></td></tr>
+      <tr><td><code>aapl_2024_closes.csv</code></td><td>Used by the array exercises</td>
+          <td><a href="data/aapl_2024_closes.csv" download>download</a></td></tr>
+      <tr><td><code>session_03.html</code></td><td>The lecture</td>
+          <td><a href="session_03/session_03.html">open</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="running">Running the notebooks locally</h2>
+  <ol class="setup-steps">
+    <li>Follow the <a href="setup.html">setup guide</a> once: Python, VS Code, the Python
+        extension, and <code>%pip install numpy pandas matplotlib scikit-learn</code>.</li>
+    <li>Put the notebook and a <code>data/</code> folder in the same place, exactly as in
+        the ZIP.</li>
+    <li>In VS Code, <em>File → Open Folder</em> and choose that folder. Not the file: the
+        folder.</li>
+    <li>Open the notebook, pick your Python when asked, and run the first cell.</li>
+  </ol>
+  <div class="note">
+    If you skip the data files entirely, the notebooks still work: when they cannot find a
+    local <code>data/</code> folder they download what they need from this repository. You
+    only need the CSVs if you want to work with no internet at all.
+  </div>
+
+  <h2 id="lectures">A note on the lectures</h2>
+  <p>Each rendered lecture is an HTML file plus a folder of assets next to it
+     (<code>session_03.html</code> and <code>session_03_files/</code>). Downloading the
+     HTML on its own gives you a broken page, so take the ZIP if you want the slides
+     offline. The live code cells also need the page to be served over HTTP rather than
+     opened from a <code>file://</code> path, which is a browser restriction, not a
+     course one. Online, the links on the <a href="index.html">sessions page</a> always
+     work.</p>
+
+  <footer>
+    Something missing or a link broken? Email me at
+    <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
+  </footer>
+  </main>
+</div>
+</body>
+</html>

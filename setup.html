@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Setup &amp; tools · Machine Learning in Finance</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+
+  <nav class="sidenav" aria-label="Course pages">
+    <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
+    <ul>
+      <li><a href="index.html">Sessions</a></li>
+      <li><a href="cheatsheet.html">Cheatsheet</a></li>
+      <li><a href="setup.html" aria-current="page">Setup &amp; tools</a></li>
+      <li><a href="resources.html">Resources</a></li>
+      <li><a href="downloads.html">Downloads</a></li>
+    </ul>
+    <div class="nav-foot">Aarhus University<br><a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a></div>
+  </nav>
+
+  <main class="wrap" id="main">
+  <header>
+    <div class="accent"></div>
+    <div class="eyebrow">Working on your own machine</div>
+    <h1>Setup &amp; tools</h1>
+    <p class="lede">Colab keeps working for everything on this course, so none of this is
+       urgent. But the exam is written on your own laptop, in VS Code, with no internet,
+       and that should not be the first time you use it. Session 3 opens by walking
+       through the four steps below, so come with them done if you can.</p>
+  </header>
+
+  <p class="legend">
+    <span class="tag tag-need">needed</span> you will use it on this course &nbsp;·&nbsp;
+    <span class="tag tag-extra">extra</span> good to know, not required
+  </p>
+
+  <h2 id="install">The four steps <span class="tag tag-need">needed</span></h2>
+  <p>Do them in order. Each link is the official guide, not a blog post that may have
+     rotted.</p>
+
+  <ol class="setup-steps">
+    <li><strong>Install Python.</strong> Download the latest release for your system. On
+        Windows, tick <em>Add python.exe to PATH</em> in the installer: it is easy to miss
+        and awkward to fix later.
+        <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">python.org/downloads</a></li>
+    <li><strong>Install VS Code.</strong> The editor itself. It is not Python, and
+        installing one does not install the other.
+        <a href="https://code.visualstudio.com/download" target="_blank" rel="noopener">code.visualstudio.com/download</a></li>
+    <li><strong>Add the Python extension.</strong> This is what teaches the editor about
+        Python: running code, completing names, showing documentation when you hover.
+        <a href="https://code.visualstudio.com/docs/python/python-tutorial" target="_blank" rel="noopener">VS Code Python tutorial</a>
+        · then
+        <a href="https://code.visualstudio.com/docs/datascience/jupyter-notebooks" target="_blank" rel="noopener">notebooks in VS Code</a></li>
+    <li><strong>Install the packages.</strong> Open a new notebook and run this in a cell:
+        <br><code>%pip install numpy pandas matplotlib scikit-learn</code><br>
+        You do this once, ever. If you would rather use a terminal, <code>pip install</code>
+        with the same names does exactly the same thing.</li>
+  </ol>
+
+  <div class="note">
+    <strong>If a step fails, bring the error message.</strong> Not a description of it, the
+    text itself. Nearly every setup problem is solved in a minute by someone who can read
+    the actual message, and unsolvable by guessing.
+  </div>
+
+  <h2 id="three-things">Python, VS Code, and the extension are three things <span class="tag tag-need">needed</span></h2>
+  <p>The commonest week-one confusion is thinking VS Code <em>is</em> Python. It is not.
+     <strong>Python</strong> is the language: the thing that actually runs your code.
+     <strong>VS Code</strong> is the editor: where you type and read it. The
+     <strong>Python extension</strong> is the bridge between them. Three separate installs
+     that then work together.</p>
+
+  <h2 id="interpreter">Which Python is it using? <span class="tag tag-need">needed</span></h2>
+  <p>A machine can have several Pythons on it, and VS Code has to be told which one to
+     use. The first time you open a notebook it will ask, and it remembers the answer.
+     You can change it later from the kernel picker at the top right of the notebook, or
+     with <code>Ctrl+Shift+P</code> then "Python: Select Interpreter".</p>
+  <div class="note">
+     Almost every "but I installed it!" problem is this: the package went into one Python
+     and VS Code is running a different one. Using <code>%pip install</code> from inside
+     the notebook avoids it entirely, because <code>%pip</code> installs into whichever
+     Python that notebook is actually using.
+  </div>
+
+  <h2 id="files">Where your data file has to sit <span class="tag tag-need">needed</span></h2>
+  <p>In Colab you uploaded a file. Locally you just put it next to your code:</p>
+<pre><code>mlfin/
+├── analysis.ipynb
+└── data/
+    └── prices.csv</code></pre>
+  <p>Then <code>pd.read_csv("data/prices.csv")</code> finds it. That path is read
+     <strong>relative to where you are running from</strong>, not relative to where the
+     file lives, which is why the fix for <code>FileNotFoundError</code> is almost always
+     the same: in VS Code, open the <strong>folder</strong>
+     (<em>File → Open Folder</em>), not just the single file.</p>
+  <p>The course notebooks are more forgiving than that. They look in a few likely places
+     and, failing all of them, download the data from this repository. So they work in
+     Colab with nothing uploaded, and locally with the <code>data/</code> folder beside
+     them.</p>
+
+  <h2 id="troubleshooting">When something breaks <span class="tag tag-need">needed</span></h2>
+  <div class="scroll-x">
+  <table>
+    <thead>
+      <tr><th>What you see</th><th>What it means</th><th>What to do</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>ModuleNotFoundError: No module named 'pandas'</code></td>
+        <td>Python looked for the package and it is not there.</td>
+        <td>Run <code>%pip install pandas</code> in a cell. If it was already installed,
+            you are running a different Python: check the interpreter.</td>
+      </tr>
+      <tr>
+        <td><code>FileNotFoundError: 'data/prices.csv'</code></td>
+        <td>The path is right or wrong relative to where you are running, and you are not
+            where you think you are.</td>
+        <td>Open the folder rather than the file. <code>import os; os.getcwd()</code>
+            tells you where you actually are.</td>
+      </tr>
+      <tr>
+        <td>No kernel, or "select a kernel" and nothing sensible listed</td>
+        <td>VS Code cannot find a Python to run the notebook with.</td>
+        <td>Check Python installed correctly, then pick it from the kernel list. You may
+            need <code>%pip install jupyter</code> once.</td>
+      </tr>
+      <tr>
+        <td><code>NameError: name 'prices' is not defined</code></td>
+        <td>The cell that creates <code>prices</code> has not run in this session.</td>
+        <td>Run the cells above, or <em>Run All</em>. Notebooks remember what you ran, not
+            what is written above.</td>
+      </tr>
+      <tr>
+        <td><code>SettingWithCopyWarning</code></td>
+        <td>pandas cannot tell whether you meant to change a selection or the original
+            table.</td>
+        <td>Add <code>.copy()</code> when you take the selection you are about to
+            modify.</td>
+      </tr>
+      <tr>
+        <td>A cell runs forever</td>
+        <td>Usually a <code>while</code> loop whose condition never becomes false.</td>
+        <td>Press the stop button, then check that something inside the loop actually
+            changes what the condition tests.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="py-vs-ipynb">Scripts and notebooks: <code>.py</code> against <code>.ipynb</code> <span class="tag tag-extra">extra</span></h2>
+  <p>This course lives in notebooks, and so does the exam, so you do not need scripts.
+     But you will meet them, and the difference is worth a minute.</p>
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th></th><th>A notebook, <code>.ipynb</code></th><th>A script, <code>.py</code></th></tr></thead>
+    <tbody>
+      <tr><td>How it runs</td><td>One cell at a time, in whatever order you press Run</td><td>Top to bottom, every time</td></tr>
+      <tr><td>Output</td><td>Sits under each cell, and is saved in the file</td><td>Printed to a terminal, and gone</td></tr>
+      <tr><td>Good for</td><td>Exploring, and for anything with figures or a written argument</td><td>Work you will repeat, and code other files will import</td></tr>
+      <tr><td>Weakness</td><td>Hidden state: what you ran can differ from what is written</td><td>No inline output, so exploring is clumsy</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>A common working pattern is to explore in a notebook, and move anything you have
+     stopped changing into a <code>.py</code> file you can import. Both open in VS Code
+     with no extra setup.</p>
+
+  <h2 id="venv">Virtual environments <span class="tag tag-extra">extra</span></h2>
+  <p>You will read about these. The idea: instead of one shared set of packages for your
+     whole machine, each project gets its own. That way upgrading a package for one
+     project cannot quietly break another, and you can record exactly which versions a
+     project needs.</p>
+  <p><strong>For this course you do not need one.</strong> One Python with the four
+     packages installed is completely fine. If your setup created a <code>.venv</code>
+     folder, that is what it was: select it as your interpreter and carry on.</p>
+  <p>If you want to understand them:
+     <a href="https://code.visualstudio.com/docs/python/environments" target="_blank" rel="noopener">Python environments in VS Code</a>.</p>
+
+  <h2 id="pip">What <code>pip</code> actually does <span class="tag tag-extra">extra</span></h2>
+  <p>Python ships with a <strong>standard library</strong>: modules like <code>math</code>,
+     <code>random</code> and <code>statistics</code> that are always there. Everything
+     else lives on <strong>PyPI</strong>, a public archive of Python packages.
+     <code>pip</code> is the program that fetches a package from PyPI and installs it into
+     your Python, along with anything that package itself depends on.</p>
+  <p>So <code>%pip install pandas</code> is a download, once. <code>import pandas</code>
+     is what makes it available in a particular notebook, every time.
+     <a href="https://packaging.python.org/en/latest/tutorials/installing-packages/" target="_blank" rel="noopener">Installing packages</a>
+     is the official explanation.</p>
+
+  <h2 id="vscode-tips">VS Code, once it is working <span class="tag tag-extra">extra</span></h2>
+  <ul>
+    <li><strong>Hover a name</strong> to see its documentation. This works offline, because
+        the text ships inside the package.</li>
+    <li><strong><code>Ctrl+Space</code></strong> inside brackets lists the arguments a
+        function takes.</li>
+    <li><strong><code>F12</code></strong> jumps into the package's own source code, which
+        is more readable than you would expect.</li>
+    <li><strong><code>Ctrl+Shift+P</code></strong> opens the command palette: everything
+        VS Code can do, searchable by name. If you only learn one shortcut, learn this.</li>
+    <li><strong><code>Shift+Enter</code></strong> runs the current cell and moves on.</li>
+  </ul>
+
+  <h2 id="git">Git and GitHub <span class="tag tag-extra">extra</span></h2>
+  <p>Not used on this course, and not needed for the exam. Worth knowing about anyway,
+     because it is how essentially all code is kept: a full history of every change, the
+     ability to go back to any earlier version, and a way for several people to work on
+     the same files without overwriting each other. This site and all its materials live
+     in a Git repository.</p>
+  <p>If you are curious:
+     <a href="https://docs.github.com/en/get-started/start-your-journey" target="_blank" rel="noopener">GitHub's own introduction</a>
+     and <a href="https://git-scm.com/downloads" target="_blank" rel="noopener">git-scm.com</a>.
+     VS Code has Git support built in, so you would not need a separate program.</p>
+
+  <footer>
+    Still stuck? Ask a friend, ask an AI for a hint rather than an answer, or email me at
+    <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>. Bring the error message.
+  </footer>
+  </main>
+</div>
+</body>
+</html>

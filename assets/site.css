@@ -1,0 +1,283 @@
+/* Machine Learning in Finance - course site.
+   Shared by index, cheatsheet, setup, resources and downloads.
+   The lecture decks are Reveal.js and are styled by theme/mlfin.scss instead. */
+
+:root {
+  --ink: #141413; --ink-soft: #52514e; --faint: #898781;
+  --blue: #1c5cab; --blue-deep: #0d366b; --blue-pale: #eef4fc;
+  --line: #e6e5df; --bg: #fbfaf7; --card: #ffffff;
+  --amber: #7a5a08; --amber-bg: #fbf4e4; --amber-line: #f0e2c2;
+  --nav: 216px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.55; -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--blue); }
+
+.skip {
+  position: absolute; left: -9999px;
+  background: #fff; padding: 0.6rem 1rem; border-radius: 6px;
+}
+.skip:focus { left: 1rem; top: 1rem; z-index: 10; }
+
+/* ---------------------------------------------------------------- shell */
+
+.shell {
+  display: flex; align-items: flex-start; min-height: 100vh;
+  /* Paints the sidebar's column for the full height of the page, so a long
+     page does not show the tint stopping at one screen. */
+  background: linear-gradient(to right,
+              #f7f6f2 0, #f7f6f2 var(--nav), var(--bg) var(--nav));
+}
+
+.sidenav {
+  flex: 0 0 var(--nav);
+  position: sticky; top: 0; height: 100vh;
+  padding: 2.4rem 1.1rem 1.4rem 1.6rem;
+  border-right: 1px solid var(--line);
+  display: flex; flex-direction: column;
+}
+
+.sidenav .brand {
+  font-size: 0.92rem; font-weight: 650; color: var(--blue-deep);
+  line-height: 1.35; margin-bottom: 1.4rem;
+}
+.sidenav .brand-accent {
+  display: block; width: 34px; height: 4px; border-radius: 2px;
+  background: var(--blue); margin-bottom: 0.7rem;
+}
+
+.sidenav ul { list-style: none; margin: 0; padding: 0; }
+.sidenav li { margin-bottom: 0.15rem; }
+
+.sidenav a {
+  display: block; padding: 0.42rem 0.6rem; border-radius: 6px;
+  color: var(--ink-soft); text-decoration: none; font-size: 0.92rem;
+}
+.sidenav a:hover { background: #eeece6; color: var(--ink); }
+.sidenav a[aria-current="page"] {
+  background: var(--blue-pale); color: var(--blue-deep); font-weight: 600;
+}
+
+.sidenav .nav-foot {
+  margin-top: auto; padding-top: 1.2rem;
+  font-size: 0.76rem; color: var(--faint);
+}
+.sidenav .nav-foot a { color: var(--faint); }
+
+.wrap {
+  flex: 1 1 auto; min-width: 0;
+  max-width: 880px; margin: 0 auto;
+  padding: 3.2rem 1.4rem 4rem;
+}
+
+@media (max-width: 860px) {
+  .shell { display: block; background: none; }
+  .sidenav {
+    position: static; height: auto; width: auto; background: #f7f6f2;
+    flex-direction: row; align-items: center; flex-wrap: wrap; gap: 0.2rem;
+    padding: 0.7rem 1rem; border-right: none; border-bottom: 1px solid var(--line);
+  }
+  .sidenav .brand { display: none; }
+  .sidenav ul { display: flex; flex-wrap: wrap; gap: 0.2rem; }
+  .sidenav li { margin: 0; }
+  .sidenav .nav-foot { display: none; }
+  .wrap { padding-top: 2rem; }
+}
+
+/* ---------------------------------------------------------------- header */
+
+header .eyebrow {
+  color: var(--faint); font-size: 0.78rem; letter-spacing: 0.16em;
+  text-transform: uppercase; font-weight: 600;
+}
+header h1 {
+  color: var(--blue-deep); font-size: 2.1rem; margin: 0.2rem 0 0.4rem;
+  letter-spacing: -0.01em;
+}
+header p { color: var(--ink-soft); margin: 0; }
+.accent {
+  width: 58px; height: 5px; background: var(--blue);
+  border-radius: 3px; margin-bottom: 1.1rem;
+}
+
+h2 { color: var(--blue-deep); font-size: 1.3rem; margin: 2.4rem 0 0.5rem; }
+h3 { color: var(--blue-deep); font-size: 1.02rem; margin: 1.6rem 0 0.4rem; }
+p { margin: 0 0 0.9rem; }
+
+.lede { color: var(--ink-soft); }
+
+.banner {
+  margin: 1.6rem 0 0; padding: 0.7rem 1rem; border-radius: 8px;
+  background: var(--amber-bg); border: 1px solid var(--amber-line);
+  color: #6b5312; font-size: 0.85rem; display: none;
+}
+
+/* ---------------------------------------------------------------- cards */
+
+.card {
+  margin-top: 2rem; background: var(--card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 1.5rem 1.6rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.card h2 { margin: 0 0 0.2rem; color: var(--blue-deep); font-size: 1.25rem; }
+.card .sub { color: var(--ink-soft); font-size: 0.92rem; margin: 0 0 1.2rem; }
+
+.card-foot {
+  margin: 0.9rem 0 0; padding-top: 0.8rem; border-top: 1px solid var(--line);
+  font-size: 0.82rem; color: var(--faint);
+}
+
+.actions { display: grid; grid-template-columns: 1fr; gap: 0.7rem; }
+@media (min-width: 620px) { .actions { grid-template-columns: 1.3fr 1fr 1fr; } }
+
+a.btn {
+  display: flex; flex-direction: column; justify-content: center;
+  text-decoration: none; border-radius: 9px; padding: 0.9rem 1rem;
+  border: 1px solid var(--line); background: #fff; color: var(--ink);
+  transition: border-color .12s, background .12s, transform .06s;
+}
+a.btn:hover { border-color: #b9d2f0; background: #fcfdff; }
+a.btn:active { transform: translateY(1px); }
+a.btn .label { font-weight: 650; color: var(--blue-deep); font-size: 1rem; }
+a.btn .hint { font-size: 0.78rem; color: var(--faint); margin-top: 0.15rem; }
+a.btn.primary { background: var(--blue-pale); border-color: #b9d2f0; }
+a.btn.primary .label { color: var(--blue-deep); }
+a.btn.disabled { opacity: 0.55; pointer-events: none; }
+
+/* ---------------------------------------------------------------- text */
+
+.how { margin-top: 2.2rem; color: var(--ink-soft); font-size: 0.9rem; }
+.how h3 { color: var(--blue-deep); font-size: 0.95rem; margin: 0 0 0.4rem; }
+.how ul { margin: 0; padding-left: 1.1rem; }
+.how li { margin-bottom: 0.35rem; }
+
+code {
+  background: #f4f4f1; padding: 0.05em 0.35em; border-radius: 4px;
+  font-size: 0.88em;
+  font-family: "Cascadia Mono", Consolas, Menlo, "Courier New", monospace;
+}
+pre {
+  background: #f4f4f1; border: 1px solid var(--line); border-radius: 8px;
+  padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.84rem; line-height: 1.5;
+}
+pre code { background: none; padding: 0; font-size: 1em; }
+
+.setup-steps { margin: 0; padding-left: 1.3rem; color: var(--ink-soft); font-size: 0.92rem; }
+.setup-steps li { margin-bottom: 0.7rem; }
+.setup-steps li:last-child { margin-bottom: 0; }
+.setup-steps strong { color: var(--ink); }
+
+ul.plain { list-style: none; margin: 0; padding: 0; }
+ul.plain li { margin-bottom: 0.7rem; }
+
+footer {
+  margin-top: 2.6rem; padding-top: 1.2rem; border-top: 1px solid var(--line);
+  color: var(--faint); font-size: 0.8rem;
+}
+
+/* ------------------------------------------------------- needed vs extra */
+
+.tag {
+  display: inline-block; vertical-align: 0.08em;
+  font-size: 0.66rem; font-weight: 650; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 0.12em 0.5em; border-radius: 4px;
+  margin-left: 0.45rem; white-space: nowrap;
+}
+.tag-need { background: var(--blue-pale); color: var(--blue-deep); }
+.tag-extra { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-line); }
+
+.legend { font-size: 0.84rem; color: var(--ink-soft); margin: 0.4rem 0 1.4rem; }
+
+.note {
+  border-left: 3px solid var(--blue); background: var(--blue-pale);
+  padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin: 1rem 0;
+  font-size: 0.9rem; color: #26333f;
+}
+.note.warn { border-left-color: #b8860b; background: var(--amber-bg); color: #6b5312; }
+
+/* ---------------------------------------------------------------- tables */
+
+table {
+  border-collapse: collapse; width: 100%; margin: 0.6rem 0 1.4rem;
+  font-size: 0.88rem;
+}
+th, td {
+  text-align: left; padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--line); vertical-align: top;
+}
+th { color: var(--blue-deep); font-weight: 650; border-bottom: 1px solid #c3c2b7; }
+td code { white-space: nowrap; }
+
+.scroll-x { overflow-x: auto; }
+
+/* ------------------------------------------------------------ cheatsheet */
+
+.cs-toc {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  margin: 0 0 1.6rem; padding: 0;
+  list-style: none;
+}
+.cs-toc a {
+  display: inline-block; padding: 0.28rem 0.6rem; border-radius: 6px;
+  background: #fff; border: 1px solid var(--line);
+  font-size: 0.82rem; text-decoration: none; color: var(--ink-soft);
+}
+.cs-toc a:hover { border-color: #b9d2f0; color: var(--blue-deep); }
+
+.cs-section { margin-top: 2.2rem; }
+.cs-section > h2 { scroll-margin-top: 1rem; }
+
+.cs-entry {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 0.75rem 0.95rem; margin-bottom: 0.6rem;
+}
+.cs-call {
+  font-family: "Cascadia Mono", Consolas, Menlo, "Courier New", monospace;
+  font-size: 0.9rem; color: var(--blue-deep); font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.cs-what { font-size: 0.88rem; color: var(--ink-soft); margin-bottom: 0.5rem; }
+.cs-demo {
+  display: grid; grid-template-columns: 1fr; gap: 0.35rem;
+  font-family: "Cascadia Mono", Consolas, Menlo, "Courier New", monospace;
+  font-size: 0.8rem;
+}
+@media (min-width: 720px) {
+  .cs-demo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.6rem; }
+}
+/* Wrap rather than scroll: this is a reference card, and a horizontal
+   scrollbar on every long line makes it unreadable at a glance. */
+.cs-demo pre {
+  margin: 0; background: #f7f7f4;
+  white-space: pre-wrap; word-break: break-word; overflow-x: visible;
+}
+.cs-out {
+  margin: 0; padding: 0.8rem 1rem; border-radius: 8px;
+  background: #fff; border: 1px solid var(--line); color: #26333f;
+  white-space: pre-wrap; word-break: break-word; overflow-x: auto;
+}
+.cs-out.empty { color: var(--faint); font-style: italic; }
+.cs-since {
+  float: right; font-size: 0.7rem; color: var(--faint);
+  font-family: "Segoe UI", system-ui, sans-serif; font-weight: 400;
+}
+
+/* ---------------------------------------------------------------- print */
+
+@media print {
+  body { background: #fff; }
+  .shell { display: block; }
+  .sidenav, .banner, .skip, .cs-toc, footer { display: none; }
+  .wrap { max-width: none; padding: 0; }
+  .card, .cs-entry { break-inside: avoid; box-shadow: none; }
+  .cs-section { break-before: auto; }
+  a { color: var(--ink); text-decoration: none; }
+  pre, .cs-out { background: #fff; }
+}

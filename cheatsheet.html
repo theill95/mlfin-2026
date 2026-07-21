@@ -1,0 +1,1362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cheatsheet · Machine Learning in Finance</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+
+  <nav class="sidenav" aria-label="Course pages">
+    <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
+    <ul>
+      <li><a href="index.html">Sessions</a></li>
+      <li><a href="cheatsheet.html" aria-current="page">Cheatsheet</a></li>
+      <li><a href="setup.html">Setup &amp; tools</a></li>
+      <li><a href="resources.html">Resources</a></li>
+      <li><a href="downloads.html">Downloads</a></li>
+    </ul>
+    <div class="nav-foot">Aarhus University<br><a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a></div>
+  </nav>
+
+  <main class="wrap" id="main">
+  <header>
+    <div class="accent"></div>
+    <div class="eyebrow">Every function the course has used</div>
+    <h1>Cheatsheet</h1>
+    <p class="lede">One line on what each thing does, and a worked example with the
+       output it actually produced. Every example on this page was run against the real
+       course data when the page was built, so nothing here is a guess.</p>
+  </header>
+
+  <div class="note">
+    <strong>Ctrl+P saves this as a PDF.</strong> The menu and the page furniture drop out
+    when printing, so you get the reference on its own.
+  </div>
+
+  <ul class="cs-toc">
+    <li><a href="#running-code">Running code</a></li>
+    <li><a href="#numbers">Numbers</a></li>
+    <li><a href="#text">Text</a></li>
+    <li><a href="#true-and-false">True and false</a></li>
+    <li><a href="#types">Types</a></li>
+    <li><a href="#built-in-functions">Built-in functions</a></li>
+    <li><a href="#lists">Lists</a></li>
+    <li><a href="#loops">Loops</a></li>
+    <li><a href="#making-choices">Making choices</a></li>
+    <li><a href="#your-own-functions">Your own functions</a></li>
+    <li><a href="#dictionaries">Dictionaries</a></li>
+    <li><a href="#packages">Packages</a></li>
+    <li><a href="#numpy-arrays">NumPy arrays</a></li>
+    <li><a href="#numpy-matrices">NumPy matrices</a></li>
+    <li><a href="#pandas--one-column">pandas: one column</a></li>
+    <li><a href="#pandas--a-table">pandas: a table</a></li>
+    <li><a href="#pandas--groups-and-shapes">pandas: groups and shapes</a></li>
+    <li><a href="#matplotlib">matplotlib</a></li>
+    <li><a href="#reading-error-messages">Reading error messages</a></li>
+  </ul>
+  <section class="cs-section" id="running-code">
+    <h2>Running code</h2>
+    <p class="lede">A notebook shows the value of the last line of a cell. Anything else you want to see, you have to print.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>print(value)</div>
+      <div class="cs-what">Show one or more values. Separate several with commas.</div>
+      <div class="cs-demo">
+        <pre><code>print(&quot;volatility:&quot;, 0.0143)</code></pre>
+        <div class="cs-out">volatility: 0.0143</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span># comment</div>
+      <div class="cs-what">Everything after # on a line is a note for humans, not code.</div>
+      <div class="cs-demo">
+        <pre><code>total = 10  # dollars, not cents
+total</code></pre>
+        <div class="cs-out">10</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>value</div>
+      <div class="cs-what">The last line of a cell is displayed automatically, with no print.</div>
+      <div class="cs-demo">
+        <pre><code>2 + 2</code></pre>
+        <div class="cs-out">4</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="numbers">
+    <h2>Numbers</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>+  -  *  /</div>
+      <div class="cs-what">The usual arithmetic. Division always gives a float.</div>
+      <div class="cs-demo">
+        <pre><code>(10 - 4) * 2 / 3</code></pre>
+        <div class="cs-out">4.0</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>**</div>
+      <div class="cs-what">To the power of. Compound growth, and square roots as ** 0.5.</div>
+      <div class="cs-demo">
+        <pre><code>1.07 ** 10</code></pre>
+        <div class="cs-out">1.9671513572895665</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>round(number, ndigits)</div>
+      <div class="cs-what">Round to a number of decimals.</div>
+      <div class="cs-demo">
+        <pre><code>round(0.014287, 4)</code></pre>
+        <div class="cs-out">0.0143</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>abs(number)</div>
+      <div class="cs-what">Distance from zero, sign discarded.</div>
+      <div class="cs-demo">
+        <pre><code>abs(-0.0482)</code></pre>
+        <div class="cs-out">0.0482</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="text">
+    <h2>Text</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>&quot;text&quot;</div>
+      <div class="cs-what">A string. Single or double quotes, as long as they match.</div>
+      <div class="cs-demo">
+        <pre><code>ticker = &quot;AAPL&quot;
+ticker</code></pre>
+        <div class="cs-out">&#x27;AAPL&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>+</div>
+      <div class="cs-what">Glue strings together. Both sides must be strings.</div>
+      <div class="cs-demo">
+        <pre><code>&quot;AA&quot; + &quot;PL&quot;</code></pre>
+        <div class="cs-out">&#x27;AAPL&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>f&quot;{value}&quot;</div>
+      <div class="cs-what">An f-string: put a value inside text.</div>
+      <div class="cs-demo">
+        <pre><code>ticker = &quot;AAPL&quot;
+f&quot;the ticker is {ticker}&quot;</code></pre>
+        <div class="cs-out">&#x27;the ticker is AAPL&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>f&quot;{r:.2%}&quot;</div>
+      <div class="cs-what">As a percentage with 2 decimals. The recipe for returns.</div>
+      <div class="cs-demo">
+        <pre><code>r = 0.014287
+f&quot;{r:.2%}&quot;</code></pre>
+        <div class="cs-out">&#x27;1.43%&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>f&quot;{x:.2f}&quot;</div>
+      <div class="cs-what">As a plain number with 2 decimals. The recipe for prices.</div>
+      <div class="cs-demo">
+        <pre><code>f&quot;{183.5622:.2f}&quot;</code></pre>
+        <div class="cs-out">&#x27;183.56&#x27;</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="true-and-false">
+    <h2>True and false</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>==  !=</div>
+      <div class="cs-what">Equal, and not equal. Two equals signs, because one assigns.</div>
+      <div class="cs-demo">
+        <pre><code>&quot;AAPL&quot; == &quot;KO&quot;</code></pre>
+        <div class="cs-out">False</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>&lt;  &gt;  &lt;=  &gt;=</div>
+      <div class="cs-what">The usual comparisons. The answer is True or False.</div>
+      <div class="cs-demo">
+        <pre><code>0.0331 &gt; 0.0141</code></pre>
+        <div class="cs-out">True</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>and  or  not</div>
+      <div class="cs-what">Combine conditions.</div>
+      <div class="cs-demo">
+        <pre><code>r = -0.02
+r &lt; 0 and r &gt; -0.05</code></pre>
+        <div class="cs-out">True</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="types">
+    <h2>Types</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>type(value)</div>
+      <div class="cs-what">What kind of thing this is.</div>
+      <div class="cs-demo">
+        <pre><code>type(0.0143)</code></pre>
+        <div class="cs-out">&lt;class &#x27;float&#x27;&gt;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>int(x)  float(x)  str(x)</div>
+      <div class="cs-what">Convert between whole number, decimal and text.</div>
+      <div class="cs-demo">
+        <pre><code>int(&quot;252&quot;) + 1</code></pre>
+        <div class="cs-out">253</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>None</div>
+      <div class="cs-what">The absence of a value. What a function returns when it has no return.</div>
+      <div class="cs-demo">
+        <pre><code>x = None
+print(x)</code></pre>
+        <div class="cs-out">None</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="built-in-functions">
+    <h2>Built-in functions</h2>
+    <p class="lede">Always available, no import needed.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>len(items)</div>
+      <div class="cs-what">How many items.</div>
+      <div class="cs-demo">
+        <pre><code>len(closes)</code></pre>
+        <div class="cs-out">5</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>sum(numbers)</div>
+      <div class="cs-what">Add them all up.</div>
+      <div class="cs-demo">
+        <pre><code>sum([0.012, -0.004, 0.008])</code></pre>
+        <div class="cs-out">0.016</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>min(values)  max(values)</div>
+      <div class="cs-what">Smallest and largest.</div>
+      <div class="cs-demo">
+        <pre><code>print(min(closes), max(closes))</code></pre>
+        <div class="cs-out">179.15 183.56</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>sorted(values)</div>
+      <div class="cs-what">A new list, in order. The original is untouched.</div>
+      <div class="cs-demo">
+        <pre><code>sorted([0.03, 0.01, 0.02])</code></pre>
+        <div class="cs-out">[0.01, 0.02, 0.03]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>range(start, stop)</div>
+      <div class="cs-what">Whole numbers from start up to but NOT including stop.</div>
+      <div class="cs-demo">
+        <pre><code>list(range(1, 5))</code></pre>
+        <div class="cs-out">[1, 2, 3, 4]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>help(thing)</div>
+      <div class="cs-what">Print the documentation. Works offline.</div>
+      <div class="cs-demo">
+        <pre><code>help(round)</code></pre>
+        <div class="cs-out">Help on built-in function round in module builtins:
+
+round(number, ndigits=None)
+    Round a number to a given precision in decimal digits.
+
+    The return value is an integer if ndigits is omitted or None.  Otherwise
+    the return value has the same type as the number.  ndigits may be negative.</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>dir(thing)</div>
+      <div class="cs-what">List everything an object can do. Useful when you half-remember a name.</div>
+      <div class="cs-demo">
+        <pre><code>s = pd.Series([3, 1, 2])
+[n for n in dir(s) if &quot;sort&quot; in n and not n.startswith(&quot;_&quot;)]</code></pre>
+        <div class="cs-out">[&#x27;argsort&#x27;, &#x27;searchsorted&#x27;, &#x27;sort_index&#x27;, &#x27;sort_values&#x27;]</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="lists">
+    <h2>Lists</h2>
+    <p class="lede">An ordered box of values. Counting starts at 0.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>[a, b, c]</div>
+      <div class="cs-what">Make a list.</div>
+      <div class="cs-demo">
+        <pre><code>closes = [183.56, 182.19, 179.87]
+closes</code></pre>
+        <div class="cs-out">[183.56, 182.19, 179.87]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>items[i]</div>
+      <div class="cs-what">The item at that position. [0] is first.</div>
+      <div class="cs-demo">
+        <pre><code>closes[0]</code></pre>
+        <div class="cs-out">183.56</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>items[-1]</div>
+      <div class="cs-what">Counting from the end. [-1] is last.</div>
+      <div class="cs-demo">
+        <pre><code>closes[-1]</code></pre>
+        <div class="cs-out">183.48</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>items[a:b]</div>
+      <div class="cs-what">A slice: from a up to but NOT including b.</div>
+      <div class="cs-demo">
+        <pre><code>closes[1:3]</code></pre>
+        <div class="cs-out">[182.19, 179.87]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>items[:n]  items[n:]</div>
+      <div class="cs-what">Everything before n, everything from n.</div>
+      <div class="cs-demo">
+        <pre><code>closes[:2]</code></pre>
+        <div class="cs-out">[183.56, 182.19]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>items.append(x)</div>
+      <div class="cs-what">Add to the end. Changes the list itself.</div>
+      <div class="cs-demo">
+        <pre><code>out = []
+out.append(0.012)
+out.append(-0.004)
+out</code></pre>
+        <div class="cs-out">[0.012, -0.004]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>items.index(x)</div>
+      <div class="cs-what">The position of the first x.</div>
+      <div class="cs-demo">
+        <pre><code>closes.index(max(closes))</code></pre>
+        <div class="cs-out">0</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>[]</div>
+      <div class="cs-what">An empty list, ready for a loop to fill.</div>
+      <div class="cs-demo">
+        <pre><code>results = []
+len(results)</code></pre>
+        <div class="cs-out">0</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="loops">
+    <h2>Loops</h2>
+    <p class="lede">Doing something once per item.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>for item in items:</div>
+      <div class="cs-what">Run the indented body once for every item.</div>
+      <div class="cs-demo">
+        <pre><code>for r in [0.012, -0.004]:
+    print(r)</code></pre>
+        <div class="cs-out">0.012
+-0.004</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>for i in range(n):</div>
+      <div class="cs-what">Loop over positions rather than values.</div>
+      <div class="cs-demo">
+        <pre><code>for i in range(3):
+    print(i)</code></pre>
+        <div class="cs-out">0
+1
+2</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>range(1, len(items))</div>
+      <div class="cs-what">Positions 1 onwards: how you reach item i and i-1 together.</div>
+      <div class="cs-demo">
+        <pre><code>for i in range(1, len(closes)):
+    print(round(closes[i] - closes[i - 1], 2))</code></pre>
+        <div class="cs-out">-1.37
+-2.32
+-0.72
+4.33</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>total += x</div>
+      <div class="cs-what">Add to a variable and store it back. Same as total = total + x.</div>
+      <div class="cs-demo">
+        <pre><code>total = 0
+for r in [0.012, -0.004, 0.008]:
+    total += r
+round(total, 4)</code></pre>
+        <div class="cs-out">0.016</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>while condition:</div>
+      <div class="cs-what">Repeat for as long as the condition holds. Something inside must change it.</div>
+      <div class="cs-demo">
+        <pre><code>value, years = 100, 0
+while value &lt; 150:
+    value *= 1.10
+    years += 1
+years</code></pre>
+        <div class="cs-out">5</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="making-choices">
+    <h2>Making choices</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>if condition:</div>
+      <div class="cs-what">Run the block only when the condition is True.</div>
+      <div class="cs-demo">
+        <pre><code>r = 0.012
+if r &gt; 0:
+    print(&quot;up day&quot;)</code></pre>
+        <div class="cs-out">up day</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>elif / else</div>
+      <div class="cs-what">Further cases, checked in order, and a catch-all.</div>
+      <div class="cs-demo">
+        <pre><code>r = -0.02
+if r &gt; 0:
+    print(&quot;up&quot;)
+elif r &lt; 0:
+    print(&quot;down&quot;)
+else:
+    print(&quot;flat&quot;)</code></pre>
+        <div class="cs-out">down</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="your-own-functions">
+    <h2>Your own functions</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>def name(parameters):</div>
+      <div class="cs-what">Create a function. The indented body is what it does.</div>
+      <div class="cs-demo">
+        <pre><code>def simple_return(p0, p1):
+    return (p1 - p0) / p0
+
+round(simple_return(100, 110), 4)</code></pre>
+        <div class="cs-out">0.1</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>return value</div>
+      <div class="cs-what">Hand a value back and stop there. Without it you get None.</div>
+      <div class="cs-demo">
+        <pre><code>def double(x):
+    return x * 2
+
+double(21)</code></pre>
+        <div class="cs-out">42</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>def name(x, rate=0.05):</div>
+      <div class="cs-what">A default: used when the caller does not pass it.</div>
+      <div class="cs-demo">
+        <pre><code>def grow(price, rate=0.05):
+    return price * (1 + rate)
+
+print(grow(100), grow(100, 0.10))</code></pre>
+        <div class="cs-out">105.0 110.00000000000001</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>&quot;&quot;&quot;What it does.&quot;&quot;&quot;</div>
+      <div class="cs-what">A docstring. Editors show it on hover, and help() prints it.</div>
+      <div class="cs-demo">
+        <pre><code>def volatility(prices):
+    &quot;&quot;&quot;Standard deviation of the daily returns.&quot;&quot;&quot;
+    return 0
+
+volatility.__doc__</code></pre>
+        <div class="cs-out">&#x27;Standard deviation of the daily returns.&#x27;</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="dictionaries">
+    <h2>Dictionaries</h2>
+    <p class="lede">Values stored by name instead of by position.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>{&quot;AAPL&quot;: 0.36}</div>
+      <div class="cs-what">Make one. Keys are usually strings.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080}
+vol</code></pre>
+        <div class="cs-out">{&#x27;AAPL&#x27;: 0.0143, &#x27;KO&#x27;: 0.008}</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>data[key]</div>
+      <div class="cs-what">Read the value under that key.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080}
+vol[&quot;AAPL&quot;]</code></pre>
+        <div class="cs-out">0.0143</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>data[key] = value</div>
+      <div class="cs-what">Add a new key, or overwrite an existing one.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0143}
+vol[&quot;NVDA&quot;] = 0.0331
+vol</code></pre>
+        <div class="cs-out">{&#x27;AAPL&#x27;: 0.0143, &#x27;NVDA&#x27;: 0.0331}</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>for key in data:</div>
+      <div class="cs-what">Loop over the keys. Read each value with data[key].</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080}
+for t in vol:
+    print(t, vol[t])</code></pre>
+        <div class="cs-out">AAPL 0.0143
+KO 0.008</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="packages">
+    <h2>Packages</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>import numpy as np</div>
+      <div class="cs-what">Bring a package in under a short name. np, pd and plt are conventions everybody uses.</div>
+      <div class="cs-demo">
+        <pre><code>import numpy as np
+np.sqrt(144)</code></pre>
+        <div class="cs-out">12.0</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>%pip install pandas</div>
+      <div class="cs-what">Install a package. Once per machine, in a notebook cell.</div>
+      <div class="cs-demo">
+        <pre><code>%pip install pandas</code></pre>
+        <div class="cs-out">Successfully installed pandas   (or: Requirement already satisfied)</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="numpy-arrays">
+    <h2>NumPy arrays</h2>
+    <p class="lede">A list that does arithmetic on every element at once. Indexing and slicing work exactly as they do for lists.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.array(list)</div>
+      <div class="cs-what">Turn a list of numbers into an array.</div>
+      <div class="cs-demo">
+        <pre><code>close = np.array([183.56, 182.19, 179.87])
+close</code></pre>
+        <div class="cs-out">array([183.56, 182.19, 179.87])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values * 2</div>
+      <div class="cs-what">Arithmetic applies to every element. No loop.</div>
+      <div class="cs-demo">
+        <pre><code>np.array([1.0, 2.0, 3.0]) * 2</code></pre>
+        <div class="cs-out">array([2., 4., 6.])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>a - b</div>
+      <div class="cs-what">Two arrays, element by element.</div>
+      <div class="cs-demo">
+        <pre><code>np.array([100.0, 200.0]) - np.array([1.0, 2.0])</code></pre>
+        <div class="cs-out">array([ 99., 198.])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>(v[1:] - v[:-1]) / v[:-1]</div>
+      <div class="cs-what">Every daily return in one line: each day against the day before.</div>
+      <div class="cs-demo">
+        <pre><code>(week[1:] - week[:-1]) / week[:-1]</code></pre>
+        <div class="cs-out">array([-0.0074635 , -0.01273396, -0.00400289,  0.02416969])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values.mean()</div>
+      <div class="cs-what">The average.</div>
+      <div class="cs-demo">
+        <pre><code>returns.mean()</code></pre>
+        <div class="cs-out">-7.66487498582262e-06</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values.std()</div>
+      <div class="cs-what">The standard deviation. This is what volatility is.</div>
+      <div class="cs-demo">
+        <pre><code>returns.std()</code></pre>
+        <div class="cs-out">0.014300824856182554</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values.min()  .max()  .sum()</div>
+      <div class="cs-what">The usual summaries.</div>
+      <div class="cs-demo">
+        <pre><code>print(returns.min(), returns.max(), round(returns.sum(), 4))</code></pre>
+        <div class="cs-out">-0.012733959053735075 0.024169690203739793 -0.0</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.sqrt(x)</div>
+      <div class="cs-what">Square root. np.sqrt(252) annualises a daily volatility.</div>
+      <div class="cs-demo">
+        <pre><code>0.0143 * np.sqrt(252)</code></pre>
+        <div class="cs-out">0.2270054624893419</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values &gt; 0</div>
+      <div class="cs-what">A question asked of every element: True or False for each.</div>
+      <div class="cs-demo">
+        <pre><code>returns &gt; 0</code></pre>
+        <div class="cs-out">array([False, False, False,  True])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>(values &gt; 0).sum()</div>
+      <div class="cs-what">Count the Trues, because True counts as 1.</div>
+      <div class="cs-demo">
+        <pre><code>(returns &gt; 0).sum()</code></pre>
+        <div class="cs-out">1</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>(values &gt; 0).mean()</div>
+      <div class="cs-what">The share that are True.</div>
+      <div class="cs-demo">
+        <pre><code>(returns &gt; 0).mean()</code></pre>
+        <div class="cs-out">0.25</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values[values &gt; 0]</div>
+      <div class="cs-what">Keep only the elements where the condition holds.</div>
+      <div class="cs-demo">
+        <pre><code>returns[returns &gt; 0]</code></pre>
+        <div class="cs-out">array([0.02416969])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values.shape</div>
+      <div class="cs-what">How big it is. For a 1-D array it prints as (n,).</div>
+      <div class="cs-demo">
+        <pre><code>week.shape</code></pre>
+        <div class="cs-out">(5,)</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="numpy-matrices">
+    <h2>NumPy matrices</h2>
+    <p class="lede">A matrix is a 2-D array: rows first, then columns.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.array([[1, 2], [3, 4]])</div>
+      <div class="cs-what">A matrix, written as a list of rows.</div>
+      <div class="cs-demo">
+        <pre><code>X = np.array([[1.0, 0.5],
+              [1.0, 1.5],
+              [1.0, 2.5]])
+X</code></pre>
+        <div class="cs-out">array([[1. , 0.5],
+       [1. , 1.5],
+       [1. , 2.5]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>X.shape</div>
+      <div class="cs-what">Rows and columns.</div>
+      <div class="cs-demo">
+        <pre><code>X = np.array([[1.0, 0.5], [1.0, 1.5], [1.0, 2.5]])
+X.shape</code></pre>
+        <div class="cs-out">(3, 2)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>X[i, j]  X[i, :]  X[:, j]</div>
+      <div class="cs-what">One element, a whole row, a whole column. The colon means all.</div>
+      <div class="cs-demo">
+        <pre><code>X = np.array([[1.0, 0.5], [1.0, 1.5], [1.0, 2.5]])
+print(X[1, 0], X[1, :], X[:, 1])</code></pre>
+        <div class="cs-out">1.0 [1.  1.5] [0.5 1.5 2.5]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>X.T</div>
+      <div class="cs-what">The transpose: rows become columns.</div>
+      <div class="cs-demo">
+        <pre><code>X = np.array([[1.0, 0.5], [1.0, 1.5], [1.0, 2.5]])
+X.T.shape</code></pre>
+        <div class="cs-out">(2, 3)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>A @ B</div>
+      <div class="cs-what">Matrix multiplication. For two vectors this is the dot product.</div>
+      <div class="cs-demo">
+        <pre><code>np.array([0.5, 0.3, 0.2]) @ np.array([0.012, -0.004, 0.031])</code></pre>
+        <div class="cs-out">0.011000000000000001</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.ones(n)</div>
+      <div class="cs-what">A vector of ones. The intercept column of a regression.</div>
+      <div class="cs-demo">
+        <pre><code>np.ones(4)</code></pre>
+        <div class="cs-out">array([1., 1., 1., 1.])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.column_stack([a, b])</div>
+      <div class="cs-what">Glue 1-D arrays together as the columns of a matrix.</div>
+      <div class="cs-demo">
+        <pre><code>x = np.array([0.5, 1.5, 2.5])
+np.column_stack([np.ones(3), x])</code></pre>
+        <div class="cs-out">array([[1. , 0.5],
+       [1. , 1.5],
+       [1. , 2.5]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.linalg.inv(A)</div>
+      <div class="cs-what">The inverse: the matrix that undoes A. Fails if a column is redundant.</div>
+      <div class="cs-demo">
+        <pre><code>A = np.array([[2.0, 1.0], [1.0, 3.0]])
+np.round(np.linalg.inv(A) @ A, 10)</code></pre>
+        <div class="cs-out">array([[ 1., -0.],
+       [ 0.,  1.]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.linalg.solve(A, b)</div>
+      <div class="cs-what">Solve A x = b. Safer and faster than inverting. OLS in one line.</div>
+      <div class="cs-demo">
+        <pre><code>x = np.array([0.5, 1.5, 2.5, 3.5])
+y = np.array([1.0, 2.0, 2.6, 3.8])
+X = np.column_stack([np.ones(4), x])
+np.linalg.solve(X.T @ X, X.T @ y)</code></pre>
+        <div class="cs-out">array([0.55, 0.9 ])</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="pandas--one-column">
+    <h2>pandas: one column</h2>
+    <p class="lede">A Series is values with a label on each one: a list and a dictionary at once.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>pd.Series(a_dict)</div>
+      <div class="cs-what">Build one from a dictionary. The keys become the labels.</div>
+      <div class="cs-demo">
+        <pre><code>pd.Series({&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080, &quot;NVDA&quot;: 0.0331})</code></pre>
+        <div class="cs-out">AAPL    0.0143
+KO      0.0080
+NVDA    0.0331
+dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s[&#x27;AAPL&#x27;]</div>
+      <div class="cs-what">Look a value up by its label.</div>
+      <div class="cs-demo">
+        <pre><code>s = pd.Series({&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080})
+s[&quot;AAPL&quot;]</code></pre>
+        <div class="cs-out">0.0143</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s * 2</div>
+      <div class="cs-what">Maths applies to every value, and the labels come along.</div>
+      <div class="cs-demo">
+        <pre><code>pd.Series({&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080}) * np.sqrt(252)</code></pre>
+        <div class="cs-out">AAPL    0.227005
+KO      0.126996
+dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.mean()  .std()  .min()  .max()</div>
+      <div class="cs-what">A Series summarises itself, like an array.</div>
+      <div class="cs-demo">
+        <pre><code>wide[&quot;AAPL&quot;].mean()</code></pre>
+        <div class="cs-out">205.45739523809527</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.sort_values()</div>
+      <div class="cs-what">In order. ascending=False for largest first.</div>
+      <div class="cs-demo">
+        <pre><code>s = pd.Series({&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080, &quot;NVDA&quot;: 0.0331})
+s.sort_values(ascending=False)</code></pre>
+        <div class="cs-out">NVDA    0.0331
+AAPL    0.0143
+KO      0.0080
+dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.dropna()</div>
+      <div class="cs-what">Throw away the missing values.</div>
+      <div class="cs-demo">
+        <pre><code>wide[&quot;AAPL&quot;].pct_change().dropna().shape</code></pre>
+        <div class="cs-out">(251,)</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="pandas--a-table">
+    <h2>pandas: a table</h2>
+    <p class="lede">A DataFrame is several Series side by side, sharing one index.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>pd.read_csv(path, parse_dates=[&#x27;date&#x27;])</div>
+      <div class="cs-what">Read a CSV. parse_dates turns a text column into real dates.</div>
+      <div class="cs-demo">
+        <pre><code>prices.head(3)</code></pre>
+        <div class="cs-out">        date ticker    close     volume
+0 2015-01-02   AAPL  24.1926  212818400
+1 2015-01-05   AAPL  23.5111  257142000
+2 2015-01-06   AAPL  23.5133  263188400</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>pd.DataFrame({...})</div>
+      <div class="cs-what">Build a table from a dictionary of columns.</div>
+      <div class="cs-demo">
+        <pre><code>pd.DataFrame({&quot;ticker&quot;: [&quot;AAPL&quot;, &quot;KO&quot;],
+              &quot;vol&quot;: [0.0143, 0.0080]})</code></pre>
+        <div class="cs-out">  ticker     vol
+0   AAPL  0.0143
+1     KO  0.0080</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.head(n)  .tail(n)</div>
+      <div class="cs-what">The first or last n rows, 5 by default.</div>
+      <div class="cs-demo">
+        <pre><code>prices.head(2)</code></pre>
+        <div class="cs-out">        date ticker    close     volume
+0 2015-01-02   AAPL  24.1926  212818400
+1 2015-01-05   AAPL  23.5111  257142000</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.shape</div>
+      <div class="cs-what">Rows and columns.</div>
+      <div class="cs-demo">
+        <pre><code>prices.shape</code></pre>
+        <div class="cs-out">(27676, 4)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.dtypes</div>
+      <div class="cs-what">What each column holds. A price column that arrived as text is a silent bug.</div>
+      <div class="cs-demo">
+        <pre><code>prices.dtypes</code></pre>
+        <div class="cs-out">date      datetime64[ns]
+ticker            object
+close            float64
+volume             int64
+dtype: object</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.columns</div>
+      <div class="cs-what">The column names.</div>
+      <div class="cs-demo">
+        <pre><code>list(prices.columns)</code></pre>
+        <div class="cs-out">[&#x27;date&#x27;, &#x27;ticker&#x27;, &#x27;close&#x27;, &#x27;volume&#x27;]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame[&#x27;close&#x27;]</div>
+      <div class="cs-what">One column, as a Series.</div>
+      <div class="cs-demo">
+        <pre><code>prices[&quot;close&quot;].head(3)</code></pre>
+        <div class="cs-out">0    24.1926
+1    23.5111
+2    23.5133
+Name: close, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame[[&#x27;date&#x27;, &#x27;close&#x27;]]</div>
+      <div class="cs-what">Several columns, as a smaller table. Note the two sets of brackets.</div>
+      <div class="cs-demo">
+        <pre><code>prices[[&quot;date&quot;, &quot;close&quot;]].head(3)</code></pre>
+        <div class="cs-out">        date    close
+0 2015-01-02  24.1926
+1 2015-01-05  23.5111
+2 2015-01-06  23.5133</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame[frame[&#x27;ticker&#x27;] == &#x27;AAPL&#x27;]</div>
+      <div class="cs-what">Keep only the rows where the condition is True.</div>
+      <div class="cs-demo">
+        <pre><code>prices[prices[&quot;ticker&quot;] == &quot;AAPL&quot;].shape</code></pre>
+        <div class="cs-out">(2516, 4)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>&amp;  |</div>
+      <div class="cs-what">And, or. Each condition needs its own brackets.</div>
+      <div class="cs-demo">
+        <pre><code>big = prices[(prices[&quot;ticker&quot;] == &quot;AAPL&quot;)
+             &amp; (prices[&quot;close&quot;] &gt; 250)]
+big.shape</code></pre>
+        <div class="cs-out">(7, 4)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>.copy()</div>
+      <div class="cs-what">Take your own copy before modifying a selection, so pandas knows what you meant.</div>
+      <div class="cs-demo">
+        <pre><code>aapl = prices[prices[&quot;ticker&quot;] == &quot;AAPL&quot;].copy()
+aapl.shape</code></pre>
+        <div class="cs-out">(2516, 4)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame[&#x27;ret&#x27;] = ...</div>
+      <div class="cs-what">Assign to a name that does not exist yet, and the column appears.</div>
+      <div class="cs-demo">
+        <pre><code>aapl = prices[prices[&quot;ticker&quot;] == &quot;AAPL&quot;].copy()
+aapl[&quot;ret&quot;] = aapl[&quot;close&quot;].pct_change()
+aapl[[&quot;date&quot;, &quot;close&quot;, &quot;ret&quot;]].head(3)</code></pre>
+        <div class="cs-out">        date    close       ret
+0 2015-01-02  24.1926       NaN
+1 2015-01-05  23.5111 -0.028170
+2 2015-01-06  23.5133  0.000094</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.pct_change()</div>
+      <div class="cs-what">The percentage change from each row to the next. The first is NaN.</div>
+      <div class="cs-demo">
+        <pre><code>wide[&quot;AAPL&quot;].pct_change().head(3)</code></pre>
+        <div class="cs-out">date
+2024-01-02         NaN
+2024-01-03   -0.007487
+2024-01-04   -0.012701
+Name: AAPL, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.sort_values(&#x27;ret&#x27;)</div>
+      <div class="cs-what">Sort the rows by a column.</div>
+      <div class="cs-demo">
+        <pre><code>aapl = prices[prices[&quot;ticker&quot;] == &quot;AAPL&quot;].copy()
+aapl[&quot;ret&quot;] = aapl[&quot;close&quot;].pct_change()
+aapl.sort_values(&quot;ret&quot;)[[&quot;date&quot;, &quot;ret&quot;]].head(3)</code></pre>
+        <div class="cs-out">           date       ret
+1308 2020-03-16 -0.128647
+1007 2019-01-03 -0.099607
+1306 2020-03-12 -0.098755</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.loc[&#x27;2024&#x27;]</div>
+      <div class="cs-what">Rows by label. With a date index you can slice with dates.</div>
+      <div class="cs-demo">
+        <pre><code>wide.loc[&quot;2024-01-02&quot;:&quot;2024-01-04&quot;, [&quot;AAPL&quot;, &quot;KO&quot;]]</code></pre>
+        <div class="cs-out">ticker          AAPL       KO
+date                         
+2024-01-02  183.5622  55.6394
+2024-01-03  182.1878  55.7696
+2024-01-04  179.8739  55.5836</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.iloc[0]  .iloc[-1]</div>
+      <div class="cs-what">Rows by position: the first row, the last row.</div>
+      <div class="cs-demo">
+        <pre><code>wide.iloc[-1].head(3)</code></pre>
+        <div class="cs-out">ticker
+AAPL    248.8302
+DIS     109.2946
+JNJ     138.7844
+Name: 2024-12-31 00:00:00, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.values</div>
+      <div class="cs-what">The plain numbers underneath, as a NumPy array, labels dropped.</div>
+      <div class="cs-demo">
+        <pre><code>m = wide[[&quot;AAPL&quot;, &quot;KO&quot;]].values
+print(type(m).__name__, m.shape)</code></pre>
+        <div class="cs-out">ndarray (252, 2)</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="pandas--groups-and-shapes">
+    <h2>pandas: groups and shapes</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.groupby(&#x27;ticker&#x27;).size()</div>
+      <div class="cs-what">Split by a column, then count the rows in each group.</div>
+      <div class="cs-demo">
+        <pre><code>prices.groupby(&quot;ticker&quot;).size()</code></pre>
+        <div class="cs-out">ticker
+AAPL    2516
+DIS     2516
+JNJ     2516
+JPM     2516
+KO      2516
+MSFT    2516
+NVDA    2516
+PG      2516
+SPY     2516
+WMT     2516
+XOM     2516
+...</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.groupby(&#x27;ticker&#x27;)[&#x27;close&#x27;].mean()</div>
+      <div class="cs-what">Split, compute inside each group, put the answers back together.</div>
+      <div class="cs-demo">
+        <pre><code>prices.groupby(&quot;ticker&quot;)[&quot;close&quot;].mean().round(2)</code></pre>
+        <div class="cs-out">ticker
+AAPL     93.68
+DIS     110.83
+JNJ     119.34
+JPM     102.74
+KO       42.89
+MSFT    179.87
+NVDA     20.76
+PG      101.36
+SPY     308.67
+WMT      36.85
+XOM      63.96
+...</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>groupby(...)[&#x27;close&#x27;].pct_change()</div>
+      <div class="cs-what">A return WITHIN each stock. Group first, or you take a return across two companies.</div>
+      <div class="cs-demo">
+        <pre><code>p = prices.copy()
+p[&quot;ret&quot;] = p.groupby(&quot;ticker&quot;)[&quot;close&quot;].pct_change()
+p.groupby(&quot;ticker&quot;)[&quot;ret&quot;].std().sort_values(ascending=False).round(4)</code></pre>
+        <div class="cs-out">ticker
+NVDA    0.0306
+AAPL    0.0179
+DIS     0.0175
+XOM     0.0175
+JPM     0.0172
+MSFT    0.0171
+WMT     0.0133
+PG      0.0116
+JNJ     0.0114
+KO      0.0112
+SPY     0.0111
+...</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>g.agg([&#x27;mean&#x27;, &#x27;std&#x27;, &#x27;min&#x27;, &#x27;max&#x27;])</div>
+      <div class="cs-what">Several summaries at once, as a table.</div>
+      <div class="cs-demo">
+        <pre><code>p = prices.copy()
+p[&quot;ret&quot;] = p.groupby(&quot;ticker&quot;)[&quot;close&quot;].pct_change()
+p.groupby(&quot;ticker&quot;)[&quot;ret&quot;].agg([&quot;mean&quot;, &quot;std&quot;]).round(4).head(4)</code></pre>
+        <div class="cs-out">          mean     std
+ticker                
+AAPL    0.0011  0.0179
+DIS     0.0003  0.0175
+JNJ     0.0003  0.0114
+JPM     0.0008  0.0172</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.pivot(index=, columns=, values=)</div>
+      <div class="cs-what">Reshape: one row per date, one column per ticker.</div>
+      <div class="cs-demo">
+        <pre><code>wide = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;,
+                    values=&quot;close&quot;)
+wide.shape</code></pre>
+        <div class="cs-out">(2516, 11)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.shift(1)</div>
+      <div class="cs-what">Slide a column down by one, so each row can see the previous one. How you line the past up next to the present.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change()
+pd.DataFrame({&quot;ret&quot;: r, &quot;yesterday&quot;: r.shift(1)}).head(4)</code></pre>
+        <div class="cs-out">                 ret  yesterday
+date                           
+2024-01-02       NaN        NaN
+2024-01-03 -0.007487        NaN
+2024-01-04 -0.012701  -0.007487
+2024-01-05 -0.004013  -0.012701</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.rolling(20).std()</div>
+      <div class="cs-what">A statistic over a sliding window of rows. Where most financial features come from.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change()
+(r.rolling(20).std() * np.sqrt(252)).tail(3)</code></pre>
+        <div class="cs-out">date
+2024-12-27    0.152639
+2024-12-30    0.162911
+2024-12-31    0.164852
+Name: AAPL, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.describe()</div>
+      <div class="cs-what">Count, mean, standard deviation and the quartiles, in one call.</div>
+      <div class="cs-demo">
+        <pre><code>wide[&quot;KO&quot;].describe().round(2)</code></pre>
+        <div class="cs-out">count    252.00
+mean      60.34
+std        4.13
+min       54.43
+25%       56.68
+50%       59.67
+75%       63.37
+max       68.98
+Name: KO, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.nlargest(n)</div>
+      <div class="cs-what">The n largest values, largest first.</div>
+      <div class="cs-demo">
+        <pre><code>wide.pct_change().std().nlargest(3)</code></pre>
+        <div class="cs-out">ticker
+NVDA    0.033079
+DIS     0.016298
+JPM     0.014815
+dtype: float64</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="matplotlib">
+    <h2>matplotlib</h2>
+    <p class="lede">Every plot is the same three steps: make the axes, draw on them, then say what the reader is looking at. Figures are not shown on this page.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>fig, ax = plt.subplots(figsize=(9, 3))</div>
+      <div class="cs-what">Make a figure and one axes to draw on. Every plot starts here.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots(figsize=(9, 3))
+type(ax).__name__</code></pre>
+        <div class="cs-out">&#x27;Axes&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.plot(x, y)</div>
+      <div class="cs-what">A line: something over time.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.plot([1, 2, 3], [10, 12, 11])
+&quot;drawn&quot;</code></pre>
+        <div class="cs-out">&#x27;drawn&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.barh(names, values)</div>
+      <div class="cs-what">Horizontal bars: comparing named things. Sort before you plot.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+v = wide.pct_change().std().sort_values()
+ax.barh(v.index, v.values)
+&quot;drawn&quot;</code></pre>
+        <div class="cs-out">&#x27;drawn&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.hist(values, bins=40)</div>
+      <div class="cs-what">A histogram: the shape of one variable.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.hist(wide[&quot;AAPL&quot;].pct_change().dropna(), bins=40)
+&quot;drawn&quot;</code></pre>
+        <div class="cs-out">&#x27;drawn&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.scatter(x, y)</div>
+      <div class="cs-what">A scatter: one thing against another.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+r = wide.pct_change().dropna()
+ax.scatter(r[&quot;SPY&quot;], r[&quot;AAPL&quot;], s=6)
+&quot;drawn&quot;</code></pre>
+        <div class="cs-out">&#x27;drawn&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.set_title(text, loc=&#x27;left&#x27;)</div>
+      <div class="cs-what">Say what the reader is looking at.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.set_title(&quot;Apple, 2024&quot;, loc=&quot;left&quot;)
+ax.get_title(loc=&quot;left&quot;)</code></pre>
+        <div class="cs-out">&#x27;Apple, 2024&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.set_ylabel(text)  ax.set_xlabel(text)</div>
+      <div class="cs-what">Label the axes, with units. &quot;price (USD)&quot;, not &quot;price&quot;.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.set_ylabel(&quot;price (USD)&quot;)
+ax.get_ylabel()</code></pre>
+        <div class="cs-out">&#x27;price (USD)&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>label= and ax.legend()</div>
+      <div class="cs-what">Name each line, then show the key. Needed as soon as there are two.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.plot([1, 2], [1, 2], label=&quot;AAPL&quot;)
+ax.legend()
+&quot;drawn&quot;</code></pre>
+        <div class="cs-out">&#x27;drawn&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.set_ylim(a, b)</div>
+      <div class="cs-what">Fix the vertical range. For bars, always start at zero.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.set_ylim(0, 0.55)
+ax.get_ylim()</code></pre>
+        <div class="cs-out">(0.0, 0.55)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>plt.show()</div>
+      <div class="cs-what">Display the figure. The last line of a plotting cell.</div>
+      <div class="cs-demo">
+        <pre><code>plt.show()</code></pre>
+        <div class="cs-out">(the figure appears under the cell)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>fig.savefig(&#x27;name.png&#x27;, dpi=200)</div>
+      <div class="cs-what">Save it to a file. Use .pdf for something that stays sharp at any size.</div>
+      <div class="cs-demo">
+        <pre><code>fig.savefig(&#x27;name.png&#x27;, dpi=200, bbox_inches=&#x27;tight&#x27;)</code></pre>
+        <div class="cs-out">(writes name.png next to your notebook)</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="reading-error-messages">
+    <h2>Reading error messages</h2>
+    <p class="lede">The last line names the problem. Read it before you change anything: it is almost always telling you the truth.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>NameError</div>
+      <div class="cs-what">A name Python has never seen. Usually a typo, or a cell you have not run yet.</div>
+      <div class="cs-demo">
+        <pre><code>volatilty</code></pre>
+        <div class="cs-out">NameError: name &#x27;volatilty&#x27; is not defined</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>TypeError</div>
+      <div class="cs-what">The right operation on the wrong kind of thing. Often text where a number belongs.</div>
+      <div class="cs-demo">
+        <pre><code>&quot;5&quot; + 5</code></pre>
+        <div class="cs-out">TypeError: can only concatenate str (not &quot;int&quot;) to str</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>IndexError</div>
+      <div class="cs-what">A position that does not exist. A list of 5 stops at index 4.</div>
+      <div class="cs-demo">
+        <pre><code>[1, 2, 3][5]</code></pre>
+        <div class="cs-out">IndexError: list index out of range</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>KeyError</div>
+      <div class="cs-what">A dictionary key that is not there.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.01}
+vol[&quot;KO&quot;]</code></pre>
+        <div class="cs-out">KeyError: &#x27;KO&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>SyntaxError</div>
+      <div class="cs-what">Python could not read the line at all. Look for a missing bracket, quote or colon.</div>
+      <div class="cs-demo">
+        <pre><code>print(&quot;hello&quot;</code></pre>
+        <div class="cs-out">SyntaxError: &#x27;(&#x27; was never closed</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>ZeroDivisionError</div>
+      <div class="cs-what">Dividing by zero. Often an empty list you thought had something in it.</div>
+      <div class="cs-demo">
+        <pre><code>1 / 0</code></pre>
+        <div class="cs-out">ZeroDivisionError: division by zero</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ModuleNotFoundError</div>
+      <div class="cs-what">The package is not installed, or you are running a different Python.</div>
+      <div class="cs-demo">
+        <pre><code>import pandas</code></pre>
+        <div class="cs-out">ModuleNotFoundError: No module named &#x27;pandas&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>FileNotFoundError</div>
+      <div class="cs-what">The path is wrong relative to where you are running from.</div>
+      <div class="cs-demo">
+        <pre><code>pd.read_csv(&quot;data/prices.csv&quot;)</code></pre>
+        <div class="cs-out">FileNotFoundError: [Errno 2] No such file or directory: &#x27;data/prices.csv&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ValueError, on shapes</div>
+      <div class="cs-what">Two arrays whose dimensions do not fit. Check .shape on both.</div>
+      <div class="cs-demo">
+        <pre><code>np.array([[1.0, 2.0], [3.0, 4.0]]) @ np.array([1.0, 2.0, 3.0])</code></pre>
+        <div class="cs-out">ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>LinAlgError</div>
+      <div class="cs-what">A matrix with no inverse: one column carries nothing the others do not. Perfect multicollinearity.</div>
+      <div class="cs-demo">
+        <pre><code>np.linalg.inv(np.array([[1.0, 2.0], [2.0, 4.0]]))</code></pre>
+        <div class="cs-out">LinAlgError: Singular matrix</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Built from the course materials, with every example executed. Something missing?
+    Email me at <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
+  </footer>
+  </main>
+</div>
+</body>
+</html>

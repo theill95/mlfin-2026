@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resources · Machine Learning in Finance</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+
+  <nav class="sidenav" aria-label="Course pages">
+    <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
+    <ul>
+      <li><a href="index.html">Sessions</a></li>
+      <li><a href="cheatsheet.html">Cheatsheet</a></li>
+      <li><a href="setup.html">Setup &amp; tools</a></li>
+      <li><a href="resources.html" aria-current="page">Resources</a></li>
+      <li><a href="downloads.html">Downloads</a></li>
+    </ul>
+    <div class="nav-foot">Aarhus University<br><a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a></div>
+  </nav>
+
+  <main class="wrap" id="main">
+  <header>
+    <div class="accent"></div>
+    <div class="eyebrow">Where to look next</div>
+    <h1>Resources</h1>
+    <p class="lede">The course materials are complete on their own: the lectures, the
+       exercises, the case and the cheatsheet are all you need. Everything here is either
+       the official reference you should learn to use, or something extra for when you
+       want to go further.</p>
+  </header>
+
+  <p class="legend">
+    <span class="tag tag-need">needed</span> use it during the course &nbsp;·&nbsp;
+    <span class="tag tag-extra">extra</span> only if you want more
+  </p>
+
+  <h2 id="docs">Official documentation <span class="tag tag-need">needed</span></h2>
+  <p>Learn to read these rather than searching for a blog post. They are written by the
+     people who wrote the code, they match the version you have, and the reference part of
+     them is already on your machine: hovering a name in VS Code shows the same text.</p>
+  <ul class="plain">
+    <li><a href="https://docs.python.org/3/" target="_blank" rel="noopener">docs.python.org</a>
+        &nbsp;the language and its standard library. The
+        <a href="https://docs.python.org/3/tutorial/" target="_blank" rel="noopener">tutorial</a>
+        is a good second pass over Sessions 1 and 2.</li>
+    <li><a href="https://numpy.org/doc/stable/" target="_blank" rel="noopener">numpy.org/doc</a>
+        &nbsp;arrays and linear algebra. Start with
+        <a href="https://numpy.org/doc/stable/user/absolute_beginners.html" target="_blank" rel="noopener">NumPy for absolute beginners</a>.</li>
+    <li><a href="https://pandas.pydata.org/docs/" target="_blank" rel="noopener">pandas.pydata.org/docs</a>
+        &nbsp;tables. The
+        <a href="https://pandas.pydata.org/pandas-docs/stable/user_guide/index.html" target="_blank" rel="noopener">user guide</a>
+        explains the ideas; the API reference is what you look details up in.</li>
+    <li><a href="https://matplotlib.org/stable/gallery/index.html" target="_blank" rel="noopener">The matplotlib gallery</a>
+        &nbsp;a wall of example charts, each with the code that made it. Find the picture
+        closest to what you want and read how it was done. This is how everybody learns
+        plotting, including people who do it for a living.</li>
+  </ul>
+
+  <h2 id="offline">Taking the documentation offline <span class="tag tag-need">needed</span></h2>
+  <p>Two things are worth knowing, because there are times you will not have a search box.</p>
+  <p><strong>The reference is already on your machine.</strong> Every package carries its
+     own manual inside it. Hover a name in VS Code, or call <code>help(name)</code> in a
+     cell, and you get the signature and the parameter list. That is the same text the
+     reference pages on the website are generated from.</p>
+  <p><strong>The full sites can be downloaded.</strong> Python publishes its whole
+     documentation as a single archive at
+     <a href="https://docs.python.org/3/download.html" target="_blank" rel="noopener">docs.python.org/3/download.html</a>,
+     and the NumPy and pandas sites offer offline copies of their versioned documentation
+     too. Worth doing once, in good time, rather than on a day you need it.</p>
+  <div class="note">
+    Practising with the wifi switched off is a genuinely useful exercise. It is
+    surprisingly quick to get used to <code>help()</code> and hover, and much easier to
+    learn now than under time pressure.
+  </div>
+
+  <h2 id="books">Books, free and legal <span class="tag tag-need">needed</span></h2>
+  <ul class="plain">
+    <li><a href="https://www.statlearning.com/" target="_blank" rel="noopener"><strong>An Introduction to Statistical Learning, with Applications in Python</strong></a>
+        (James, Witten, Hastie, Tibshirani, Taylor). Free PDF from the authors. This is the
+        conceptual reference for the machine-learning half of the course, and Session 4
+        follows its opening chapter closely. If you read one thing beyond the slides, read
+        this.</li>
+    <li><a href="https://wesmckinney.com/book/" target="_blank" rel="noopener"><strong>Python for Data Analysis</strong></a>
+        (Wes McKinney, who wrote pandas). Free to read online. The chapters on NumPy and
+        pandas are the natural next step after Session 3.
+        <span class="tag tag-extra">extra</span></li>
+  </ul>
+
+  <h2 id="practice">More practice <span class="tag tag-extra">extra</span></h2>
+  <p>Only if you have finished the exercises and want more. None of this is examined.</p>
+  <ul class="plain">
+    <li><a href="https://www.kaggle.com/learn" target="_blank" rel="noopener"><strong>Kaggle Learn</strong></a>
+        &nbsp;short free micro-courses, each a few hours, that run in your browser with
+        nothing to install. The Python, Pandas, Data Visualization and Intro to Machine
+        Learning ones overlap this course closely and are a good second explanation if
+        something has not clicked.</li>
+    <li><a href="https://www.kaggle.com/datasets" target="_blank" rel="noopener"><strong>Kaggle datasets</strong></a>
+        &nbsp;thousands of real datasets to practise on. Pick something you are actually
+        curious about: you will learn more from a question you care about than from
+        another tutorial.</li>
+    <li><a href="https://exercism.org/tracks/python" target="_blank" rel="noopener"><strong>Exercism, Python track</strong></a>
+        &nbsp;small programming puzzles with feedback from volunteer mentors. Good for
+        making the language itself feel automatic.</li>
+  </ul>
+
+  <h2 id="data">The data this course uses <span class="tag tag-extra">extra</span></h2>
+  <p>Daily closing prices for eleven US instruments (AAPL, MSFT, NVDA, JPM, KO, PG, XOM,
+     JNJ, WMT, DIS, and the S&amp;P 500 ETF SPY) from 2015 to 2024, split- and
+     dividend-adjusted. They were downloaded once from Yahoo Finance and committed to the
+     repository, so the materials never depend on a live connection and everyone works
+     with exactly the same numbers.</p>
+  <p>The script that built them is <code>tools/build_dataset.py</code> in the repository,
+     if you want to see where the files came from or rebuild them for other tickers. The
+     files themselves are on the <a href="downloads.html">downloads page</a>.</p>
+
+  <h2 id="ai">Using AI on this course <span class="tag tag-need">needed</span></h2>
+  <p>You may use it, and you should learn to. The distinction that matters is between
+     using it to <strong>understand</strong> and using it to <strong>avoid
+     understanding</strong>.</p>
+  <ul>
+    <li><strong>Good:</strong> "explain what this error means", "why does pandas want
+        <code>.copy()</code> here", "give me a hint, not the answer", "what is this
+        function's second argument called".</li>
+    <li><strong>Bad:</strong> pasting an exercise and copying what comes back. It reads as
+        though you learned something, right up until the exam, where there is no internet
+        and no assistant.</li>
+  </ul>
+  <p>A fair test: could you now write it again, from a blank cell, without help? If not,
+     you have not finished the exercise.</p>
+
+  <footer>
+    Something here out of date, or a resource you think should be listed?
+    Email me at <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
+  </footer>
+  </main>
+</div>
+</body>
+</html>

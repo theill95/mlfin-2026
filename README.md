@@ -22,9 +22,18 @@ This repository is published:
   <https://theill95.github.io/mlfin-2026/session_03/session_03.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
-The home page shows a menu with the interactive lecture and the exercises/case
-notebooks (which open in Google Colab). Every push to `main` updates the site
-automatically within a minute or two.
+The site has five pages, linked from the sidebar:
+
+| page | what it is |
+|:--|:--|
+| `index.html` | the sessions: lecture, exercises and case for each |
+| `cheatsheet.html` | every function the course has used, with a worked example. **Generated** by `tools/build_cheatsheet.py`, which executes every example against the real data, so do not edit it by hand |
+| `setup.html` | installing Python and VS Code, and the extras (scripts vs notebooks, virtual environments, Git), each marked needed or optional |
+| `resources.html` | official docs, ISLP, Kaggle, and the AI-use policy |
+| `downloads.html` | every notebook, CSV and deck, plus a whole-course ZIP |
+
+Shared styling lives in `assets/site.css`; the sidebar markup is repeated in each
+page. Every push to `main` updates the site automatically within a minute or two.
 
 ## Giving students one simple link (recommended)
 
@@ -51,8 +60,16 @@ so there is nothing to edit. (Hosting somewhere other than GitHub Pages? Set
 If you would rather **upload files to the learning platform** instead of
 linking out: the exercise and case `.ipynb` files can be uploaded to Colab by a
 student (in Colab, **File → Upload notebook**). But the *lecture's* live code
-only works when the page is served over the web — so for the lecture, the link
+only works when the page is served over the web, so for the lecture the link
 above is the smooth path.
+
+**Data in Colab.** Every notebook that needs data looks for a local `data/`
+folder first and, failing that, downloads what it needs from this repository's
+raw URL. Colab has no `data/` folder, so that fallback is what makes the "Open
+in Colab" buttons work with nothing to upload. If the repository ever moves,
+update `REPO_RAW_URL` in `tools/generators/`, regenerate, and re-run
+`python tools/verify/colab_data_access.py`, which proves the download path by
+emptying the local search path and confirming the result still matches.
 
 ## What is in a session
 
@@ -150,6 +167,12 @@ quarto render session_01/session_01.qmd
 
 Rendering executes every Python cell from a clean state, so a successful
 render is also a check that the lecture code all runs.
+
+## Building and checking
+
+The student notebooks and the cheatsheet page are **generated**. See
+[`tools/README.md`](tools/README.md) for what builds what and how to re-run the
+checks. In short: edit the generator, not the notebook.
 
 ## Python environment
 

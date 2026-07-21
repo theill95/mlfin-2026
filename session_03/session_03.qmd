@@ -373,6 +373,12 @@ every function you are likely to need. And the documentation for each package is
 already **inside the package**, on your machine.
 :::
 
+::: {.muted .small}
+The cheatsheet is on the course page, under
+[Cheatsheet](../cheatsheet.html){target="_blank"}: every function we have used,
+with a worked example of each.
+:::
+
 
 # VS Code shows it as you type
 
@@ -403,7 +409,8 @@ much better. They have a written guide, worked examples, and pictures:
 
 ::: {.muted .small}
 Use these at home while you work. They are also downloadable as a single file,
-if you want them with you offline.
+if you want them offline. All of them, and more, are linked from
+[Resources](../resources.html){target="_blank"} on the course page.
 :::
 
 
