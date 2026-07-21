@@ -73,7 +73,7 @@
     <div class="accent"></div>
     <div class="eyebrow">Aarhus University · Master's course</div>
     <h1>Machine Learning in Finance</h1>
-    <p>Programming and machine learning for finance and economics students —
+    <p>Programming and machine learning for finance and economics students,
        starting from zero. Everything you need for each session is below.</p>
   </header>
 
@@ -84,17 +84,18 @@
   </div>
 
   <section class="card">
-    <h2>Session 1 — Beginning Python for Financial Data</h2>
-    <p class="sub">The lecture runs in your browser; the exercises and case open
-       directly in Google Colab. Save your own copy in Colab before you start.</p>
+    <h2>Session 1 · Beginning Python for Financial Data</h2>
+    <p class="sub">Notebooks, variables, types, functions and methods, lists, and
+       reading errors. The lecture runs in your browser; the exercises and case
+       open directly in Google Colab. Save your own copy in Colab before you start.</p>
     <div class="actions">
       <a class="btn primary" href="session_01/session_01.html">
         <span class="label">▶ Interactive lecture</span>
-        <span class="hint">slides with runnable code — no install</span>
+        <span class="hint">slides with runnable code, no install</span>
       </a>
       <a class="btn" id="ex-link" href="#" target="_blank" rel="noopener">
         <span class="label">Exercises</span>
-        <span class="hint">~24 tasks · open in Colab</span>
+        <span class="hint">53 tasks · open in Colab</span>
       </a>
       <a class="btn" id="case-link" href="#" target="_blank" rel="noopener">
         <span class="label">The case</span>
@@ -103,10 +104,31 @@
     </div>
   </section>
 
+  <section class="card">
+    <h2>Session 2 · Functions, Loops, and Dictionaries</h2>
+    <p class="sub">For and while loops, if / elif / else, writing your own
+       functions, and dictionaries, ending with volatility computed from every
+       daily return of a year.</p>
+    <div class="actions">
+      <a class="btn primary" href="session_02/session_02.html">
+        <span class="label">▶ Interactive lecture</span>
+        <span class="hint">slides with runnable code, no install</span>
+      </a>
+      <a class="btn" id="ex-link-2" href="#" target="_blank" rel="noopener">
+        <span class="label">Exercises</span>
+        <span class="hint">60 tasks · open in Colab</span>
+      </a>
+      <a class="btn" id="case-link-2" href="#" target="_blank" rel="noopener">
+        <span class="label">The case</span>
+        <span class="hint">Part 2 · open in Colab</span>
+      </a>
+    </div>
+  </section>
+
   <div class="how">
     <h3>How to use these materials</h3>
     <ul>
-      <li><strong>Lecture:</strong> click <em>Interactive lecture</em>. Arrow keys move between slides; the code cells run in your browser — edit them and press Run.</li>
+      <li><strong>Lecture:</strong> click <em>Interactive lecture</em>. Arrow keys move between slides; the code cells run in your browser, so you can edit them and press Run.</li>
       <li><strong>Exercises &amp; case:</strong> click a button to open the notebook in Colab, then <strong>File → Save a copy in Drive</strong> so your work is your own. Hints and solutions are folded inside each task.</li>
       <li><strong>Nothing to install.</strong> You only need a browser and a Google account.</li>
     </ul>
@@ -125,8 +147,10 @@
   const REPO_OVERRIDE = "";      // e.g. "jbojstrup/mlfin-2026"
   const BRANCH = "main";
   const NOTEBOOKS = {
-    "ex-link":   "session_01/session_01_exercises.ipynb",
-    "case-link": "session_01/session_01_case.ipynb",
+    "ex-link":     "session_01/session_01_exercises.ipynb",
+    "case-link":   "session_01/session_01_case.ipynb",
+    "ex-link-2":   "session_02/session_02_exercises.ipynb",
+    "case-link-2": "session_02/session_02_case.ipynb",
   };
 
   const CONTENT_DIRS = ["session_01", "session_02", "session_03", "session_04",

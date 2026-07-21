@@ -1,0 +1,1183 @@
+---
+title: "Functions, Loops, and Dictionaries"
+subtitle: "Machine Learning in Finance · Session 2"
+# Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
+# from a data: URI, so embed-resources is off. Ship session_02.html together
+# with session_02_files/ and SERVE OVER HTTP (double-click serve.cmd, or
+# publish to a URL). The live code cells do not run from file://.
+format:
+  live-revealjs:
+    theme: [default, ../theme/mlfin.scss]
+    width: 1280
+    height: 720
+    margin: 0.06
+    center: false
+    transition: fade
+    transition-speed: fast
+    background-transition: none
+    slide-number: c/t
+    controls: false
+    progress: true
+    hash: true
+    history: false
+    code-line-numbers: false
+    highlight-style: github
+    auto-stretch: false
+engine: jupyter
+pyodide:
+  cell-options:
+    autorun: true
+    startover: true
+execute:
+  echo: true
+  warning: false
+---
+
+# One return is easy
+
+Last session you stored prices in a **list**, indexed it, and computed a
+**simple return** from two prices. That return is a single line:
+
+```{pyodide}
+prices = [183.56, 182.19, 179.87, 179.15, 183.48]
+(prices[1] - prices[0]) / prices[0]
+```
+
+That is the return for **one** day, from the first close to the second.
+
+
+# A year is 252 numbers
+
+To study a stock you want **every** day's return. Apple traded about **252
+days** in 2024, so that is 251 returns.
+
+Writing them out one line at a time, `(prices[1] - prices[0]) / prices[0]`, then
+`(prices[2] - prices[1]) / prices[1]`, and so on, is not realistic.
+
+::: {.keypoint}
+You need a way to say: do this once for every day. That is a **loop**, and it is
+where we start today.
+:::
+
+
+# Today
+
+By the end of this session you can:
+
+- repeat work automatically with a **for loop** and a **while loop**
+- make choices with **if**
+- package a calculation into a **function** you write yourself
+- organise results by name in a **dictionary**
+- combine all of it to measure risk properly, as **volatility**
+
+<br>
+
+And you continue the course **case**: turning last session's rough risk gauge
+into a real one.
+
+
+# 1 · For loops {.divider}
+
+::: {.divider-kicker}
+Part 1
+:::
+
+::: {.divider-note}
+Doing something once for every item in a list.
+:::
+
+
+# How a loop runs
+
+Step through it one click at a time. Watch the highlighted line, and how the
+variable and the output change:
+
+```{=html}
+<div class="sr">
+<div class="sr-code">
+<div class="sr-line">prices = [183.56, 182.19, 179.87]</div>
+<div class="sr-line">for price in prices:</div>
+<div class="sr-line">    print(price)</div>
+<div class="sr-hl fragment current-visible" data-fragment-index="1" style="--a:1; --b:1;"></div>
+<div class="sr-hl-inline fragment current-visible" data-fragment-index="1" style="--r:0; --c:10; --w:6;"></div>
+<div class="sr-hl fragment current-visible" data-fragment-index="2" style="--a:2; --b:2;"></div>
+<div class="sr-hl-inline fragment current-visible" data-fragment-index="2" style="--r:0; --c:10; --w:6;"></div>
+<div class="sr-hl fragment current-visible" data-fragment-index="3" style="--a:1; --b:1;"></div>
+<div class="sr-hl-inline fragment current-visible" data-fragment-index="3" style="--r:0; --c:18; --w:6;"></div>
+<div class="sr-hl fragment current-visible" data-fragment-index="4" style="--a:2; --b:2;"></div>
+<div class="sr-hl-inline fragment current-visible" data-fragment-index="4" style="--r:0; --c:18; --w:6;"></div>
+<div class="sr-hl fragment current-visible" data-fragment-index="5" style="--a:1; --b:1;"></div>
+<div class="sr-hl-inline fragment current-visible" data-fragment-index="5" style="--r:0; --c:26; --w:6;"></div>
+<div class="sr-hl fragment current-visible" data-fragment-index="6" style="--a:2; --b:2;"></div>
+<div class="sr-hl-inline fragment current-visible" data-fragment-index="6" style="--r:0; --c:26; --w:6;"></div>
+<div class="sr-hl fragment current-visible" data-fragment-index="7" style="--a:1; --b:1;"></div>
+</div>
+<div class="sr-state">
+<div class="sr-panel fragment current-visible" data-fragment-index="1"><div class="sr-lbl">variables</div><div class="sr-mem">price = 183.56</div><div class="sr-lbl">output</div><div class="sr-out"></div><div class="sr-note">take the first item</div></div>
+<div class="sr-panel fragment current-visible" data-fragment-index="2"><div class="sr-lbl">variables</div><div class="sr-mem">price = 183.56</div><div class="sr-lbl">output</div><div class="sr-out">183.56</div><div class="sr-note">run the body</div></div>
+<div class="sr-panel fragment current-visible" data-fragment-index="3"><div class="sr-lbl">variables</div><div class="sr-mem">price = 182.19</div><div class="sr-lbl">output</div><div class="sr-out">183.56</div><div class="sr-note">take the next item</div></div>
+<div class="sr-panel fragment current-visible" data-fragment-index="4"><div class="sr-lbl">variables</div><div class="sr-mem">price = 182.19</div><div class="sr-lbl">output</div><div class="sr-out">183.56
+182.19</div><div class="sr-note">run the body</div></div>
+<div class="sr-panel fragment current-visible" data-fragment-index="5"><div class="sr-lbl">variables</div><div class="sr-mem">price = 179.87</div><div class="sr-lbl">output</div><div class="sr-out">183.56
+182.19</div><div class="sr-note">take the next item</div></div>
+<div class="sr-panel fragment current-visible" data-fragment-index="6"><div class="sr-lbl">variables</div><div class="sr-mem">price = 179.87</div><div class="sr-lbl">output</div><div class="sr-out">183.56
+182.19
+179.87</div><div class="sr-note">run the body</div></div>
+<div class="sr-panel fragment current-visible" data-fragment-index="7"><div class="sr-lbl">variables</div><div class="sr-mem">no items left</div><div class="sr-lbl">output</div><div class="sr-out">183.56
+182.19
+179.87</div><div class="sr-note">the list is finished, so the loop stops</div></div>
+</div>
+</div>
+```
+
+
+# A first loop
+
+Now run it for real. Instead of printing prices one by one, let Python walk the
+list:
+
+```{pyodide}
+prices = [183.56, 182.19, 179.87]
+for price in prices:
+    print(price)
+```
+
+`for price in prices:` reads as "for each price in the list". The indented line
+runs once per item.
+
+
+# The loop variable
+
+Each time round, `price` holds the **next** value in the list:
+
+```{pyodide}
+prices = [183.56, 182.19, 179.87]
+for price in prices:
+    print("close:", price)
+```
+
+`price` is an ordinary variable, and you choose its name.
+
+
+# Indentation marks the body
+
+Python knows what is **inside** the loop from the indentation:
+
+```python
+for price in prices:
+    print(price)     # indented: inside the loop, runs each time
+print("done")        # not indented: runs once, after the loop
+```
+
+The colon `:` opens the loop; the indented lines below it are its body.
+
+
+# Predict the output [predict]{.chip .chip-predict}
+
+Before running, decide how many lines this prints, and what they are.
+
+```{pyodide}
+#| autorun: false
+prices = [10, 20, 30, 40]
+for p in prices:
+    print(p * 2)
+```
+
+::: {.muted .small}
+One line for each item, or something else? Press Run to check.
+:::
+
+
+# Adding up a list, by hand
+
+A loop can build a running **total**. Start at zero, then add each price:
+
+```{pyodide}
+prices = [183.56, 182.19, 179.87, 179.15, 183.48]
+total = 0
+for price in prices:
+    total = total + price
+total
+```
+
+This is exactly what `sum(prices)` does. Now you can see inside it.
+
+
+# The accumulator pattern
+
+That shape comes up constantly:
+
+- start a variable at a neutral value (`0` for a sum)
+- update it once per item, inside the loop
+- read it after the loop
+
+::: {.keypoint}
+Set up, then loop and update, then use the result. Summing, counting, and
+averaging all follow this one pattern.
+:::
+
+
+# A shorthand: `+=`
+
+Updating a variable from itself, `total = total + r`, is so common that Python
+gives it a shorthand:
+
+```{pyodide}
+total = 0
+for r in [0.01, -0.02, 0.03]:
+    total += r        # same as: total = total + r
+total
+```
+
+`total += r` means `total = total + r`. The same works for `-=`, `*=`, and
+`/=`. We will use it for accumulators from here on.
+
+
+# Looping a fixed number of times
+
+`range(n)` gives the whole numbers `0, 1, ... , n - 1` to loop over:
+
+```{pyodide}
+for i in range(5):
+    print(i)
+```
+
+Use it when you care about **positions**, not the values themselves.
+
+
+# range with a start
+
+`range(start, stop)` begins at `start` and stops **before** `stop`:
+
+```{pyodide}
+for i in range(1, 5):
+    print(i)
+```
+
+Just like slicing, the stop value is not included.
+
+
+# Reaching two days at once
+
+To compare each day with the one before it, loop over positions and use `i` and
+`i - 1`:
+
+```{pyodide}
+prices = [183.56, 182.19, 179.87, 179.15, 183.48]
+for i in range(1, len(prices)):
+    print(prices[i], "after", prices[i - 1])
+```
+
+Starting at `1` means the first pair is day 2 against day 1. There is no day
+before day 1.
+
+
+# Starting from an empty list
+
+To collect results, begin with an **empty list** and grow it with `.append`:
+
+```{pyodide}
+returns = []            # empty, ready to fill
+returns.append(0.012)
+returns.append(-0.004)
+returns
+```
+
+`[]` is a list with nothing in it yet. This is how you gather values as a loop
+runs.
+
+
+# Every daily return, at once
+
+Put the two ideas together: loop over positions, and append each return:
+
+```{pyodide}
+prices = [183.56, 182.19, 179.87, 179.15, 183.48]
+returns = []
+for i in range(1, len(prices)):
+    r = (prices[i] - prices[i - 1]) / prices[i - 1]
+    returns.append(r)
+returns
+```
+
+Five prices give four daily returns. The same formula as last session, now
+applied to the whole list.
+
+
+# Your turn [1]{.chip .chip-turn} {.your-turn}
+
+Use a loop to add up all the returns into `total`. Start `total` at zero, and
+add each return inside the loop.
+
+```{pyodide}
+#| autorun: false
+returns = [0.012, -0.004, 0.008, -0.011, 0.006]
+
+total = ...
+for r in returns:
+    ...
+total
+```
+
+
+# Your turn 1: answer
+
+The accumulator pattern, on the returns:
+
+```python
+returns = [0.012, -0.004, 0.008, -0.011, 0.006]
+
+total = 0
+for r in returns:
+    total += r
+total
+```
+
+**Result: `0.011`.** Start at zero, add each return once, read the total after
+the loop.
+
+
+# 2 · Making choices {.divider}
+
+::: {.divider-kicker}
+Part 2
+:::
+
+::: {.divider-note}
+Running code only when a condition is true.
+:::
+
+
+# The if statement
+
+Last session a comparison gave `True` or `False`. **if** acts on that answer:
+
+```{pyodide}
+price = 260
+if price > 250:
+    print("above 250")
+```
+
+The indented block runs only when the condition is `True`. Change `price` to
+`240` and run it again.
+
+
+# else: the other case
+
+`else` handles what happens when the condition is `False`:
+
+```{pyodide}
+price = 240
+if price > 250:
+    print("above 250")
+else:
+    print("250 or below")
+```
+
+
+# elif: more than two cases
+
+`elif` (short for else-if) adds further cases, checked in order:
+
+```{pyodide}
+r = -0.02
+if r > 0:
+    print("up day")
+elif r < 0:
+    print("down day")
+else:
+    print("flat day")
+```
+
+
+# Predict the branch [predict]{.chip .chip-predict}
+
+What does this print? Decide before you run it.
+
+```{pyodide}
+#| autorun: false
+r = 0.0
+if r > 0:
+    print("up day")
+elif r < 0:
+    print("down day")
+else:
+    print("flat day")
+```
+
+::: {.muted .small}
+Which branch is true when `r` is exactly zero?
+:::
+
+
+# if inside a loop
+
+Put the two together: check a condition for every item. Count the up-days:
+
+```{pyodide}
+returns = [0.012, -0.004, 0.008, -0.011, 0.006]
+up_days = 0
+for r in returns:
+    if r > 0:
+        up_days += 1
+up_days
+```
+
+The `if` sits inside the loop body, indented once more. `up_days` grows only on
+positive days.
+
+
+# Indentation stacks
+
+Each `:` opens a block, indented one step further than the last:
+
+```python
+for r in returns:            # loop body: indented once
+    if r > 0:                # if body: indented twice
+        up_days += 1
+```
+
+Read the indentation to see what belongs to what.
+
+
+# Your turn [2]{.chip .chip-turn} {.your-turn}
+
+Count how many returns were **negative** (a down day).
+
+```{pyodide}
+#| autorun: false
+returns = [0.012, -0.004, 0.008, -0.011, 0.006]
+
+down_days = 0
+for r in returns:
+    ...
+down_days
+```
+
+
+# Your turn 2: answer
+
+The up-day count, with the comparison flipped:
+
+```python
+returns = [0.012, -0.004, 0.008, -0.011, 0.006]
+
+down_days = 0
+for r in returns:
+    if r < 0:
+        down_days += 1
+down_days
+```
+
+**Result: `2`.** Two of the five returns are below zero.
+
+
+# 3 · While loops {.divider}
+
+::: {.divider-kicker}
+Part 3
+:::
+
+::: {.divider-note}
+Repeating for as long as a condition stays true.
+:::
+
+
+# When you do not know how many times
+
+A **for loop** runs once per item. A **while loop** runs for as long as a
+condition holds, however many times that takes.
+
+How many years to grow 100 into 150 at 10% a year?
+
+```{pyodide}
+value = 100
+years = 0
+while value < 150:
+    value *= 1.10
+    years += 1
+years
+```
+
+You did not have to know the answer in advance. The loop keeps going until
+`value` reaches 150.
+
+
+# Watching a while loop
+
+Step through it. The condition is checked before each pass; watch `value` and
+`years` change:
+
+```{=html}
+<div class="sr">
+<div class="sr-code">
+<div class="sr-line">value = 100</div>
+<div class="sr-line">years = 0</div>
+<div class="sr-line">while value &lt; 150:</div>
+<div class="sr-line">    value *= 1.10</div>
+<div class="sr-line">    years += 1</div>
+<div class="sr-hl fragment current-visible" data-fragment-index="1" style="--a:2; --b:2;"></div>
+<div class="sr-hl fragment current-visible" data-fragment-index="2" style="--a:3; --b:4;"></div>
+<div class="sr-hl fragment current-visible" data-fragment-index="3" style="--a:3; --b:4;"></div>
+<div class="sr-hl fragment current-visible" data-fragment-index="4" style="--a:3; --b:4;"></div>
+<div class="sr-hl fragment current-visible" data-fragment-index="5" style="--a:3; --b:4;"></div>
+<div class="sr-hl fragment current-visible" data-fragment-index="6" style="--a:3; --b:4;"></div>
+<div class="sr-hl fragment current-visible" data-fragment-index="7" style="--a:2; --b:2;"></div>
+</div>
+<div class="sr-state">
+<div class="sr-panel fragment current-visible" data-fragment-index="1"><div class="sr-lbl">variables</div><div class="sr-mem">value = 100.00<br>years = 0</div><div class="sr-note">100 &lt; 150 ? yes, enter the loop</div></div>
+<div class="sr-panel fragment current-visible" data-fragment-index="2"><div class="sr-lbl">variables</div><div class="sr-mem">value = 110.00<br>years = 1</div><div class="sr-note">grow value, count a year</div></div>
+<div class="sr-panel fragment current-visible" data-fragment-index="3"><div class="sr-lbl">variables</div><div class="sr-mem">value = 121.00<br>years = 2</div><div class="sr-note">still below 150, go again</div></div>
+<div class="sr-panel fragment current-visible" data-fragment-index="4"><div class="sr-lbl">variables</div><div class="sr-mem">value = 133.10<br>years = 3</div><div class="sr-note">still below 150, go again</div></div>
+<div class="sr-panel fragment current-visible" data-fragment-index="5"><div class="sr-lbl">variables</div><div class="sr-mem">value = 146.41<br>years = 4</div><div class="sr-note">still below 150, go again</div></div>
+<div class="sr-panel fragment current-visible" data-fragment-index="6"><div class="sr-lbl">variables</div><div class="sr-mem">value = 161.05<br>years = 5</div><div class="sr-note">grow value, count a year</div></div>
+<div class="sr-panel fragment current-visible" data-fragment-index="7"><div class="sr-lbl">variables</div><div class="sr-mem">value = 161.05<br>years = 5</div><div class="sr-note">161.05 &lt; 150 ? no, the loop stops</div></div>
+</div>
+</div>
+```
+
+
+# Careful: it must be able to stop
+
+Something inside the loop has to move the condition towards `False`, or it runs
+forever:
+
+```python
+value = 100
+while value < 150:
+    years += 1     # value never changes, so this never stops
+```
+
+::: {.keypoint}
+A `while` loop needs an exit. Make sure each pass changes something the
+condition depends on. If a cell seems stuck, interrupt it with the stop button.
+:::
+
+
+# Your turn [3]{.chip .chip-turn} {.your-turn}
+
+How many years to grow **1000** into **1500** at **8%** a year? Complete the
+while loop.
+
+```{pyodide}
+#| autorun: false
+value = 1000
+years = 0
+while value < 1500:
+    ...
+years
+```
+
+::: {.muted .small}
+Two lines in the body: grow `value`, then count the year.
+:::
+
+
+# Your turn 3: answer
+
+```python
+value = 1000
+years = 0
+while value < 1500:
+    value *= 1.08
+    years += 1
+years
+```
+
+**Result: `6`.** After five years the value is still under 1500; the sixth year
+pushes it above.
+
+
+# 4 · Your own functions {.divider}
+
+::: {.divider-kicker}
+Part 4
+:::
+
+::: {.divider-note}
+Naming a calculation once, so you can reuse it anywhere.
+:::
+
+
+# You already use functions
+
+`print`, `len`, `max`, and `sum` are functions: a name, then inputs in brackets.
+Today you write your **own**.
+
+
+# Defining a function
+
+`def` creates a function. You give it a name, its inputs, and what it returns:
+
+```{pyodide}
+def simple_return(p0, p1):
+    return (p1 - p0) / p0
+
+simple_return(183.56, 182.19)
+```
+
+::: {.diagram}
+<svg width="920" height="150" viewBox="0 0 920 150" role="img" aria-label="Two inputs p0 and p1 enter the function simple_return, which returns one value">
+  <g font-family="Cascadia Mono, monospace">
+    <rect x="40" y="30" width="120" height="42" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+    <rect x="40" y="82" width="120" height="42" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+    <text x="100" y="57" text-anchor="middle" font-size="18" fill="#141413">p0</text>
+    <text x="100" y="109" text-anchor="middle" font-size="18" fill="#141413">p1</text>
+  </g>
+  <line x1="160" y1="51" x2="330" y2="65" stroke="#52514e" stroke-width="1.6"/>
+  <line x1="160" y1="103" x2="330" y2="85" stroke="#52514e" stroke-width="1.6"/>
+  <rect x="335" y="35" width="270" height="80" rx="8" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.5"/>
+  <text x="470" y="70" text-anchor="middle" font-size="18" fill="#0d366b" font-weight="600" font-family="Cascadia Mono, monospace">simple_return</text>
+  <text x="470" y="95" text-anchor="middle" font-size="14" fill="#52514e" font-family="Segoe UI, sans-serif">the calculation</text>
+  <line x1="605" y1="75" x2="720" y2="75" stroke="#52514e" stroke-width="2"/>
+  <polygon points="720,75 707,68 707,82" fill="#52514e"/>
+  <rect x="725" y="52" width="150" height="46" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="800" y="80" text-anchor="middle" font-size="16" fill="#141413" font-family="Cascadia Mono, monospace">a return</text>
+</svg>
+:::
+
+
+# The shape of a def
+
+```python
+def simple_return(p0, p1):     # name, and inputs (the parameters)
+    return (p1 - p0) / p0      # the value it hands back
+```
+
+- `def name(parameters):` opens the function
+- the indented body is what it does
+- `return` hands a value back to whoever called it
+
+
+# Call it as often as you like
+
+Once defined, a function can be used again and again:
+
+```{pyodide}
+def simple_return(p0, p1):
+    return (p1 - p0) / p0
+
+print(simple_return(100, 110))
+print(simple_return(50, 45))
+```
+
+Write the formula once, and trust it everywhere. There is no copy to get wrong.
+
+
+# Parameters and arguments
+
+The names in the `def` are **parameters**; the values you pass in are
+**arguments**:
+
+```python
+def simple_return(p0, p1):   # p0 and p1 are parameters
+    return (p1 - p0) / p0
+
+simple_return(100, 110)      # 100 and 110 are arguments
+```
+
+Inside that call, `p0` is `100` and `p1` is `110`.
+
+
+# return hands a value back
+
+Without `return`, a function does its work but gives nothing back:
+
+```{pyodide}
+def show(p0, p1):
+    print((p1 - p0) / p0)   # prints, but does not return
+
+x = show(100, 110)
+print(x)
+```
+
+`x` is `None`: `show` printed a value but did not `return` one. Use `return`
+when you want to keep the result.
+
+
+# Too few arguments [predict]{.chip .chip-predict}
+
+`simple_return` needs two inputs. What happens if you give it only one? Predict,
+then run.
+
+```{pyodide}
+#| autorun: false
+def simple_return(p0, p1):
+    return (p1 - p0) / p0
+
+simple_return(100)
+```
+
+::: {.muted .small}
+Python will not guess the missing value.
+:::
+
+
+# Default arguments
+
+A parameter can have a **default**, used when you do not pass it:
+
+```{pyodide}
+def grow(price, rate=0.05):
+    return price * (1 + rate)
+
+print(grow(100))         # uses the default rate of 5%
+print(grow(100, 0.10))   # passes 10% instead
+```
+
+`rate=0.05` in the `def` sets the default. Passing a value overrides it.
+
+
+# Documenting a function
+
+A **docstring** is a short description in triple quotes, just under the `def`:
+
+```{pyodide}
+def simple_return(p0, p1):
+    """Percentage change in price from p0 to p1."""
+    return (p1 - p0) / p0
+
+help(simple_return)
+```
+
+::: {.muted .small}
+Your editor shows the docstring when you hover over the function, and
+`help(...)` prints it. A one-line note now saves confusion later.
+:::
+
+
+# A function can contain a loop
+
+Functions and loops combine. Here is the average of a list, as a function:
+
+```{pyodide}
+def average(values):
+    total = 0
+    for v in values:
+        total += v
+    return total / len(values)
+
+average([10, 20, 30])
+```
+
+The name `average` now stands for four lines of work.
+
+
+# Your turn [4]{.chip .chip-turn} {.your-turn}
+
+Write a function `total_return(prices)` that returns the return from the first
+price to the last.
+
+```{pyodide}
+#| autorun: false
+def total_return(prices):
+    ...
+
+total_return([100, 104, 103, 110])
+```
+
+::: {.muted .small}
+The first price is `prices[0]`, the last is `prices[-1]`.
+:::
+
+
+# Your turn 4: answer
+
+```python
+def total_return(prices):
+    return (prices[-1] - prices[0]) / prices[0]
+
+total_return([100, 104, 103, 110])
+```
+
+**Result: `0.10`.** The function works for a list of any length, because
+`prices[-1]` is always the last one.
+
+
+# 5 · Dictionaries {.divider}
+
+::: {.divider-kicker}
+Part 5
+:::
+
+::: {.divider-note}
+Storing values by name, instead of by position.
+:::
+
+
+# Positions, or names
+
+A list finds a value by its **position**, `prices[0]`. A **dictionary** finds a
+value by a **key** you choose, such as a stock's name.
+
+::: {.diagram}
+<svg width="740" height="180" viewBox="0 0 740 180" role="img" aria-label="A dictionary mapping the key AAPL to 0.36 and the key KO to 0.07">
+  <g font-family="Cascadia Mono, monospace">
+    <rect x="90" y="34" width="170" height="48" rx="6" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.5"/>
+    <rect x="90" y="98" width="170" height="48" rx="6" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.5"/>
+    <text x="175" y="65" text-anchor="middle" font-size="19" fill="#0d366b">"AAPL"</text>
+    <text x="175" y="129" text-anchor="middle" font-size="19" fill="#0d366b">"KO"</text>
+    <text x="150" y="22" font-size="14" fill="#1c5cab" font-family="Segoe UI, sans-serif">keys</text>
+    <line x1="262" y1="58" x2="392" y2="58" stroke="#52514e" stroke-width="2"/>
+    <polygon points="392,58 379,51 379,65" fill="#52514e"/>
+    <line x1="262" y1="122" x2="392" y2="122" stroke="#52514e" stroke-width="2"/>
+    <polygon points="392,122 379,115 379,129" fill="#52514e"/>
+    <rect x="397" y="34" width="150" height="48" rx="6" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+    <rect x="397" y="98" width="150" height="48" rx="6" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+    <text x="472" y="65" text-anchor="middle" font-size="19" fill="#141413">0.36</text>
+    <text x="472" y="129" text-anchor="middle" font-size="19" fill="#141413">0.07</text>
+    <text x="452" y="22" font-size="14" fill="#898781" font-family="Segoe UI, sans-serif">values</text>
+  </g>
+</svg>
+:::
+
+
+# Making a dictionary
+
+Curly braces, holding `key: value` pairs:
+
+```{pyodide}
+year_return = {"AAPL": 0.36, "KO": 0.07}
+year_return
+```
+
+Here the keys are tickers, and the values are their yearly returns.
+
+
+# Looking up a value
+
+Use the key in square brackets, the way a position works for a list:
+
+```{pyodide}
+year_return = {"AAPL": 0.36, "KO": 0.07}
+year_return["AAPL"]
+```
+
+A key like `"AAPL"` is usually clearer than a bare number such as `[0]`.
+
+
+# Adding and updating
+
+Assign to a new key to add a pair; assign to an existing key to change it:
+
+```{pyodide}
+year_return = {"AAPL": 0.36, "KO": 0.07}
+year_return["NVDA"] = 1.80
+year_return
+```
+
+
+# Looping over a dictionary
+
+A `for` loop over a dictionary walks its **keys**:
+
+```{pyodide}
+year_return = {"AAPL": 0.36, "KO": 0.07}
+for ticker in year_return:
+    print(ticker, year_return[ticker])
+```
+
+`ticker` takes each key in turn, and `year_return[ticker]` reads its value.
+
+
+# A dictionary can hold lists
+
+Values can be anything, including whole price series:
+
+```{pyodide}
+prices = {
+    "AAPL": [183.56, 182.19, 179.87],
+    "KO": [59.20, 59.05, 59.40],
+}
+prices["KO"]
+```
+
+One object now holds every stock's prices, each under its own name.
+
+
+# Your turn [5]{.chip .chip-turn} {.your-turn}
+
+Add Coca-Cola's volatility of `0.011` to the dictionary, then read it back.
+
+```{pyodide}
+#| autorun: false
+vol = {"AAPL": 0.020}
+
+...
+vol["KO"]
+```
+
+
+# Your turn 5: answer
+
+```python
+vol = {"AAPL": 0.020}
+
+vol["KO"] = 0.011
+vol["KO"]
+```
+
+**Result: `0.011`.** Assigning to a new key adds it; looking it up reads it
+back.
+
+
+# 6 · Measuring risk properly {.divider}
+
+::: {.divider-kicker}
+Part 6
+:::
+
+::: {.divider-note}
+Everything from today, combined into a real measure of risk.
+:::
+
+
+# From range to volatility
+
+Last session's risk gauge used only two days, the highest and the lowest. A
+better measure uses **every** day's return. That measure is **volatility**: how
+much the daily returns typically spread around their average.
+
+
+# What volatility is
+
+Volatility is the **standard deviation** of the daily returns:
+
+$$ \sigma = \sqrt{\ \frac{1}{n}\sum_{i} \left(r_i - \bar{r}\right)^2\ } $$
+
+In words: take each return's distance from the average, square it, average those
+squares, and take the square root. It is the typical size of a daily move.
+
+
+# The calculation, in three steps
+
+Each step is something you can already do:
+
+1. the **daily returns**, with a loop (Part 1)
+2. their **average**, `sum(returns) / len(returns)`
+3. each return's **squared distance** from the average, averaged, then
+   square-rooted with `** 0.5`
+
+We now build these into one function, one step at a time.
+
+
+# Build it up: the daily returns
+
+Start the function with just step 1, the returns loop. It is not finished yet:
+
+```python
+def volatility(prices):
+    returns = []
+    for i in range(1, len(prices)):
+        returns.append((prices[i] - prices[i - 1]) / prices[i - 1])
+    # still to come: the average, and the spread
+```
+
+So far it only collects the daily returns into a list.
+
+
+# Build it up: the average
+
+Add step 2, the average return. Still not finished:
+
+```python
+def volatility(prices):
+    returns = []
+    for i in range(1, len(prices)):
+        returns.append((prices[i] - prices[i - 1]) / prices[i - 1])
+    mean = sum(returns) / len(returns)
+    # still to come: the spread around the mean
+```
+
+Now it also has the average of those returns.
+
+
+# Build it up: the volatility
+
+Add step 3, the spread, and `return` it. Now it is complete, so run it:
+
+```{pyodide}
+def volatility(prices):
+    returns = []
+    for i in range(1, len(prices)):
+        returns.append((prices[i] - prices[i - 1]) / prices[i - 1])
+    mean = sum(returns) / len(returns)
+    squared = 0
+    for r in returns:
+        squared += (r - mean) ** 2
+    return (squared / len(returns)) ** 0.5
+
+volatility([183.56, 182.19, 179.87, 179.15, 183.48])
+```
+
+Every idea from today is here: two loops, an empty list, `+=`, and a `return`.
+
+
+# Apple's volatility
+
+Now reuse the function. Give it Apple's week of prices:
+
+```{pyodide}
+aapl = [183.56, 182.19, 179.87, 179.15, 183.48]
+volatility(aapl)
+```
+
+::: {.muted .small}
+This calls the `volatility` function defined on the previous slide.
+:::
+
+
+# Coca-Cola's volatility
+
+The same function, a different list:
+
+```{pyodide}
+ko = [59.20, 59.05, 59.40, 59.10, 59.25]
+volatility(ko)
+```
+
+::: {.muted .small}
+A smaller number than Apple's: Coca-Cola's price moved less from day to day.
+:::
+
+
+# Two stocks, one dictionary
+
+Keep both answers together, each under its ticker:
+
+```{pyodide}
+vol = {"AAPL": volatility(aapl), "KO": volatility(ko)}
+vol
+```
+
+::: {.muted .small}
+Apple's number is the larger one. This is the volatility comparison the case
+asks you to build.
+:::
+
+
+# The returns that volatility measures
+
+```{python}
+#| echo: false
+#| fig-align: center
+from pathlib import Path
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
+
+plt.rcParams.update({
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "savefig.facecolor": "#fcfcfb", "font.family": ["Segoe UI", "Arial", "sans-serif"],
+    "font.size": 12, "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413", "axes.titlesize": 13,
+    "axes.spines.top": False, "axes.spines.right": False, "axes.grid": True,
+    "grid.color": "#e6e5df", "grid.linewidth": 0.8, "xtick.color": "#898781",
+    "ytick.color": "#898781", "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+})
+
+data_file = Path("../data/aapl_2024_closes.csv")
+if not data_file.exists():
+    raise FileNotFoundError(
+        "Missing ../data/aapl_2024_closes.csv - clone the full course "
+        "repository, or run tools/build_dataset.py from the repository root."
+    )
+aapl = pd.read_csv(data_file, parse_dates=["date"])
+prices = aapl["close"].tolist()
+dates = aapl["date"].tolist()
+returns = [(prices[i] - prices[i - 1]) / prices[i - 1] for i in range(1, len(prices))]
+rdates = dates[1:]
+mean = sum(returns) / len(returns)
+sigma = (sum((r - mean) ** 2 for r in returns) / len(returns)) ** 0.5
+
+fig, ax = plt.subplots(figsize=(9.6, 3.3))
+ax.axhspan(mean - sigma, mean + sigma, color="#dcebfd", alpha=0.9, zorder=0)
+ax.axhline(mean, color="#898781", linewidth=1, zorder=1)
+ax.plot(rdates, returns, color="#2a78d6", linewidth=1.0, zorder=2)
+ax.set_ylim(-0.055, 0.055)
+ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+ax.annotate("most days fall within this band:\nits width is the volatility",
+            xy=(rdates[150], mean + sigma),
+            xytext=(rdates[120], 0.033),
+            fontsize=10.5, color="#52514e",
+            arrowprops=dict(arrowstyle="-", color="#898781", linewidth=1))
+ax.set_title("Apple (AAPL) daily returns, 2024", loc="left")
+ax.set_ylabel("daily return")
+ax.margins(x=0.01)
+fig.tight_layout()
+plt.show()
+```
+
+Each point is one day's return. Volatility is the width of the band they mostly
+fall inside.
+
+
+# What stays with you {.smaller}
+
+::: {.recap-grid}
+::: {.recap-item}
+**For loops**
+`for x in items:` runs the body once per item.
+:::
+::: {.recap-item}
+**While loops**
+`while condition:` repeats until the condition is false.
+:::
+::: {.recap-item}
+**if / elif / else**
+Run a block only when a condition holds.
+:::
+::: {.recap-item}
+**Functions**
+`def name(args):` with `return`, plus defaults and a docstring.
+:::
+::: {.recap-item}
+**Dictionaries**
+`{key: value}`, looked up by key, not position.
+:::
+::: {.recap-item}
+**Volatility**
+The standard deviation of the daily returns.
+:::
+:::
+
+
+# The course case, Part 2 [case]{.chip .chip-case}
+
+The risk report continues. Last session you compared Apple and Coca-Cola with a
+rough price range. This session you replace it with a proper measure:
+
+::: {.keypoint}
+Build a volatility calculation from the daily returns, run it on each stock, and
+organise the results in a dictionary. Still no pandas: just today's loops and
+functions.
+:::
+
+
+# Case Part 2: this week
+
+`session_02_case.ipynb`, done at home before Session 3:
+
+- reload Part 1's data and the findings you saved
+- build the daily-return loop into a function of your own
+- compute proper volatility for Apple and Coca-Cola, and compare it to the crude
+  range from Part 1
+- rank a few more stocks by risk, organised in a dictionary
+
+::: {.muted .small}
+Hints and full solutions are folded into the notebook. Work first, then check.
+:::
+
+
+# Before Session 3
+
+<div class="pillars">
+<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Exercises</div><div class="pillar-body"><code>session_02_exercises.ipynb</code>: loops, if, while, functions, and dictionaries. Hints and solutions folded in.</div></div>
+<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Case Part 2</div><div class="pillar-body"><code>session_02_case.ipynb</code>: the volatility of Apple versus Coca-Cola.</div></div>
+<div class="pillar"><div class="pillar-tag">If stuck</div><div class="pillar-title">Get help</div><div class="pillar-body">Ask a friend, ask an AI for a hint, or email me at <code>jobo@econ.au.dk</code>. Stuck over 15 minutes? Note it and bring it next session.</div></div>
+</div>
+
+::: {.muted .small}
+**Next session:** packages. pandas, numpy, and matplotlib do all of this on
+eleven stocks at once, and plot the results.
+:::

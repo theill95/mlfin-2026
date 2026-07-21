@@ -852,3 +852,173 @@ $selection-background-color: #dcebfd;
 .reveal .slides section .fragment.highlight-current-blue.current-fragment {
   color: #1c5cab;
 }
+
+// ---------- loop / while trace animations (Session 2) ----------
+
+.reveal table.trace {
+  font-size: 0.72em;
+  margin: 0.4em 0;
+  border-collapse: collapse;
+  min-width: 20em;
+}
+
+.reveal table.trace th {
+  font-size: 0.86em;
+  color: #6c6a64;
+  font-weight: 600;
+  border-bottom: 1px solid #d7d5cc;
+  padding: 0.22em 1.3em;
+  text-align: right;
+}
+
+.reveal table.trace th:first-child {
+  text-align: left;
+}
+
+.reveal table.trace td {
+  font-family: $font-family-monospace;
+  color: #26333f;
+  border-bottom: 1px solid #efeee9;
+  padding: 0.22em 1.3em;
+  text-align: right;
+}
+
+.reveal table.trace td:first-child {
+  color: #a8794b;
+  font-family: $font-family-sans-serif;
+  text-align: left;
+}
+
+.reveal table.trace tr.trace-final td {
+  color: #0d366b;
+  font-weight: 700;
+  border-top: 2px solid #c3c2b7;
+}
+
+// step-list trace (one revealed line per loop step)
+.reveal .trace-step {
+  font-size: 0.82em;
+  color: #33322f;
+  margin-bottom: 0.3em;
+  padding: 0.15em 0 0.15em 0.9em;
+  border-left: 3px solid #dce7f4;
+}
+
+.reveal .trace-step strong {
+  color: #0d366b;
+}
+
+// ---------- step-run animation: highlight a code line + show state ----------
+.reveal .sr {
+  display: flex;
+  gap: 1.4em;
+  align-items: flex-start;
+  margin-top: 0.5em;
+}
+
+.reveal .sr-code {
+  position: relative;
+  flex: 1 1 auto;
+  padding: 0.55em 0.9em;
+  background: #f6f6f3;
+  border: 1px solid #ececE6;
+  border-radius: 8px;
+  font-family: $font-family-monospace;
+  font-size: 0.8em;
+}
+
+.reveal .sr-line {
+  height: 1.9em;
+  line-height: 1.9em;
+  white-space: pre;
+  position: relative;
+  z-index: 1;
+  color: #26333f;
+}
+
+.reveal .sr-kw { color: #b5407a; }
+.reveal .sr-fn { color: #b5407a; }
+.reveal .sr-num { color: #1c5cab; }
+.reveal .sr-cmt { color: #9a9891; }
+
+.reveal .sr-hl {
+  position: absolute;
+  left: 0.35em;
+  right: 0.35em;
+  z-index: 0;
+  background: #fbe08a;
+  border-left: 3px solid #d99a1c;
+  border-radius: 3px;
+  top: calc(0.55em + var(--a) * 1.9em);
+  height: calc((var(--b) - var(--a) + 1) * 1.9em);
+}
+
+// inline highlight over the current item within a code line (e.g. list value)
+.reveal .sr-hl-inline {
+  position: absolute;
+  z-index: 0;
+  background: #f6c94e;
+  border-radius: 3px;
+  top: calc(0.55em + var(--r) * 1.9em);
+  height: 1.9em;
+  left: calc(0.9em + var(--c) * 1ch);
+  width: calc(var(--w) * 1ch);
+}
+
+.reveal .sr-state {
+  position: relative;
+  flex: 0 0 15.5em;
+  min-height: 9em;
+  font-size: 0.8em;
+}
+
+.reveal .sr-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border: 1px solid #e6e5df;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 0.55em 0.85em;
+}
+
+.reveal .sr-lbl {
+  font-size: 0.62em;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #a8a69f;
+  font-family: $font-family-sans-serif;
+  margin-bottom: 0.1em;
+}
+
+.reveal .sr-mem {
+  color: #0d366b;
+  font-family: $font-family-monospace;
+  font-size: 0.95em;
+  line-height: 1.5;
+  margin-bottom: 0.5em;
+}
+
+.reveal .sr-out {
+  font-family: $font-family-monospace;
+  color: #26333f;
+  font-size: 0.95em;
+  line-height: 1.5;
+  white-space: pre-line;
+  min-height: 1.4em;
+}
+
+.reveal .sr-note {
+  color: #52514e;
+  font-family: $font-family-sans-serif;
+  font-size: 0.92em;
+}
+
+// ---------- mermaid diagrams (kept restrained, sized to the slide) ----------
+.reveal .cell-output-display svg,
+.reveal pre.mermaid svg,
+.reveal .mermaid svg {
+  max-height: 400px;
+  height: auto;
+}

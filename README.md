@@ -5,8 +5,8 @@ to finance and economics students. The course assumes econometrics (OLS) but
 **no prior Python or machine-learning experience**, and begins in Google
 Colab.
 
-Each session is a single self-contained folder. Session 1 is complete; later
-sessions are added as the course is built.
+Each session is a single self-contained folder. Sessions 1 and 2 are complete;
+later sessions are added as the course is built.
 
 ## Live site
 
@@ -14,8 +14,10 @@ This repository is published:
 
 - **Home page (put this link on the learning platform):**
   <https://theill95.github.io/mlfin-2026/>
-- Interactive lecture:
+- Interactive lecture, Session 1:
   <https://theill95.github.io/mlfin-2026/session_01/session_01.html>
+- Interactive lecture, Session 2:
+  <https://theill95.github.io/mlfin-2026/session_02/session_02.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
 The home page shows a menu with the interactive lecture and the exercises/case
@@ -57,10 +59,17 @@ session_01/
 ├── session_01.qmd            # the lecture: source for the slides + live code
 ├── session_01.html           # the rendered Reveal.js presentation (open this to teach)
 ├── session_01_files/         # assets the rendered HTML needs (keep alongside the .html)
-├── session_01_exercises.ipynb    # ~50 exercises, with folded hints and solutions
+├── session_01_exercises.ipynb    # exercises, with folded hints and solutions
 ├── session_01_case.ipynb         # the longitudinal case, Part 1, with folded solutions
 └── data/                     # the small CSV files this session uses
 ```
+
+Session 2 has the same shape. Current contents:
+
+| session | lecture | exercises | case |
+|:--|:--|:--|:--|
+| 1 · Beginning Python for Financial Data | `session_01.qmd` | 53 | Part 1, 10 questions |
+| 2 · Functions, Loops, and Dictionaries | `session_02.qmd` | 60 | Part 2, 10 questions |
 
 The `.qmd` file **is** the lecture: it is at once the slide deck, the lecture
 narrative, and the source of every executable code demonstration. There is no
@@ -166,9 +175,12 @@ XOM, JNJ, WMT, DIS, and the S&P 500 ETF SPY), 2015–2024.
 
 - `data/prices.csv` — all eleven, tidy long format (`date, ticker, close,
   volume`); used from Session 3 onward, once pandas is introduced.
-- `data/aapl_2024_closes.csv`, `data/ko_2024_closes.csv` — small single-stock
-  extracts used in Sessions 1 and 2, before pandas. Also copied into
-  `session_01/data/`.
+- Small single-stock 2024 extracts (`date, close`), used in Sessions 1 and 2
+  before pandas exists: `aapl_2024_closes.csv` and `ko_2024_closes.csv`
+  (Session 1), plus `nvda_2024_closes.csv`, `jnj_2024_closes.csv` and
+  `jpm_2024_closes.csv` for the five-stock ranking in the Session 2 case. Each
+  session's folder carries a copy of the files it needs in `session_NN/data/`,
+  so a session folder is self-contained.
 
 **Provenance.** Prices are split- and dividend-adjusted closes, obtained once
 from Yahoo Finance via the `yfinance` package on 2026-07-19 and committed to
