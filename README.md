@@ -5,7 +5,7 @@ to finance and economics students. The course assumes econometrics (OLS) but
 **no prior Python or machine-learning experience**, and begins in Google
 Colab.
 
-Each session is a single self-contained folder. Sessions 1 and 2 are complete;
+Each session is a single self-contained folder. Sessions 1 to 3 are complete;
 later sessions are added as the course is built.
 
 ## Live site
@@ -18,6 +18,8 @@ This repository is published:
   <https://theill95.github.io/mlfin-2026/session_01/session_01.html>
 - Interactive lecture, Session 2:
   <https://theill95.github.io/mlfin-2026/session_02/session_02.html>
+- Interactive lecture, Session 3:
+  <https://theill95.github.io/mlfin-2026/session_03/session_03.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
 The home page shows a menu with the interactive lecture and the exercises/case
@@ -64,12 +66,17 @@ session_01/
 └── data/                     # the small CSV files this session uses
 ```
 
-Session 2 has the same shape. Current contents:
+Sessions 2 and 3 have the same shape. Current contents:
 
 | session | lecture | exercises | case |
 |:--|:--|:--|:--|
 | 1 · Beginning Python for Financial Data | `session_01.qmd` | 53 | Part 1, 10 questions |
 | 2 · Functions, Loops, and Dictionaries | `session_02.qmd` | 60 | Part 2, 10 questions |
+| 3 · Packages: NumPy, pandas, matplotlib | `session_03.qmd` | 70 | Part 3, 14 questions |
+
+Session 3 is the first one whose deck loads numpy, pandas and matplotlib into the
+browser runtime (about 20 MB, once per page load). Open it and run one cell a few
+minutes before class so it is warm.
 
 The `.qmd` file **is** the lecture: it is at once the slide deck, the lecture
 narrative, and the source of every executable code demonstration. There is no
@@ -173,8 +180,9 @@ you start, so your work is your own.
 Daily closing prices for eleven US instruments (AAPL, MSFT, NVDA, JPM, KO, PG,
 XOM, JNJ, WMT, DIS, and the S&P 500 ETF SPY), 2015–2024.
 
-- `data/prices.csv` — all eleven, tidy long format (`date, ticker, close,
-  volume`); used from Session 3 onward, once pandas is introduced.
+- `data/prices.csv` - all eleven, tidy long format (`date, ticker, close,
+  volume`); used from Session 3 onward, once pandas is introduced. Session 3's
+  deck reads it live in the browser, and both of its notebooks read it too.
 - Small single-stock 2024 extracts (`date, close`), used in Sessions 1 and 2
   before pandas exists: `aapl_2024_closes.csv` and `ko_2024_closes.csv`
   (Session 1), plus `nvda_2024_closes.csv`, `jnj_2024_closes.csv` and

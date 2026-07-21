@@ -1,0 +1,1738 @@
+---
+title: "Packages: NumPy, pandas, and matplotlib"
+subtitle: "Machine Learning in Finance · Session 3"
+# Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
+# from a data: URI, so embed-resources is off. Ship session_03.html together
+# with session_03_files/ and data/, and SERVE OVER HTTP (double-click
+# serve.cmd, or publish to a URL). The live code cells do not run from file://.
+#
+# This deck loads numpy, pandas and matplotlib into the browser runtime, which
+# is a larger download than Sessions 1 and 2 (roughly 20 MB, once per page
+# load, about 10 seconds on a good connection). Open the deck and run one cell
+# a few minutes before class so it is warm.
+format:
+  live-revealjs:
+    theme: [default, ../theme/mlfin.scss]
+    width: 1280
+    height: 720
+    margin: 0.06
+    center: false
+    transition: fade
+    transition-speed: fast
+    background-transition: none
+    slide-number: c/t
+    controls: false
+    progress: true
+    hash: true
+    history: false
+    code-line-numbers: false
+    highlight-style: github
+    auto-stretch: false
+engine: jupyter
+pyodide:
+  packages:
+    - numpy
+    - pandas
+    - matplotlib
+  resources:
+    - data/prices.csv
+    - data/aapl_2024_closes.csv
+  cell-options:
+    autorun: true
+    startover: true
+execute:
+  echo: true
+  warning: false
+---
+
+# Last session, you wrote this
+
+```{python}
+#| include: false
+# House style for every precomputed figure in this deck.
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+MLFIN_STYLE = {
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "savefig.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"],
+    "font.size": 12, "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+}
+plt.rcParams.update(MLFIN_STYLE)
+
+from pathlib import Path
+import pandas as pd
+import numpy as np
+
+_data = Path("../data/prices.csv")
+if not _data.exists():
+    raise FileNotFoundError(
+        "Missing ../data/prices.csv - clone the full course repository, or "
+        "run tools/build_dataset.py from the repository root."
+    )
+PX = pd.read_csv(_data, parse_dates=["date"])
+WIDE = PX.pivot(index="date", columns="ticker", values="close")
+RET = WIDE.pct_change().dropna()
+
+BLUE = "#1c5cab"
+BLUE_LIGHT = "#2a78d6"
+AMBER = "#b8860b"
+GREY = "#c3c2b7"
+INK = "#141413"
+```
+
+```{pyodide}
+#| include: false
+# House style for the live figures, so they match the printed ones.
+import matplotlib.pyplot as plt
+plt.rcParams.update({
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"], "font.size": 12,
+    "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+    "figure.dpi": 100,
+})
+```
+
+Volatility for one stock, built by hand out of loops:
+
+```{pyodide}
+def volatility(prices):
+    returns = []
+    for i in range(1, len(prices)):
+        returns.append((prices[i] - prices[i - 1]) / prices[i - 1])
+    mean = sum(returns) / len(returns)
+    squared = 0
+    for r in returns:
+        squared += (r - mean) ** 2
+    return (squared / len(returns)) ** 0.5
+
+volatility([183.56, 182.19, 179.87, 179.15, 183.48])
+```
+
+
+# Now do the whole risk report
+
+The real data is one file: **eleven stocks, ten years, 27,676 rows.**
+
+```text
+date,ticker,close,volume
+2015-01-02,AAPL,24.1926,212818400
+2015-01-05,AAPL,23.5111,257142000
+...
+2024-12-31,XOM,102.3799,11302800
+```
+
+With lists and loops you would first have to split every line at the commas,
+turn the text into numbers, and sort the rows into eleven separate lists. All
+before computing anything.
+
+
+# The same answer, in three lines {.smaller}
+
+```python
+prices = pd.read_csv("data/prices.csv", parse_dates=["date"])
+daily = prices.pivot(index="date", columns="ticker", values="close").pct_change()
+daily.std().sort_values(ascending=False)
+```
+
+```{python}
+#| echo: false
+import pandas as pd
+_p = pd.read_csv("../data/prices.csv", parse_dates=["date"])
+_d = _p.pivot(index="date", columns="ticker", values="close").pct_change()
+print(_d.std().sort_values(ascending=False).round(4).to_string())
+```
+
+::: {.muted .small}
+None of that is meant to make sense yet. It is where we are going.
+:::
+
+
+# That is what a package is
+
+A **package** is code somebody else wrote, that you can use by name. Three of
+them do most of the work in data analysis:
+
+::: {.why-grid}
+::: {.why-point}
+**NumPy** <span>numbers, vectors and matrices, and the maths on them</span>
+:::
+::: {.why-point}
+**pandas** <span>tables with named columns, like a spreadsheet you can program</span>
+:::
+::: {.why-point}
+**matplotlib** <span>figures, so you can see what you found</span>
+:::
+:::
+
+::: {.muted .small}
+There are thousands of others, and you will meet more of them as the course goes
+on, including **scikit-learn**, the one that fits models.
+:::
+
+
+# And they live on your machine
+
+Packages are not part of Python. Somebody has to install them, and in Colab
+somebody already did.
+
+::: {.keypoint}
+At the exam you sit with **your own laptop, VS Code, and no internet**. So today
+starts there: your machine, your packages, and how to look things up when you
+cannot search for them.
+:::
+
+
+# Today
+
+By the end of this session you can:
+
+- work in **VS Code** on your own machine, and find documentation offline
+- use **NumPy** for arrays, and for the matrix algebra behind every model
+- use **pandas** to load, filter and summarise a real table of prices
+- use **matplotlib** to turn a result into a figure somebody else can read
+
+<br>
+
+And the case reaches all eleven stocks at once.
+
+
+# 1 · Your own machine {.divider}
+
+::: {.divider-kicker}
+Part 1
+:::
+
+::: {.divider-note}
+VS Code, packages, and finding things out without the internet.
+:::
+
+
+# Why leave Colab
+
+Colab still works, and the homework stays there. But:
+
+::: {.why-grid}
+::: {.why-point}
+**The exam** <span>three hours, your laptop, VS Code, offline. It should not be the first time.</span>
+:::
+::: {.why-point}
+**The editor helps you** <span>it completes names and shows documentation as you type</span>
+:::
+::: {.why-point}
+**It is yours** <span>your files, your packages, nothing to upload, no session that expires</span>
+:::
+::: {.why-point}
+**No internet needed** <span>once it is installed, it works on a train</span>
+:::
+:::
+
+
+# Three things, not one
+
+The commonest confusion is thinking VS Code *is* Python. It is not:
+
+::: {.diagram}
+<svg width="1000" height="200" viewBox="0 0 1000 200" role="img" aria-label="Python, VS Code, and the Python extension are three separate installs that work together">
+  <rect x="30" y="40" width="250" height="110" rx="10" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.6"/>
+  <text x="155" y="80" text-anchor="middle" font-size="20" font-weight="600" fill="#0d366b" font-family="Segoe UI, sans-serif">Python</text>
+  <text x="155" y="107" text-anchor="middle" font-size="14" fill="#52514e" font-family="Segoe UI, sans-serif">the language itself,</text>
+  <text x="155" y="127" text-anchor="middle" font-size="14" fill="#52514e" font-family="Segoe UI, sans-serif">the thing that runs code</text>
+  <rect x="375" y="40" width="250" height="110" rx="10" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.6"/>
+  <text x="500" y="80" text-anchor="middle" font-size="20" font-weight="600" fill="#141413" font-family="Segoe UI, sans-serif">VS Code</text>
+  <text x="500" y="107" text-anchor="middle" font-size="14" fill="#52514e" font-family="Segoe UI, sans-serif">the editor: where you</text>
+  <text x="500" y="127" text-anchor="middle" font-size="14" fill="#52514e" font-family="Segoe UI, sans-serif">type and read the code</text>
+  <rect x="720" y="40" width="250" height="110" rx="10" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.6"/>
+  <text x="845" y="80" text-anchor="middle" font-size="20" font-weight="600" fill="#141413" font-family="Segoe UI, sans-serif">Python extension</text>
+  <text x="845" y="107" text-anchor="middle" font-size="14" fill="#52514e" font-family="Segoe UI, sans-serif">teaches the editor about</text>
+  <text x="845" y="127" text-anchor="middle" font-size="14" fill="#52514e" font-family="Segoe UI, sans-serif">Python: run, hints, docs</text>
+  <line x1="285" y1="95" x2="365" y2="95" stroke="#898781" stroke-width="1.6"/>
+  <line x1="630" y1="95" x2="710" y2="95" stroke="#898781" stroke-width="1.6"/>
+</svg>
+:::
+
+The setup guide installs all three.
+
+
+# You still work in notebooks
+
+VS Code opens `.ipynb` files: the same cells, the same Run buttons, the same
+output underneath as in Colab.
+
+::: {.keypoint}
+Nothing about how you write code changes. Only where it runs. The exam is
+written in a notebook too.
+:::
+
+::: {.muted .small}
+The first time you open one, VS Code asks which Python to use. Pick the one you
+installed, and it remembers.
+:::
+
+
+# Installing a package
+
+Packages come from a public archive called PyPI. You install one **once**, and
+then it is on your machine for good:
+
+```python
+%pip install pandas
+```
+
+::: {.muted .small}
+Run that in a notebook cell, like any other code. The `%` marks it as an
+instruction to the notebook rather than to Python. Your setup guide already
+installed the three we need, so you should not have to type it at all today.
+:::
+
+::: {.keypoint}
+Installing and importing are different. You **install** a package once, ever.
+You **import** it in every notebook that uses it.
+:::
+
+
+# The import line
+
+`import` brings a package in. `as` gives it a short name:
+
+```{pyodide}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+np.mean([1, 2, 3, 4])
+```
+
+::: {.muted .small}
+`np`, `pd` and `plt` are conventions, not rules. Everybody uses them and every
+tutorial assumes them, so use them too.
+:::
+
+
+# When it cannot find it
+
+```python
+import pandas as pd
+```
+```text
+ModuleNotFoundError: No module named 'pandas'
+```
+
+Python is telling you the truth: it looked, and it is not there. Install it, then
+run the import again.
+
+::: {.muted .small}
+Same habit as Session 1. The message names the thing that is missing.
+:::
+
+
+# Your data sits next to your notebook
+
+```text
+mlfin/
+├── analysis.ipynb
+└── data/
+    └── prices.csv
+```
+
+```python
+prices = pd.read_csv("data/prices.csv")
+```
+
+::: {.muted .small}
+No upload step any more. If Python says `FileNotFoundError`, the file is
+somewhere other than where you said. Open the **folder** in VS Code, not just
+the file, and the paths work.
+:::
+
+
+# Looking things up
+
+pandas has hundreds of functions, each with its own arguments. Nobody memorises
+them, and professionals look things up all day. At the exam you have no
+internet.
+
+::: {.keypoint}
+Two things cover you. Before the exam I will give you a **cheatsheet** with
+every function you are likely to need. And the documentation for each package is
+already **inside the package**, on your machine.
+:::
+
+
+# VS Code shows it as you type
+
+Rest the mouse on any name:
+
+<div class="nb-mock nb-wide">
+<div class="nb-cell nb-code"><div class="nb-gutter">1</div><div class="nb-body">daily.std().sort_values(<span style="background:#fdf3d7">ascending</span>=False)</div></div>
+</div>
+
+<div class="hovercard">
+<div class="hc-sig">sort_values(<span class="hc-arg">ascending</span>: bool = True, ...) &rarr; Series</div>
+<div class="hc-body">Sort by the values.<br><br><span class="hc-p">ascending</span> : bool, default True<br>&nbsp;&nbsp;&nbsp;&nbsp;If True, sort values in ascending order, otherwise descending.</div>
+</div>
+
+That card is not from the internet. It is the text that ships inside pandas, the
+same text `help()` prints.
+
+
+# The official documentation
+
+For learning something new, rather than recalling a detail, the websites are
+much better. They have a written guide, worked examples, and pictures:
+
+- `docs.python.org` for the language itself
+- `numpy.org/doc` for arrays and linear algebra
+- `pandas.pydata.org/docs` for tables
+- `matplotlib.org` for figures, including a **gallery** of example charts
+
+::: {.muted .small}
+Use these at home while you work. They are also downloadable as a single file,
+if you want them with you offline.
+:::
+
+
+# 2 · NumPy {.divider}
+
+::: {.divider-kicker}
+Part 2
+:::
+
+::: {.divider-note}
+Arrays: doing arithmetic to a whole list at once.
+:::
+
+
+# Somebody already wrote your function
+
+Your `volatility` is a standard deviation, and standard deviations have been
+written many times before:
+
+```{pyodide}
+import numpy as np
+
+returns = np.array([0.012, -0.004, 0.008, -0.011, 0.006])
+np.std(returns)
+```
+
+::: {.muted .small}
+Writing it yourself was how you learned what it means. From now on you use the
+version that is already written, tested and fast.
+:::
+
+
+# A list, and an array
+
+An **array** is NumPy's version of a list: same idea, all numbers, and the whole
+thing moves at once.
+
+```{pyodide}
+close = np.array([183.56, 182.19, 179.87, 179.15, 183.48])
+close
+```
+
+You build it from a list, and you index and slice it exactly like a list.
+Everything from Session 1 still works.
+
+
+# Arithmetic on the whole array
+
+Here is the difference. Multiply an array, and every element is multiplied:
+
+```{pyodide}
+close = np.array([183.56, 182.19, 179.87, 179.15, 183.48])
+close * 2
+```
+
+No loop, no empty list, no `.append`. In Session 2 this was three lines.
+
+
+# Two arrays at once
+
+```{pyodide}
+a = np.array([100.0, 200.0, 300.0])
+b = np.array([1.0, 2.0, 3.0])
+a - b
+```
+
+Position by position: `100-1`, `200-2`, `300-3`.
+
+
+# Every daily return, in one line
+
+Slicing from Session 1, plus that arithmetic:
+
+```{pyodide}
+close = np.array([183.56, 182.19, 179.87, 179.15, 183.48])
+returns = (close[1:] - close[:-1]) / close[:-1]
+returns
+```
+
+`close[1:]` is every day from the second. `close[:-1]` is every day except the
+last. Subtracting them lines each day up against the day before.
+
+
+# The same idea, drawn
+
+::: {.diagram}
+<svg width="1000" height="225" viewBox="0 0 1000 225" role="img" aria-label="close[1:] sits one place to the right of close[:-1], so each day is paired diagonally with the day before it">
+  <text x="20" y="45" font-size="15" fill="#52514e" font-family="Segoe UI, sans-serif">close[1:]</text>
+  <text x="20" y="120" font-size="15" fill="#52514e" font-family="Segoe UI, sans-serif">close[:-1]</text>
+  <text x="20" y="196" font-size="15" fill="#0d366b" font-family="Segoe UI, sans-serif" font-weight="600">difference</text>
+  <g stroke="#b8860b" stroke-width="1.3" stroke-dasharray="4 4" fill="none">
+    <path d="M 215 93 L 360 62"/>
+    <path d="M 375 93 L 520 62"/>
+    <path d="M 535 93 L 680 62"/>
+    <path d="M 695 93 L 840 62"/>
+  </g>
+  <g fill="#b8860b">
+    <polygon points="366,60 353,57 356,68"/>
+    <polygon points="526,60 513,57 516,68"/>
+    <polygon points="686,60 673,57 676,68"/>
+    <polygon points="846,60 833,57 836,68"/>
+  </g>
+  <g font-family="Cascadia Mono, monospace" font-size="16">
+    <rect x="300" y="20" width="150" height="38" rx="5" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.4"/>
+    <rect x="460" y="20" width="150" height="38" rx="5" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.4"/>
+    <rect x="620" y="20" width="150" height="38" rx="5" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.4"/>
+    <rect x="780" y="20" width="150" height="38" rx="5" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.4"/>
+    <text x="375" y="46" text-anchor="middle" fill="#0d366b">182.19</text>
+    <text x="535" y="46" text-anchor="middle" fill="#0d366b">179.87</text>
+    <text x="695" y="46" text-anchor="middle" fill="#0d366b">179.15</text>
+    <text x="855" y="46" text-anchor="middle" fill="#0d366b">183.48</text>
+    <rect x="140" y="95" width="150" height="38" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.4"/>
+    <rect x="300" y="95" width="150" height="38" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.4"/>
+    <rect x="460" y="95" width="150" height="38" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.4"/>
+    <rect x="620" y="95" width="150" height="38" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.4"/>
+    <text x="215" y="121" text-anchor="middle" fill="#141413">183.56</text>
+    <text x="375" y="121" text-anchor="middle" fill="#141413">182.19</text>
+    <text x="535" y="121" text-anchor="middle" fill="#141413">179.87</text>
+    <text x="695" y="121" text-anchor="middle" fill="#141413">179.15</text>
+    <text x="375" y="196" text-anchor="middle" font-size="15" fill="#52514e">-1.37</text>
+    <text x="535" y="196" text-anchor="middle" font-size="15" fill="#52514e">-2.32</text>
+    <text x="695" y="196" text-anchor="middle" font-size="15" fill="#52514e">-0.72</text>
+    <text x="855" y="196" text-anchor="middle" font-size="15" fill="#52514e">+4.33</text>
+  </g>
+  <g stroke="#c3c2b7" stroke-width="1.1" stroke-dasharray="3 4">
+    <line x1="855" y1="62" x2="855" y2="180"/>
+  </g>
+</svg>
+:::
+
+The arrows show the pairing: each day is lined up against the day before
+it, which is exactly what the subtraction does.
+
+
+# Summarising an array
+
+The things you built by hand in Session 2 are already there:
+
+```{pyodide}
+returns = np.array([0.012, -0.004, 0.008, -0.011, 0.006])
+print("mean :", returns.mean())
+print("std  :", returns.std())
+print("min  :", returns.min())
+print("max  :", returns.max())
+```
+
+::: {.muted .small}
+`returns.std()` is your whole `volatility` function.
+:::
+
+
+# A question asked of every element
+
+Compare an array to a number, and you get an answer for each element:
+
+```{pyodide}
+returns = np.array([0.012, -0.004, 0.008, -0.011, 0.006])
+returns > 0
+```
+
+This is the Session 2 `if`, applied to everything at once instead of one item at
+a time inside a loop.
+
+
+# Counting with that answer
+
+```{pyodide}
+returns = np.array([0.012, -0.004, 0.008, -0.011, 0.006])
+(returns > 0).sum()
+```
+
+::: {.muted .small}
+Adding up `True` and `False` counts the `True`s, because `True` counts as one.
+That is the up-day counter from Session 2, in one line.
+:::
+
+
+# Annualising, while we are here
+
+Daily volatility is a small number. Finance quotes it per year, by multiplying
+by the square root of the number of trading days:
+
+```{pyodide}
+daily_vol = 0.0143
+daily_vol * np.sqrt(252)
+```
+
+::: {.muted .small}
+So Apple's 1.4% a day is about 23% a year. You will see `np.sqrt(252)` a lot.
+:::
+
+
+# Your turn [1]{.chip .chip-turn} {.your-turn}
+
+Compute the daily returns from these prices.
+
+```{pyodide}
+#| autorun: false
+close = np.array([100.0, 102.0, 101.0, 104.0, 103.5])
+
+returns = ...
+returns
+```
+
+
+# Your turn 1: answer
+
+```python
+close = np.array([100.0, 102.0, 101.0, 104.0, 103.5])
+
+returns = (close[1:] - close[:-1]) / close[:-1]
+returns
+```
+
+**Four returns from five prices:** `+2.0%`, `-1.0%`, `+3.0%`, `-0.5%`.
+
+
+# From lists of numbers to tables of them
+
+So far, one row of numbers. NumPy's other subject is the **matrix**: rows and
+columns of them.
+
+::: {.keypoint}
+You have done all of this maths in econometrics. Nothing on the next few slides
+is a new idea. What is new is that each one takes a single line.
+:::
+
+
+# The prerequisites {.smaller}
+
+::: {.recap-grid}
+::: {.recap-item}
+**Vector**
+A row or column of numbers. One stock's returns, or a set of portfolio weights.
+:::
+::: {.recap-item}
+**Matrix**
+A rectangle of numbers, `n` rows by `p` columns. One row per observation.
+:::
+::: {.recap-item}
+**Transpose**
+Flip rows and columns. An `n × p` becomes a `p × n`.
+:::
+::: {.recap-item}
+**Dot product**
+Multiply pairwise, then add up. Weights times returns is a portfolio return.
+:::
+::: {.recap-item}
+**Matrix product**
+Only fits if the first one's columns match the second one's rows.
+:::
+::: {.recap-item}
+**Inverse**
+The matrix that undoes another one. Exists only if no column is redundant.
+:::
+:::
+
+
+# A matrix is a list of rows
+
+```{pyodide}
+X = np.array([[1.0, 0.012],
+              [1.0, -0.004],
+              [1.0, 0.008]])
+print(X)
+print("shape:", X.shape)
+```
+
+Three rows, two columns. `shape` always tells you which is which.
+
+
+# Reaching into it
+
+```{pyodide}
+print("one element  :", X[0, 1])
+print("first row    :", X[0, :])
+print("second column:", X[:, 1])
+```
+
+::: {.muted .small}
+`[row, column]`, and `:` means "all of them". The same slicing as a list, once
+per direction.
+:::
+
+
+# Transpose
+
+`.T` flips it:
+
+```{pyodide}
+print("X   is", X.shape)
+print("X.T is", X.T.shape)
+X.T
+```
+
+A 3 by 2 becomes a 2 by 3. You use this constantly, because it is how you make
+two shapes fit together.
+
+
+# Multiplying: the dot product
+
+Multiply pairwise and add up. In finance that is a **portfolio return**: weights
+times returns.
+
+```{pyodide}
+weights = np.array([0.5, 0.3, 0.2])
+returns = np.array([0.012, -0.004, 0.008])
+
+weights @ returns
+```
+
+::: {.muted .small}
+`0.5 × 0.012 + 0.3 × (-0.004) + 0.2 × 0.008`. The `@` symbol is matrix
+multiplication, and for two vectors that is the dot product.
+:::
+
+
+# The same `@`, on a matrix
+
+```{pyodide}
+X = np.array([[1.0, 0.012],
+              [1.0, -0.004],
+              [1.0, 0.008]])
+b = np.array([0.001, 1.2])
+
+X @ b
+```
+
+::: {.muted .small}
+Three rows in, three numbers out: one per row. That is a regression's fitted
+values, for the whole sample in one go.
+:::
+
+
+# Shapes have to fit
+
+::: {.diagram}
+<svg width="920" height="235" viewBox="0 0 920 235" role="img" aria-label="An n by p matrix times a p by one vector gives an n by one vector; the inner dimensions must match">
+  <text x="155" y="26" text-anchor="middle" font-size="13.5" fill="#898781" font-family="Segoe UI, sans-serif">n observations, p columns</text>
+  <text x="370" y="26" text-anchor="middle" font-size="13.5" fill="#898781" font-family="Segoe UI, sans-serif">one number per column</text>
+  <text x="535" y="26" text-anchor="middle" font-size="13.5" fill="#898781" font-family="Segoe UI, sans-serif">one number per row</text>
+  <rect x="60" y="42" width="190" height="105" rx="6" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.6"/>
+  <text x="155" y="103" text-anchor="middle" font-size="22" fill="#0d366b" font-family="Cascadia Mono, monospace">X</text>
+  <text x="155" y="175" text-anchor="middle" font-size="16" fill="#52514e" font-family="Segoe UI, sans-serif">n × <tspan fill="#7a5a08" font-weight="600">p</tspan></text>
+  <text x="290" y="103" text-anchor="middle" font-size="26" fill="#52514e" font-family="Segoe UI, sans-serif">×</text>
+  <rect x="330" y="42" width="80" height="105" rx="6" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.6"/>
+  <text x="370" y="103" text-anchor="middle" font-size="22" fill="#141413" font-family="Cascadia Mono, monospace">b</text>
+  <text x="370" y="175" text-anchor="middle" font-size="16" fill="#52514e" font-family="Segoe UI, sans-serif"><tspan fill="#7a5a08" font-weight="600">p</tspan> × 1</text>
+  <text x="452" y="103" text-anchor="middle" font-size="26" fill="#52514e" font-family="Segoe UI, sans-serif">=</text>
+  <rect x="495" y="42" width="80" height="105" rx="6" fill="#fbf4e4" stroke="#b8860b" stroke-width="1.6"/>
+  <text x="535" y="103" text-anchor="middle" font-size="22" fill="#7a5a08" font-family="Cascadia Mono, monospace">y</text>
+  <text x="535" y="175" text-anchor="middle" font-size="16" fill="#52514e" font-family="Segoe UI, sans-serif">n × 1</text>
+  <path d="M 168 186 C 175 205, 350 205, 358 186" fill="none" stroke="#b8860b" stroke-width="1.5"/>
+  <text x="263" y="225" text-anchor="middle" font-size="14" fill="#7a5a08" font-family="Segoe UI, sans-serif">these two must match</text>
+</svg>
+:::
+
+Nearly every NumPy error you will ever see is this rule.
+
+
+# The inverse
+
+`np.linalg.inv` gives the matrix that undoes another one:
+
+```{pyodide}
+A = np.array([[2.0, 1.0],
+              [1.0, 3.0]])
+
+np.linalg.inv(A) @ A
+```
+
+::: {.muted .small}
+The result is the **identity**: ones down the diagonal, zeros elsewhere. The
+off-diagonal one prints as something like `-1.11e-16`, which is scientific
+notation for a decimal point followed by fifteen zeros and a 111. Computers
+store decimals approximately, so a value that should be exactly zero often comes
+out this tiny instead. Read it as zero.
+:::
+
+
+# When there is no inverse
+
+```python
+B = np.array([[1.0, 2.0],
+              [2.0, 4.0]])
+
+np.linalg.inv(B)
+```
+```text
+LinAlgError: Singular matrix
+```
+
+The second column is just twice the first, so it adds nothing.
+
+::: {.muted .small}
+You have met this before under another name: perfect multicollinearity, the
+regression that will not run.
+:::
+
+
+# OLS, in one line
+
+Your econometrics course wrote the estimator like this:
+
+$$ \hat{\beta} = \left(X'X\right)^{-1} X'y $$
+
+```python
+beta = np.linalg.solve(X.T @ X, X.T @ y)
+```
+
+Read it against the formula: `X.T` is `X'`, `@` is multiplication, and `solve`
+does the inverting and multiplying in one safer step.
+
+
+# A real regression: market beta
+
+Apple's daily return against the market's. The slope is the **beta** you know
+from the CAPM:
+
+```{pyodide}
+px = pd.read_csv("data/prices.csv", parse_dates=["date"])
+rets = px.pivot(index="date", columns="ticker", values="close").pct_change().dropna()
+
+y = rets["AAPL"].values
+x = rets["SPY"].values
+X = np.column_stack([np.ones(len(x)), x])
+
+alpha, beta = np.linalg.solve(X.T @ X, X.T @ y)
+print("alpha:", round(alpha, 6), " beta:", round(beta, 3))
+```
+
+::: {.muted .small}
+Change the ticker and run it again: Nvidia gives 1.75, JPMorgan 1.12, Coca-Cola
+0.60. Above one moves more than the market, below one moves less.
+:::
+
+
+# Why arrays are worth it {.smaller}
+
+Squaring a million numbers, first with a loop and then with an array:
+
+```{python}
+#| echo: true
+import time
+xs, arr = list(range(1_000_000)), np.arange(1_000_000)
+
+t0 = time.perf_counter()
+total = 0
+for v in xs:
+    total += v * v
+loop = time.perf_counter() - t0
+
+t0 = time.perf_counter()
+total = (arr * arr).sum()
+vec = time.perf_counter() - t0
+
+print(f"loop: {loop:.3f} s     numpy: {vec:.4f} s     {loop / vec:.0f} times faster")
+```
+
+::: {.muted .small}
+NumPy hands the whole array to compiled code, instead of stepping through it one
+Python statement at a time.
+:::
+
+
+# 3 · pandas {.divider}
+
+::: {.divider-kicker}
+Part 3
+:::
+
+::: {.divider-note}
+Tables with names on the columns.
+:::
+
+
+# What pandas adds
+
+NumPy gives you numbers in a grid. pandas puts **labels** on that grid:
+
+::: {.why-grid}
+::: {.why-point}
+**Series** <span>one column of values, each with a label. A list and a dictionary at once.</span>
+:::
+::: {.why-point}
+**DataFrame** <span>several Series side by side, sharing one index. A spreadsheet you can program.</span>
+:::
+:::
+
+
+# A Series
+
+```{pyodide}
+import pandas as pd
+
+vol = pd.Series({"AAPL": 0.0143, "KO": 0.0081, "NVDA": 0.0331})
+vol
+```
+
+::: {.muted .small}
+Built straight from a Session 2 dictionary.
+:::
+
+
+# A Series does both jobs
+
+```{pyodide}
+print(vol["NVDA"])       # by name, like a dictionary
+print(vol.mean())        # summarises itself, like an array
+vol * np.sqrt(252)       # and does maths all at once
+```
+
+That combination is the whole reason pandas exists.
+
+
+# A DataFrame
+
+```{pyodide}
+df = pd.DataFrame({
+    "ticker": ["AAPL", "KO", "NVDA"],
+    "vol": [0.0143, 0.0081, 0.0331],
+    "beta": [1.21, 0.60, 1.75],
+})
+df
+```
+
+Columns have names, and different columns can hold different types.
+
+
+# Reading a real file
+
+In Sessions 1 and 2 the data arrived in a cell somebody wrote for you. Not any
+more:
+
+```{pyodide}
+prices = pd.read_csv("data/prices.csv", parse_dates=["date"])
+prices.head()
+```
+
+::: {.muted .small}
+`.head()` shows the first five rows. `parse_dates` turns that column from text
+into real dates, which is what lets you sort and slice by time later.
+:::
+
+
+# Look before you compute
+
+```{pyodide}
+print("shape  :", prices.shape)
+print()
+print(prices.dtypes)
+```
+
+::: {.muted .small}
+27,676 rows and 4 columns, and `dtypes` says what each column holds. A price
+column that arrived as text is a common and silent bug.
+:::
+
+
+# One column
+
+```{pyodide}
+prices["close"].head()
+```
+
+A name in square brackets gives back a **Series**: that column, with its row
+labels kept.
+
+
+# Several columns
+
+A **list** of names inside the brackets gives a smaller **DataFrame**:
+
+```{pyodide}
+prices[["date", "close"]].head()
+```
+
+::: {.muted .small}
+One set of brackets for the indexing, one for the list. That is why there are
+two of them.
+:::
+
+
+# Keeping only some rows
+
+A condition gives `True` or `False` for every row, just as in NumPy. Put it in
+brackets to keep the `True` ones:
+
+```{pyodide}
+aapl = prices[prices["ticker"] == "AAPL"]
+aapl.head()
+```
+
+::: {.muted .small}
+27,676 rows tested at once.
+:::
+
+
+# Adding a column
+
+Assign to a name that does not exist yet, and it appears:
+
+```{pyodide}
+aapl = prices[prices["ticker"] == "AAPL"].copy()
+aapl["ret"] = aapl["close"].pct_change()
+aapl[["date", "close", "ret"]].head()
+```
+
+::: {.muted .small}
+`.pct_change()` is the daily return: the shift-and-divide you have now written
+by hand twice.
+:::
+
+
+# Why the `.copy()`
+
+Leave it out, and pandas complains:
+
+```python
+aapl = prices[prices["ticker"] == "AAPL"]     # no .copy()
+aapl["ret"] = aapl["close"].pct_change()
+```
+```text
+SettingWithCopyWarning: A value is trying to be set on a copy of a
+slice from a DataFrame.
+```
+
+`aapl` might be a window onto `prices` rather than a table of its own, so pandas
+cannot tell whether you also meant to change the original. `.copy()` says "give
+me my own table", and the warning goes away.
+
+
+# The first one is missing
+
+The first day has no day before it, so its return is `NaN`, "not a number":
+
+```{pyodide}
+aapl["ret"].head(3)
+```
+
+::: {.muted .small}
+`NaN` means "no value here". It is not zero and it is not an error, and most
+summary methods skip it for you.
+:::
+
+
+# Apple's volatility
+
+```{pyodide}
+print("daily     :", aapl["ret"].std().round(5))
+print("annualised:", (aapl["ret"].std() * np.sqrt(252)).round(4))
+```
+
+::: {.muted .small}
+Ten years of Apple: about 1.8% on a typical day, 28% a year. Your Session 2 case
+found 1.4% for 2024 alone, which was a calmer year.
+:::
+
+
+# Sorting
+
+```{pyodide}
+aapl.sort_values("ret").head(3)[["date", "close", "ret"]]
+```
+
+::: {.muted .small}
+Apple's three worst days in ten years, dates and all.
+:::
+
+
+# Your turn [2]{.chip .chip-turn} {.your-turn}
+
+Pick out Coca-Cola, then read off its daily volatility.
+
+```{pyodide}
+#| autorun: false
+ko = prices[prices["ticker"] == ...].copy()
+ko["ret"] = ...
+ko["ret"].std()
+```
+
+
+
+
+# Your turn 2: answer
+
+```python
+ko = prices[prices["ticker"] == "KO"].copy()
+ko["ret"] = ko["close"].pct_change()
+ko["ret"].std()
+```
+
+**About `0.0112`**, so 1.1% a day against Apple's 1.8%. The comparison you began
+in Session 1 with two hand-picked prices, now over ten years.
+
+
+# All eleven at once
+
+Doing that eleven times would be eleven copies of the same code. Instead,
+**group** by ticker and let pandas handle each group:
+
+```{pyodide}
+prices["ret"] = prices.groupby("ticker")["close"].pct_change()
+prices.groupby("ticker")["ret"].std().sort_values(ascending=False)
+```
+
+::: {.muted .small}
+The Session 2 loop, written once.
+:::
+
+
+# groupby, in words
+
+::: {.diagram}
+<svg width="960" height="215" viewBox="0 0 960 215" role="img" aria-label="groupby splits the table by ticker, applies a calculation to each group, and combines the answers">
+  <rect x="30" y="55" width="150" height="105" rx="7" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.6"/>
+  <text x="105" y="100" text-anchor="middle" font-size="15" fill="#141413" font-family="Segoe UI, sans-serif">one table</text>
+  <text x="105" y="124" text-anchor="middle" font-size="13" fill="#898781" font-family="Segoe UI, sans-serif">27,676 rows</text>
+  <line x1="185" y1="107" x2="285" y2="107" stroke="#898781" stroke-width="1.6"/>
+  <polygon points="290,107 277,101 277,113" fill="#898781"/>
+  <text x="236" y="95" text-anchor="middle" font-size="13.5" fill="#0d366b" font-family="Segoe UI, sans-serif" font-weight="600">split</text>
+  <rect x="300" y="30" width="150" height="46" rx="6" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.4"/>
+  <rect x="300" y="84" width="150" height="46" rx="6" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.4"/>
+  <rect x="300" y="138" width="150" height="46" rx="6" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.4"/>
+  <text x="375" y="59" text-anchor="middle" font-size="14.5" fill="#0d366b" font-family="Cascadia Mono, monospace">AAPL</text>
+  <text x="375" y="113" text-anchor="middle" font-size="14.5" fill="#0d366b" font-family="Cascadia Mono, monospace">KO</text>
+  <text x="375" y="167" text-anchor="middle" font-size="14.5" fill="#898781" font-family="Segoe UI, sans-serif">... nine more</text>
+  <line x1="455" y1="107" x2="555" y2="107" stroke="#898781" stroke-width="1.6"/>
+  <polygon points="560,107 547,101 547,113" fill="#898781"/>
+  <text x="507" y="95" text-anchor="middle" font-size="13.5" fill="#0d366b" font-family="Segoe UI, sans-serif" font-weight="600">apply</text>
+  <text x="507" y="132" text-anchor="middle" font-size="13" fill="#898781" font-family="Cascadia Mono, monospace">.std()</text>
+  <rect x="575" y="30" width="120" height="46" rx="6" fill="#fbf4e4" stroke="#b8860b" stroke-width="1.4"/>
+  <rect x="575" y="84" width="120" height="46" rx="6" fill="#fbf4e4" stroke="#b8860b" stroke-width="1.4"/>
+  <rect x="575" y="138" width="120" height="46" rx="6" fill="#fbf4e4" stroke="#b8860b" stroke-width="1.4"/>
+  <text x="635" y="59" text-anchor="middle" font-size="14.5" fill="#7a5a08" font-family="Cascadia Mono, monospace">0.0179</text>
+  <text x="635" y="113" text-anchor="middle" font-size="14.5" fill="#7a5a08" font-family="Cascadia Mono, monospace">0.0112</text>
+  <text x="635" y="167" text-anchor="middle" font-size="14.5" fill="#7a5a08" font-family="Cascadia Mono, monospace">...</text>
+  <line x1="700" y1="107" x2="790" y2="107" stroke="#898781" stroke-width="1.6"/>
+  <polygon points="795,107 782,101 782,113" fill="#898781"/>
+  <text x="745" y="95" text-anchor="middle" font-size="13.5" fill="#0d366b" font-family="Segoe UI, sans-serif" font-weight="600">combine</text>
+  <rect x="805" y="55" width="130" height="105" rx="7" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.6"/>
+  <text x="870" y="100" text-anchor="middle" font-size="15" fill="#141413" font-family="Segoe UI, sans-serif">one Series</text>
+  <text x="870" y="124" text-anchor="middle" font-size="13" fill="#898781" font-family="Segoe UI, sans-serif">11 answers</text>
+</svg>
+:::
+
+Split, apply, combine. You will see this shape everywhere.
+
+
+# Several summaries at once
+
+```{pyodide}
+prices.groupby("ticker")["ret"].agg(["mean", "std", "min", "max"]).round(4)
+```
+
+::: {.muted .small}
+One row per stock. This is a risk report.
+:::
+
+
+# One column per stock
+
+`pivot` reshapes the table: dates down the side, tickers across the top.
+
+```{pyodide}
+wide = prices.pivot(index="date", columns="ticker", values="close")
+wide.tail(3)
+```
+
+::: {.muted .small}
+The tall shape is better for storing and grouping. This wide one is better for
+comparing stocks and for plotting, which is where we go next.
+:::
+
+
+# And it does maths column by column
+
+```{pyodide}
+wide.pct_change().std().sort_values(ascending=False).round(4)
+```
+
+Every column gets its own returns, then its own standard deviation. The whole
+ranking, in one line.
+
+
+# Picking out a date
+
+Because the index is dates, you can slice it with dates:
+
+```{pyodide}
+wide.loc["2024-01-02":"2024-01-08", ["AAPL", "KO"]]
+```
+
+::: {.muted .small}
+`.loc` works with the **labels** you can see. There is also `.iloc` for
+positions, if you ever want "the last row" rather than a particular date.
+:::
+
+
+# 4 · matplotlib {.divider}
+
+::: {.divider-kicker}
+Part 4
+:::
+
+::: {.divider-note}
+Drawing what you found, so somebody else can see it.
+:::
+
+
+# A figure is made of two things
+
+::: {.diagram}
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+
+fig = plt.figure(figsize=(10.2, 3.0))
+ax1 = fig.add_axes([0.085, 0.19, 0.375, 0.50])
+ax2 = fig.add_axes([0.585, 0.19, 0.375, 0.50])
+for ax, t, c in [(ax1, "AAPL", BLUE_LIGHT), (ax2, "KO", AMBER)]:
+    s = WIDE.loc["2024", t]
+    ax.plot(s.index, s.values, color=c, linewidth=1.5, label=t)
+    ax.set_ylabel("price (USD)")
+    ax.legend(loc="upper left")
+    ax.tick_params(axis="x", labelsize=9.5)
+    ax.set_xticks(ax.get_xticks()[::2])
+
+fig.patches.append(Rectangle((0.012, 0.035), 0.976, 0.925,
+                             transform=fig.transFigure, fill=False,
+                             linestyle=(0, (6, 4)), edgecolor=AMBER,
+                             linewidth=1.5, zorder=5))
+fig.text(0.026, 0.895, "one Figure: the whole canvas", color="#7a5a08",
+         fontsize=11.5, fontweight="600", va="center")
+for x in (0.085, 0.585):
+    fig.text(x, 0.775, "an Axes: one plot inside it", color="#7a5a08",
+             fontsize=10.5, va="center")
+plt.show()
+```
+:::
+
+A **Figure** is the canvas; an **Axes** is one plot on it. Everything you draw,
+you draw on an Axes.
+
+
+# Every plot starts the same way
+
+```{pyodide}
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(7.5, 2.4))
+ax.plot([1, 2, 3, 4], [10, 12, 11, 14])
+plt.show()
+```
+
+::: {.muted .small}
+`plt.subplots()` hands you a figure and one axes. You draw on `ax`, and
+`plt.show()` displays it.
+:::
+
+
+# Title, label, colour
+
+```{pyodide}
+aapl24 = wide.loc["2024", "AAPL"]
+
+fig, ax = plt.subplots(figsize=(8, 2.0))
+ax.plot(aapl24.index, aapl24.values, color="#1c5cab", linewidth=1.6)
+ax.set_title("Apple (AAPL) closing price, 2024", loc="left")
+ax.set_ylabel("price (USD)")
+plt.show()
+```
+
+::: {.muted .small}
+Without the title and the label this is just a wiggly line. `color` takes any
+colour name or hex code: change it and run the cell again.
+:::
+
+
+# Two lines, and a legend
+
+```{pyodide}
+p24 = wide.loc["2024"]
+fig, ax = plt.subplots(figsize=(8, 2.1))
+ax.plot(p24.index, p24["AAPL"], label="AAPL")
+ax.plot(p24.index, p24["KO"], label="KO")
+ax.set_ylabel("price (USD)")
+ax.legend()
+plt.show()
+```
+
+::: {.muted .small}
+`label=` on each line, then one `ax.legend()`.
+:::
+
+
+# Your turn [3]{.chip .chip-turn} {.your-turn}
+
+Give this plot a title and a y-axis label.
+
+```{pyodide}
+#| autorun: false
+nvda = wide.loc["2024", "NVDA"]
+
+fig, ax = plt.subplots(figsize=(8, 2.2))
+ax.plot(nvda.index, nvda.values)
+...
+plt.show()
+```
+
+
+# Your turn 3: answer
+
+```python
+nvda = wide.loc["2024", "NVDA"]
+
+fig, ax = plt.subplots(figsize=(8, 2.2))
+ax.plot(nvda.index, nvda.values)
+ax.set_title("Nvidia (NVDA) closing price, 2024", loc="left")
+ax.set_ylabel("price (USD)")
+plt.show()
+```
+
+A tripling over the year, and a reader who can tell what they are looking at.
+
+
+# Four kinds of plot
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+import numpy as np
+
+fig, axes = plt.subplots(1, 4, figsize=(13.2, 2.5))
+r24 = RET.loc["2024"]
+
+s = WIDE.loc["2024", "AAPL"]
+axes[0].plot(s.index, s.values, color=BLUE_LIGHT, linewidth=1.4)
+axes[0].set_title("ax.plot\nsomething over time", loc="left", fontsize=12)
+axes[0].set_xticks([])
+
+v = (r24.std() * np.sqrt(252)).sort_values()[-5:]
+axes[1].barh(v.index, v.values, color=BLUE_LIGHT, height=0.62)
+axes[1].set_title("ax.barh\ncomparing named things", loc="left", fontsize=12)
+axes[1].grid(axis="y", visible=False)
+
+axes[2].scatter(r24["SPY"], r24["AAPL"], s=9, color=BLUE_LIGHT, alpha=0.55,
+                edgecolors="none")
+axes[2].set_title("ax.scatter\none thing against another", loc="left",
+                  fontsize=12)
+
+axes[3].hist(r24["AAPL"], bins=30, color=BLUE_LIGHT)
+axes[3].set_title("ax.hist\nthe shape of one variable", loc="left", fontsize=12)
+axes[3].grid(axis="x", visible=False)
+
+for a in axes:
+    a.tick_params(labelsize=9)
+fig.tight_layout()
+plt.show()
+```
+
+Four calls, and the question decides which one you want. Everything else on a
+plot is decoration you add afterwards.
+
+
+# Bars, for comparing stocks
+
+```{pyodide}
+vol = wide.pct_change().std().sort_values()
+
+fig, ax = plt.subplots(figsize=(8, 2.4))
+ax.barh(vol.index, vol.values, color="#2a78d6")
+ax.set_title("Daily volatility, 2015 to 2024", loc="left")
+plt.show()
+```
+
+::: {.muted .small}
+`barh` lays the bars down, which is the readable one when the labels are names.
+`bar` stands them up.
+:::
+
+
+# A histogram, for a distribution
+
+```{pyodide}
+r = wide["AAPL"].pct_change().dropna()
+
+fig, ax = plt.subplots(figsize=(8, 2.2))
+ax.hist(r, bins=50, color="#2a78d6")
+ax.set_title("Apple daily returns, 2015 to 2024", loc="left")
+plt.show()
+```
+
+::: {.muted .small}
+Most days are small moves near zero, with rare big ones out at the sides.
+`bins` is how many bars to chop the range into.
+:::
+
+
+# The one-line version
+
+pandas will plot itself, and fills in the axis and the legend for you:
+
+```{pyodide}
+fig, ax = plt.subplots(figsize=(8, 2.2))
+wide.loc["2024", ["AAPL", "KO"]].plot(ax=ax)
+plt.show()
+```
+
+::: {.muted .small}
+Good for a quick look while you work. Pass `ax=ax` and you can still add a title
+afterwards, exactly as before.
+:::
+
+
+# The chart everybody makes first
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(11.0, 2.8))
+sub = WIDE.loc["2019":]
+for t in sub.columns:
+    ax.plot(sub.index, sub[t], linewidth=1.1, label=t)
+ax.set_title("Closing price, all eleven, 2019 onwards", loc="left")
+ax.set_ylabel("price (USD)")
+ax.legend(ncol=6, loc="upper left", fontsize=9)
+fig.tight_layout()
+plt.show()
+```
+
+```python
+for t in wide.columns:
+    ax.plot(wide.index, wide[t], label=t)
+ax.legend()
+```
+
+Eleven lines, eleven colours, and a legend you have to keep looking back at.
+
+
+# Say one thing instead
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(11.0, 2.8))
+sub = WIDE.loc["2019":]
+for t in sub.columns:
+    if t != "NVDA":
+        ax.plot(sub.index, sub[t], linewidth=1.0, color="#d8d7d0", zorder=1)
+ax.plot(sub.index, sub["NVDA"], linewidth=2.0, color=BLUE, zorder=3)
+ax.annotate("NVDA", xy=(sub.index[-1], sub["NVDA"].iloc[-1]),
+            xytext=(-4, 9), textcoords="offset points",
+            fontsize=12, fontweight="600", color=BLUE, ha="right")
+ax.set_title("Nvidia against the rest of the universe, 2019 onwards",
+             loc="left")
+ax.set_ylabel("price (USD)")
+fig.tight_layout()
+plt.show()
+```
+
+```python
+for t in wide.columns:
+    if t != "NVDA":
+        ax.plot(wide.index, wide[t], color="#d8d7d0", linewidth=1.0)
+ax.plot(wide.index, wide["NVDA"], color="#1c5cab", linewidth=2.0)
+```
+
+One line in colour, the rest in grey, and no legend to look back at.
+
+
+# What to check before you show it
+
+::: {.recap-grid}
+::: {.recap-item}
+**Does it have a title?**
+Say what the reader is looking at.
+:::
+::: {.recap-item}
+**Are the axes labelled?**
+With units. "price (USD)", not "price".
+:::
+::: {.recap-item}
+**Can you tell the lines apart?**
+A legend, or a name written on the line.
+:::
+::: {.recap-item}
+**Do the bars start at zero?**
+Lines need not. Bars must.
+:::
+::: {.recap-item}
+**Is anything decorative?**
+If it carries no information, remove it.
+:::
+::: {.recap-item}
+**Would a stranger get it?**
+Without you standing there to explain.
+:::
+:::
+
+
+# It can look much better than this
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
+import numpy as np
+
+s = WIDE["AAPL"]
+dd = s / s.cummax() - 1
+trough = dd.idxmin()
+peak = s.loc[:trough].idxmax()
+
+fig = plt.figure(figsize=(11.0, 3.9))
+gs = fig.add_gridspec(2, 1, height_ratios=[3, 1], hspace=0.12,
+                      left=0.085, right=0.965, top=0.78, bottom=0.11)
+ax = fig.add_subplot(gs[0])
+ax2 = fig.add_subplot(gs[1], sharex=ax)
+for a in (ax, ax2):
+    for side in ("top", "right"):
+        a.spines[side].set_visible(False)
+    a.grid(color="#ecebe4", linewidth=0.8)
+
+ax.plot(s.index, s.values, color=BLUE, linewidth=1.5, zorder=3)
+for i, alpha in enumerate(np.linspace(0.16, 0.01, 14)):
+    ax.fill_between(s.index, s.values * (i / 14), s.values * ((i + 1) / 14),
+                    color=BLUE, alpha=alpha, linewidth=0, zorder=1)
+ax.set_ylim(0, s.max() * 1.08)
+ax.yaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
+ax.tick_params(labelbottom=False)
+ax.axvspan(peak, trough, color=AMBER, alpha=0.10, zorder=0)
+ax.annotate("peak", xy=(peak, s.loc[peak]), xytext=(-52, 22),
+            textcoords="offset points", fontsize=10, color="#7a5a08",
+            arrowprops=dict(arrowstyle="-", color="#c9a227", linewidth=1))
+ax.annotate(f"worst drawdown  {dd.min():.0%}", xy=(trough, s.loc[trough]),
+            xytext=(26, 72), textcoords="offset points", fontsize=10,
+            color="#7a5a08",
+            arrowprops=dict(arrowstyle="-", color="#c9a227", linewidth=1))
+ax.annotate(f"${s.iloc[-1]:,.0f}", xy=(s.index[-1], s.iloc[-1]), xytext=(6, -3),
+            textcoords="offset points", fontsize=11, fontweight="600",
+            color=BLUE)
+
+ax2.fill_between(dd.index, dd.values, 0, color=AMBER, alpha=0.35, linewidth=0)
+ax2.plot(dd.index, dd.values, color=AMBER, linewidth=0.9)
+ax2.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+ax2.set_ylim(dd.min() * 1.15, 0.02)
+ax2.set_ylabel("drawdown", fontsize=10)
+
+axi = fig.add_axes([0.145, 0.495, 0.185, 0.19])
+r = s.pct_change().dropna()
+axi.hist(r, bins=60, color=BLUE, alpha=0.75)
+for side in ("top", "right", "left"):
+    axi.spines[side].set_visible(False)
+axi.set_yticks([])
+axi.xaxis.set_major_formatter(mtick.PercentFormatter(1.0, decimals=0))
+axi.set_title("daily returns", fontsize=9, color="#52514e", loc="left", pad=3)
+axi.grid(False)
+
+fig.text(0.085, 0.93, "Apple, ten years", fontsize=17, fontweight="600",
+         color=INK)
+fig.text(0.085, 0.865,
+         "Split-adjusted close, 2015 to 2024, with drawdown from the running peak",
+         fontsize=10.5, color="#898781")
+plt.show()
+```
+
+
+# And here is what that cost {.smaller}
+
+```python
+fig = plt.figure(figsize=(11, 4))
+gs = fig.add_gridspec(2, 1, height_ratios=[3, 1], hspace=0.12)
+ax, ax2 = fig.add_subplot(gs[0]), fig.add_subplot(gs[1], sharex=ax)
+for a in (ax, ax2):
+    for side in ("top", "right"):
+        a.spines[side].set_visible(False)
+ax.plot(s.index, s.values, color="#1c5cab", linewidth=1.5, zorder=3)
+for i, alpha in enumerate(np.linspace(0.16, 0.01, 14)):
+    ax.fill_between(s.index, s.values * (i / 14), s.values * ((i + 1) / 14),
+                    color="#1c5cab", alpha=alpha, linewidth=0, zorder=1)
+ax.yaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
+ax.axvspan(peak, trough, color="#b8860b", alpha=0.10, zorder=0)
+ax.annotate("peak", xy=(peak, s.loc[peak]), xytext=(-52, 22),
+            textcoords="offset points", color="#7a5a08",
+            arrowprops=dict(arrowstyle="-", color="#c9a227"))
+# ... and about thirty more lines for the drawdown panel, the inset
+# histogram, the other annotations and the tick formatting
+```
+
+Every one of those lines is a small, ordinary call. There are just a lot of
+them, and none of them is the analysis.
+
+
+# So learn the four calls first
+
+Get the plot right, then make it pretty, and only if it is worth the time.
+
+::: {.keypoint}
+When you do want it prettier, go to the **matplotlib gallery** at
+`matplotlib.org`. It is a wall of example charts, each with the code that made
+it. Find the picture closest to what you want, and read how it was done.
+:::
+
+::: {.muted .small}
+That is how everybody learns plotting, including the people who do it for a
+living.
+:::
+
+
+# Saving a figure
+
+Now that you have a machine with folders on it:
+
+```python
+fig.savefig("figures/nvda_2024.png", dpi=200, bbox_inches="tight")
+```
+
+::: {.muted .small}
+`dpi` is the resolution and `bbox_inches="tight"` trims the empty margin. Use
+`.pdf` instead of `.png` for something that stays sharp at any size, which is
+what you want in a thesis.
+:::
+
+
+# The whole ranking, in four lines
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+import numpy as np
+
+vol = (RET.loc["2024"].std() * np.sqrt(252)).sort_values()
+fig, ax = plt.subplots(figsize=(10.6, 2.8))
+colors = [BLUE if t == "NVDA" else BLUE_LIGHT for t in vol.index]
+ax.barh(vol.index, vol.values, color=colors, height=0.66)
+for t, val in vol.items():
+    ax.text(val + 0.006, t, f"{val:.0%}", va="center", fontsize=10.5,
+            color="#52514e")
+ax.set_xlim(0, vol.max() * 1.16)
+ax.set_title("Annualised volatility, 2024", loc="left")
+ax.grid(axis="y", visible=False)
+fig.tight_layout()
+plt.show()
+```
+
+```python
+wide = prices.pivot(index="date", columns="ticker", values="close")
+vol = (wide.loc["2024"].pct_change().std() * np.sqrt(252)).sort_values()
+
+fig, ax = plt.subplots(figsize=(10, 4))
+ax.barh(vol.index, vol.values)
+```
+
+
+# What stays with you {.smaller}
+
+::: {.recap-grid}
+::: {.recap-item}
+**Your own machine**
+Install once, `import` in every notebook.
+:::
+::: {.recap-item}
+**Looking things up**
+Hover, or `help`. It is on your machine, not online.
+:::
+::: {.recap-item}
+**NumPy**
+Arrays do arithmetic all at once. `@` for matrices.
+:::
+::: {.recap-item}
+**pandas**
+`read_csv`, filter, new columns, `groupby`, `pivot`.
+:::
+::: {.recap-item}
+**matplotlib**
+`fig, ax = plt.subplots()`, then label everything.
+:::
+::: {.recap-item}
+**Judgment**
+The form, the scale and the baseline decide what a reader sees.
+:::
+:::
+
+
+# The course case, Part 3 [case]{.chip .chip-case}
+
+The risk report grows from two stocks to the whole universe.
+
+::: {.keypoint}
+Load all eleven with pandas, compute returns and volatility for every one of
+them at once, and make the figures a reader could act on. Same investigation, no
+loops.
+:::
+
+
+# Case Part 3: this week
+
+`session_03_case.ipynb`, done at home before Session 4:
+
+- load `prices.csv` yourself, and check it before trusting it
+- daily returns and annualised volatility for all eleven, with `groupby`
+- confirm your Session 2 answer for Apple, computed a different way
+- rank the universe by risk, and plot the ranking
+- look at how the stocks move together, and what that means for a portfolio
+
+::: {.muted .small}
+Hints and full solutions are folded into the notebook. Work first, then check.
+:::
+
+
+# Before Session 4
+
+<div class="pillars">
+<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Exercises</div><div class="pillar-body"><code>session_03_exercises.ipynb</code>: NumPy, pandas and matplotlib, plus practice at looking things up. Hints and solutions folded in.</div></div>
+<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Case Part 3</div><div class="pillar-body"><code>session_03_case.ipynb</code>: the risk report, all eleven stocks, with figures.</div></div>
+<div class="pillar"><div class="pillar-tag">Do it once</div><div class="pillar-title">Set up locally</div><div class="pillar-body">Python, VS Code and the three packages. The links are on the course page. Bring any error you get.</div></div>
+</div>
+
+::: {.muted .small}
+**Next session:** what machine learning actually is. Observations, features and
+targets, and why a model that fits your data perfectly is usually worthless.
+:::

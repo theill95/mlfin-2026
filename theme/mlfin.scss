@@ -1022,3 +1022,114 @@ $selection-background-color: #dcebfd;
   max-height: 400px;
   height: auto;
 }
+
+// ---------- precomputed figures ----------
+.reveal .cell-output-display img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+// ---------- a mock of the VS Code documentation popup (Session 3) ----------
+// a single wider line of "editor", for the Session 3 hover demo
+.nb-mock.nb-wide {
+  max-width: 46em;
+}
+
+.hovercard {
+  margin: 0.7em 0 0.2em;
+  max-width: 860px;
+  border: 1px solid #d5d4cc;
+  border-radius: 7px;
+  background: #ffffff;
+  box-shadow: 0 3px 10px rgba(20, 20, 19, 0.09);
+  overflow: hidden;
+}
+
+.hovercard .hc-sig {
+  padding: 0.5em 0.85em;
+  border-bottom: 1px solid #ecebe4;
+  background: #f7f7f4;
+  font-family: $font-family-monospace;
+  font-size: 0.72em;
+  color: #0d366b;
+}
+
+.hovercard .hc-sig .hc-arg {
+  background: #fdf3d7;
+  border-radius: 3px;
+  padding: 0 0.2em;
+  color: #7a5a08;
+}
+
+.hovercard .hc-body {
+  padding: 0.6em 0.85em 0.75em;
+  font-family: $font-family-monospace;
+  font-size: 0.68em;
+  line-height: 1.55;
+  color: #3d3c39;
+}
+
+.hovercard .hc-body .hc-p {
+  color: #0d366b;
+  font-weight: 600;
+}
+
+// ---------- live-cell output that can get tall (Session 3 onwards) ----------
+// help() dumps, DataFrame repr tables and figures are all much bigger than the
+// one- or two-line outputs of Sessions 1 and 2. Cap them so a slide never
+// overflows; the box scrolls in place rather than pushing content off-screen.
+.reveal .cell-output-pyodide pre,
+.reveal .cell-output-pyodide > div:not(.dataframe-container) {
+  max-height: 285px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.reveal .cell-output-pyodide pre code {
+  font-size: 0.92em;
+  line-height: 1.35;
+}
+
+.reveal .cell-output-pyodide img {
+  max-height: 268px;
+  width: auto;
+  max-width: 100%;
+}
+
+// pandas renders a DataFrame as an HTML table; at slide type size that is
+// enormous, so give it its own compact scale. The !important is needed because
+// quarto-ojs.css sets `.observablehq table { font-size: 0.9em !important }`,
+// and every live-cell output is inside an .observablehq container.
+.reveal .slides section table.dataframe,
+.reveal .slides section div.cell-output table.dataframe,
+.reveal .slides section div.cell-output-pyodide table.dataframe {
+  margin: 0.2em auto;
+  font-size: 0.42em !important;
+  line-height: 1.25;
+  border-collapse: collapse;
+}
+
+.reveal table.dataframe th,
+.reveal table.dataframe td {
+  padding: 0.18em 0.7em;
+  font-family: $font-family-monospace;
+  font-weight: 400;
+  border: none;
+  border-bottom: 1px solid #ecebe4;
+  background: transparent;
+  color: #26333f;
+  text-align: right;
+}
+
+.reveal table.dataframe thead th {
+  color: #0d366b;
+  font-weight: 600;
+  border-bottom: 1px solid #c3c2b7;
+}
+
+.reveal table.dataframe tbody th {
+  color: #52514e;
+  text-align: left;
+}
