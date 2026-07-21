@@ -30,10 +30,13 @@ The site has five pages, linked from the sidebar:
 | `cheatsheet.html` | every function the course has used, with a worked example. **Generated** by `tools/build_cheatsheet.py`, which executes every example against the real data, so do not edit it by hand |
 | `setup.html` | installing Python and VS Code, and the extras (scripts vs notebooks, virtual environments, Git), each marked needed or optional |
 | `resources.html` | official docs, ISLP, Kaggle, and the AI-use policy |
-| `downloads.html` | every notebook, CSV and deck, plus a whole-course ZIP |
+| `downloads.html` | every notebook and CSV, plus `downloads/mlfin-course.zip` |
 
-Shared styling lives in `assets/site.css`; the sidebar markup is repeated in each
-page. Every push to `main` updates the site automatically within a minute or two.
+Shared styling lives in `assets/site.css` and the sidebar in `assets/nav.html`,
+which `tools/build_nav.py` stamps into every page. The student ZIP is built from
+an allowlist by `tools/build_download_bundle.py`, so `tools/`, `_extensions/`
+and this README are never handed to students, and no page links to the
+repository. Every push to `main` updates the site automatically within a minute or two.
 
 ## Giving students one simple link (recommended)
 
@@ -170,9 +173,14 @@ render is also a check that the lecture code all runs.
 
 ## Building and checking
 
-The student notebooks and the cheatsheet page are **generated**. See
-[`tools/README.md`](tools/README.md) for what builds what and how to re-run the
-checks. In short: edit the generator, not the notebook.
+```bash
+python tools/release.py
+```
+
+Rebuilds everything generated (the six notebooks, the cheatsheet, the sidebar,
+the download bundle) and runs the checks. Run it before every push. See
+[`tools/README.md`](tools/README.md) for the details, and for the checklist to
+follow when adding a session. In short: edit the generator, not the notebook.
 
 ## Python environment
 

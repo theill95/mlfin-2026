@@ -10,6 +10,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <div class="shell">
 
+  <!-- nav:start -->
   <nav class="sidenav" aria-label="Course pages">
     <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
     <ul>
@@ -19,8 +20,13 @@
       <li><a href="resources.html">Resources</a></li>
       <li><a href="downloads.html" aria-current="page">Downloads</a></li>
     </ul>
-    <div class="nav-foot">Aarhus University<br><a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a></div>
+    <div class="nav-foot">
+      <div class="nav-owner">Jonas Theill Bøjstrup</div>
+      <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>
+      <div class="nav-legal">Aarhus University<br>&copy; 2026 Jonas Theill Bøjstrup.<br>For enrolled students.</div>
+    </div>
   </nav>
+  <!-- nav:end -->
 
   <main class="wrap" id="main">
   <header>
@@ -34,17 +40,13 @@
   </header>
 
   <section class="card">
-    <h2>The whole course, in one file</h2>
-    <p class="sub">Every notebook, every data file, every rendered lecture, as a single
-       ZIP. Always the current version.</p>
+    <h2>All the notebooks and data, in one file</h2>
+    <p class="sub">Every exercise notebook, every case notebook, and all the price files,
+       arranged so they work as soon as you unzip them. Always the current version.</p>
     <div class="actions">
-      <a class="btn primary" href="https://github.com/theill95/mlfin-2026/archive/refs/heads/main.zip">
-        <span class="label">↓ Download everything (ZIP)</span>
-        <span class="hint">about 30 MB · unzip it anywhere</span>
-      </a>
-      <a class="btn" href="https://github.com/theill95/mlfin-2026" target="_blank" rel="noopener">
-        <span class="label">The repository</span>
-        <span class="hint">browse it on GitHub</span>
+      <a class="btn primary" href="downloads/mlfin-course.zip" download>
+        <span class="label">↓ Download the course materials (ZIP)</span>
+        <span class="hint">under 1 MB · unzip it anywhere</span>
       </a>
     </div>
     <p class="card-foot">Unzip it, then in VS Code use <em>File → Open Folder</em> and pick
@@ -66,7 +68,7 @@
           <td><a href="data/aapl_2024_closes.csv" download>download</a></td></tr>
       <tr><td><code>ko_2024_closes.csv</code></td><td>Coca-Cola's 2024 closing prices</td>
           <td><a href="data/ko_2024_closes.csv" download>download</a></td></tr>
-      <tr><td><code>session_01.html</code></td><td>The lecture. Needs its <code>session_01_files</code> folder, so take the ZIP for this one.</td>
+      <tr><td>The lecture</td><td>Runs in your browser, nothing to install</td>
           <td><a href="session_01/session_01.html">open</a></td></tr>
     </tbody>
   </table>
@@ -87,7 +89,7 @@
               <a href="data/nvda_2024_closes.csv" download>NVDA</a> ·
               <a href="data/jnj_2024_closes.csv" download>JNJ</a> ·
               <a href="data/jpm_2024_closes.csv" download>JPM</a></td></tr>
-      <tr><td><code>session_02.html</code></td><td>The lecture</td>
+      <tr><td>The lecture</td><td>Runs in your browser, nothing to install</td>
           <td><a href="session_02/session_02.html">open</a></td></tr>
     </tbody>
   </table>
@@ -106,7 +108,7 @@
           <td><a href="data/prices.csv" download>download</a></td></tr>
       <tr><td><code>aapl_2024_closes.csv</code></td><td>Used by the array exercises</td>
           <td><a href="data/aapl_2024_closes.csv" download>download</a></td></tr>
-      <tr><td><code>session_03.html</code></td><td>The lecture</td>
+      <tr><td>The lecture</td><td>Runs in your browser, nothing to install</td>
           <td><a href="session_03/session_03.html">open</a></td></tr>
     </tbody>
   </table>
@@ -129,13 +131,13 @@
   </div>
 
   <h2 id="lectures">A note on the lectures</h2>
-  <p>Each rendered lecture is an HTML file plus a folder of assets next to it
-     (<code>session_03.html</code> and <code>session_03_files/</code>). Downloading the
-     HTML on its own gives you a broken page, so take the ZIP if you want the slides
-     offline. The live code cells also need the page to be served over HTTP rather than
-     opened from a <code>file://</code> path, which is a browser restriction, not a
-     course one. Online, the links on the <a href="index.html">sessions page</a> always
-     work.</p>
+  <p>The lectures are not in the ZIP. Their code cells run Python inside the browser,
+     and that only works when the page is served over the web rather than opened from a
+     file on your disk. It is a browser restriction, not a course one. So the slides are
+     best used online, from the <a href="index.html">sessions page</a>, where they always
+     work and are always current.</p>
+  <p>Everything you actually write code in, the exercises and the case, is in the ZIP and
+     works completely offline.</p>
 
   <footer>
     Something missing or a link broken? Email me at

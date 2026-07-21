@@ -67,9 +67,16 @@ a { color: var(--blue); }
 
 .sidenav .nav-foot {
   margin-top: auto; padding-top: 1.2rem;
-  font-size: 0.76rem; color: var(--faint);
+  font-size: 0.76rem; color: var(--faint); line-height: 1.5;
 }
-.sidenav .nav-foot a { color: var(--faint); }
+.sidenav .nav-foot a { color: var(--blue); text-decoration: none; }
+.sidenav .nav-foot a:hover { text-decoration: underline; }
+.sidenav .nav-owner { color: var(--ink-soft); font-weight: 600; }
+.sidenav .nav-legal {
+  margin-top: 0.7rem; padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.7rem; color: #a8a69f;
+}
 
 .wrap {
   flex: 1 1 auto; min-width: 0;

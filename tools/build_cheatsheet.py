@@ -425,6 +425,11 @@ def slug(title):
 
 SINCE_LABEL = {"S1": "Session 1", "S2": "Session 2", "S3": "Session 3", "S4": "Session 4"}
 
+# The sidebar comes from the same template every other page uses, so this page
+# cannot drift away from them.
+NAV = (ROOT / "assets" / "nav.html").read_text(encoding="utf-8").rstrip("\n")
+NAV = NAV.replace('<a href="cheatsheet.html">', '<a href="cheatsheet.html" aria-current="page">')
+
 parts = []
 parts.append("""<!doctype html>
 <html lang="en">
@@ -438,17 +443,9 @@ parts.append("""<!doctype html>
 <a class="skip" href="#main">Skip to content</a>
 <div class="shell">
 
-  <nav class="sidenav" aria-label="Course pages">
-    <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
-    <ul>
-      <li><a href="index.html">Sessions</a></li>
-      <li><a href="cheatsheet.html" aria-current="page">Cheatsheet</a></li>
-      <li><a href="setup.html">Setup &amp; tools</a></li>
-      <li><a href="resources.html">Resources</a></li>
-      <li><a href="downloads.html">Downloads</a></li>
-    </ul>
-    <div class="nav-foot">Aarhus University<br><a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a></div>
-  </nav>
+  <!-- nav:start -->
+  """ + NAV + """
+  <!-- nav:end -->
 
   <main class="wrap" id="main">
   <header>

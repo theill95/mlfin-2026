@@ -10,6 +10,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <div class="shell">
 
+  <!-- nav:start -->
   <nav class="sidenav" aria-label="Course pages">
     <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
     <ul>
@@ -19,8 +20,13 @@
       <li><a href="resources.html" aria-current="page">Resources</a></li>
       <li><a href="downloads.html">Downloads</a></li>
     </ul>
-    <div class="nav-foot">Aarhus University<br><a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a></div>
+    <div class="nav-foot">
+      <div class="nav-owner">Jonas Theill Bøjstrup</div>
+      <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>
+      <div class="nav-legal">Aarhus University<br>&copy; 2026 Jonas Theill Bøjstrup.<br>For enrolled students.</div>
+    </div>
   </nav>
+  <!-- nav:end -->
 
   <main class="wrap" id="main">
   <header>
@@ -113,9 +119,9 @@
      dividend-adjusted. They were downloaded once from Yahoo Finance and committed to the
      repository, so the materials never depend on a live connection and everyone works
      with exactly the same numbers.</p>
-  <p>The script that built them is <code>tools/build_dataset.py</code> in the repository,
-     if you want to see where the files came from or rebuild them for other tickers. The
-     files themselves are on the <a href="downloads.html">downloads page</a>.</p>
+  <p>The files themselves are on the <a href="downloads.html">downloads page</a>, and
+     they are the same ones the lectures and the case use, so any number you compute at
+     home should match a number from class exactly.</p>
 
   <h2 id="ai">Using AI on this course <span class="tag tag-need">needed</span></h2>
   <p>You may use it, and you should learn to. The distinction that matters is between
