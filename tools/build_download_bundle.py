@@ -65,7 +65,7 @@ course page above.
 
 Questions: jobo@econ.au.dk
 
-(c) 2026 Jonas Theill Bojstrup. Course materials for enrolled students.
+(c) 2026 Jonas Theill Bojstrup
 """
 
 
