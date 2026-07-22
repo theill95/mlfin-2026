@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Build tools/colab_probe.ipynb: which formula layouts survive Colab?
+"""Build the Colab probe: which formula layouts survive Colab?
+
+Each round writes a NEW filename. Colab caches a notebook it has opened
+from GitHub, so reusing the path serves the previous round and wastes a
+round trip. Bump the name, not the contents of an existing file.
 
 Instructor-only. Not course material, not in the download bundle.
 
@@ -28,7 +32,7 @@ import nbformat as nbf
 from nbformat.v4 import new_markdown_cell, new_notebook
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "tools" / "colab_probe.ipynb"
+OUT = ROOT / "tools" / "colab_probe_round2.ipynb"
 
 ROWS = [
     ("Mean absolute error", r"\text{MAE}=\dfrac{1}{n}\sum_i \lvert y_i-\hat{y}_i \rvert"),
