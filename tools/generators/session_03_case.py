@@ -231,7 +231,37 @@ q("Q5", "Check it a second way",
   "stock sits above it in the table.*")
 
 # ==================================================================== Q6
-q("Q6", "Put it in the units the desk uses",
+q("Q6", "The ranking that put the index first",
+  "A colleague mailed over their version of the risk ranking, below. Run it.\n\n"
+  "It puts **SPY, a broad index fund, at the top of the risk table** and "
+  "Coca-Cola at the bottom, which is close to exactly backwards. The code has no "
+  "bug in the ordinary sense: it runs, and every number it prints is a real "
+  "standard deviation of something.\n\n"
+  "Look at the size of the numbers. What is it actually measuring, and what "
+  "should it be measuring?",
+  "# their version, built from prices so it runs whatever else you have done\n"
+  "their_p24 = prices.pivot(index=\x27date\x27, columns=\x27ticker\x27, values=\x27close\x27).loc[\x272024\x27]\n"
+  "their_vol = their_p24.std() * np.sqrt(252)\nprint(their_vol.sort_values(ascending=False).round(1))\n\n"
+  "# yours\nfixed_vol = ...\nfixed_vol",
+  ["`p24` holds **prices**. What are the units of `p24.std()`? Dollars. Volatility "
+   "is not measured in dollars.",
+   "Take the returns first, exactly as in Q3 and Q4: "
+   "`p24.pct_change().std() * np.sqrt(252)`."],
+  "their_vol = p24.std() * np.sqrt(252)\nprint(their_vol.sort_values(ascending=False).round(1))\n\n"
+  "# yours\nfixed_vol = p24.pct_change().std() * np.sqrt(252)\nfixed_vol.sort_values(ascending=False).round(4)",
+  "Their table says SPY is riskiest at **598**, and yours says SPY is the calmest "
+  "of the eleven at **12.6%**.\n\n"
+  "They measured the spread of the **price level**, not the spread of the "
+  "**returns**. SPY trades near 600 dollars a share and Coca-Cola near 60, so the "
+  "ranking they produced is essentially a ranking by share price. Nothing about "
+  "risk is in it at all.\n\n"
+  "The units were the clue, and they usually are. A volatility of 598 is not a "
+  "number that can mean anything: a stock cannot move 598% a year and still be "
+  "there in the morning. **When a result is off by orders of magnitude, check what "
+  "you took the statistic *of* before you check the arithmetic.**")
+
+# ==================================================================== Q7
+q("Q7", "Put it in the units the desk uses",
   "Nobody quotes a daily volatility. Annualise `vol`, then store the riskiest and "
   "the calmest name.\n\n"
   "$$\\sigma_{\\text{year}} = \\sigma_{\\text{day}} \\times \\sqrt{252}$$",
@@ -247,42 +277,49 @@ q("Q6", "Put it in the units the desk uses",
   "the calmest thing you had found in Part 2. That is diversification, and you have "
   "just measured it.".format(AVOL.iloc[0], AVOL.iloc[-1], AVOL.index[-1]))
 
-# ==================================================================== Q7
-q("Q7", "Package it, so you can reuse it",
+# ==================================================================== Q8
+q("Q8", "Package it, so you can reuse it",
   "You have now written the same calculation three times. Turn it into a "
   "**function**: `volatility(prices_series, periods=252)`, which takes a column of "
   "prices and returns an annualised volatility.\n\n"
   "Give it a docstring, then check it against Apple's number from Q3.",
-  "def volatility(prices_series, periods=252):\n    ...\n\n\n# Once it works, uncomment this to check it against Q6:\n# print('function:', volatility(p24['AAPL']))\n# print('Q6      :', annual_vol['AAPL'])",
+  "def volatility(prices_series, periods=252):\n    ...\n\n\n# Once it works, uncomment this to check it against Q7:\n# print('function:', volatility(p24['AAPL']))\n# print('Q7      :', annual_vol['AAPL'])",
   ["The body is one line: `.pct_change()`, then `.std()`, then times "
    "`np.sqrt(periods)`.",
    "`return prices_series.pct_change().std() * np.sqrt(periods)`. The default "
    "`periods=252` means you can call it with one argument most of the time."],
-  "def volatility(prices_series, periods=252):\n    \"\"\"Annualised volatility of a price series.\"\"\"\n    return prices_series.pct_change().std() * np.sqrt(periods)\n\nprint('AAPL, function:', round(volatility(p24['AAPL']), 3))\nprint('AAPL, Q6      :', annual_vol['AAPL'])",
+  "def volatility(prices_series, periods=252):\n    \"\"\"Annualised volatility of a price series.\"\"\"\n    return prices_series.pct_change().std() * np.sqrt(periods)\n\nprint('AAPL, function:', round(volatility(p24['AAPL']), 3))\nprint('AAPL, Q7      :', annual_vol['AAPL'])",
   "The same **{:.3f}**. The function is Session 2 work: `def`, a parameter, a "
   "default, a docstring and a `return`. Only the line inside it is new.\n\n"
   "*Try `volatility(p24['AAPL'], periods=21)` for a monthly figure. That is what "
   "the default argument buys you: one function, several questions.*".format(AVOL["AAPL"]))
 
-# ==================================================================== Q8
-q("Q8", "A loop, a dictionary, and a Series",
+# ==================================================================== Q9
+q("Q9", "A loop, a dictionary, and a Series",
   "Now rebuild the whole ranking the Session 2 way: **loop** over `TICKERS` (the "
   "quick load made that list for you), call your function on each one, and store the "
   "answers in a **dictionary** keyed by ticker. Then turn the dictionary into a "
   "Series and check it against `annual_vol`.",
-  "by_hand = {}\nfor ticker in TICKERS:\n    ...\n\nby_hand = ...\nby_hand",
-  ["Inside the loop: `by_hand[ticker] = volatility(p24[ticker])`.",
+  "by_hand = {}\nfor ticker in TICKERS:\n    ...\n\nby_hand = ...\n\n"
+  "# and print it the way somebody would want to read it\nfor ticker in TICKERS:\n    ...",
+  ["Inside the first loop: `by_hand[ticker] = volatility(p24[ticker])`.",
    "Afterwards, `pd.Series(by_hand).sort_values(ascending=False)` turns the "
-   "dictionary into the same object `annual_vol` is."],
-  "by_hand = {}\nfor ticker in TICKERS:\n    by_hand[ticker] = volatility(p24[ticker])\n\nby_hand = pd.Series(by_hand).sort_values(ascending=False)\nby_hand.round(3)",
-  "The same eleven numbers in the same order as Q6.\n\n"
-  "Nothing in that cell is new: a loop, a function, a dictionary, all from Session "
-  "2. It is worth seeing that the one-line pandas version and the eleven-line loop "
-  "give the same answer, because the loop is the one you can still write when the "
+   "dictionary into the same object `annual_vol` is.",
+   "For the report, loop over `by_hand.index` and use the Session 1 recipe: "
+   '`print(f"{ticker:<6}{by_hand[ticker]:>7.1%}")`.'],
+  "by_hand = {}\nfor ticker in TICKERS:\n    by_hand[ticker] = volatility(p24[ticker])\n\n"
+  "by_hand = pd.Series(by_hand).sort_values(ascending=False)\n\n"
+  '# and print it the way somebody would want to read it\nfor ticker in by_hand.index:\n    print(f"{ticker:<6}{by_hand[ticker]:>7.1%}")',
+  "The same eleven numbers in the same order as Q7, now in a column somebody could "
+  "paste into an email.\n\n"
+  "Nothing in that cell is new. A loop, a function and a dictionary from Session 2, "
+  "an f-string from Session 1, and a volatility from Session 3, all in nine lines. "
+  "It is worth seeing that the one-line pandas version and the eleven-line loop give "
+  "the same answer, because the loop is the one you can still write when the "
   "calculation gets too odd for a single method call.")
 
-# ==================================================================== Q9
-q("Q9", "Show the desk, do not tell it",
+# ==================================================================== Q10
+q("Q10", "Show the desk, do not tell it",
   "Draw the ranking as horizontal bars: tickers down the side, annualised "
   "volatility across. Give it a title and an x-axis label.\n\n"
   "Sort it the other way round first, so the longest bar ends up at the top of the "
@@ -297,8 +334,8 @@ q("Q9", "Show the desk, do not tell it",
   "you plot is what makes a bar chart worth looking at: an unsorted one makes the "
   "reader do the work.")
 
-# ==================================================================== Q10
-q("Q10", "What the riskiest one actually did",
+# ==================================================================== Q11
+q("Q11", "What the riskiest one actually did",
   "A volatility says how much something moved, not which way. Draw Nvidia's 2024 "
   "closing price as a line, with a title and a y-axis label, and see for yourself.",
   "nvda = ...\n\nfig, ax = plt.subplots(figsize=(9, 3))\n...\nplt.show()",
@@ -311,8 +348,8 @@ q("Q10", "What the riskiest one actually did",
   "year. Risk is not a synonym for bad, which is exactly why the two questions have "
   "to be kept apart.".format(NVDA_TR))
 
-# ==================================================================== Q11
-q("Q11", "Do they move together?",
+# ==================================================================== Q12
+q("Q12", "Do they move together?",
   "A portfolio's risk depends not only on how much each stock moves, but on whether "
   "they all move **at the same time**.\n\n"
   "For Apple and for Coca-Cola, count the days in 2024 when they moved in the "
@@ -330,10 +367,10 @@ q("Q11", "Do they move together?",
   "That gap matters more than it looks. A stock that moves with everything else "
   "adds its full risk to a portfolio. One that goes its own way partly cancels out "
   "against the others, which is why the S&P 500 fund came bottom of your ranking in "
-  "Q6.".format(N, SAME["AAPL"], SAME["AAPL"] / N, SAME["KO"], SAME["KO"] / N))
+  "Q7.".format(N, SAME["AAPL"], SAME["AAPL"] / N, SAME["KO"], SAME["KO"] / N))
 
-# ==================================================================== Q12
-q("Q12", "From a number to a category",
+# ==================================================================== Q13
+q("Q13", "From a number to a category",
   "The desk does not want eleven decimals, it wants three buckets. Write "
   "`risk_label(annual_vol)` that returns `'high'` above 0.30, `'medium'` above 0.18 "
   "and `'low'` otherwise, then label every stock and collect the answers.",
@@ -350,13 +387,13 @@ q("Q12", "From a number to a category",
   "predicting a category like this one is called classification. Session 4 gives "
   "both of them their names.")
 
-# ==================================================================== Q13
-q("Q13", "The table a model would want",
+# ==================================================================== Q14
+q("Q14", "The table a model would want",
   "Build the report as one row per stock, with three columns describing its 2024: "
   "annualised volatility, average daily return, and the share of days it rose.\n\n"
   "Then add your risk labels as a fourth column.",
   "vol_col = ...\nmean_col = ...\nup_col = ...\n\nreport = ...\nreport",
-  ["`r24` from Q11 already holds every daily return. The three columns are "
+  ["`r24` from Q12 already holds every daily return. The three columns are "
    "`r24.std() * np.sqrt(252)`, `r24.mean()` and `(r24 > 0).mean()`.",
    "`pd.DataFrame({'vol': vol_col, 'mean_ret': mean_col, 'up_share': up_col})` lines "
    "them up on the ticker labels. Add the labels with "
@@ -368,8 +405,8 @@ q("Q13", "The table a model would want",
   "and whichever column you are trying to predict the *target*.\n\n"
   "Everything in this course from here on arrives in that shape.")
 
-# ==================================================================== Q14
-q("Q14", "Would last year have told you?",
+# ==================================================================== Q15
+q("Q15", "Would last year have told you?",
   "Every number above describes 2024, a year that has already happened. The useful "
   "question is whether it would have helped you in advance.\n\n"
   "Compute each stock's annualised volatility over **2015 to 2022**, and again over "
@@ -422,9 +459,9 @@ md(
 "- which past facts are you allowed to use, and which would be cheating?\n"
 "- what exactly are you predicting, and how would you know if you were right?\n"
 "- if a rule describes 2024 perfectly, is that good news or a warning?\n\n"
-"You have already built the pieces. `report` in Q13 is a table of observations and "
-"features. `labels` in Q12 is a category you could try to predict. The split in "
-"Q14 is how you would find out honestly whether you could.\n\n"
+"You have already built the pieces. `report` in Q14 is a table of observations and "
+"features. `labels` in Q13 is a category you could try to predict. The split in "
+"Q15 is how you would find out honestly whether you could.\n\n"
 "Next session is about those three questions. You will not fit a model. You will "
 "learn what a model is being asked to do, and why that is harder than it sounds.\n\n"
 "**Part 4** turns this report into a prediction problem: observations, features, "

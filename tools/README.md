@@ -65,6 +65,8 @@ python tools/generators/session_02_exercises.py
 python tools/generators/session_02_case.py
 python tools/generators/session_03_exercises.py
 python tools/generators/session_03_case.py
+python tools/generators/session_04_exercises.py
+python tools/generators/session_04_case.py
 ```
 
 Cell ids are stamped deterministically (`c0000`, `c0001`, ...), so re-running a
@@ -73,6 +75,31 @@ it is a real one.
 
 Editing a notebook by hand in Jupyter or Colab works, but the next time anyone
 runs the generator your edit is gone. Change the generator instead.
+
+### The difficulty ladder
+
+Exercises carry **one to five stars and no tier names**. The scale restarts each
+session: it rates the work against what that session has taught, so a three-star
+task in Session 4 is a bigger piece of work than a three-star task in Session 1
+even though both sit in the middle of their own notebook.
+
+| stars | what it means |
+|:--|:--|
+| ★ | one step, straight from the lecture |
+| ★★ | the same idea on new data, or two steps in a row |
+| ★★★ | combine two ideas, or adapt a pattern rather than copy it |
+| ★★★★ | you choose the approach; something has to be worked out first |
+| ★★★★★ | a genuine puzzle: an insight, or a constraint ruling out the obvious route |
+
+An exercise that leans on an **earlier** session carries a `revisits` tag, which
+renders after the stars. Those tags live in a `REVISITS` dict near the top of
+each generator rather than on the individual `ex()` calls, so the whole set can
+be read and revised at once. Tag an exercise only when the earlier tool is
+genuinely load-bearing; a tag that is merely true is noise.
+
+`tools/verify/exercise_ladder.py` enforces all of this: unique consecutive ids,
+stars in range, at least four of the five levels used per session, and every
+`revisits` tag pointing at an **earlier** session.
 
 ## The site pages
 
@@ -120,6 +147,17 @@ proves the investigation still chains together.
 
 A blank run is checked separately, and matters just as much: a student who
 presses Run All before filling anything in must not see a wall of errors.
+
+`tools/verify/blank_safety.py` checks this statically, across all eight
+notebooks, in under a second. It parses every work cell, tracks which names are
+bound to `...`, and refuses anything that would call a method on one, index into
+it, iterate it, do arithmetic with it, or pass it to `len`/`range`/`sum`. It
+also refuses `while ...:` outright, which does not raise at all: `Ellipsis` is
+truthy, so that cell **hangs the kernel forever**, which is far worse than a
+traceback and invisible in a quick read.
+
+Run the real thing as well before publishing, because the static check cannot
+see everything:
 
 ```bash
 python -m jupyter nbconvert --to notebook --execute --output /tmp/out.ipynb session_03/session_03_exercises.ipynb

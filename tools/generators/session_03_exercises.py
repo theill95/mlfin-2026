@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Build session_03_exercises.ipynb.
 
-Same conventions as Sessions 1 and 2: pleasant intro, 4-star badges, toolkit
+Same conventions as Sessions 1 and 2: pleasant intro, 1-5 star badges, toolkit
 card with <abbr> hover docs, task -> work cell (blank-safe `...`) -> 1-2 folded
 hints -> folded solution, no em-dashes, plain academic tone.
 
@@ -33,11 +33,15 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "session_03" / "session_03_exercises.ipynb"
 
 cells = []
-LABELS = {1: "Warm-up", 2: "Core", 3: "Challenge", 4: "Stretch"}
+def badge(n, revisits=None):
+    """Five unnamed stars, plus an optional note that this one reaches back.
 
-
-def badge(n):
-    return ("★" * n + "☆" * (4 - n)) + " " + LABELS[n]
+    The scale restarts each session: it rates the work against what THIS
+    session has taught, so a three-star task here is not the same size as a
+    three-star task in a later notebook.
+    """
+    stars = "★" * n + "☆" * (5 - n)
+    return stars + (f"  · revisits {revisits}" if revisits else "")
 
 
 def md(text):
@@ -61,8 +65,16 @@ def _hints_solution(hints, sol_code, sol_note):
     md("---")
 
 
-def ex(sid, title, n, task, work, hints, sol_code, sol_note):
-    md(f"### {sid} · {title}  {badge(n)}\n\n{task}")
+# Exercises whose earlier-session tool is genuinely load-bearing, not incidental.
+# Kept in one place so the tags can be read and revised as a set.
+REVISITS = {
+    "A7": "S2", "L1": "S2", "L2": "S2", "L3": "S2", "L4": "S2", "L5": "S2",
+    "L6": "S2", "L7": "S2", "L8": "S1", "L9": "S2", "L10": "S1", "L11": "S2",
+}
+
+
+def ex(sid, title, n, task, work, hints, sol_code, sol_note, revisits=None):
+    md(f"### {sid} · {title}  {badge(n, revisits or REVISITS.get(sid))}\n\n{task}")
     code(work)
     _hints_solution(hints, sol_code, sol_note)
 
@@ -117,12 +129,19 @@ md(
 
 md(
 "### Difficulty\n\n"
-"| badge | level | what to expect |\n"
-"|:--|:--|:--|\n"
-"| ★☆☆☆ | **Warm-up** | one idea, straight from the lecture |\n"
-"| ★★☆☆ | **Core** | the skill you will actually use. Most exercises live here |\n"
-"| ★★★☆ | **Challenge** | combine a few ideas, or think one step past what you were shown |\n"
-"| ★★★★ | **Stretch** | a real puzzle for those who want one. Rare, and always solvable with today's tools |\n"
+"| badge | what to expect |\n"
+"|:--|:--|\n"
+"| ★☆☆☆☆ | One step, straight from the lecture. You are checking that you can type it. |\n"
+"| ★★☆☆☆ | The same idea on new data, or two steps in a row. Nothing to decide. |\n"
+"| ★★★☆☆ | Combine two ideas, or adapt a pattern rather than copy it. |\n"
+"| ★★★★☆ | You choose the approach. Several steps, and something has to be worked out before you type. |\n"
+"| ★★★★★ | A genuine puzzle: an insight, or a constraint that rules out the obvious route. Always solvable with what you have. |\n\n"
+"The stars rate the work against **this** session. A three-star task in a later "
+"notebook assumes everything before it, so it is a bigger piece of work than a "
+"three-star task here, even though both sit in the middle of their own scale.\n\n"
+"Some exercises also carry a **revisits** tag. Those need something from an "
+"earlier session as well as today's material, and they are there on purpose: "
+"the skills are meant to accumulate, not to be handed in at the end of each week."
 )
 
 md(
@@ -307,7 +326,7 @@ ex("A4", "Two arrays, side by side", 2,
    "opens = np.array([100.0, 102.0, 101.5, 104.0])\ncloses = np.array([102.0, 101.5, 104.0, 103.5])\n\nchange = closes - opens\nchange",
    "`array([ 2. , -0.5,  2.5, -0.5])`. Element by element, no loop in sight.")
 
-ex("A5", "Lining up the day before", 2,
+ex("A5", "Lining up the day before", 3,
    "From `week`, build two arrays: `today` (every close from the second onwards) "
    "and `yesterday` (every close except the last).",
    "today = ...\nyesterday = ...\n\nprint(today)\nprint(yesterday)",
@@ -317,7 +336,7 @@ ex("A5", "Lining up the day before", 2,
    "Two views of the same prices, offset by one day. This is the whole trick behind "
    "computing returns without a loop.")
 
-ex("A6", "Every daily return, in one line", 2,
+ex("A6", "Every daily return, in one line", 3,
    "Now use those two views to compute all four daily returns from `week`, into "
    "`returns`.",
    "returns = ...\nreturns",
@@ -492,7 +511,7 @@ ex("D3", "A portfolio return", 2,
    "`0.011` exactly: `0.5*0.012 + 0.3*(-0.004) + 0.2*0.031`. A 1.1% day for the "
    "portfolio.")
 
-ex("D4", "Fitted values for a whole sample", 2,
+ex("D4", "Fitted values for a whole sample", 3,
    "With `X` (3 rows, 2 columns) and coefficients `b = [0.001, 1.2]`, compute the "
    "fitted value for every row at once.",
    "X = np.array([[1.0, 0.012],\n              [1.0, -0.004],\n              [1.0, 0.008]])\nb = np.array([0.001, 1.2])\n\nfitted = ...\nfitted",
@@ -526,7 +545,7 @@ ex("E2", "Solving a system", 2,
    "A = np.array([[4.0, 2.0],\n              [1.0, 3.0]])\nb = np.array([10.0, 10.0])\n\nx = np.linalg.solve(A, b)\nx",
    "`array([1., 3.])`. Check it if you like: `A @ x` gives back `[10., 10.]`.")
 
-ex("E3", "OLS by hand, once", 3,
+ex("E3", "OLS by hand, once", 5,
    "Estimate a regression of `y` on a constant and `x`, using the formula "
    "$\\hat{\\beta}=(X'X)^{-1}X'y$. Build the `X` matrix first: a column of ones, "
    "then `x`.",
@@ -548,6 +567,27 @@ ex("E4", "What the model missed", 3,
    "The residuals are `[0.0, 0.1, -0.2, 0.1]` and their mean is zero to rounding. "
    "That is not luck: including the column of ones is exactly what forces it. "
    "Residuals are how every model in this course will be judged.")
+
+ex("E5", "Two routes to the same beta", 3,
+   "The lecture gave you two ways to solve $\\mathbf{X}^{\\top}\\mathbf{X}\\,"
+   "\\hat{\\boldsymbol\\beta}=\\mathbf{X}^{\\top}\\mathbf{y}$: invert the matrix, or "
+   "hand the whole system to `solve`.\n\n"
+   "Compute the coefficients **both** ways and check that they agree.",
+   "x = np.array([0.5, 1.5, 2.5, 3.5])\ny = np.array([1.0, 2.0, 2.6, 3.8])\nX = np.column_stack([np.ones(len(x)), x])\n\n"
+   "by_inverse = ...\nby_solve = ...\n\nprint('inverse:', by_inverse)\nprint('solve  :', by_solve)\nprint('agree  :', ...)",
+   ["The first is the textbook formula: `np.linalg.inv(X.T @ X) @ X.T @ y`.",
+    "The second skips the inverse: `np.linalg.solve(X.T @ X, X.T @ y)`. Compare them "
+    "with `np.allclose(by_inverse, by_solve)`, which is the array version of "
+    "'equal to within rounding'."],
+   "x = np.array([0.5, 1.5, 2.5, 3.5])\ny = np.array([1.0, 2.0, 2.6, 3.8])\nX = np.column_stack([np.ones(len(x)), x])\n\n"
+   "by_inverse = np.linalg.inv(X.T @ X) @ X.T @ y\nby_solve = np.linalg.solve(X.T @ X, X.T @ y)\n\n"
+   "print('inverse:', by_inverse)\nprint('solve  :', by_solve)\nprint('agree  :', np.allclose(by_inverse, by_solve))",
+   "Both give the same two coefficients, and `np.allclose` says so. They are not "
+   "identical to the last bit, which is why you compare with `allclose` rather than "
+   "`==`.\n\n"
+   "`solve` is the one to use in practice: it is faster, and it is more accurate when "
+   "the columns are nearly redundant. Forming the inverse explicitly is something you "
+   "do to learn the formula, not to run it.")
 
 md("---")
 
@@ -650,14 +690,27 @@ ex("H1", "One stock", 2,
    f"`({(PX.ticker=='KO').sum()}, 4)`: one row per trading day over ten years, for "
    "one stock.")
 
-ex("H2", "One stock, one condition", 2,
-   "From the Apple rows, keep only the days where the close was above 200 dollars, "
-   "into `expensive`. How many such days were there?",
-   "aapl = prices[prices['ticker'] == 'AAPL']\n\nexpensive = ...\nexpensive",
-   "Filter the already-filtered table: `aapl[aapl['close'] > 200]`.",
-   "aapl = prices[prices['ticker'] == 'AAPL']\n\nexpensive = aapl[aapl['close'] > 200]\nprint(expensive.shape)\nexpensive.head()",
-   f"`{int(((PX.ticker=='AAPL') & (PX.close>200)).sum())}` days out of 2,516. Apple "
-   "only crossed 200 dollars late in the decade.")
+ex("H2", "The warning nobody reads", 3,
+   "⚠️ **Run the cell below.** It keeps the Apple rows, then adds a column to them, "
+   "and pandas prints a `SettingWithCopyWarning`.\n\n"
+   "The warning is telling you something real: pandas cannot tell whether `aapl` is "
+   "its own table or a view onto `prices`, so it does not know whether you meant to "
+   "change `prices` as well. Repair it with the one method from the lecture that "
+   "settles the question, then confirm `prices` was left alone.",
+   "aapl = prices[prices['ticker'] == 'AAPL']\naapl['expensive'] = aapl['close'] > 200\n\n"
+   "fixed = ...\n\nprint('columns in prices:', list(prices.columns))",
+   ["The lecture's answer was `.copy()`: take your own table, then nobody has to "
+    "guess.",
+    "`fixed = prices[prices['ticker'] == 'AAPL'].copy()`, and then assign the column "
+    "on `fixed`."],
+   "aapl = prices[prices['ticker'] == 'AAPL'].copy()\naapl['expensive'] = aapl['close'] > 200\n\n"
+   "fixed = aapl\n\nprint('columns in prices:', list(prices.columns))\n"
+   f"print('expensive days:', int(fixed['expensive'].sum()))",
+   f"`{int(((PX.ticker=='AAPL') & (PX.close>200)).sum())}` days out of 2,516, and "
+   "`prices` still has its original four columns.\n\n"
+   "This warning is the most ignored message in pandas, and ignoring it is how "
+   "people end up with a column that silently did not get written, or one that got "
+   "written to the wrong table. `.copy()` costs nothing and ends the ambiguity.")
 
 ex("H3", "A returns column", 2,
    "Take the Microsoft rows, then add a `ret` column holding the daily return.",
@@ -725,19 +778,28 @@ ex("I2", "Average price per stock", 2,
    "stocks: a share price depends on how many shares exist, not on how good the "
    "company is.")
 
-ex("I3", "Volatility for every stock", 3,
-   "Add a `ret` column holding each stock's own daily return, then compute the "
-   "volatility of every stock and rank them riskiest first.",
-   "prices['ret'] = ...\n\nvol = ...\nvol",
-   ["`prices.groupby('ticker')['close'].pct_change()` computes the return **within** "
-    "each stock, so no return is ever taken across two different companies.",
-    "Then group again: `prices.groupby('ticker')['ret'].std()`, and sort it with "
-    "`ascending=False`."],
+ex("I3", "Eleven volatilities, all slightly wrong", 4,
+   "A colleague computed every stock's volatility with the cell below. It runs, it "
+   "produces eleven sensible-looking numbers, and **every one of them is too high**. "
+   "Walmart's comes out at 2.33% a day when the truth is 1.33%.\n\n"
+   "The table is stacked: all of Apple's rows, then all of Disney's, and so on. Work "
+   "out what that does to `pct_change`, then fix it.",
+   "prices['ret_wrong'] = prices['close'].pct_change()\nwrong = prices.groupby('ticker')['ret_wrong'].std().sort_values(ascending=False)\n"
+   "print((wrong * 100).round(2).head(4))\n\nvol = ...\nvol",
+   ["Where does one stock's block of rows end and the next one begin? What does "
+    "`pct_change` compute on that one row?",
+    "Group **before** taking the change, so the calculation never steps across a "
+    "boundary: `prices.groupby('ticker')['close'].pct_change()`."],
    "prices['ret'] = prices.groupby('ticker')['close'].pct_change()\n\nvol = prices.groupby('ticker')['ret'].std().sort_values(ascending=False)\nvol",
-   f"Nvidia is far out in front at about {VOL_FULL['NVDA']:.2%} a day, and the S&P 500 "
-   f"ETF is calmest at about {VOL_FULL['SPY']:.2%}. Grouping before `pct_change` is "
-   "the important part: without it, the first return of each stock would be computed "
-   "from the last price of the previous one.")
+   f"Nvidia leads at about {VOL_FULL['NVDA']:.2%} a day, and the S&P 500 ETF is "
+   f"calmest at about {VOL_FULL['SPY']:.2%}.\n\n"
+   "**Ten rows were poisoning the whole table.** At each boundary the ungrouped "
+   "`pct_change` computed a return from the last price of one company to the first "
+   "price of the next, producing a fake move of tens of percent. Ten bad numbers out "
+   "of 27,676 were enough to inflate Coca-Cola's volatility by 85%.\n\n"
+   "Nothing errored, nothing looked odd, and the ranking even stayed plausible. This "
+   "is the most common bug in applied pandas, and the only defence is to group "
+   "before you compute anything that looks at a neighbouring row.")
 
 ex("I4", "A small risk report", 3,
    "Produce a table with the mean, standard deviation, minimum and maximum daily "
@@ -786,14 +848,31 @@ ex("J2", "Two lines and a legend", 2,
    "As soon as there is more than one line, the reader has to be told which is "
    "which. `label=` on each, then one `ax.legend()`.")
 
-ex("J3", "Ranking, as bars", 2,
-   "Draw the volatility ranking below as horizontal bars, with a title.",
-   "prices['ret'] = prices.groupby('ticker')['close'].pct_change()\nvol = prices.groupby('ticker')['ret'].std().sort_values()\n\nfig, ax = plt.subplots(figsize=(9, 3.5))\n...\nplt.show()",
-   "`ax.barh(vol.index, vol.values)` puts the names down the side and the bars "
-   "across.",
-   "prices['ret'] = prices.groupby('ticker')['close'].pct_change()\nvol = prices.groupby('ticker')['ret'].std().sort_values()\n\nfig, ax = plt.subplots(figsize=(9, 3.5))\nax.barh(vol.index, vol.values)\nax.set_title('Daily volatility, 2015 to 2024', loc='left')\nplt.show()",
-   "Sorting before you plot is what makes a bar chart readable. `barh` rather than "
-   "`bar` because the labels are names.")
+ex("J3", "Fix the figure", 3,
+   "The figure below is drawn, and it is not publishable. Run it, then work through "
+   "the lecture's checklist and repair the three faults:\n\n"
+   "- the bars are in the order the tickers happen to appear, not in rank order\n"
+   "- the horizontal axis is cut off at 0.008, which makes small differences look "
+   "enormous\n"
+   "- there is no title and no axis label, so a reader cannot tell what is being "
+   "measured\n\n"
+   "**Bars must start at zero.** That is the one rule on the checklist that is not "
+   "a matter of taste.",
+   "prices['ret'] = prices.groupby('ticker')['close'].pct_change()\nvol = prices.groupby('ticker')['ret'].std()\n\n"
+   "fig, ax = plt.subplots(figsize=(9, 3.5))\nax.barh(vol.index, vol.values)\nax.set_xlim(0.008, 0.032)\nplt.show()\n\n"
+   "# your repaired version:\nvol_sorted = ...\n\nfig, ax = plt.subplots(figsize=(9, 3.5))\n...\nplt.show()",
+   ["`vol.sort_values()` puts the smallest at the bottom, which reads best on "
+    "horizontal bars.",
+    "Drop the `set_xlim` entirely, then add `ax.set_title(..., loc='left')` and "
+    "`ax.set_xlabel('daily volatility')`."],
+   "prices['ret'] = prices.groupby('ticker')['close'].pct_change()\nvol = prices.groupby('ticker')['ret'].std()\n\n"
+   "vol_sorted = vol.sort_values()\n\nfig, ax = plt.subplots(figsize=(9, 3.5))\nax.barh(vol_sorted.index, vol_sorted.values)\n"
+   "ax.set_title('Daily volatility, 2015 to 2024', loc='left')\nax.set_xlabel('daily volatility')\nplt.show()",
+   "In the broken version Coca-Cola appears to have almost no risk at all, because "
+   "its bar starts at the left edge of a truncated axis rather than at zero. The "
+   "numbers never changed; only the axis did.\n\n"
+   "A truncated axis on a **line** chart is often fine, since a line shows change. "
+   "On bars it is a lie, because the length of the bar is the whole message.")
 
 ex("J4", "The shape of a year", 2,
    "Draw a histogram of Apple's daily returns using `returns24`, with 40 bins and a "
@@ -814,6 +893,27 @@ ex("J5", "One thing against another", 2,
    "wide = prices.pivot(index='date', columns='ticker', values='close')\nr24 = wide.loc['2024'].pct_change().dropna()\n\nfig, ax = plt.subplots(figsize=(5.5, 4))\nax.scatter(r24['SPY'], r24['AAPL'], s=10, alpha=0.6)\nax.set_xlabel('market return (SPY)')\nax.set_ylabel('Apple return')\nax.set_title('Apple against the market, 2024', loc='left')\nplt.show()",
    "An upward-sloping cloud. The slope of a line through it is Apple's **beta**, "
    "which you computed with `np.linalg.solve` in the lecture.")
+
+ex("J6", "Two panels, one story", 3,
+   "The level and the change are different pictures and they belong side by side. "
+   "Using `plt.subplots(1, 2, ...)`, draw Apple's 2024 **price** on the left and its "
+   "daily **returns** on the right, each with its own title.\n\n"
+   "`plt.subplots(1, 2)` hands back an array of two axes, so you draw on `axes[0]` "
+   "and `axes[1]` instead of on `ax`.",
+   "wide = prices.pivot(index='date', columns='ticker', values='close')\np24 = wide.loc['2024', 'AAPL']\nr24 = p24.pct_change().dropna()\n\n"
+   "fig, axes = plt.subplots(1, 2, figsize=(11, 3))\n...\nfig.tight_layout()\nplt.show()",
+   ["`axes[0].plot(p24.index, p24.values)` and `axes[1].plot(r24.index, r24.values)`.",
+    "Give each one `set_title(..., loc='left')`, and the left panel a `set_ylabel('USD')`."],
+   "wide = prices.pivot(index='date', columns='ticker', values='close')\np24 = wide.loc['2024', 'AAPL']\nr24 = p24.pct_change().dropna()\n\n"
+   "fig, axes = plt.subplots(1, 2, figsize=(11, 3))\naxes[0].plot(p24.index, p24.values)\n"
+   "axes[0].set_title('Apple price, 2024', loc='left')\naxes[0].set_ylabel('USD')\n"
+   "axes[1].plot(r24.index, r24.values, linewidth=0.8)\naxes[1].set_title('Apple daily returns, 2024', loc='left')\n"
+   "fig.tight_layout()\nplt.show()",
+   "The left panel wanders upward and never comes back. The right one hovers around "
+   "zero all year. Same data, and only the right-hand panel has a mean and a spread "
+   "worth quoting.\n\n"
+   "`tight_layout` stops the two panels overlapping their labels, and you will want "
+   "it on almost every multi-panel figure you draw.")
 
 md("---")
 
@@ -927,7 +1027,7 @@ ex("L2", "A function with a default", 2,
    "About `0.178` a year and `0.051` a month. The default argument from Session 2 "
    "earns its keep here: one function, two questions, no copy of the formula.")
 
-ex("L3", "A loop over stocks, a dictionary of answers", 2,
+ex("L3", "A loop over stocks, a dictionary of answers", 3,
    "Using the `volatility` function below, loop over three tickers and collect their "
    "volatilities in a **dictionary** keyed by ticker.",
    "wide = prices.pivot(index='date', columns='ticker', values='close')\n\ndef volatility(prices_series, periods=252):\n    return prices_series.pct_change().std() * np.sqrt(periods)\n\ntickers = ['AAPL', 'KO', 'NVDA']\nvols = {}\nfor ticker in tickers:\n    ...\n\nvols",
@@ -961,7 +1061,7 @@ ex("L5", "Labelling with if, elif, else", 3,
    "which is exactly what a **classification** problem predicts. Session 4 will call "
    "these labels a *target*.")
 
-ex("L6", "One row per stock, built by a loop", 3,
+ex("L6", "One row per stock, built by a loop", 4,
    "Write `summarise(ticker)` that returns a **dictionary** with the ticker, its 2024 "
    "annualised volatility and its average daily return. Loop over three stocks, "
    "collect the dictionaries in a list, and hand the list to `pd.DataFrame`.",
@@ -975,7 +1075,7 @@ ex("L6", "One row per stock, built by a loop", 3,
    "there is, and it is how you will assemble a table of features one row at a time "
    "when the calculation is too awkward for `groupby`.")
 
-ex("L7", "The same answer, two ways", 3,
+ex("L7", "The same answer, two ways", 4,
    "Compute every stock's 2024 annualised volatility twice: once with a loop over "
    "`wide.columns`, and once with pandas in a single expression. Then check that the "
    "two agree.",
@@ -987,6 +1087,87 @@ ex("L7", "The same answer, two ways", 3,
    "`True`. Eleven lines of work and one line of work, agreeing to six decimals. "
    "Checking a fast method against a slow one you trust is a habit worth keeping, "
    "and it is how you will catch the mistakes that do not raise an error.")
+
+ex("L8", "Report it the way a person reads it", 2,
+   "A Series printed raw is for you. A report is for somebody else.\n\n"
+   "Loop over the 2024 volatility ranking and print one line per stock: the ticker "
+   "left-aligned in six characters, then the volatility as a percentage with one "
+   "decimal, right-aligned in seven.",
+   "wide = prices.pivot(index='date', columns='ticker', values='close')\n"
+   "vol24 = wide.loc['2024'].pct_change().std() * np.sqrt(252)\nvol24 = vol24.sort_values(ascending=False)\n\n"
+   "for ticker in vol24.index:\n    ...",
+   ["`vol24[ticker]` gets the value, exactly like a dictionary.",
+    'The Session 1 recipe with widths: `print(f"{ticker:<6}{vol24[ticker]:>7.1%}")`.'],
+   "wide = prices.pivot(index='date', columns='ticker', values='close')\n"
+   "vol24 = wide.loc['2024'].pct_change().std() * np.sqrt(252)\nvol24 = vol24.sort_values(ascending=False)\n\n"
+   'for ticker in vol24.index:\n    print(f"{ticker:<6}{vol24[ticker]:>7.1%}")',
+   "Nvidia at 52.5% down to the S&P 500 ETF at 12.6%, in a column you could paste "
+   "into an email. The f-string is Session 1, the loop is Session 2, the volatility "
+   "is today. Nothing on this course gets thrown away.")
+
+ex("L9", "How many names to fill the budget", 3,
+   "A desk adds stocks to a portfolio starting from the calmest, and stops as soon "
+   "as the **sum** of their annualised volatilities passes 1.0. How many names does "
+   "it take?\n\n"
+   "This is a `while` loop, not a `for` loop: you do not know in advance how many "
+   "steps it needs.",
+   "wide = prices.pivot(index='date', columns='ticker', values='close')\n"
+   "vol24 = (wide.loc['2024'].pct_change().std() * np.sqrt(252)).sort_values()\n\n"
+   "budget = 0.0\nn_names = 0\n\nwhile False:          # <- replace with the right condition\n    ...\n\nprint('names:', n_names, ' budget used:', round(budget, 3))",
+   ["The condition is on the budget: keep going `while budget <= 1.0`.",
+    "Inside, add the next volatility, `vol24.iloc[n_names]`, then increase "
+    "`n_names`. Order matters: read the value before you move the counter on."],
+   "wide = prices.pivot(index='date', columns='ticker', values='close')\n"
+   "vol24 = (wide.loc['2024'].pct_change().std() * np.sqrt(252)).sort_values()\n\n"
+   "budget = 0.0\nn_names = 0\n\nwhile budget <= 1.0:\n    budget = budget + vol24.iloc[n_names]\n    n_names = n_names + 1\n\n"
+   "print('names:', n_names, ' budget used:', round(budget, 3))",
+   "**Seven names**, using 1.121 of the budget. A `for` loop cannot express this "
+   "directly, because the number of steps is the answer rather than the input.\n\n"
+   "Note the danger you have just avoided: if every volatility were zero this loop "
+   "would never stop. A `while` loop always needs something inside it that moves "
+   "towards the exit.",
+   revisits="S2")
+
+ex("L10", "The tickers arrive in a mess", 2,
+   "A colleague sends a watchlist typed by hand. Before you can use it to select "
+   "columns you have to clean it: strip the spaces, force uppercase, and keep only "
+   "the ones that actually exist in `wide`.",
+   "wide = prices.pivot(index='date', columns='ticker', values='close')\nwatchlist = ['  aapl ', 'KO', ' Msft', 'TSLA', 'nvda  ']\n\n"
+   "clean = []\nfor name in watchlist:\n    ...\n\nprint('clean :', clean)\nprint('usable:', ...)",
+   ["`name.strip().upper()` does both jobs, then append it.",
+    "For the second list, keep the ones where `ticker in wide.columns`."],
+   "wide = prices.pivot(index='date', columns='ticker', values='close')\nwatchlist = ['  aapl ', 'KO', ' Msft', 'TSLA', 'nvda  ']\n\n"
+   "clean = []\nfor name in watchlist:\n    clean.append(name.strip().upper())\n\n"
+   "usable = []\nfor ticker in clean:\n    if ticker in wide.columns:\n        usable.append(ticker)\n\n"
+   "print('clean :', clean)\nprint('usable:', usable)",
+   "Four of the five survive: Tesla is not in this universe. `.strip()` and "
+   "`.upper()` are Session 1 string methods, and they are still the first thing that "
+   "happens to any list of names somebody typed.\n\n"
+   "Selecting `wide[watchlist]` without cleaning would have raised a `KeyError` on "
+   "the very first entry.")
+
+ex("L11", "Retire the loop, and prove it", 4,
+   "In Session 2 you counted a stock's up days with a loop and an `if`. pandas does "
+   "it in one expression.\n\n"
+   "Write **both**, for every stock at once: the loop version filling a dictionary, "
+   "and the one-line version. Then check that they agree.",
+   "wide = prices.pivot(index='date', columns='ticker', values='close')\nrets = wide.pct_change().dropna()\n\n"
+   "by_loop = {}\nfor ticker in rets.columns:\n    ...\n\nby_pandas = ...\n\n"
+   "print(by_pandas)\nprint('agree:', ...)",
+   ["Inside the loop, count with an accumulator exactly as in Session 2, then divide "
+    "by `len(rets)`.",
+    "The whole thing at once is `(rets > 0).mean()`, because the mean of True and "
+    "False is the share of Trues. Compare with "
+    "`pd.Series(by_loop).sort_index().round(10).equals(by_pandas.sort_index().round(10))`."],
+   "wide = prices.pivot(index='date', columns='ticker', values='close')\nrets = wide.pct_change().dropna()\n\n"
+   "by_loop = {}\nfor ticker in rets.columns:\n    up = 0\n    for r in rets[ticker]:\n        if r > 0:\n            up = up + 1\n    by_loop[ticker] = up / len(rets)\n\n"
+   "by_pandas = (rets > 0).mean()\n\nprint(by_pandas.round(4).to_dict())\n"
+   "print('agree:', pd.Series(by_loop).sort_index().round(10).equals(by_pandas.sort_index().round(10)))",
+   "`True`. Eleven nested loops over 2,515 days each, replaced by `(rets > 0).mean()`.\n\n"
+   "This is the whole argument for Session 3 in one exercise. The loop is not wrong "
+   "and it is not slow enough to matter here; it is just eleven times more code to "
+   "read, and eleven more places to make the mistake you fixed in I3.",
+   revisits="S2")
 
 md("---")
 
@@ -1012,7 +1193,7 @@ ex("M1", "A table of features", 3,
    "eats**: one row per observation, one column per feature, and the row labels "
    "saying which observation is which.")
 
-ex("M2", "Features and target", 2,
+ex("M2", "Features and target", 3,
    "From that table, split off `y` (the volatility, the thing you would try to "
    "predict) and `X` (the two columns you would be allowed to use).",
    "wide = prices.pivot(index='date', columns='ticker', values='close')\nr24 = wide.loc['2024'].pct_change()\nfeatures = pd.DataFrame({'vol': r24.std() * np.sqrt(252), 'mean_ret': r24.mean(), 'up_share': (r24 > 0).mean()})\n\ny = ...\nX = ...\n\nprint('y:', y)\nprint('X:', X)",
@@ -1109,7 +1290,7 @@ ex("N2", "Which stock rose on the most days?", 3,
    "to half. Rising on more days than not is a different question from rising a lot, "
    "which is why this ranking does not match the return ranking in L3.")
 
-ex("N3", "Ten years in one number", 4,
+ex("N3", "Ten years in one number", 2,
    "For every stock, compute the **total return** over the whole period: last close "
    "against first close. Rank them, largest first.",
    "wide = prices.pivot(index='date', columns='ticker', values='close')\n\ntotal_return = ...\ntotal_return",
@@ -1152,12 +1333,18 @@ for _i, _c in enumerate(nb.cells):
 
 OUT.write_text(nbf.writes(nb), encoding="utf-8")
 
-n_ex = sum(1 for c in cells if c.cell_type == "markdown" and c.source.startswith("### "))
+import re as _re
+
+_heads = [c.source.splitlines()[0] for c in cells
+          if c.cell_type == "markdown" and _re.match(r"^### [A-Z]\d+ ", c.source)]
+n_ex = len(_heads)
 tiers = {}
-for c in cells:
-    if c.cell_type == "markdown" and c.source.startswith("### "):
-        for k, lab in LABELS.items():
-            if lab in c.source.splitlines()[0]:
-                tiers[lab] = tiers.get(lab, 0) + 1
+for _h in _heads:
+    _m = _re.search(r"(★+)", _h)
+    if _m:
+        _k = len(_m.group(1))
+        tiers[_k] = tiers.get(_k, 0) + 1
+tiers = {f"{k}star": tiers[k] for k in sorted(tiers)}
+n_revisit = sum(1 for _h in _heads if "revisits" in _h)
 print(f"wrote {OUT}  ({len(cells)} cells, {n_ex} exercises)")
-print("difficulty:", tiers)
+print("stars:", tiers, " revisits tags:", n_revisit)

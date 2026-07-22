@@ -92,10 +92,10 @@ Sessions 2 to 4 have the same shape. Current contents:
 
 | session | lecture | exercises | case |
 |:--|:--|:--|:--|
-| 1 · Beginning Python for Financial Data | `session_01.qmd` | 53 | Part 1, 10 questions |
-| 2 · Functions, Loops, and Dictionaries | `session_02.qmd` | 60 | Part 2, 10 questions |
-| 3 · Packages: NumPy, pandas, matplotlib | `session_03.qmd` | 70 | Part 3, 14 questions |
-| 4 · Foundations of Machine Learning | `session_04.qmd` | 65 | Part 4, 14 questions |
+| 1 · Beginning Python for Financial Data | `session_01.qmd` | 55 | Part 1, 10 questions |
+| 2 · Functions, Loops, and Dictionaries | `session_02.qmd` | 64 | Part 2, 11 questions |
+| 3 · Packages: NumPy, pandas, matplotlib | `session_03.qmd` | 76 | Part 3, 15 questions |
+| 4 · Foundations of Machine Learning | `session_04.qmd` | 73 | Part 4, 17 questions |
 
 Sessions 3 and 4 load numpy, pandas and matplotlib into the browser runtime
 (about 20 MB, once per page load). Open the deck and run one cell a few minutes

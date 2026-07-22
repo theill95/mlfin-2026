@@ -39,7 +39,7 @@ Aarhus University
 This archive holds the exercise and case notebooks for every session, and the
 price data they use.
 
-    session_01/  session_02/  session_03/     the notebooks, and a copy of the
+    session_01/ ... session_04/               the notebooks, and a copy of the
                                               data each one needs
     data/                                     all of the price files together
 

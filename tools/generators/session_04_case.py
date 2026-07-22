@@ -258,7 +258,39 @@ q("Q2", "Only what you would have known",
   "it is invisible in the output.")
 
 # ==================================================================== Q3
-q("Q3", "One table, and its shape",
+q("Q3", "The feature that knew too much",
+  "A colleague built the table below while you were in the meeting. It has one "
+  "feature and the same target, and they are pleased with it, because the two "
+  "columns line up almost perfectly.\n\n"
+  "Run it, read the two `shift` calls carefully, and work out why nobody could "
+  "ever have used this table. Then repair the feature.",
+  "leaky = pd.DataFrame({\n"
+  "    'vol_feature': rets['AAPL'].rolling(20).std().shift(-20),\n"
+  "    'vol_next': rets['AAPL'].rolling(20).std().shift(-20),\n"
+  "}).dropna()\nprint('correlation:', leaky['vol_feature'].corr(leaky['vol_next']))\n\n"
+  "honest = ...\nprint('correlation:', ...)",
+  ["Look at the two shifts. They are identical, so the feature **is** the target: "
+   "it is the volatility of the next twenty days, which nobody knows yet.",
+   "A legitimate feature looks backwards. Drop the shift from the feature and "
+   "leave it on the target only."],
+  "leaky = pd.DataFrame({\n"
+  "    'vol_feature': rets['AAPL'].rolling(20).std().shift(-20),\n"
+  "    'vol_next': rets['AAPL'].rolling(20).std().shift(-20),\n"
+  "}).dropna()\nprint('correlation:', leaky['vol_feature'].corr(leaky['vol_next']))\n\n"
+  "honest = pd.DataFrame({\n"
+  "    'vol_feature': rets['AAPL'].rolling(20).std(),\n"
+  "    'vol_next': rets['AAPL'].rolling(20).std().shift(-20),\n"
+  "}).dropna()\nprint('correlation:', honest['vol_feature'].corr(honest['vol_next']))",
+  "A correlation of **1.000** against **0.50** once repaired.\n\n"
+  "A perfect correlation between a feature and a target is never good news. It "
+  "means the feature contains the answer, and the only question left is how it "
+  "got there. Here it is obvious because both shifts are on the same line; in a "
+  "real project the leak arrives through a join with a table someone else built, "
+  "and the only symptom is a result that is too good.\n\n"
+  "**Treat a suspiciously strong feature as a bug report, not a discovery.**")
+
+# ==================================================================== Q4
+q("Q4", "One table, and its shape",
   "Put the features and the target into one table called `table`, drop the rows "
   "that are not complete, and report `n` and `p`.",
   "table = ...\nn = ...\np = ...\nprint('n =', n)\nprint('p =', p)",
@@ -272,8 +304,8 @@ q("Q3", "One table, and its shape",
   "Everything you do from here is either about improving those columns or about "
   "finding an honest way to score a rule that maps them to the last one.")
 
-# ==================================================================== Q4
-q("Q4", "What the cleaning cost",
+# ==================================================================== Q5
+q("Q5", "What the cleaning cost",
   "Count how many rows the `dropna()` threw away, and work out where they were.",
   "n_before = ...\nn_after = ...\nprint('rows before:', n_before)\nprint('rows after :', n_after)\nprint('lost       :', ...)",
   ["`features` before dropping still has every date, so `len(features)` is the "
@@ -288,8 +320,8 @@ q("Q4", "What the cleaning cost",
   "about a window of time, and both are worth stating out loud rather than "
   "discovering later.")
 
-# ==================================================================== Q5
-q("Q5", "The extreme months",
+# ==================================================================== Q6
+q("Q6", "The extreme months",
   "Find the three dates with the **largest** target values, and say what happened.",
   "worst = ...\nworst",
   ["`table['vol_next'].sort_values(ascending=False)` puts the biggest first.",
@@ -302,8 +334,8 @@ q("Q5", "The extreme months",
   "risk model. This is the Session 4 point about outliers in finance, arriving in "
   "your own data: the extremes are not contamination, they are the subject.")
 
-# ==================================================================== Q6
-q("Q6", "The shape of the target",
+# ==================================================================== Q7
+q("Q7", "The shape of the target",
   "Compare the **mean** and the **median** of the target, and say what the gap "
   "tells you about its distribution.",
   "target_mean = ...\ntarget_median = ...\nprint('mean  :', target_mean)\nprint('median:', target_median)\nprint('ratio :', ...)",
@@ -316,8 +348,8 @@ q("Q6", "The shape of the target",
   "dominated by those few months, and an absolute one will not. Neither is wrong. "
   "You just have to decide, in advance, which question you are asking.")
 
-# ==================================================================== Q7
-q("Q7", "Split, and say why it has to be a date",
+# ==================================================================== Q8
+q("Q8", "Split, and say why it has to be a date",
   "Split `table` into `train` (everything up to the end of 2022) and `test` "
   "(2023 onwards), and report the size of each.",
   "train = ...\ntest = ...\nprint('train rows:', ...)\nprint('test rows :', ...)",
@@ -329,8 +361,8 @@ q("Q7", "Split, and say why it has to be a date",
   "know roughly what the market was doing that week. The test set has to be the "
   "*future*, because that is the only situation you will ever actually be in.")
 
-# ==================================================================== Q8
-q("Q8", "The baseline nobody is allowed to skip",
+# ==================================================================== Q9
+q("Q9", "The baseline nobody is allowed to skip",
   "Before any model, score the laziest rule there is: predict the **average of the "
   "training target** on every test day. Report its RMSE and MAE.\n\n"
   "$$\\text{RMSE}=\\sqrt{\\tfrac{1}{n}\\sum_i (y_i-\\hat{y}_i)^2}, \\qquad "
@@ -346,14 +378,14 @@ q("Q8", "The baseline nobody is allowed to skip",
   "Anything you build later has to beat them, and a surprising amount of published "
   "work never checks.")
 
-# ==================================================================== Q9
-q("Q9", "The rule a trader would actually use",
+# ==================================================================== Q10
+q("Q10", "The rule a trader would actually use",
   "Now a real rule, and still not a model: **next month will look like this "
   "month**. Predict each test day's target with that day's `vol_20d`, and score it "
   "the same two ways.",
   "pers_pred = ...\npers_resid = ...\n\npers_rmse = ...\npers_mae = ...\nprint('persistence RMSE:', pers_rmse)\nprint('persistence MAE :', pers_mae)",
   ["The prediction is simply the `vol_20d` column of `test`.",
-   "Everything else is exactly as in Q8."],
+   "Everything else is exactly as in Q9."],
   "pers_pred = test['vol_20d']\npers_resid = test['vol_next'] - pers_pred\n\n"
   "pers_rmse = np.sqrt((pers_resid ** 2).mean())\npers_mae = pers_resid.abs().mean()\n"
   "print('persistence RMSE:', pers_rmse)\nprint('persistence MAE :', pers_mae)",
@@ -363,8 +395,8 @@ q("Q9", "The rule a trader would actually use",
   "That is volatility clustering, and it is why forecasting volatility is a real "
   "business while forecasting returns is mostly not.")
 
-# ==================================================================== Q10
-q("Q10", "How much better, in one number",
+# ==================================================================== Q11
+q("Q11", "How much better, in one number",
   "Express that improvement as an $R^2$: how much of the test variation the "
   "persistence rule accounts for, measured against the training-mean baseline.\n\n"
   "$$R^2 = 1 - \\frac{\\sum_i (y_i-\\hat{y}_i)^2}{\\sum_i (y_i-\\bar{y}_{\\text{train}})^2}$$",
@@ -379,15 +411,40 @@ q("Q10", "How much better, in one number",
   "Hold on to that number too. It is now the bar. A model that takes three features "
   "and a fitting procedure and lands below it has earned nothing.")
 
-# ==================================================================== Q11
-q("Q11", "Does it hold for the whole desk?",
+# ==================================================================== Q12
+q("Q12", "Draw the forecast against what happened",
+  "Two numbers told you the persistence rule beats the baseline. A picture tells "
+  "you *how*.\n\n"
+  "On the test years only, plot the realised target and the persistence "
+  "prediction on the same axes, and label both.",
+  "fig, ax = plt.subplots(figsize=(11, 3.2))\n...\nax.legend()\nplt.show()",
+  ["The two series are `test['vol_next']` and `test['vol_20d']`, both against "
+   "`test.index`.",
+   "`ax.plot(test.index, test['vol_next'], label='what happened')` and the same "
+   "for the prediction, then a `set_ylabel` and a `set_title`."],
+  "fig, ax = plt.subplots(figsize=(11, 3.2))\n"
+  "ax.plot(test.index, test['vol_next'], linewidth=1.6, label='what happened')\n"
+  "ax.plot(test.index, test['vol_20d'], linewidth=1.4, label='persistence forecast')\n"
+  "ax.set_ylabel('20-day volatility')\n"
+  "ax.set_title('Apple, 2023 to 2024: forecast against outcome', loc='left')\n"
+  "ax.legend()\nplt.show()",
+  "The two lines have the same shape, and the forecast is the outcome **shifted "
+  "to the right**. That is what a persistence rule is: it repeats what just "
+  "happened, so it is always a month late to every turn.\n\n"
+  "Look at where the gaps are widest. They are at the turning points, exactly "
+  "where a forecast would have been worth having. A rule that is right in the "
+  "calm stretches and wrong at every turn can still post a respectable R2, which "
+  "is why you look at the picture as well as the number.")
+
+# ==================================================================== Q13
+q("Q13", "Does it hold for the whole desk?",
   "Apple is one name. Repeat the whole thing for all eleven: build the table, "
   "split it at the same date, and compute the persistence $R^2$. Collect the "
   "answers in a Series, worst last.",
   "r2_by_ticker = {}\n\nfor ticker in TICKERS:\n    t = pd.DataFrame({'vol_20d': rets[ticker].rolling(20).std()})\n    t['vol_next'] = ...\n    t = t.dropna()\n\n    tr = ...\n    te = ...\n\n    r2_by_ticker[ticker] = ...\n\nresult = ...\nresult",
   ["Inside the loop, the target is the same construction as Q1 with `ticker` in "
-   "place of `'AAPL'`, and the split is the same two `.loc` slices as Q7.",
-   "The R2 is the Q10 expression: "
+   "place of `'AAPL'`, and the split is the same two `.loc` slices as Q8.",
+   "The R2 is the Q11 expression: "
    "`1 - ((te['vol_next'] - te['vol_20d']) ** 2).sum() / ((te['vol_next'] - tr['vol_next'].mean()) ** 2).sum()`. "
    "Afterwards, `pd.Series(r2_by_ticker).sort_values(ascending=False)`."],
   "r2_by_ticker = {}\n\nfor ticker in TICKERS:\n"
@@ -407,8 +464,38 @@ q("Q11", "Does it hold for the whole desk?",
   "supposed to close. It also shows why you evaluate per instrument and not on a "
   "single flattering example.")
 
-# ==================================================================== Q12
-q("Q12", "The same question, asked as a label",
+# ==================================================================== Q14
+q("Q14", "Does Part 3's ranking tell you anything?",
+  "The quick load restated Part 3's finding: Nvidia was the most volatile name of "
+  "2024, the index fund the calmest. A natural guess is that the calm names are "
+  "the predictable ones.\n\n"
+  "You now have the evidence to check it. Put the 2024 volatilities beside the "
+  "R2 values from Q13 and measure how strongly they move together.",
+  "vol_2024 = pd.Series(part3_annual_vol)\n\n"
+  "comparison = pd.DataFrame({'vol_2024': vol_2024, 'r2': ...})\n"
+  "correlation = ...\n\n"
+  "print(comparison.sort_values('vol_2024', ascending=False).round(3))\nprint('correlation:', correlation)",
+  ["`r2_by_ticker` from Q13 is a dictionary, so `pd.Series(r2_by_ticker)` lines it "
+   "up against the volatilities by ticker.",
+   "`comparison['vol_2024'].corr(comparison['r2'])` measures how they move "
+   "together, between -1 and +1."],
+  "vol_2024 = pd.Series(part3_annual_vol)\n\n"
+  "comparison = pd.DataFrame({'vol_2024': vol_2024, 'r2': pd.Series(r2_by_ticker)})\n"
+  "correlation = comparison['vol_2024'].corr(comparison['r2'])\n\n"
+  "print(comparison.sort_values('vol_2024', ascending=False).round(3))\nprint('correlation:', correlation)",
+  "**-0.35.** Weakly negative, which says the more volatile names were, if "
+  "anything, slightly harder to forecast.\n\n"
+  "Now be careful, because this is where a report goes wrong. You have **eleven "
+  "points**. A correlation of -0.35 on eleven points is roughly what you get from "
+  "pure noise, and the two most extreme names, Nvidia and Disney, are doing most "
+  "of the work. The honest sentence is *this sample cannot tell*, not *volatile "
+  "names are harder to predict*.\n\n"
+  "Part 3's ranking was a good description of 2024. It is not a guide to which "
+  "names a model will do well on, and you now know that because you checked "
+  "rather than assumed.")
+
+# ==================================================================== Q15
+q("Q15", "The same question, asked as a label",
   "The desk does not really need a number. It needs to know **which names to watch**. "
   "Turn the problem into a classification: a month counts as *high volatility* if "
   "the target is above the **median of the training target**.\n\n"
@@ -427,8 +514,8 @@ q("Q12", "The same question, asked as a label",
   "periods badly out of balance. A threshold learned on one regime does not "
   "transfer to another, and no amount of modelling fixes that on its own.")
 
-# ==================================================================== Q13
-q("Q13", "Score the warning system",
+# ==================================================================== Q16
+q("Q16", "Score the warning system",
   "Count the four outcomes for that rule, then compute precision and recall.\n\n"
   "$$\\text{precision}=\\frac{TP}{TP+FP}, \\qquad \\text{recall}=\\frac{TP}{TP+FN}$$",
   "tp = ...\nfp = ...\nfn = ...\ntn = ...\n\nprecision = ...\nrecall = ...\nprint('TP', tp, ' FP', fp, ' FN', fn, ' TN', tn)\nprint('precision:', precision)\nprint('recall   :', recall)",
@@ -447,25 +534,41 @@ q("Q13", "Score the warning system",
   "missed turbulent month costs far more than a false alarm, so you would move the "
   "threshold down and accept the extra noise.")
 
-# ==================================================================== Q14
-q("Q14", "Write the specification",
+# ==================================================================== Q17
+q("Q17", "Write the specification",
   "You now have everything a modeller would need. Write it down in one place, so "
   "somebody else could pick it up and be judged fairly.\n\n"
-  "Fill in the dictionary and print it line by line.",
-  "spec = {\n    'target': ...,\n    'features': ...,\n    'n_train': ...,\n    'n_test': ...,\n    'split': ...,\n    'metric': ...,\n    'baseline_rmse': ...,\n    'bar_to_beat_r2': ...,\n}\n\nfor key in spec:\n    print(f\"{key:15} {spec[key]}\")",
+  "Fill in the dictionary, then write `describe(spec)`: a function that prints it "
+  "line by line and ends with a one-sentence verdict on whether the bar is worth "
+  "clearing.\n\n"
+  "A dictionary, a loop, an f-string and an `if`. Everything in this last cell of "
+  "the case comes from Sessions 1 and 2.",
+  "spec = {\n    'target': ...,\n    'features': ...,\n    'n_train': ...,\n    'n_test': ...,\n    'split': ...,\n    'metric': ...,\n    'baseline_rmse': ...,\n    'bar_to_beat_r2': ...,\n}\n\n"
+  "def describe(spec):\n    ...\n\ndescribe(spec)",
   ["Most of the values are already sitting in variables you created: `base_rmse` "
-   "from Q8 and `pers_r2` from Q10.",
-   "The text entries are yours to phrase. Be precise enough that somebody could "
-   "rebuild the table without asking you a single question."],
+   "from Q9 and `pers_r2` from Q11.",
+   "Inside the function, `for key in spec:` then "
+   "`print(f\"{key:15} {spec[key]}\")`, exactly as in Session 2's dictionary loop.",
+   "For the verdict, an `if` on `spec['bar_to_beat_r2']`: above about 0.2 there is "
+   "real signal to beat, below it the naive rule is barely better than nothing."],
   "spec = {\n    'target': 'sd of daily returns over the next 20 trading days',\n"
   "    'features': list(train.columns.drop('vol_next')),\n"
   "    'n_train': len(train),\n    'n_test': len(test),\n"
   "    'split': 'by date: train to 2022-12-31, test from 2023-01-01',\n"
   "    'metric': 'RMSE, with MAE reported alongside because the target is skewed',\n"
   "    'baseline_rmse': round(base_rmse, 5),\n"
-  "    'bar_to_beat_r2': round(pers_r2, 3),\n}\n\nfor key in spec:\n    print(f\"{key:15} {spec[key]}\")",
+  "    'bar_to_beat_r2': round(pers_r2, 3),\n}\n\n"
+  "def describe(spec):\n    \"\"\"Print a learning problem, and say whether the bar is a serious one.\"\"\"\n"
+  "    for key in spec:\n        print(f\"{key:15} {spec[key]}\")\n\n"
+  "    bar = spec['bar_to_beat_r2']\n    if bar > 0.2:\n        print(f\"\\nA model must beat R2 = {bar:.2f}. That is a real bar, not a formality.\")\n"
+  "    else:\n        print(f\"\\nThe naive rule only reaches R2 = {bar:.2f}, so almost anything should beat it.\")\n\n"
+  "describe(spec)",
   "That is a machine learning problem, fully specified, and not one model has been "
   "fitted.\n\n"
+  "Look at what the last cell of this case is made of: a dictionary and a loop from "
+  "Session 2, an f-string from Session 1, a function with a docstring from Session "
+  "2, and numbers from Session 4. Four weeks of tools in fifteen lines, which is "
+  "what the exam will ask of you.\n\n"
   "Everything in the rest of the course slots into the one gap left in it: the rule "
   "that turns those three feature columns into a prediction. Choosing that rule "
   "well is what the next block is about, and you now know exactly what it has to "

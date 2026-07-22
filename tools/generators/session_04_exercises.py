@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Build session_04_exercises.ipynb.
 
-Same conventions as Sessions 1 to 3: pleasant intro, 4-star badges, toolkit card
+Same conventions as Sessions 1 to 3: pleasant intro, 1-5 star badges, toolkit card
 with <abbr> hover docs, task -> work cell (blank-safe `...`) -> 1-2 folded hints
 -> folded solution, no em-dashes, plain academic tone.
 
@@ -32,11 +32,15 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "session_04" / "session_04_exercises.ipynb"
 
 cells = []
-LABELS = {1: "Warm-up", 2: "Core", 3: "Challenge", 4: "Stretch"}
+def badge(n, revisits=None):
+    """Five unnamed stars, plus an optional note that this one reaches back.
 
-
-def badge(n):
-    return ("★" * n + "☆" * (4 - n)) + " " + LABELS[n]
+    The scale restarts each session: it rates the work against what THIS
+    session has taught, so a three-star task here is not the same size as a
+    three-star task in a later notebook.
+    """
+    stars = "★" * n + "☆" * (5 - n)
+    return stars + (f"  · revisits {revisits}" if revisits else "")
 
 
 def md(text):
@@ -60,8 +64,16 @@ def _hints_solution(hints, sol_code, sol_note):
     md("---")
 
 
-def ex(sid, title, n, task, work, hints, sol_code, sol_note):
-    md(f"### {sid} · {title}  {badge(n)}\n\n{task}")
+# Exercises whose earlier-session tool is genuinely load-bearing, not incidental.
+# Kept in one place so the tags can be read and revised as a set.
+REVISITS = {
+    "D6": "S2", "F2": "S2", "F5": "S2", "G5": "S2", "H7": "S2", "I3": "S2",
+    "A3": "S3", "A6": "S3", "E6": "S3",
+}
+
+
+def ex(sid, title, n, task, work, hints, sol_code, sol_note, revisits=None):
+    md(f"### {sid} · {title}  {badge(n, revisits or REVISITS.get(sid))}\n\n{task}")
     code(work)
     _hints_solution(hints, sol_code, sol_note)
 
@@ -230,12 +242,19 @@ md(
 
 md(
 "### Difficulty\n\n"
-"| badge | level | what to expect |\n"
-"|:--|:--|:--|\n"
-"| ★☆☆☆ | **Warm-up** | one idea, straight from the lecture |\n"
-"| ★★☆☆ | **Core** | the skill you will actually use. Most exercises live here |\n"
-"| ★★★☆ | **Challenge** | combine a few ideas, or think one step past what you were shown |\n"
-"| ★★★★ | **Stretch** | a real puzzle for those who want one. Rare, and always solvable with today's tools |\n"
+"| badge | what to expect |\n"
+"|:--|:--|\n"
+"| ★☆☆☆☆ | One step, straight from the lecture. You are checking that you can type it. |\n"
+"| ★★☆☆☆ | The same idea on new data, or two steps in a row. Nothing to decide. |\n"
+"| ★★★☆☆ | Combine two ideas, or adapt a pattern rather than copy it. |\n"
+"| ★★★★☆ | You choose the approach. Several steps, and something has to be worked out before you type. |\n"
+"| ★★★★★ | A genuine puzzle: an insight, or a constraint that rules out the obvious route. Always solvable with what you have. |\n\n"
+"The stars rate the work against **this** session. A three-star task in a later "
+"notebook assumes everything before it, so it is a bigger piece of work than a "
+"three-star task here, even though both sit in the middle of their own scale.\n\n"
+"Some exercises also carry a **revisits** tag. Those need something from an "
+"earlier session as well as today's material, and they are there on purpose: "
+"the skills are meant to accumulate, not to be handed in at the end of each week."
 )
 
 md(
@@ -281,6 +300,14 @@ md(
 '<abbr title="Fit a polynomial of the given degree and hand back its coefficients."><code>np.polyfit(x, y, degree)</code></abbr> &nbsp;·&nbsp; '
 '<abbr title="Evaluate a fitted polynomial at some x values."><code>np.polyval(coef, x)</code></abbr> &nbsp;·&nbsp; '
 '<abbr title="An array of the same value, repeated. Useful as a baseline prediction."><code>np.full(n, value)</code></abbr></p>\n\n'
+'<p><strong>Still yours from Session 3</strong><br>\n'
+'<abbr title="Make a figure and one axes to draw on. Every plot starts here."><code>fig, ax = plt.subplots(figsize=(9, 3))</code></abbr> &nbsp;·&nbsp; '
+'<abbr title="A line: something over time."><code>ax.plot(x, y, label=name)</code></abbr> &nbsp;·&nbsp; '
+'<abbr title="A scatter: one thing against another."><code>ax.scatter(x, y, s=10)</code></abbr> &nbsp;·&nbsp; '
+'<abbr title="A horizontal reference line, for example at zero."><code>ax.axhline(0)</code></abbr> &nbsp;·&nbsp; '
+'<abbr title="Title and axis labels. Always say what the numbers are."><code>ax.set_title(t, loc=\'left\')</code></abbr> &nbsp;·&nbsp; '
+'<abbr title="Show the legend. Needs label= on each thing you drew."><code>ax.legend()</code></abbr> &nbsp;·&nbsp; '
+'<abbr title="A log scale, for values that span orders of magnitude."><code>ax.set_yscale(\'log\')</code></abbr></p>\n\n'
 "**Formulas you will reach for**\n\n"
 r"| what | formula |"
 "\n|:--|:--|\n"
@@ -315,6 +342,7 @@ code(
 '''import os
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 CANDIDATE_DIRS = ["data", os.path.join("..", "data"), "."]
 REPO_RAW_URL = "https://raw.githubusercontent.com/theill95/mlfin-2026/main/data/"   # used when the CSV files are not next to the notebook
@@ -406,7 +434,7 @@ ex("A4", "A risk feature", 2,
    "table = pd.DataFrame({'ret_1d': rets['AAPL']})\n\ntable['vol_20d'] = rets['AAPL'].rolling(20).std()\nresult = table.tail(3)\nresult",
    "This is the volatility you built by hand in Session 2, recomputed on a moving window. As a feature it says how nervous the recent past has been.")
 
-ex("A5", "The target", 2,
+ex("A5", "The target", 3,
    "Add the column you actually want to predict: `ret_next`, **tomorrow's return**, "
    "on today's row.",
    "table = pd.DataFrame({'ret_1d': rets['AAPL']})\n\ntable['ret_next'] = ...\nresult = table.tail(4)\nresult",
@@ -423,7 +451,7 @@ ex("A6", "Rows a model can use", 2,
    "table = pd.DataFrame({\n    'ret_1d': rets['AAPL'],\n    'ret_5d': rets['AAPL'].rolling(5).mean(),\n    'vol_20d': rets['AAPL'].rolling(20).std(),\n})\ntable['ret_next'] = rets['AAPL'].shift(-1)\n\nclean = table.dropna()\nclean",
    f"**{N_ROWS:,} rows survive.** The twenty-day window costs you the first twenty days, and the target costs you the last one.")
 
-ex("A7", "n and p", 3,
+ex("A7", "n and p", 2,
    "Report the two numbers that describe the shape of a learning problem: `n`, the "
    "number of observations, and `p`, the number of **features**. Careful: the "
    "target is not a feature.",
@@ -448,7 +476,7 @@ ex("B1", "Yesterday, on today's row", 2,
    "ret_prev = rets['AAPL'].shift(1)\nret_prev",
    "Positive shift reaches backwards, negative shift reaches forwards. Targets use a negative shift; features almost never do.")
 
-ex("B2", "Fix the leak", 3,
+ex("B2", "Fix the leak", 4,
    "This table is supposed to predict tomorrow from what is known today. One of "
    "the two columns is cheating. Find it and repair it.",
    "leaky = pd.DataFrame({\n    'feature': rets['AAPL'].shift(-2),\n    'target': rets['AAPL'].shift(-1),\n})\n\nfixed = ...\nfixed",
@@ -487,7 +515,7 @@ section(
 "answer, so it is a decision, not a formality."
 )
 
-ex("C1", "Make the gaps appear", 2,
+ex("C1", "Make the gaps appear", 3,
    "Force `wide` onto **every calendar day** between its first and last date, and "
    "call the result `daily`. Print its shape.",
    "calendar = ...\ndaily = ...\ndaily",
@@ -518,7 +546,7 @@ ex("C4", "Drop them", 2,
    "daily = wide.reindex(pd.date_range(wide.index.min(), wide.index.max(), freq='D'))\n\ndropped = daily.dropna()\nn_after = len(dropped)\nprint('rows after dropping:', n_after)\nprint('rows in wide       :', len(wide))",
    f"Both **{N_TRADING:,}**. Here dropping is exactly right: those rows were never real observations in the first place.")
 
-ex("C5", "What forward filling invents", 3,
+ex("C5", "What forward filling invents", 4,
    "Forward fill `daily['AAPL']`, compute daily returns from the filled series, and "
    "count how many of them are **exactly zero**.",
    "daily = wide.reindex(pd.date_range(wide.index.min(), wide.index.max(), freq='D'))\n\nfilled_ret = ...\nn_zero = ...\nprint('returns that are exactly zero:', n_zero)",
@@ -535,7 +563,7 @@ ex("C6", "And what it does to the risk number", 3,
    "daily = wide.reindex(pd.date_range(wide.index.min(), wide.index.max(), freq='D'))\nfilled_ret = daily['AAPL'].ffill().pct_change().dropna()\n\nsd_filled = filled_ret.std()\nsd_real = rets['AAPL'].std()\nprint('filled:', sd_filled)\nprint('real  :', sd_real)",
    f"**{SD_FFILL:.4f} against {SD_TRUE:.4f}.** The invented zero days drag the volatility down by about {100 * (1 - SD_FFILL / SD_TRUE):.0f}%. A cleaning step you thought was harmless has changed the answer to the question you were asking.")
 
-ex("C7", "Record the fact", 2,
+ex("C7", "Record the fact", 3,
    "Sometimes the missingness itself is information. Build a table with two "
    "columns: `close`, the forward-filled price, and `was_missing`, a 1/0 column "
    "saying whether that day's price had to be invented.",
@@ -568,7 +596,7 @@ ex("D2", "The middle half", 2,
    "q1 = actual.quantile(0.25)\nq3 = actual.quantile(0.75)\niqr = q3 - q1\nprint('q1 :', q1)\nprint('q3 :', q3)\nprint('iqr:', iqr)",
    f"`q1 = {Q1:.4f}`, `q3 = {Q3:.4f}`, `iqr = {IQR:.4f}`. Half of all days sit inside a band {IQR:.2%} wide.")
 
-ex("D3", "The IQR rule", 2,
+ex("D3", "The IQR rule", 3,
    "Flag every day outside $[\\,Q_1 - 1.5\\,\\text{IQR},\\; Q_3 + 1.5\\,\\text{IQR}\\,]$ "
    "and count them.",
    "q1, q3 = actual.quantile([0.25, 0.75])\niqr = q3 - q1\n\nflagged = ...\nn_flagged = ...\nprint('flagged:', n_flagged, 'of', len(actual))",
@@ -584,7 +612,7 @@ ex("D4", "The other rule", 2,
    "n_extreme = ((actual - actual.mean()).abs() > 3 * actual.std()).sum()\nprint('beyond three sd:', n_extreme)",
    f"**{N_3SD} days.**")
 
-ex("D5", "What a bell curve would have predicted", 3,
+ex("D5", "What a bell curve would have predicted", 2,
    "A normal distribution puts about 0.27% of its observations beyond three "
    "standard deviations. How many days is that here, and how does it compare with "
    "D4?",
@@ -635,7 +663,7 @@ ex("E3", "Standardise a column", 2,
    "vol20 = rets['AAPL'].rolling(20).std().dropna()\n\nz = (vol20 - vol20.mean()) / vol20.std()\nprint('mean:', round(z.mean(), 8))\nprint('sd  :', round(z.std(), 8))",
    "Mean 0 and standard deviation 1, by construction. Nothing about the shape of the column has changed, only its units.")
 
-ex("E4", "Standardise without cheating", 3,
+ex("E4", "Standardise without cheating", 4,
    "Standardise the **whole** column using only the mean and standard deviation of "
    "the rows up to the end of 2022. Then report the mean of the standardised test "
    "rows, which will not be zero.",
@@ -645,7 +673,7 @@ ex("E4", "Standardise without cheating", 3,
    "vol20 = rets['AAPL'].rolling(20).std().dropna()\ntrain = vol20.loc[:'2022-12-31']\n\nz_all = (vol20 - train.mean()) / train.std()\nz_test = z_all.loc['2023-01-01':]\nprint('mean of standardised test rows:', z_test.mean())",
    "Not zero, and that is the point: the test rows were standardised with numbers that knew nothing about them. Using the full-sample mean would have quietly leaked the test period into every training row.")
 
-ex("E5", "Text into numbers", 2,
+ex("E5", "Text into numbers", 1,
    "Turn the `sector` column of `firms` into 0/1 columns.",
    "encoded = ...\nencoded",
    "`pd.get_dummies(frame, columns=['sector'], dtype=int)`.",
@@ -691,7 +719,7 @@ ex("F3", "Write MSE", 2,
    "def mse(y, yhat):\n    return ((y - yhat) ** 2).mean()\n\nresult = mse(y_true, y_pred)\nprint('MSE:', result)",
    "**2.75.** The single mistake of 3 contributes 9 of the total 11, which is why one bad day dominates this metric.")
 
-ex("F4", "Write RMSE", 1,
+ex("F4", "Write RMSE", 2,
    "Write `rmse(y, yhat)`, using the `mse` function you just wrote.",
    "def mse(y, yhat):\n    return ((y - yhat) ** 2).mean()\n\ndef rmse(y, yhat):\n    ...\n\nresult = ...\nprint('RMSE:', result)",
    "The square root of the mean squared error. `np.sqrt(mse(y, yhat))`.",
@@ -707,7 +735,7 @@ ex("F5", "Write R squared", 3,
    "def r2(y, yhat):\n    rss = ((y - yhat) ** 2).sum()\n    tss = ((y - y.mean()) ** 2).sum()\n    return 1 - rss / tss\n\nresult = r2(y_true, y_pred)\nprint('R2:', result)",
    "**0.45.** The predictions beat the average of `y_true`, but not by a great deal.")
 
-ex("F6", "All four, on the real thing", 2,
+ex("F6", "All four, on the real thing", 3,
    "The Session 4 rule is $\\hat{y} = 0.00043 + 1.2073\\,x$, where $x$ is the "
    "market's return. Apply it to `market` and score it against `actual` with all "
    "four metrics.",
@@ -726,7 +754,7 @@ ex("F7", "The baseline everybody forgets", 3,
    "baseline = np.full(len(actual), actual.mean())\nresid = actual - baseline\n\nprint('RMSE:', np.sqrt((resid ** 2).mean()))\nprint('R2  :', 1 - (resid ** 2).sum() / ((actual - actual.mean()) ** 2).sum())",
    f"RMSE **{A.std(ddof=0):.5f}**, and R² **exactly 0**. That is what R² measures: how far you have moved from this. Any model with a negative R² is worse than this one.")
 
-ex("F8", "One catastrophic day", 3,
+ex("F8", "One catastrophic day", 4,
    "Take the predictions from F6, replace the 30th-from-last one with a forecast of "
    "`0.40`, and see what each metric does. Report the ratio of the damaged metric "
    "to the clean one.",
@@ -806,7 +834,7 @@ ex("G7", "F1", 2,
    "def f1(p, r):\n    return 2 * p * r / (p + r)\n\nresult = f1(0.7589, 0.7782)\nprint('F1:', result)",
    f"**{F1:.4f}**, sitting between the two as it must. Try `f1(1.0, 0.01)`: the answer is 0.02, not 0.5, which is exactly the point of using a harmonic mean.")
 
-ex("G8", "When accuracy lies", 3,
+ex("G8", "When accuracy lies", 4,
    "Now predict something rare: a day when Apple falls more than 5%. Score the "
    "model that **always says no**, on accuracy and on recall.",
    "crash = actual < -0.05\nnever_warns = ...\n\nprint('crash days :', crash.sum())\nprint('accuracy   :', ...)\nprint('recall     :', ...)",
@@ -846,7 +874,7 @@ ex("H2", "Prove they do not overlap", 2,
    "table = pd.DataFrame({'ret_1d': rets['AAPL'], 'ret_next': rets['AAPL'].shift(-1)}).dropna()\ntrain = table.loc[:'2022-12-31']\ntest = table.loc['2023-01-01':]\n\nno_overlap = train.index.max() < test.index.min()\nprint('last train date:', train.index.max().date())\nprint('first test date:', test.index.min().date())\nprint('clean split    :', no_overlap)",
    "`True`. Worth checking every time, because an off-by-one in a date filter is silent and flattering.")
 
-ex("H3", "Score on both sides", 2,
+ex("H3", "Score on both sides", 3,
    "Score the naive rule \"tomorrow will repeat today\" with RMSE, once on the "
    "training rows and once on the test rows.",
    "table = pd.DataFrame({'ret_1d': rets['AAPL'], 'ret_next': rets['AAPL'].shift(-1)}).dropna()\ntrain = table.loc[:'2022-12-31']\ntest = table.loc['2023-01-01':]\n\nrmse_train = ...\nrmse_test = ...\nprint('train RMSE:', rmse_train)\nprint('test  RMSE:', rmse_test)",
@@ -855,7 +883,7 @@ ex("H3", "Score on both sides", 2,
    "table = pd.DataFrame({'ret_1d': rets['AAPL'], 'ret_next': rets['AAPL'].shift(-1)}).dropna()\ntrain = table.loc[:'2022-12-31']\ntest = table.loc['2023-01-01':]\n\nrmse_train = np.sqrt(((train['ret_next'] - train['ret_1d']) ** 2).mean())\nrmse_test = np.sqrt(((test['ret_next'] - test['ret_1d']) ** 2).mean())\nprint('train RMSE:', rmse_train)\nprint('test  RMSE:', rmse_test)",
    f"**{RMSE_TRAIN:.5f} and {RMSE_TEST:.5f}.** This rule has no parameters to fit, so it cannot overfit, and the two numbers differ only because the two periods differ.")
 
-ex("H4", "Fix the leaking scaler", 3,
+ex("H4", "Fix the leaking scaler", 4,
    "This code standardises before splitting, so the training rows have already been "
    "told about the test period. Repair it so the mean and standard deviation come "
    "from the training rows only.",
@@ -865,7 +893,7 @@ ex("H4", "Fix the leaking scaler", 3,
    "vol20 = rets['AAPL'].rolling(20).std().dropna()\n\n# leaky: statistics computed on everything\nz_leaky = (vol20 - vol20.mean()) / vol20.std()\n\ntrain = vol20.loc[:'2022-12-31']\nz_fixed = (vol20 - train.mean()) / train.std()\nprint('leaky test mean:', z_leaky.loc['2023-01-01':].mean())\nprint('fixed test mean:', z_fixed.loc['2023-01-01':].mean())",
    "The two answers differ, which is the proof that the leak was doing something. Every cleaning number, not just this one, has to be computed on the training rows.")
 
-ex("H5", "Fix the shuffled split", 3,
+ex("H5", "Fix the shuffled split", 4,
    "This code splits a time series at random, so the model would train on Friday to "
    "predict Thursday. Replace it with a chronological split that keeps the same "
    "number of test rows.",
@@ -875,7 +903,7 @@ ex("H5", "Fix the shuffled split", 3,
    "table = pd.DataFrame({'ret_1d': rets['AAPL'], 'ret_next': rets['AAPL'].shift(-1)}).dropna()\nn_test = 500\n\n# wrong: a random quarter of the days\nshuffled_test = table.sample(n_test, random_state=0)\n\nproper_test = table.iloc[-n_test:]\nproper_train = table.iloc[:-n_test]\nprint('random split, first test date:', shuffled_test.index.min().date())\nprint('proper split, first test date:', proper_test.index.min().date())",
    "The random split's test set starts in 2015 and is scattered through the whole sample, so the model would be trained on days that come after the days it is tested on.")
 
-ex("H6", "How much did you hold back", 2,
+ex("H6", "How much did you hold back", 1,
    "Compute the share of rows in the test set, as a percentage, for the 2023 split "
    "from H1.",
    "table = pd.DataFrame({'ret_1d': rets['AAPL'], 'ret_next': rets['AAPL'].shift(-1)}).dropna()\ntrain = table.loc[:'2022-12-31']\ntest = table.loc['2023-01-01':]\n\nshare = ...\nprint('test share:', share)",
@@ -891,6 +919,55 @@ ex("H7", "A function you will reuse", 3,
     "Inside, slice with `frame.loc[:cutoff]` and `frame.loc[cutoff:]`, but make the second one start the day after so no row appears twice."],
    "def split_by_date(frame, cutoff):\n    train = frame.loc[:cutoff]\n    test = frame.loc[frame.index > cutoff]\n    return train, test\n\ntable = pd.DataFrame({'ret_1d': rets['AAPL'], 'ret_next': rets['AAPL'].shift(-1)}).dropna()\ntrain, test = split_by_date(table, '2022-12-31')\nprint('train rows:', len(train))\nprint('test rows :', len(test))",
    "Using `frame.index > cutoff` for the second half guarantees the cutoff day itself cannot land in both. Small detail, and it is exactly the kind of thing that silently inflates a score.")
+
+ex("H8", "The check that would have caught it", 3,
+   "Comments do not run. If a rule matters, write it as an `assert`, which stops the "
+   "notebook the moment the rule is broken.\n\n"
+   "Write two assertions about a split: that no date appears in both halves, and "
+   "that the test set is not empty. Then run them against a **deliberately broken** "
+   "split and watch one of them fire.",
+   "table = pd.DataFrame({'ret_1d': rets['AAPL'], 'ret_next': rets['AAPL'].shift(-1)}).dropna()\n\n"
+   "def check_split(train, test):\n    ...\n    return 'split looks sound'\n\n"
+   "good_train = table.loc[:'2022-12-31']\ngood_test = table.loc['2023-01-01':]\nprint(check_split(good_train, good_test))",
+   ["`assert train.index.max() < test.index.min(), 'the halves overlap'` is the first "
+    "one. The text after the comma is what you will read when it fires.",
+    "The second is `assert len(test) > 0, 'empty test set'`."],
+   "table = pd.DataFrame({'ret_1d': rets['AAPL'], 'ret_next': rets['AAPL'].shift(-1)}).dropna()\n\n"
+   "def check_split(train, test):\n    assert train.index.max() < test.index.min(), 'the halves overlap'\n"
+   "    assert len(test) > 0, 'empty test set'\n    return 'split looks sound'\n\n"
+   "good_train = table.loc[:'2022-12-31']\ngood_test = table.loc['2023-01-01':]\nprint(check_split(good_train, good_test))\n\n"
+   "# now break it on purpose\nbad_test = table.loc['2020-01-01':]\ntry:\n    check_split(good_train, bad_test)\nexcept AssertionError as e:\n    print('caught:', e)",
+   "The good split passes; the broken one prints `caught: the halves overlap`.\n\n"
+   "An assertion is a comment that cannot be ignored. Three of these at the top of a "
+   "modelling script catch more real mistakes than any amount of care, because they "
+   "keep checking long after you have stopped paying attention.",
+   revisits="S2")
+
+ex("H9", "Prove the feature cannot see the future", 4,
+   "B2 asked you to spot a leak by reading the code. That does not scale: a real "
+   "table has forty columns written by four people.\n\n"
+   "Write a check that works on the **values** instead. A feature is safe if "
+   "recomputing it from prices up to and including today gives the same answer. "
+   "Compare a legitimate feature against a leaky one and report which passes.",
+   "r = rets['AAPL'].dropna()\n\nsafe = r.rolling(5).mean()          # today and the four days before\nleaky = r.rolling(5).mean().shift(-4)   # slides four days of the future in\n\n"
+   "def uses_only_past(feature, source):\n    \"\"\"True if the feature on day t is unchanged when the future is deleted.\"\"\"\n    ...\n\n"
+   "print('safe :', ...)\nprint('leaky:', ...)",
+   ["Pick a date in the middle. Cut everything after it out of the source, recompute "
+    "the feature, and compare that day's value with the one computed on the full "
+    "series.",
+    "`cut = source.loc[:day]`, then `recomputed = cut.rolling(5).mean().loc[day]`, "
+    "and compare with `feature.loc[day]` using `np.isclose`."],
+   "r = rets['AAPL'].dropna()\n\nsafe = r.rolling(5).mean()\nleaky = r.rolling(5).mean().shift(-4)\n\n"
+   "def uses_only_past(feature, source):\n    \"\"\"True if the feature on day t is unchanged when the future is deleted.\"\"\"\n"
+   "    day = source.index[-50]\n    recomputed = source.loc[:day].rolling(5).mean().loc[day]\n"
+   "    return bool(np.isclose(feature.loc[day], recomputed))\n\n"
+   "print('safe :', uses_only_past(safe, r))\nprint('leaky:', uses_only_past(leaky, r))",
+   "`True` and `False`. The leaky feature changes the moment you take the future "
+   "away, and that is exactly the definition of a leak, stated in a way a computer "
+   "can check.\n\n"
+   "This one test, run on every column, is worth more than any amount of reading the "
+   "code, because it catches leaks that arrived through a merge or a join rather "
+   "than through an obvious `shift`.")
 
 # ================================================================ I. flexibility
 section(
@@ -925,7 +1002,7 @@ ex("I3", "The whole curve", 3,
    "rows = []\nfor degree in range(1, 13):\n    coef = np.polyfit(x_train, y_train, degree)\n    rows.append({\n        'degree': degree,\n        'train': ((np.polyval(coef, x_train) - y_train) ** 2).mean(),\n        'test': ((np.polyval(coef, x_test) - y_test) ** 2).mean(),\n    })\n\ncurve = pd.DataFrame(rows).set_index('degree')\ncurve",
    "Read down the two columns: `train` falls all the way, `test` falls, flattens, and then turns back up. That is the U from the lecture, in numbers.")
 
-ex("I4", "Where the bottom is", 3,
+ex("I4", "Where the bottom is", 2,
    "From that table, find the degree with the **lowest test MSE**.",
    "rows = []\nfor degree in range(1, 13):\n    coef = np.polyfit(x_train, y_train, degree)\n    rows.append({'degree': degree,\n                 'train': ((np.polyval(coef, x_train) - y_train) ** 2).mean(),\n                 'test': ((np.polyval(coef, x_test) - y_test) ** 2).mean()})\ncurve = pd.DataFrame(rows).set_index('degree')\n\nbest = ...\nprint('best degree:', best)",
    "`curve['test'].idxmin()` gives the index label where the column is smallest.",
@@ -956,7 +1033,7 @@ ex("J1", "Build the table", 3,
    "msft = pd.DataFrame({\n    'ret_1d': rets['MSFT'],\n    'ret_5d': rets['MSFT'].rolling(5).mean(),\n    'vol_20d': rets['MSFT'].rolling(20).std(),\n    'ret_next': rets['MSFT'].shift(-1),\n}).dropna()\nmsft",
    f"**{MTBL.shape[0]:,} rows and {MTBL.shape[1]} columns**, so three features and a target.")
 
-ex("J2", "Split it, then standardise it properly", 3,
+ex("J2", "Split it, then standardise it properly", 4,
    "Split at the end of 2022, then standardise `vol_20d` across the whole table "
    "using the **training** mean and standard deviation only.",
    "msft = pd.DataFrame({\n    'ret_1d': rets['MSFT'],\n    'ret_5d': rets['MSFT'].rolling(5).mean(),\n    'vol_20d': rets['MSFT'].rolling(20).std(),\n    'ret_next': rets['MSFT'].shift(-1),\n}).dropna()\n\ntrain = ...\nvol_z = ...\nvol_z",
@@ -965,7 +1042,7 @@ ex("J2", "Split it, then standardise it properly", 3,
    "msft = pd.DataFrame({\n    'ret_1d': rets['MSFT'],\n    'ret_5d': rets['MSFT'].rolling(5).mean(),\n    'vol_20d': rets['MSFT'].rolling(20).std(),\n    'ret_next': rets['MSFT'].shift(-1),\n}).dropna()\n\ntrain = msft.loc[:'2022-12-31']\nvol_z = (msft['vol_20d'] - train['vol_20d'].mean()) / train['vol_20d'].std()\nvol_z",
    "The order matters: split first, then compute the statistics, then apply them everywhere. Doing it the other way round is the most common leak there is.")
 
-ex("J3", "Score a naive rule on the test rows", 3,
+ex("J3", "Score a naive rule on the test rows", 4,
    "On the **test** rows only, score the rule \"tomorrow repeats today\" with MAE, "
    "RMSE and R². Use the **training** mean as the baseline inside R².",
    "msft = pd.DataFrame({\n    'ret_1d': rets['MSFT'],\n    'ret_next': rets['MSFT'].shift(-1),\n}).dropna()\ntrain = msft.loc[:'2022-12-31']\ntest = msft.loc['2023-01-01':]\n\nresid = ...\nprint('MAE :', ...)\nprint('RMSE:', ...)\nprint('R2  :', ...)",
@@ -974,7 +1051,7 @@ ex("J3", "Score a naive rule on the test rows", 3,
    "msft = pd.DataFrame({\n    'ret_1d': rets['MSFT'],\n    'ret_next': rets['MSFT'].shift(-1),\n}).dropna()\ntrain = msft.loc[:'2022-12-31']\ntest = msft.loc['2023-01-01':]\n\nresid = test['ret_next'] - test['ret_1d']\nrss = (resid ** 2).sum()\ntss = ((test['ret_next'] - train['ret_next'].mean()) ** 2).sum()\nprint('MAE :', resid.abs().mean())\nprint('RMSE:', np.sqrt((resid ** 2).mean()))\nprint('R2  :', 1 - rss / tss)",
    f"RMSE **{NAIVE_RMSE:.5f}** and R² **{NAIVE_R2:.4f}**. A negative R² means this rule is worse than predicting the training average every single day.")
 
-ex("J4", "Beat it with nothing at all", 4,
+ex("J4", "Beat it with nothing at all", 5,
    "Score the baseline that predicts the **training mean** on every test row, and "
    "print which of the two rules has the lower RMSE.",
    "msft = pd.DataFrame({'ret_1d': rets['MSFT'], 'ret_next': rets['MSFT'].shift(-1)}).dropna()\ntrain = msft.loc[:'2022-12-31']\ntest = msft.loc['2023-01-01':]\n\nbaseline = ...\nrmse_naive = ...\nrmse_base = ...\nprint('naive rule RMSE:', rmse_naive)\nprint('baseline   RMSE:', rmse_base)\nprint('winner:', 'naive rule' if ... else 'baseline')",
@@ -982,6 +1059,149 @@ ex("J4", "Beat it with nothing at all", 4,
     "The winner is whichever RMSE is smaller."],
    "msft = pd.DataFrame({'ret_1d': rets['MSFT'], 'ret_next': rets['MSFT'].shift(-1)}).dropna()\ntrain = msft.loc[:'2022-12-31']\ntest = msft.loc['2023-01-01':]\n\nbaseline = np.full(len(test), train['ret_next'].mean())\nrmse_naive = np.sqrt(((test['ret_next'] - test['ret_1d']) ** 2).mean())\nrmse_base = np.sqrt(((test['ret_next'] - baseline) ** 2).mean())\nprint('naive rule RMSE:', rmse_naive)\nprint('baseline   RMSE:', rmse_base)\nprint('winner:', 'naive rule' if rmse_naive < rmse_base else 'baseline')",
    f"**The baseline wins**, {BASE_RMSE:.5f} against {NAIVE_RMSE:.5f}. Doing nothing beats a plausible-sounding rule, which is the honest starting point for the rest of this course: you must beat the boring thing before you have anything at all.")
+
+# ===================================== K. everything you already had
+section(
+"## \U0001f501 K · Everything you already had\n\n"
+"*The last section of the last notebook of this block, and there is nothing new "
+"in it. Every exercise here needs a tool from Session 1, 2 or 3 alongside "
+"today's, because that is what real work looks like: a loop from week two "
+"holding a metric from week four, drawn with a figure from week three.*\n\n"
+"**Drills:** a report built with a loop and a dictionary, labels from an `if` "
+"chain, a function with a default, and three figures."
+)
+
+ex("K1", "One number per stock, reported", 3,
+   "Score the naive rule \"tomorrow repeats today\" for **every** stock, and print a "
+   "readable table of the results, worst first.\n\n"
+   "A loop, a dictionary and an f-string: Session 2 and Session 1 doing the work, "
+   "with a Session 4 metric in the middle.",
+   "rmse_by_ticker = {}\n\nfor ticker in rets.columns:\n    t = pd.DataFrame({'today': rets[ticker], 'tomorrow': rets[ticker].shift(-1)}).dropna()\n    rmse_by_ticker[ticker] = ...\n\n"
+   "ranked = ...\n\nfor ticker in rets.columns:\n    ...",
+   ["The RMSE of the rule is `np.sqrt(((t['tomorrow'] - t['today']) ** 2).mean())`.",
+    "`ranked = pd.Series(rmse_by_ticker).sort_values(ascending=False)`, then loop "
+    'over `ranked.index` and `print(f"{ticker:<6}{ranked[ticker]:>8.4f}")`.'],
+   "rmse_by_ticker = {}\n\nfor ticker in rets.columns:\n    t = pd.DataFrame({'today': rets[ticker], 'tomorrow': rets[ticker].shift(-1)}).dropna()\n"
+   "    rmse_by_ticker[ticker] = np.sqrt(((t['tomorrow'] - t['today']) ** 2).mean())\n\n"
+   "ranked = pd.Series(rmse_by_ticker).sort_values(ascending=False)\n\n"
+   'for ticker in ranked.index:\n    print(f"{ticker:<6}{ranked[ticker]:>8.4f}")',
+   "Nvidia is hardest to predict this way at **0.0448**, and Coca-Cola easiest at "
+   "**0.0161**. That ordering is almost exactly the volatility ranking from Session "
+   "3, and it is not a coincidence: a rule this crude mostly inherits the size of "
+   "whatever it is predicting.\n\n"
+   "Which means a raw RMSE cannot be compared across stocks. That is precisely the "
+   "job R² does, by dividing the error by how much there was to explain.",
+   revisits="S2")
+
+ex("K2", "Label them, the Session 2 way", 3,
+   "Turn those eleven numbers into three words. Write `error_label(rmse)` returning "
+   "`'large'` above 0.025, `'medium'` above 0.015, and `'small'` otherwise, then "
+   "apply it to every stock with a loop.",
+   "rmse_by_ticker = {}\nfor ticker in rets.columns:\n    t = pd.DataFrame({'today': rets[ticker], 'tomorrow': rets[ticker].shift(-1)}).dropna()\n"
+   "    rmse_by_ticker[ticker] = np.sqrt(((t['tomorrow'] - t['today']) ** 2).mean())\n\n"
+   "def error_label(rmse):\n    ...\n\nlabels = {}\nfor ticker in rmse_by_ticker:\n    ...\n\nlabels",
+   ["The function is an `if` / `elif` / `else` chain, exactly as in Session 2. Order "
+    "matters: test the largest threshold first.",
+    "`labels[ticker] = error_label(rmse_by_ticker[ticker])`."],
+   "rmse_by_ticker = {}\nfor ticker in rets.columns:\n    t = pd.DataFrame({'today': rets[ticker], 'tomorrow': rets[ticker].shift(-1)}).dropna()\n"
+   "    rmse_by_ticker[ticker] = np.sqrt(((t['tomorrow'] - t['today']) ** 2).mean())\n\n"
+   "def error_label(rmse):\n    if rmse > 0.030:\n        return 'large'\n    elif rmse > 0.020:\n        return 'medium'\n    else:\n        return 'small'\n\n"
+   "labels = {}\nfor ticker in rmse_by_ticker:\n    labels[ticker] = error_label(rmse_by_ticker[ticker])\n\nlabels",
+   "Nvidia alone is `large`; five names are `medium` and five are `small`. "
+   "Turning a number into a category is how a result "
+   "reaches somebody who does not want the number, and it is an `if` chain from "
+   "Session 2 doing it. Note that the thresholds are a judgement you have to be able "
+   "to defend, not something the data told you.",
+   revisits="S2")
+
+ex("K3", "One function, either metric", 3,
+   "Write `score(frame, actual_col, pred_col, metric='rmse')` that returns the RMSE "
+   "by default and the MAE when asked. Then call it both ways on the same table.\n\n"
+   "The default argument is the Session 2 idea that makes a function pleasant to "
+   "use: the common case needs no extra typing.",
+   "t = pd.DataFrame({'today': rets['AAPL'], 'tomorrow': rets['AAPL'].shift(-1)}).dropna()\n\n"
+   "def score(frame, actual_col, pred_col, metric='rmse'):\n    ...\n\n"
+   "print('rmse:', ...)\nprint('mae :', ...)",
+   ["Build the errors first: `err = frame[actual_col] - frame[pred_col]`.",
+    "Then branch on the argument: `if metric == 'rmse': return np.sqrt((err ** 2).mean())`, "
+    "`elif metric == 'mae': return err.abs().mean()`, and raise or return None otherwise."],
+   "t = pd.DataFrame({'today': rets['AAPL'], 'tomorrow': rets['AAPL'].shift(-1)}).dropna()\n\n"
+   "def score(frame, actual_col, pred_col, metric='rmse'):\n    \"\"\"Score one column against another. metric is 'rmse' or 'mae'.\"\"\"\n"
+   "    err = frame[actual_col] - frame[pred_col]\n    if metric == 'rmse':\n        return np.sqrt((err ** 2).mean())\n"
+   "    elif metric == 'mae':\n        return err.abs().mean()\n    else:\n        raise ValueError('unknown metric: ' + metric)\n\n"
+   "print('rmse:', score(t, 'tomorrow', 'today'))\nprint('mae :', score(t, 'tomorrow', 'today', metric='mae'))",
+   "RMSE 0.0262 and MAE 0.0183. Two things worth copying here: the **docstring**, so "
+   "`help(score)` says something useful, and the `else` that raises on a metric you "
+   "have not implemented. Returning `None` quietly for a typo is how a wrong number "
+   "reaches a slide.",
+   revisits="S2")
+
+ex("K4", "Look at your residuals", 3,
+   "Every regression diagnostic starts the same way: plot what is left over against "
+   "what you predicted.\n\n"
+   "Using the Session 4 rule $\\hat{y}=0.00043+1.2073\\,x$, draw a scatter of "
+   "**residuals against fitted values**, with a line at zero.",
+   "predicted = 0.00043 + 1.2073 * market\nresid = actual - predicted\n\n"
+   "fig, ax = plt.subplots(figsize=(7, 3.5))\n...\nplt.show()",
+   ["`ax.scatter(predicted, resid, s=6, alpha=0.4)`, fitted on the x-axis.",
+    "Add `ax.axhline(0)` for the reference line, then label both axes."],
+   "predicted = 0.00043 + 1.2073 * market\nresid = actual - predicted\n\n"
+   "fig, ax = plt.subplots(figsize=(7, 3.5))\nax.scatter(predicted, resid, s=6, alpha=0.4)\nax.axhline(0, color='black', linewidth=1)\n"
+   "ax.set_xlabel('fitted value')\nax.set_ylabel('residual')\nax.set_title('Residuals against fitted values', loc='left')\nplt.show()",
+   "A shapeless cloud centred on zero is what you want, and roughly what you get. "
+   "What you are looking for is structure: a funnel that widens to the right means "
+   "the errors grow with the prediction, and a curve means the straight line is the "
+   "wrong shape.\n\n"
+   "This is the plot to draw before you report any R². It takes four lines and it "
+   "will save you from at least one bad model.",
+   revisits="S3")
+
+ex("K5", "Draw the gaps", 3,
+   "A missingness number is easy to ignore. A missingness picture is not.\n\n"
+   "Take two months of Apple's price on a **calendar** index, and draw two lines on "
+   "the same axes: the raw series, which breaks wherever a day is missing, and the "
+   "forward-filled series, which does not. Add a legend.",
+   "cal = pd.date_range('2024-01-01', '2024-02-29', freq='D')\ngappy = wide['AAPL'].reindex(cal)\nfilled = gappy.ffill()\n\n"
+   "fig, ax = plt.subplots(figsize=(10, 3))\n...\nax.legend()\nplt.show()",
+   ["Draw the filled one first so the raw line sits on top of it: "
+    "`ax.plot(filled.index, filled.values, label='forward filled')`.",
+    "matplotlib breaks a line wherever the value is `NaN`, which is exactly what "
+    "makes the gaps visible."],
+   "cal = pd.date_range('2024-01-01', '2024-02-29', freq='D')\ngappy = wide['AAPL'].reindex(cal)\nfilled = gappy.ffill()\n\n"
+   "fig, ax = plt.subplots(figsize=(10, 3))\nax.plot(filled.index, filled.values, linewidth=2.5, alpha=0.4, label='forward filled')\n"
+   "ax.plot(gappy.index, gappy.values, linewidth=1.2, label='as traded')\n"
+   "ax.set_ylabel('price (USD)')\nax.set_title('Where the weekends are', loc='left')\nax.legend()\nplt.show()",
+   "The pale line is flat across every weekend, and the dark one simply stops. Those "
+   "flat stretches are the days forward filling invented, and there are two of them "
+   "every week.\n\n"
+   "Nobody reading a table of `isna().sum()` would picture this. Draw the gaps "
+   "before you decide how to fill them.",
+   revisits="S3")
+
+ex("K6", "The U, drawn by you", 4,
+   "The most important figure in Session 4, built from your own numbers.\n\n"
+   "Loop over polynomial degrees 1 to 12, collect the training and test MSE of each, "
+   "and draw both against degree on one axes. Use a **log** vertical scale, because "
+   "the test error at high degrees is far larger than anything else on the chart.",
+   "degrees = range(1, 13)\ntrain_mse = []\ntest_mse = []\n\nfor degree in degrees:\n    coef = ...\n    train_mse.append(...)\n    test_mse.append(...)\n\n"
+   "fig, ax = plt.subplots(figsize=(8, 3.5))\n...\nax.legend()\nplt.show()",
+   ["Inside the loop it is the same two expressions as I3: fit with "
+    "`np.polyfit(x_train, y_train, degree)`, then the mean squared difference on "
+    "each set.",
+    "`ax.plot(list(degrees), train_mse, marker='o', label='training')` and the same "
+    "for test, then `ax.set_yscale('log')`."],
+   "degrees = range(1, 13)\ntrain_mse = []\ntest_mse = []\n\nfor degree in degrees:\n    coef = np.polyfit(x_train, y_train, degree)\n"
+   "    train_mse.append(((np.polyval(coef, x_train) - y_train) ** 2).mean())\n    test_mse.append(((np.polyval(coef, x_test) - y_test) ** 2).mean())\n\n"
+   "fig, ax = plt.subplots(figsize=(8, 3.5))\nax.plot(list(degrees), train_mse, marker='o', label='training')\n"
+   "ax.plot(list(degrees), test_mse, marker='o', label='test')\nax.set_yscale('log')\n"
+   "ax.set_xlabel('flexibility (polynomial degree)')\nax.set_ylabel('mean squared error')\n"
+   "ax.set_title('Training error falls forever. Test error does not.', loc='left')\nax.legend()\nplt.show()",
+   "The training line slides downward and never turns. The test line drops, flattens "
+   "around degree 3 to 5, and then climbs away.\n\n"
+   "You have now drawn the picture the lecture showed you, from numbers you computed "
+   "yourself. If you remember one figure from this session, remember the shape of "
+   "those two lines, and that only one of them is visible while you are choosing.",
+   revisits="S3")
 
 # ---------------------------------------------------------------- closing
 md(
@@ -1010,12 +1230,18 @@ for _i, _c in enumerate(nb.cells):
 
 OUT.write_text(nbf.writes(nb), encoding="utf-8")
 
-n_ex = sum(1 for c in cells if c.cell_type == "markdown" and c.source.startswith("### "))
+import re as _re
+
+_heads = [c.source.splitlines()[0] for c in cells
+          if c.cell_type == "markdown" and _re.match(r"^### [A-Z]\d+ ", c.source)]
+n_ex = len(_heads)
 tiers = {}
-for c in cells:
-    if c.cell_type == "markdown" and c.source.startswith("### "):
-        for k, lab in LABELS.items():
-            if lab in c.source.splitlines()[0]:
-                tiers[lab] = tiers.get(lab, 0) + 1
+for _h in _heads:
+    _m = _re.search(r"(★+)", _h)
+    if _m:
+        _k = len(_m.group(1))
+        tiers[_k] = tiers.get(_k, 0) + 1
+tiers = {f"{k}star": tiers[k] for k in sorted(tiers)}
+n_revisit = sum(1 for _h in _heads if "revisits" in _h)
 print(f"wrote {OUT}  ({len(cells)} cells, {n_ex} exercises)")
-print("difficulty:", tiers)
+print("stars:", tiers, " revisits tags:", n_revisit)

@@ -5,10 +5,10 @@ Changes from v1:
 - Toolkit: placeholder names made explicit + hover docs (<abbr title>).
 - Em-dashes removed throughout.
 - B2 reframed (average of three, a real parentheses trap, not a math puzzle).
-- B6 reframed to a 'translate the stated formula' Core exercise (present value).
+- B6 reframed to a 'translate the stated formula' exercise (present value).
 - Errors use a two-cell pattern: a cell that really errors (tagged
   raises-exception) then a blank fix cell. H1 rebuilt (case-sensitivity).
-- A 4-star 'Stretch' tier added, with a few genuinely hard, still-inferable
+- A five-star ladder, rated against this session only, with a few genuinely hard
   challenges (worst-day offset, median without sorting, ...).
 Only tools taught in session_01.qmd are used (no sorted, no //, no loops/if).
 """
@@ -19,9 +19,15 @@ from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 OUT = Path(__file__).resolve().parents[2] / "session_01" / "session_01_exercises.ipynb"
 
 cells = []
-LABELS = {1: "Warm-up", 2: "Core", 3: "Challenge", 4: "Stretch"}
-def badge(n):
-    return ("★" * n + "☆" * (4 - n)) + " " + LABELS[n]
+def badge(n, revisits=None):
+    """Five unnamed stars, plus an optional note that this one reaches back.
+
+    The scale restarts each session: it rates the work against what THIS
+    session has taught, so a three-star task here is not the same size as a
+    three-star task in a later notebook.
+    """
+    stars = "★" * n + "☆" * (5 - n)
+    return stars + (f"  · revisits {revisits}" if revisits else "")
 
 def md(text):
     cells.append(new_markdown_cell(text))
@@ -41,13 +47,13 @@ def _hints_solution(hints, sol_code, sol_note):
     md(f"<details>\n<summary>✅ Solution</summary>\n\n```python\n{sol_code}\n```\n\n{sol_note}\n\n</details>")
     md("---")
 
-def ex(sid, title, n, task, work, hints, sol_code, sol_note):
-    md(f"### {sid} · {title}  {badge(n)}\n\n{task}")
+def ex(sid, title, n, task, work, hints, sol_code, sol_note, revisits=None):
+    md(f"### {sid} · {title}  {badge(n, revisits)}\n\n{task}")
     code(work)
     _hints_solution(hints, sol_code, sol_note)
 
-def ex_fix(sid, title, n, task, demo_code, work, hints, sol_code, sol_note, raises=True):
-    md(f"### {sid} · {title}  {badge(n)}\n\n{task}")
+def ex_fix(sid, title, n, task, demo_code, work, hints, sol_code, sol_note, raises=True, revisits=None):
+    md(f"### {sid} · {title}  {badge(n, revisits)}\n\n{task}")
     code(demo_code, raises=raises)
     md("*Your fix:*")
     code(work)
@@ -89,15 +95,19 @@ md(
 
 md(
 "### Difficulty\n\n"
-"| badge | level | what to expect |\n"
-"|:--|:--|:--|\n"
-"| ★☆☆☆ | **Warm-up** | one idea, straight from the lecture |\n"
-"| ★★☆☆ | **Core** | the skill you will actually use. Most exercises live here |\n"
-"| ★★★☆ | **Challenge** | combine a few ideas, or think one step past what you were shown |\n"
-"| ★★★★ | **Stretch** | a real puzzle for those who want one. Rare, and always solvable with today's tools |\n\n"
-"Do the warm-ups quickly, spend most of your time on the core exercises, and "
-"try the challenges when you want a harder problem. Every ★★★★ can be solved "
-"with only what this lecture covered. They ask for more thought, not new tools."
+"| badge | what to expect |\n"
+"|:--|:--|\n"
+"| ★☆☆☆☆ | One step, straight from the lecture. You are checking that you can type it. |\n"
+"| ★★☆☆☆ | The same idea on new data, or two steps in a row. Nothing to decide. |\n"
+"| ★★★☆☆ | Combine two ideas, or adapt a pattern rather than copy it. |\n"
+"| ★★★★☆ | You choose the approach. Several steps, and something has to be worked out before you type. |\n"
+"| ★★★★★ | A genuine puzzle: an insight, or a constraint that rules out the obvious route. Always solvable with what you have. |\n\n"
+"The stars rate the work against **this** session. A three-star task in a later "
+"notebook assumes everything before it, so it is a bigger piece of work than a "
+"three-star task here, even though both sit in the middle of their own scale.\n\n"
+"Some exercises also carry a **revisits** tag. Those need something from an "
+"earlier session as well as today's material, and they are there on purpose: "
+"the skills are meant to accumulate, not to be handed in at the end of each week."
 )
 
 md(
@@ -177,7 +187,7 @@ print(30.0 + 25.0)
 print(40.0 + 38.0)''',
 "`30.0`, `55.0`, `78.0`. Without `print`, the first two results are computed and silently thrown away. Only the last line displays on its own.")
 
-ex("A3", "Label your output", 2,
+ex("A3", "Label your output", 1,
 r"""A bare number on its own tells the reader nothing. Using a single `print(...)`, produce
 exactly this line:
 
@@ -255,7 +265,7 @@ future_value = principal * (1 + rate) ** years
 future_value''',
 f"`{2000 * (1 + 0.06) ** 8}`. Round it with `round(future_value, 2)` to get **{round(2000 * (1.06) ** 8, 2)}**. The `**` operator is compounding: repeated multiplication, written once.")
 
-ex("B4", "How many times your money?", 2,
+ex("B4", "How many times your money?", 3,
 r"""Reuse the compound-growth formula for **5000** at **3.5%** over **12** years. Then also compute
 the **growth multiple** $(1+r)^{n}$, which is how many times the original the investment became.""",
 '''principal = 5000
@@ -285,7 +295,7 @@ final price by multiplying by the two growth factors in turn.""",
 '''100 * 1.04 * 0.97''',
 f"`{100 * 1.04 * 0.97}`. Up 4% then down 3% does **not** return to 100, because the second move acts on a bigger base. A small fact with large consequences for returns.")
 
-ex("B6", "What is it worth today?", 2,
+ex("B6", "What is it worth today?", 3,
 r"""A payment of **50000** arrives in **10** years. With money earning **5%** a year, its value
 *today* (its present value) is given by the compound-growth formula rearranged for you:
 
@@ -432,7 +442,7 @@ balance = balance + 100
 balance''',
 "`1100`. The original line asks Python to *read* `balance` before it was ever *assigned*. Define first, then update. The runtime only knows what it has been told.")
 
-ex("D2", "Put them in order", 3,
+ex("D2", "Put them in order", 2,
 r"""These three lines were run in the order shown and failed, because each name is used before it
 exists:
 
@@ -486,7 +496,7 @@ print(result, type(result))''',
 print(result, type(result))''',
 "`25.0 <class 'float'>`. Division in Python **always** returns a `float`, even when it divides evenly. You get `25.0`, not `25`.")
 
-ex_fix("E3", "The silent string bug", 2,
+ex_fix("E3", "The silent string bug", 3,
 r"""⚠️ **Run the cell below.** It does **not** error, yet the answer is nonsense: with `price` still
 text, `price * shares` repeats the text into `"848484"` instead of multiplying. Look at the output,
 then fix it underneath so `cost` is the real number **252.0**.""",
@@ -554,7 +564,7 @@ message = f"Apple closed at {price:.2f}"
 message''',
 "`'Apple closed at 248.83'`. `:.2f` rounds *for display* to two decimals, exactly what prices want. The underlying value is left untouched.")
 
-ex("E7", "Show a return as a percent", 2,
+ex("E7", "Show a return as a percent", 3,
 r"""The other format recipe, `:.2%`, turns a decimal into a percentage. A stock went from **183.56**
 to **248.83**. Compute the simple return and format it:
 
@@ -577,7 +587,7 @@ message = f"Return: {r:.2%}"
 message''',
 f"`'Return: {((248.83-183.56)/183.56):.2%}'`. Note that `:.2%` does the ×100 *and* the `%` sign, so never multiply by 100 yourself as well, or you will report 3556%.")
 
-ex("E8", "Ask a yes/no question", 2,
+ex("E8", "Ask a yes/no question", 1,
 r"""A comparison produces a `bool` (`True` or `False`). Today's close is **251.20**. Write one
 comparison that asks whether it closed **above 250**, and print the answer.""",
 '''close = 251.20
@@ -591,7 +601,7 @@ beat_250 = close > 250
 print(beat_250)''',
 "`True`. Comparisons (`>`, `<`, `>=`, `<=`, `==`, `!=`) answer yes/no questions. They look modest now, but later they select rows of data, and later still they become the thing a model predicts.")
 
-ex("E9", "Convert, compare, report", 3,
+ex("E9", "Convert, compare, report", 4,
 r"""A price arrives as text: `"205.50"`. Without using `if`, build a single line that reports both the
 tidy price and whether it is above 200, exactly like:
 
@@ -607,6 +617,23 @@ report''',
 report = f"{float(price_text):.2f} above 200? {float(price_text) > 200}"
 report''',
 "`'205.50 above 200? True'`. An f-string can hold *any* expression in its braces: a conversion, a format, even a whole comparison. Four ideas from this section in one line.")
+
+ex("E10", "The f that went missing", 2,
+r"""⚠️ **Run the cell below.** It does not error, and the output is still wrong: it prints the braces
+and the variable name instead of the price.
+
+Find the one character that is missing and fix it.""",
+'''close = 248.834
+
+message = "Apple closed at {close:.2f}"
+message''',
+["Compare it with E6. What is written immediately before the opening quote there?",
+ "Without the `f`, Python sees an ordinary string and leaves the braces exactly as typed."],
+'''close = 248.834
+
+message = f"Apple closed at {close:.2f}"
+message''',
+"`'Apple closed at 248.83'`. A missing `f` is the quietest bug in this section, because nothing fails: you just publish a report with `{close:.2f}` printed in the middle of it.")
 
 checkpoint("you can tell the types apart, convert text to numbers, format for humans, and ask true/false questions.")
 
@@ -629,7 +656,7 @@ characters are in the word `"portfolio"`. Print each.""",
 print(len("portfolio"))''',
 "`19.88` and `9`. `round` and `len` are two of the small tools you will use in almost every task.")
 
-ex("F2", "Fix the ticker", 2,
+ex("F2", "Fix the ticker", 1,
 r"""A ticker was typed in lowercase. Use the string method that makes text uppercase to fix it.""",
 '''ticker = "jpm"
 
@@ -656,7 +683,7 @@ how_many = word.count("a")
 how_many''',
 '`3`. Methods take arguments in their brackets just like functions do. The difference is that they hang off a value with a dot.')
 
-ex("F4", "Assemble a headline", 2,
+ex("F4", "Assemble a headline", 3,
 r"""Combine a method and a format recipe. Given a lowercase ticker and a price, build:
 
 `JPM closed at 231.45`""",
@@ -673,7 +700,7 @@ headline = f"{ticker.upper()} closed at {price:.2f}"
 headline''',
 "`'JPM closed at 231.45'`. Braces in an f-string happily hold a method call and a format spec at once.")
 
-ex("F5", "How much of the name?", 2,
+ex("F5", "How much of the name?", 3,
 r"""For `name = "Coca-Cola Company"`, compute the fraction of its characters that are a lowercase
 `"o"`, and show it as a percentage (for example `17.65%`). You will need a method *and* a
 function.""",
@@ -809,7 +836,7 @@ closes.append(77.10)
 print(len(closes))''',
 "`6`. `.append` changes the list in place, so notice there is no `closes = ...`. The list itself grows by one.")
 
-ex("G8", "Where is the low?", 2,
+ex("G8", "Where is the low?", 3,
 r"""`.index(value)` reports the **position** of a value in a list. Find the lowest price with
 `min(...)`, then use `.index(...)` to find *which day* (position) it fell on.""",
 '''closes = [71.2, 72.0, 70.5, 73.1, 74.4, 73.9, 75.2, 74.8, 76.0, 75.5]
@@ -847,7 +874,7 @@ average = sum(closes) / len(closes)
 print(highest, lowest, average)''',
 f"`76.0 70.5 {sum([71.2,72.0,70.5,73.1,74.4,73.9,75.2,74.8,76.0,75.5])/10}` (wrap the average in `round(..., 2)` to tidy it). `sum`/`len` is your first statistic built from raw parts, exactly what a data table will compute for you in one step later in the course.")
 
-ex("G10", "How wide did it swing?", 2,
+ex("G10", "How wide did it swing?", 3,
 r"""A stock's range relative to its floor is a rough gauge of how much it moved. Compute the range as
 a **percentage of the lowest** price:
 
@@ -867,6 +894,24 @@ relative_range = (max(closes) - min(closes)) / min(closes)
 message = f"{relative_range:.2%}"
 message''',
 f"`'{((max([71.2,72.0,70.5,73.1,74.4,73.9,75.2,74.8,76.0,75.5])-min([71.2,72.0,70.5,73.1,74.4,73.9,75.2,74.8,76.0,75.5]))/min([71.2,72.0,70.5,73.1,74.4,73.9,75.2,74.8,76.0,75.5])):.2%}'`. Three tools, `max`, `min`, and a format recipe, combined into a genuine if crude risk measure.")
+
+ex("G11", "From an empty cell", 3,
+r"""No scaffolding this time. Write the whole thing yourself, from the empty cell.
+
+Starting from the five closes **71.2, 72.0, 70.5, 73.1, 74.4**:
+
+1. put them in a list called `closes`
+2. a sixth day closes at **77.10**, so add it
+3. the first day turns out to belong to the previous week, so drop it with a slice
+4. report how many days are left, and what the new first day is""",
+'''...''',
+["Four lines, one per step. `closes = [...]`, then `.append(...)`, then `closes = closes[1:]`.",
+ "The last step is a single `print` with two values in it: `len(closes)` and `closes[0]`."],
+'''closes = [71.2, 72.0, 70.5, 73.1, 74.4]
+closes.append(77.10)
+closes = closes[1:]
+print(len(closes), closes[0])''',
+"`5 72.0`. Nothing here is new, and that is the point: with no blanks to fill in you have to remember the order the pieces go in, which is what the exam actually asks of you.")
 
 checkpoint("you can build a list, reach any day or window, grow it, locate values, and summarise it.")
 
@@ -919,7 +964,7 @@ final = float(price_text) + markup
 final''',
 "`235.1`. A `TypeError` is Python refusing to guess what you meant between mismatched types, usually the sign that a number is secretly text.")
 
-ex_fix("H3", "Python cannot even start", 2,
+ex_fix("H3", "Python cannot even start", 1,
 r"""⚠️ **Run the cell below.** It fails with a **SyntaxError**, before it runs at all, because a bracket
 is missing. Read the message, then write the corrected line underneath so it prints `Total: 500`.""",
 '''total = 500
@@ -985,24 +1030,42 @@ message = f"Return: {r:.2%}"
 message''',
 f"`'Return: {((182.19-183.56)/183.56):.2%}'`, a small down day. The percentage change in price is the basic quantity used throughout the course.")
 
-ex("I2", "A whole window's return", 2,
-r"""Given ten trading days in a list, compute the return from the **first** close to the **last**, using
-indexing to grab the two ends. Format it as a percentage.""",
-'''closes = [71.2, 72.0, 70.5, 73.1, 74.4, 73.9, 75.2, 74.8, 76.0, 75.5]
+ex("I2", "A whole window's return, twice", 4,
+r"""There are two ways to measure what a window did, and a good analyst checks one against the other.
 
-window_return = ...
-message = ...
-message''',
-["The two ends are `closes[0]` and `closes[-1]`.",
- '`window_return = (closes[-1] - closes[0]) / closes[0]`, then format with `:.2%`.'],
-'''closes = [71.2, 72.0, 70.5, 73.1, 74.4, 73.9, 75.2, 74.8, 76.0, 75.5]
+**Route A:** compare the two ends directly, $\dfrac{p_{\text{last}}-p_{\text{first}}}{p_{\text{first}}}$.
 
-window_return = (closes[-1] - closes[0]) / closes[0]
-message = f"Window return: {window_return:.2%}"
-message''',
-f"`'Window return: {((75.5-71.2)/71.2):.2%}'`. `[0]` and `[-1]` give the endpoints no matter how long the window is, and the return formula does the rest.")
+**Route B:** take the first three days only, and compound their two daily returns:
+$(1+r_1)(1+r_2)-1$.
 
-ex("I3", "Which day was best?", 2,
+Compute both over the **first three closes**, and print whether they agree.""",
+'''closes = [71.2, 72.0, 70.5, 73.1, 74.4]
+first_three = closes[:3]
+
+route_a = ...
+r1 = ...
+r2 = ...
+route_b = ...
+
+print("A:", route_a)
+print("B:", route_b)
+print("agree:", ...)''',
+["Route A uses `first_three[0]` and `first_three[-1]`. Route B needs the two daily returns first.",
+ "The two answers are floats, so compare them rounded: `round(route_a, 10) == round(route_b, 10)`."],
+'''closes = [71.2, 72.0, 70.5, 73.1, 74.4]
+first_three = closes[:3]
+
+route_a = (first_three[-1] - first_three[0]) / first_three[0]
+r1 = (first_three[1] - first_three[0]) / first_three[0]
+r2 = (first_three[2] - first_three[1]) / first_three[1]
+route_b = (1 + r1) * (1 + r2) - 1
+
+print("A:", route_a)
+print("B:", route_b)
+print("agree:", round(route_a, 10) == round(route_b, 10))''',
+"Both give **-0.98%**, and they agree. That is not a coincidence: compounding the daily steps *is* the end-to-end return, which is why you may never add returns together. Note the rounding in the comparison. Two floats that are mathematically equal can still differ in the last bits, so `==` on raw floats is a trap.")
+
+ex("I3", "Which day was best?", 3,
 r"""Two lists run in parallel, a date and a price at each position. Find the **highest** close and,
 using `.index`, the **date** it happened on.""",
 '''dates  = ["Jan 02", "Jan 03", "Jan 04", "Jan 05", "Jan 08"]
@@ -1055,23 +1118,35 @@ worst_date = dates[returns.index(worst) + 1]
 print(worst_date, f"{worst:.2%}")''',
 f"`Jan 04 {min([(182.19-183.56)/183.56,(179.87-182.19)/182.19,(179.15-179.87)/179.87,(183.48-179.15)/179.15]):.2%}`. The `+1` is the whole puzzle: a list of 4 returns lines up against days 2 to 5, not 1 to 5. Doing this by hand for four returns is exactly why loops (the next module) exist.")
 
-ex("I5", "Recover yesterday's price", 2,
+ex("I5", "Recover yesterday's price, and prove it", 4,
 r"""A stock closed today at **185.00**, up **2.5%** on the day. What was *yesterday's* close? The return
-formula rearranged for you gives:
+formula rearranged gives:
 
-$$p_0=\dfrac{p_1}{1+r}$$""",
+$$p_0=\dfrac{p_1}{1+r}$$
+
+Compute it, then **check your own answer**: put your `p0` back into the ordinary return formula and
+confirm you get 2.5% out again.""",
 '''p1 = 185.00
 r = 0.025
 
 p0 = ...
-p0''',
-"Read the formula across: divide today's price by `(1 + r)`.",
+check = ...
+
+print("yesterday :", p0)
+print("recomputed:", check)
+print("matches   :", ...)''',
+["Read the formula across: divide today's price by `(1 + r)`.",
+ "The check runs the normal formula forwards: `(p1 - p0) / p0`. Compare it to `r` with `round(..., 10)` on both sides, because these are floats."],
 '''p1 = 185.00
 r = 0.025
 
 p0 = p1 / (1 + r)
-p0''',
-f"`{185.00 / 1.025}`, about **{round(185.00/1.025, 2)}**. Today's price is yesterday's grown by `(1 + r)`, so dividing it back out recovers where you started.")
+check = (p1 - p0) / p0
+
+print("yesterday :", p0)
+print("recomputed:", check)
+print("matches   :", round(check, 10) == round(r, 10))''',
+f"`{round(185.00/1.025, 2)}`, and the check returns 2.5% exactly. Today's price is yesterday's grown by `(1 + r)`, so dividing it back out recovers where you started.\n\nThe habit matters more than the answer: when you rearrange a formula, run it forwards again. It costs one line and it catches an inverted sign every time.")
 
 ex("I6", "A weighted portfolio return", 3,
 r"""A portfolio holds three stocks with **weights** 0.5, 0.3, 0.2 (they sum to 1) and daily returns
@@ -1096,7 +1171,7 @@ message = f"Portfolio: {portfolio_return:.2%}"
 message''',
 f"`'Portfolio: {(0.5*0.04 + 0.3*-0.01 + 0.2*0.02):.2%}'`. A weighted average is how every real portfolio return is built. The weights sum to 1, so the result always sits among the individual returns.")
 
-ex("I7", "The middle price, no sorting", 4,
+ex("I7", "The middle price, no sorting", 5,
 r"""Three desks quote **182.19**, **179.87**, and **183.48**. Find the **median** (the middle value)
 **without** sorting them and without `if`.
 
@@ -1139,7 +1214,7 @@ message = f"Compounded: {compounded:.2%}"
 message''',
 f"`'Compounded: {((1+0.012)*(1-0.004)*(1+0.008)*(1-0.011) - 1):.2%}'`, against a naive sum of `{sum([0.012,-0.004,0.008,-0.011]):.2%}`. Close over a few small days, but the gap grows fast, which is why returns are compounded, not added.")
 
-ex("I9", "The one-line risk report", 3,
+ex("I9", "The one-line risk report", 4,
 r"""The capstone. From one week of closes, build a **single** formatted line reporting the week's return
 (as a percent), the average price (2 decimals), and the highest and lowest prices. Aim for something
 like:
@@ -1185,12 +1260,18 @@ for _i, _c in enumerate(nb.cells):
 
 OUT.write_text(nbf.writes(nb), encoding="utf-8")
 
-n_ex = sum(1 for c in cells if c.cell_type == "markdown" and c.source.startswith("### "))
+import re as _re
+
+_heads = [c.source.splitlines()[0] for c in cells
+          if c.cell_type == "markdown" and _re.match(r"^### [A-Z]\d+ ", c.source)]
+n_ex = len(_heads)
 tiers = {}
-for c in cells:
-    if c.cell_type == "markdown" and c.source.startswith("### "):
-        for k, lab in LABELS.items():
-            if lab in c.source.splitlines()[0]:
-                tiers[lab] = tiers.get(lab, 0) + 1
+for _h in _heads:
+    _m = _re.search(r"(★+)", _h)
+    if _m:
+        _k = len(_m.group(1))
+        tiers[_k] = tiers.get(_k, 0) + 1
+tiers = {f"{k}star": tiers[k] for k in sorted(tiers)}
+n_revisit = sum(1 for _h in _heads if "revisits" in _h)
 print(f"wrote {OUT}  ({len(cells)} cells, {n_ex} exercises)")
-print("difficulty:", tiers)
+print("stars:", tiers, " revisits tags:", n_revisit)

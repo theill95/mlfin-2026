@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Build session_02_exercises.ipynb.
 
-Same conventions as Session 1 (approved 2026-07-20): pleasant intro, 4-star
+Same conventions as Session 1 (approved 2026-07-20): pleasant intro, 1-5 star
 badges, toolkit card with <abbr> hover docs, task -> work cell (blank-safe
 `...`) -> 1-2 folded hints -> folded solution, two-cell pattern for errors,
 no em-dashes, plain academic tone.
@@ -26,9 +26,15 @@ from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 OUT = Path(__file__).resolve().parents[2] / "session_02" / "session_02_exercises.ipynb"
 
 cells = []
-LABELS = {1: "Warm-up", 2: "Core", 3: "Challenge", 4: "Stretch"}
-def badge(n):
-    return ("★" * n + "☆" * (4 - n)) + " " + LABELS[n]
+def badge(n, revisits=None):
+    """Five unnamed stars, plus an optional note that this one reaches back.
+
+    The scale restarts each session: it rates the work against what THIS
+    session has taught, so a three-star task here is not the same size as a
+    three-star task in a later notebook.
+    """
+    stars = "★" * n + "☆" * (5 - n)
+    return stars + (f"  · revisits {revisits}" if revisits else "")
 
 def md(text):
     cells.append(new_markdown_cell(text))
@@ -48,13 +54,21 @@ def _hints_solution(hints, sol_code, sol_note):
     md(f"<details>\n<summary>✅ Solution</summary>\n\n```python\n{sol_code}\n```\n\n{sol_note}\n\n</details>")
     md("---")
 
-def ex(sid, title, n, task, work, hints, sol_code, sol_note):
-    md(f"### {sid} · {title}  {badge(n)}\n\n{task}")
+# Exercises whose earlier-session tool is genuinely load-bearing, not incidental.
+# Kept in one place so the tags can be read and revised as a set.
+REVISITS = {
+    "A4": "S1", "C4": "S1", "C5": "S1", "I4": "S1", "K5": "S1",
+    "L7": "S1", "L8": "S1", "M1": "S1", "M2": "S1", "M3": "S1", "M4": "S1",
+}
+
+
+def ex(sid, title, n, task, work, hints, sol_code, sol_note, revisits=None):
+    md(f"### {sid} · {title}  {badge(n, revisits or REVISITS.get(sid))}\n\n{task}")
     code(work)
     _hints_solution(hints, sol_code, sol_note)
 
-def ex_fix(sid, title, n, task, demo_code, work, hints, sol_code, sol_note, raises=True):
-    md(f"### {sid} · {title}  {badge(n)}\n\n{task}")
+def ex_fix(sid, title, n, task, demo_code, work, hints, sol_code, sol_note, raises=True, revisits=None):
+    md(f"### {sid} · {title}  {badge(n, revisits)}\n\n{task}")
     code(demo_code, raises=raises)
     md("*Your fix:*")
     code(work)
@@ -123,15 +137,19 @@ md(
 
 md(
 "### Difficulty\n\n"
-"| badge | level | what to expect |\n"
-"|:--|:--|:--|\n"
-"| ★☆☆☆ | **Warm-up** | one idea, straight from the lecture |\n"
-"| ★★☆☆ | **Core** | the skill you will actually use. Most exercises live here |\n"
-"| ★★★☆ | **Challenge** | combine a few ideas, or think one step past what you were shown |\n"
-"| ★★★★ | **Stretch** | a real puzzle for those who want one. Rare, and always solvable with today's tools |\n\n"
-"Do the warm-ups quickly, spend most of your time on the core exercises, and "
-"try the challenges when you want a harder problem. Every ★★★★ can be solved "
-"with only what this lecture covered. They ask for more thought, not new tools."
+"| badge | what to expect |\n"
+"|:--|:--|\n"
+"| ★☆☆☆☆ | One step, straight from the lecture. You are checking that you can type it. |\n"
+"| ★★☆☆☆ | The same idea on new data, or two steps in a row. Nothing to decide. |\n"
+"| ★★★☆☆ | Combine two ideas, or adapt a pattern rather than copy it. |\n"
+"| ★★★★☆ | You choose the approach. Several steps, and something has to be worked out before you type. |\n"
+"| ★★★★★ | A genuine puzzle: an insight, or a constraint that rules out the obvious route. Always solvable with what you have. |\n\n"
+"The stars rate the work against **this** session. A three-star task in a later "
+"notebook assumes everything before it, so it is a bigger piece of work than a "
+"three-star task here, even though both sit in the middle of their own scale.\n\n"
+"Some exercises also carry a **revisits** tag. Those need something from an "
+"earlier session as well as today's material, and they are there on purpose: "
+"the skills are meant to accumulate, not to be handed in at the end of each week."
 )
 
 md(
@@ -325,7 +343,7 @@ for price in prices:
 print(count)''',
 f"`{len(WEEK)}`. Counting is the accumulator pattern with a step of 1. Notice `price` is never read: sometimes you only care that the loop went round, not what it held.")
 
-ex("B3", "The average, from scratch", 2,
+ex("B3", "The average, from scratch", 3,
 r"""Combine the two: build the total with a loop, then divide by how many there are, to get the average
 price.
 
@@ -438,7 +456,7 @@ for i in range(len(prices)):
     print(i, prices[i])''',
 "`range(len(prices))` is the standard way to walk every valid position of a list: it gives 0 up to one less than the length, which is exactly the set of positions that exist.")
 
-ex("C4", "Compare each day with the day before", 2,
+ex("C4", "Compare each day with the day before", 3,
 r"""To compare consecutive days you need **two** prices at once, `prices[i]` and `prices[i - 1]`. Print
 each day's **change** (today minus yesterday).
 
@@ -455,7 +473,7 @@ for i in range(1, len(prices)):
     print(prices[i] - prices[i - 1])''',
 "`2.0`, `-1.0`, `4.0`. Four prices give three changes. Starting at 1 is what keeps `prices[i - 1]` valid: at `i = 0` it would be `prices[-1]`, the *last* price, and quietly give a wrong answer.")
 
-ex("C5", "Every daily return", 3,
+ex("C5", "Every daily return", 4,
 r"""The central skill of this session. Turn a list of prices into a list of **daily returns**, using a
 loop over positions and the simple-return formula:
 
@@ -678,7 +696,7 @@ for r in returns:
 print(losses)''',
 f"`{[x for x in RET5 if x < 0]}`. Loop, test, append: this is filtering, and it is one line of pandas in Session 3. Doing it by hand once makes that line make sense.")
 
-ex("F4", "How many big days?", 2,
+ex("F4", "How many big days?", 3,
 r"""Count how many daily returns were **larger than 1%** in size, in either direction. Reuse the
 sign-removing trick from E4.""",
 '''returns = [0.012, -0.004, 0.008, -0.011, 0.006]
@@ -736,7 +754,7 @@ section(
 "so the loop always stops. Your job is to count the rounds."
 )
 
-ex("G1", "How long to reach 1500?", 2,
+ex("G1", "How long to reach 1500?", 3,
 r"""**1000** grows at **8%** a year. Count how many whole years it takes to reach **1500**. The growth
 line is given; add the line that counts the year.""",
 '''value = 1000
@@ -896,7 +914,7 @@ print(grow(100))
 print(grow(100, 0.10))''',
 "`105.0` and `110.00000000000001`. The default makes the common case short while leaving the parameter available when you need it. (The trailing digits are ordinary floating-point dust; `round(..., 2)` tidies them.)")
 
-ex("H5", "Document it", 2,
+ex("H5", "Document it", 1,
 r"""Give `simple_return` a **docstring**: a one-line description in triple quotes, on the first line of
 the body. Then run `help(simple_return)` to read it back.""",
 '''def simple_return(p0, p1):
@@ -1003,7 +1021,7 @@ year_return["AAPL"] = 0.3556
 print(year_return)''',
 "`{'AAPL': 0.3556, 'KO': 0.07, 'NVDA': 1.79}`. One piece of syntax does both jobs. There is no separate 'add' and 'update', which is convenient but does mean a typo in a key quietly creates a new entry instead of correcting an old one.")
 
-ex("I4", "Report every stock", 2,
+ex("I4", "Report every stock", 3,
 r"""Loop over the dictionary and print each ticker together with its return as a percentage, so the
 output reads:
 
@@ -1067,7 +1085,7 @@ for price in prices:
     print(price)''',
 "`10`, `20`, `30`. Indentation is not decoration in Python: it is the only thing that says which lines are inside the loop. Any consistent amount works, and four spaces is the convention.")
 
-ex_fix("J2", "A missing colon", 2,
+ex_fix("J2", "A missing colon", 1,
 r"""⚠️ **Run the cell below.** It fails with a **SyntaxError** before it runs at all, because the `for`
 line is missing its colon. Read the message, then write the corrected loop underneath so it prints the
 running total.""",
@@ -1155,7 +1173,7 @@ m = mean(returns)
 print(m)''',
 f"`{mean(RET5)}`, the average daily return, about {mean(RET5):.3%} a day. Small and named, this is the kind of function you write once and lean on constantly.")
 
-ex("K2", "Distances from the average", 3,
+ex("K2", "Distances from the average", 4,
 r"""Volatility is built from how far each return sits from the average. Compute the **sum of squared
 distances** from the mean:
 
@@ -1331,7 +1349,7 @@ print("ordered: ", ordered)
 print("original:", prices)''',
 f"`ordered: {sorted([183.56, 179.87, 183.48, 179.15, 182.19])}` while `original: [183.56, 179.87, 183.48, 179.15, 182.19]`, unchanged. `sorted` **returns a new list** and leaves yours alone. (Lists also have a `.sort()` method that reorders in place and returns nothing, which is a classic source of confusion. The documentation is how you tell the two apart.)")
 
-ex("L3", "When you do not even know the name", 2,
+ex("L3", "When you do not even know the name", 3,
 r"""`help` only works if you know what to type. Finding the *name* is the part that sends you to a search
 engine or an AI, and that is a legitimate move.
 
@@ -1452,7 +1470,7 @@ for date, close in zip(dates, closes):
     print(date, close)''',
 "`Jan 02 183.56`, `Jan 03 182.19`, `Jan 04 179.87`. No `i`, no `[i]`, and no chance of reading position 3 of one list against position 4 of the other. Worth knowing from the help text: if the lists are different lengths, `zip` stops at the shorter one rather than complaining.")
 
-ex("L8", "Rank the stocks, properly", 4,
+ex("L8", "Rank the stocks, properly", 5,
 r"""Put the section together. In the case you find the riskiest and calmest stock with a best-so-far
 loop. With `sorted` you can rank **all** of them at once, from most volatile to least.
 
@@ -1482,6 +1500,121 @@ for v, ticker in ranked:
 "`NVDA 3.30%`, `JPM 1.48%`, `AAPL 1.41%`, `JNJ 0.94%`, `KO 0.80%`. Two ideas earned this: `sorted` compares the **first** element, so ordering by volatility means putting the volatility first, and `reverse=True` was sitting in the signature the whole time. This is the whole section in one exercise: a problem you could not solve with the lecture's tools, solved by reading two help pages.")
 
 checkpoint("you can find a function you were never taught, read its signature, and use it correctly.")
+
+# =========================================== M. Still yours from Session 1
+section(
+"## \U0001f501 M · Still yours from Session 1\n\n"
+"*Nothing here is new. Every one of these needs a Session 1 tool, used inside a "
+"Session 2 loop. That combination is what the case runs on, and it is what the "
+"exam asks for.*\n\n"
+"**Drills:** f-strings inside a loop, string methods on messy input, slicing a "
+"window, and the float trap that catches everybody once."
+)
+
+ex("M1", "A report, one line per stock", 2,
+r"""`year_return` holds four stocks. Loop over it and print one line each, with the ticker
+**left-aligned in 6 characters** and the return as a **percentage with one decimal**:
+
+```
+AAPL   36.0%
+KO      7.0%
+```
+
+The alignment recipe is `f"{ticker:<6}"`, and you already know `:.1%`.""",
+'''year_return = {"AAPL": 0.36, "KO": 0.07, "NVDA": 1.79, "JNJ": 0.02}
+
+for ticker in year_return:
+    ...''',
+["Inside the loop you need both the key and the value: `year_return[ticker]`.",
+ '`print(f"{ticker:<6}{year_return[ticker]:>6.1%}")` lines the numbers up as well.'],
+'''year_return = {"AAPL": 0.36, "KO": 0.07, "NVDA": 1.79, "JNJ": 0.02}
+
+for ticker in year_return:
+    print(f"{ticker:<6}{year_return[ticker]:>6.1%}")''',
+"A readable report in three lines. The f-string is pure Session 1, the loop and the dictionary are today's, and the two together are how every result in this course gets shown to somebody.")
+
+ex("M2", "Clean the tickers first", 3,
+r"""Ticker symbols have arrived from four different systems, so they are a mess: stray spaces, mixed
+case. Before you can count anything you have to normalise them.
+
+Loop over `raw`, strip the spaces and force each to uppercase, collect the results into `clean`,
+then report how many of them are **exactly three characters** long.""",
+'''raw = ["  aapl ", "KO", " Jnj", "nvda  ", " ko"]
+
+clean = []
+for ticker in raw:
+    ...
+
+three_letter = 0
+for ticker in clean:
+    ...
+
+print(clean)
+print("three-letter:", three_letter)''',
+["`ticker.strip().upper()` does both jobs in one go, then `.append` it.",
+ "For the count, `len(ticker) == 3` inside an `if`, exactly like the up-day counter in F1."],
+'''raw = ["  aapl ", "KO", " Jnj", "nvda  ", " ko"]
+
+clean = []
+for ticker in raw:
+    clean.append(ticker.strip().upper())
+
+three_letter = 0
+for ticker in clean:
+    if len(ticker) == 3:
+        three_letter += 1
+
+print(clean)
+print("three-letter:", three_letter)''',
+"`['AAPL', 'KO', 'JNJ', 'NVDA', 'KO']` and **three** three-letter tickers. Real data always needs this step, and it is always the boring Session 1 methods that do it. Notice that `KO` appears twice: cleaning does not deduplicate, and nobody told you it would.")
+
+ex("M3", "Every three-day window", 3,
+r"""A **rolling window** is the idea behind most financial features. Using slicing inside a `range`
+loop, build every consecutive three-day window of `closes`, and report the average of each.
+
+With seven prices, how many such windows fit?""",
+'''closes = [71.2, 72.0, 70.5, 73.1, 74.4, 73.9, 75.2]
+
+n_windows = 1          # <- replace with the right count
+
+for i in range(n_windows):
+    window = ...
+    print(i, window)''',
+["A window starting at `i` is `closes[i:i + 3]`. The last one that fits starts at `len(closes) - 3`.",
+ "So the loop is `for i in range(len(closes) - 2):`, and the average is `sum(window) / len(window)`."],
+'''closes = [71.2, 72.0, 70.5, 73.1, 74.4, 73.9, 75.2]
+
+n_windows = len(closes) - 2
+
+for i in range(n_windows):
+    window = closes[i:i + 3]
+    print(i, window, round(sum(window) / len(window), 2))''',
+"**Five windows.** The `- 2` that stops you running off the end is the same arithmetic you met when pairing consecutive days, and writing it as `len(closes) - 2` rather than as `5` is what makes the code survive a longer list.\n\nIn Session 3 this whole cell becomes `.rolling(3).mean()`, one call, and it will help to have built it by hand first.")
+
+ex("M4", "The comparison that fails", 4,
+r"""⚠️ **Run the cell below.** Three returns of 0.1 are added up in a loop, and the total is compared
+with 0.3. Python says they are **not** equal.
+
+Nothing is broken. Print `total` to see why, then repair the comparison so it says `True`.""",
+'''returns = [0.1, 0.1, 0.1]
+
+total = 0
+for r in returns:
+    total = total + r
+
+print(total)
+print(total == 0.3)''',
+["Look at what `total` actually prints. Decimals that are simple in base 10 are not simple in base 2.",
+ "Compare rounded values instead: `round(total, 10) == round(0.3, 10)`."],
+'''returns = [0.1, 0.1, 0.1]
+
+total = 0
+for r in returns:
+    total = total + r
+
+print(total)
+print(round(total, 10) == round(0.3, 10))''',
+"`0.30000000000000004`, so the raw comparison is `False`. This is not a Python defect, it is how binary floating point works in every language.\n\n**Never test two computed decimals with `==`.** Round both sides first, or ask whether the difference is small. Every language you will ever use has this trap, and this is the cheapest possible place to meet it.")
 
 # ---------------------------------------------------------------- closing
 md(
@@ -1515,12 +1648,18 @@ for _i, _c in enumerate(nb.cells):
 
 OUT.write_text(nbf.writes(nb), encoding="utf-8")
 
-n_ex = sum(1 for c in cells if c.cell_type == "markdown" and c.source.startswith("### "))
+import re as _re
+
+_heads = [c.source.splitlines()[0] for c in cells
+          if c.cell_type == "markdown" and _re.match(r"^### [A-Z]\d+ ", c.source)]
+n_ex = len(_heads)
 tiers = {}
-for c in cells:
-    if c.cell_type == "markdown" and c.source.startswith("### "):
-        for k, lab in LABELS.items():
-            if lab in c.source.splitlines()[0]:
-                tiers[lab] = tiers.get(lab, 0) + 1
+for _h in _heads:
+    _m = _re.search(r"(★+)", _h)
+    if _m:
+        _k = len(_m.group(1))
+        tiers[_k] = tiers.get(_k, 0) + 1
+tiers = {f"{k}star": tiers[k] for k in sorted(tiers)}
+n_revisit = sum(1 for _h in _heads if "revisits" in _h)
 print(f"wrote {OUT}  ({len(cells)} cells, {n_ex} exercises)")
-print("difficulty:", tiers)
+print("stars:", tiers, " revisits tags:", n_revisit)
