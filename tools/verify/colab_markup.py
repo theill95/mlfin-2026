@@ -33,6 +33,12 @@ BLOCK_HTML = re.compile(r"<(p|div|table|ul|ol|blockquote)\b", re.I)
 MD_TABLE = re.compile(r"^\s*\|.*\|\s*$")
 MD_HEADING = re.compile(r"^#{1,6}\s")
 
+# LaTeX inside a table cell. Colab renders the maths and the table with two
+# separate passes that disagree, so the row collapses; Jupyter gets it right,
+# which is what makes this one so easy to ship by accident. Maths anywhere else
+# is fine, and the notebooks use plenty of it, so this is deliberately narrow.
+MATH_IN_TABLE = re.compile(r"^\s*\|.*\$.*\|")
+
 failures = []
 checked = 0
 
@@ -43,6 +49,14 @@ for path in NOTEBOOKS:
             continue
         checked += 1
         lines = "".join(cell["source"]).split("\n")
+
+        for n, line in enumerate(lines):
+            if MATH_IN_TABLE.match(line):
+                failures.append(
+                    f"{path.name} cell {index}: LaTeX inside a table cell on "
+                    f"line {n + 1}. Colab collapses the row. Use a list or a "
+                    f"$$ block instead:\n      {line.strip()[:78]}"
+                )
 
         html_at = None
         for n, line in enumerate(lines):

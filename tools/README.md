@@ -116,7 +116,15 @@ The rule, which costs nothing to obey:
 > markdown first, raw HTML last, and never markdown again after the HTML.
 
 Put anything that must stay markdown, a table above all, in its **own cell**.
-`tools/verify/colab_markup.py` enforces this across all eight notebooks.
+
+The second rule is narrower and cost us a second round: **never put LaTeX in a
+table cell.** Colab renders the maths and the table in two passes that disagree,
+so the row collapses into stacked literal text. Maths anywhere else is fine, and
+these notebooks use plenty of it, inline and as `$$` blocks, so the fix is only
+ever to move it out of the table. The formula cards are bullet lists for exactly
+this reason.
+
+`tools/verify/colab_markup.py` enforces both rules across all eight notebooks.
 
 The toolkit chips are `<code style="cursor:help" title="...">`, not `<abbr>`.
 `abbr` draws a dotted underline that reads like a spelling error and fights the

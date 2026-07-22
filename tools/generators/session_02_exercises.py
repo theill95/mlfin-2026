@@ -203,16 +203,10 @@ md(
 
 md(
 "**Formulas you will reach for**\n\n"
-r"| what | formula |"
-"\n|:--|:--|\n"
-r"| Simple return | $r=\dfrac{p_i-p_{i-1}}{p_{i-1}}$ |"
-"\n"
-r"| Average | $\bar{r}=\dfrac{1}{n}\sum_i r_i$ |"
-"\n"
-r"| Volatility | $\sigma=\sqrt{\dfrac{1}{n}\sum_i (r_i-\bar{r})^2}$ |"
-"\n"
-r"| Compound growth | $FV = P\,(1+r)^{n}$ |"
-"\n"
+r"- **Simple return**: $r=\dfrac{p_i-p_{i-1}}{p_{i-1}}$" "\n"
+r"- **Average**: $\bar{r}=\dfrac{1}{n}\sum_i r_i$" "\n"
+r"- **Volatility**: $\sigma=\sqrt{\dfrac{1}{n}\sum_i (r_i-\bar{r})^2}$" "\n"
+r"- **Compound growth**: $FV = P\,(1+r)^{n}$" "\n"
 )
 md("---")
 
