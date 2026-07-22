@@ -229,10 +229,12 @@ md(
 
 md(
 "**Formulas you will reach for**\n\n"
-r"- **Simple return**: $r_i=\dfrac{p_i-p_{i-1}}{p_{i-1}}$" "\n"
-r"- **Volatility (daily)**: $\sigma=\sqrt{\dfrac{1}{n}\sum_i (r_i-\bar{r})^2}$" "\n"
-r"- **Annualised volatility**: $\sigma_{\text{year}}=\sigma\sqrt{252}$" "\n"
-r"- **OLS estimate**: $\hat{\beta}=(X'X)^{-1}X'y$" "\n"
+r"| what | formula |" "\n"
+r"|:--|:--|" "\n"
+r"| Simple return | $$r_i=\dfrac{p_i-p_{i-1}}{p_{i-1}}$$ |" "\n"
+r"| Volatility (daily) | $$\sigma=\sqrt{\dfrac{1}{n}\sum_i (r_i-\bar{r})^2}$$ |" "\n"
+r"| Annualised volatility | $$\sigma_{\text{year}}=\sigma\sqrt{252}$$ |" "\n"
+r"| OLS estimate | $$\hat{\beta}=(X'X)^{-1}X'y$$ |" "\n"
 )
 
 md("---")

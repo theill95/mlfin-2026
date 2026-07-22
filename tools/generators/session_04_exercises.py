@@ -312,14 +312,17 @@ md(
 
 md(
 "**Formulas you will reach for**\n\n"
-r"- **Mean absolute error**: $\text{MAE}=\dfrac{1}{n}\sum_i \lvert y_i-\hat{y}_i \rvert$" "\n"
-r"- **Mean squared error**: $\text{MSE}=\dfrac{1}{n}\sum_i (y_i-\hat{y}_i)^2$" "\n"
-r"- **Root mean squared error**: $\text{RMSE}=\sqrt{\text{MSE}}$" "\n"
-r"- **R squared**: $R^2=1-\dfrac{\sum_i (y_i-\hat{y}_i)^2}{\sum_i (y_i-\bar{y})^2}$" "\n"
-r"- **Log return**: $r^{\log}_t=\log P_t-\log P_{t-1}$" "\n"
-r"- **Standardised value**: $z_i=\dfrac{x_i-\bar{x}}{s}$" "\n"
-r"- **IQR rule**: flag outside $[\,Q_1-1.5\,\text{IQR},\; Q_3+1.5\,\text{IQR}\,]$" "\n"
-r"- **Precision, recall**: $\dfrac{TP}{TP+FP}$, $\dfrac{TP}{TP+FN}$" "\n"
+r"| what | formula |" "\n"
+r"|:--|:--|" "\n"
+r"| Mean absolute error | $$\text{MAE}=\dfrac{1}{n}\sum_i \lvert y_i-\hat{y}_i \rvert$$ |" "\n"
+r"| Mean squared error | $$\text{MSE}=\dfrac{1}{n}\sum_i (y_i-\hat{y}_i)^2$$ |" "\n"
+r"| Root mean squared error | $$\text{RMSE}=\sqrt{\text{MSE}}$$ |" "\n"
+r"| R squared | $$R^2=1-\dfrac{\sum_i (y_i-\hat{y}_i)^2}{\sum_i (y_i-\bar{y})^2}$$ |" "\n"
+r"| Log return | $$r^{\log}_t=\log P_t-\log P_{t-1}$$ |" "\n"
+r"| Standardised value | $$z_i=\dfrac{x_i-\bar{x}}{s}$$ |" "\n"
+r"| IQR rule, flag outside | $$[\,Q_1-1.5\,\text{IQR},\; Q_3+1.5\,\text{IQR}\,]$$ |" "\n"
+r"| Precision | $$\dfrac{TP}{TP+FP}$$ |" "\n"
+r"| Recall | $$\dfrac{TP}{TP+FN}$$ |" "\n"
 )
 
 md("---")

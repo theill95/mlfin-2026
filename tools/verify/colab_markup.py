@@ -33,11 +33,13 @@ BLOCK_HTML = re.compile(r"<(p|div|table|ul|ol|blockquote)\b", re.I)
 MD_TABLE = re.compile(r"^\s*\|.*\|\s*$")
 MD_HEADING = re.compile(r"^#{1,6}\s")
 
-# LaTeX inside a table cell. Colab renders the maths and the table with two
-# separate passes that disagree, so the row collapses; Jupyter gets it right,
-# which is what makes this one so easy to ship by accident. Maths anywhere else
-# is fine, and the notebooks use plenty of it, so this is deliberately narrow.
-MATH_IN_TABLE = re.compile(r"^\s*\|.*\$.*\|")
+# Inline maths inside a table cell. Colab typesets $$...$$ in a table happily
+# but collapses the row on $...$, while Jupyter renders both, which is what
+# makes this so easy to ship unnoticed. Measured in Colab, not guessed: see
+# "Maths in Colab" in tools/README.md. Maths outside tables is unaffected, so
+# the rule is deliberately narrow.
+DISPLAY_MATH = re.compile(r"\$\$.+?\$\$")
+TABLE_ROW = re.compile(r"^\s*\|")
 
 failures = []
 checked = 0
@@ -51,11 +53,14 @@ for path in NOTEBOOKS:
         lines = "".join(cell["source"]).split("\n")
 
         for n, line in enumerate(lines):
-            if MATH_IN_TABLE.match(line):
+            if not TABLE_ROW.match(line):
+                continue
+            # Take the display maths out, then any $ still standing is inline.
+            if "$" in DISPLAY_MATH.sub("", line):
                 failures.append(
-                    f"{path.name} cell {index}: LaTeX inside a table cell on "
-                    f"line {n + 1}. Colab collapses the row. Use a list or a "
-                    f"$$ block instead:\n      {line.strip()[:78]}"
+                    f"{path.name} cell {index}: inline $...$ maths in a table "
+                    f"cell on line {n + 1}. Colab collapses the row. Use $$...$$ "
+                    f"instead:\n      {line.strip()[:78]}"
                 )
 
         html_at = None

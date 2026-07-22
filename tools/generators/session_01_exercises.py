@@ -139,10 +139,12 @@ md(
 
 md(
 "**Formulas you will reach for**\n\n"
-r"- **Simple return**: $r=\dfrac{p_1-p_0}{p_0}$" "\n"
-r"- **Compound growth**: $FV = P\,(1+r)^{n}$" "\n"
-r"- **Average**: $\bar{p}=\dfrac{\text{sum of values}}{\text{how many}}$" "\n"
-r"- **Range**: $\text{range}=\max-\min$" "\n"
+r"| what | formula |" "\n"
+r"|:--|:--|" "\n"
+r"| Simple return | $$r=\dfrac{p_1-p_0}{p_0}$$ |" "\n"
+r"| Compound growth | $$FV = P\,(1+r)^{n}$$ |" "\n"
+r"| Average | $$\bar{p}=\dfrac{\text{sum of values}}{\text{how many}}$$ |" "\n"
+r"| Range | $$\text{range}=\max-\min$$ |" "\n"
 )
 md("---")
 

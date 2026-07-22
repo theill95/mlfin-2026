@@ -109,7 +109,8 @@ markdown cell emits block-level raw HTML, Colab stops parsing what follows as
 markdown.** Jupyter carries on, so the cell looks right locally and reaches
 students as a wall of literal `|` characters, one stacked line per row. That is
 what happened to the toolkit card, whose `<p>` chips were followed by the
-"Formulas you will reach for" table.
+"Formulas you will reach for" table, which is why that table now lives in its
+own cell.
 
 The rule, which costs nothing to obey:
 
@@ -117,14 +118,44 @@ The rule, which costs nothing to obey:
 
 Put anything that must stay markdown, a table above all, in its **own cell**.
 
-The second rule is narrower and cost us a second round: **never put LaTeX in a
-table cell.** Colab renders the maths and the table in two passes that disagree,
-so the row collapses into stacked literal text. Maths anywhere else is fine, and
-these notebooks use plenty of it, inline and as `$$` blocks, so the fix is only
-ever to move it out of the table. The formula cards are bullet lists for exactly
-this reason.
+The second rule is narrower: **inside a table cell, maths must use `$$...$$`,
+never `$...$`.** Colab typesets display maths in a table happily and collapses
+the row on inline maths, into the stacked literal text you would otherwise ship.
+Jupyter renders both, which is what makes this so easy to miss. Outside tables
+both forms are fine, and these notebooks use plenty of each.
 
 `tools/verify/colab_markup.py` enforces both rules across all eight notebooks.
+
+### Maths in Colab
+
+Measured in Colab, not reasoned about, after two wrong guesses cost a push each.
+The same five formulas were rendered every way that seemed plausible:
+
+| layout | Colab |
+|:--|:--|
+| markdown table, `$...$` | **broken**, row collapses |
+| HTML table, `$...$` | **broken**, identical to the markdown one |
+| markdown table, `$$...$$` | **works** |
+| HTML table, `$$...$$` | **works** |
+| any table, `\(...\)` | **broken**, prints the LaTeX literally |
+| bullet list, `$...$` | works |
+| HTML table, Unicode, no LaTeX | works, but reads poorly for sums and fractions |
+
+Two conclusions worth keeping. The table **type** is irrelevant, so reaching for
+raw HTML to dodge a markdown problem buys nothing here. And `\(...\)` is not a
+delimiter Colab knows anywhere, in or out of a table: only `$` and `$$` are.
+
+**When Colab and Jupyter disagree again, probe before you push.** Build a
+throwaway notebook that renders the same content every plausible way, put it
+under `tools/`, where the download allowlist keeps it away from students, and
+open it once in Colab. One look beats a chain of confident guesses, and each
+guess costs a push and a round trip.
+
+Give each probe round its **own filename**. Colab caches a notebook it has
+already opened from GitHub, so pushing a new round over the same path serves the
+old one and the new blocks appear to be missing. Delete the probe once the
+question is answered; the answer belongs in the table above, not in a stray
+notebook.
 
 The toolkit chips are `<code style="cursor:help" title="...">`, not `<abbr>`.
 `abbr` draws a dotted underline that reads like a spelling error and fights the
