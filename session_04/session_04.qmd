@@ -1,0 +1,2848 @@
+---
+title: "Foundations of machine learning"
+subtitle: "Machine Learning in Finance · Session 4"
+# Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
+# from a data: URI, so embed-resources is off. Ship session_04.html together
+# with session_04_files/ and data/, and SERVE OVER HTTP (double-click
+# serve.cmd, or publish to a URL). The live code cells do not run from file://.
+#
+# Like Session 3 this deck loads numpy, pandas and matplotlib into the browser
+# runtime (roughly 20 MB, once per page load). Open the deck and run one cell a
+# few minutes before class so it is warm.
+format:
+  live-revealjs:
+    theme: [default, ../theme/mlfin.scss]
+    width: 1280
+    height: 720
+    margin: 0.06
+    center: false
+    transition: fade
+    transition-speed: fast
+    background-transition: none
+    slide-number: c/t
+    controls: false
+    progress: true
+    hash: true
+    history: false
+    code-line-numbers: false
+    highlight-style: github
+    auto-stretch: false
+# KaTeX rather than the default MathJax: it renders the equations faster and
+# without reflowing the slide. Like the Pyodide runtime it comes from a CDN, so
+# this deck wants a connection either way.
+html-math-method: katex
+engine: jupyter
+pyodide:
+  packages:
+    - numpy
+    - pandas
+    - matplotlib
+  resources:
+    - data/prices.csv
+  cell-options:
+    autorun: true
+    startover: true
+execute:
+  echo: true
+  warning: false
+---
+
+# Where three sessions of Python left you
+
+```{python}
+#| include: false
+# House style for every precomputed figure in this deck.
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+MLFIN_STYLE = {
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "savefig.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"],
+    "font.size": 12, "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+}
+plt.rcParams.update(MLFIN_STYLE)
+
+from pathlib import Path
+import pandas as pd
+import numpy as np
+
+_data = Path("../data/prices.csv")
+if not _data.exists():
+    raise FileNotFoundError(
+        "Missing ../data/prices.csv - clone the full course repository, or "
+        "run tools/build_dataset.py from the repository root."
+    )
+PX = pd.read_csv(_data, parse_dates=["date"])
+WIDE = PX.pivot(index="date", columns="ticker", values="close")
+RET = WIDE.pct_change().dropna()
+
+BLUE = "#1c5cab"
+BLUE_LIGHT = "#86b6ef"
+AMBER = "#b8860b"
+BRICK = "#b3402f"
+GREY = "#c3c2b7"
+GREY_LIGHT = "#d8d7d0"
+INK = "#141413"
+
+# One invented dataset, used wherever the deck needs to draw a truth that real
+# data never shows you. It comes back in Part 5 as the overfitting example.
+def true_f(x):
+    return np.sin(2 * np.pi * x)
+
+_rng = np.random.default_rng(11)
+SD = 0.28
+XT = np.sort(_rng.uniform(0, 1, 30))
+YT = true_f(XT) + _rng.normal(0, SD, 30)
+XE = np.sort(_rng.uniform(0, 1, 400))
+YE = true_f(XE) + _rng.normal(0, SD, 400)
+XGRID = np.linspace(0, 1, 300)
+```
+
+```{pyodide}
+#| include: false
+# House style for the live figures, so they match the printed ones, plus the
+# three imports every cell in this deck assumes.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+plt.rcParams.update({
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"], "font.size": 12,
+    "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+    "figure.dpi": 100,
+})
+```
+
+Eleven stocks, ten years, ranked by how much they move:
+
+```{python}
+#| echo: false
+print((RET.std() * np.sqrt(252) * 100).sort_values(ascending=False)
+      .round(1).to_string())
+```
+
+::: {.muted .small}
+Annualised volatility, in percent. Three lines of pandas.
+:::
+
+
+# A question that ranking cannot answer
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+s = WIDE["AAPL"].loc["2024-07-01":]
+fig, ax = plt.subplots(figsize=(11.0, 2.7))
+ax.plot(s.index, s.values, color=BLUE, linewidth=1.6)
+ax.axvspan(s.index[-1], s.index[-1] + pd.Timedelta(days=45),
+           color="#f2e6c9", zorder=0)
+ax.text(s.index[-1] + pd.Timedelta(days=22), s.mean(), "?",
+        ha="center", va="center", fontsize=30, color="#a8790b", fontweight="700")
+ax.set_xlim(s.index[0], s.index[-1] + pd.Timedelta(days=45))
+ax.set_title("Apple, closing price", loc="left")
+ax.set_ylabel("price (USD)")
+fig.tight_layout()
+plt.show()
+```
+
+**Will tomorrow be an up day?** Nothing you have written so far even attempts
+this. Every tool from Sessions 1 to 3 describes data that already happened.
+
+
+# Describing, and predicting
+
+<div class="compare">
+<div class="compare-col">
+<h3>Describing</h3>
+<p>What did happen?</p>
+<ul>
+<li>Apple's volatility was 28.4% a year</li>
+<li>Nvidia moved most, Coca-Cola least</li>
+<li>The worst day was 16 March 2020</li>
+</ul>
+<p>You can check every one of these against the data.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Predicting</h3>
+<p>What will happen?</p>
+<ul>
+<li>Tomorrow's return will be about +0.3%</li>
+<li>This client will default</li>
+<li>This filing is unusual</li>
+</ul>
+<p>You cannot check any of them yet. That is the whole problem.</p>
+</div>
+</div>
+
+
+# Today
+
+A prediction needs four things: **a table of the right shape**, **a rule**, **a
+way to score the rule**, and **data the rule has never seen**. Today is those
+four things.
+
+By the end of the session you can:
+
+- put a problem into the **statistical learning framework**
+- tell **supervised** from **unsupervised**, **regression** from
+  **classification**
+- handle **missing values, extreme values and columns on different scales**
+- score a prediction with **MAE, MSE, RMSE, R²** or a **confusion matrix**
+- explain **overfitting** and the **bias-variance trade-off** to somebody else
+
+
+# This session is part maths
+
+Sessions 1 to 3 were about writing code. This one is mostly about ideas, and
+ideas here are written in symbols.
+
+::: {.keypoint}
+Nothing today is new maths. It is the vectors, matrices and sums you already
+use in econometrics, written the way machine learning writes them, plus the
+occasional expectation.
+:::
+
+::: {.muted .small}
+We still write code, and there are live cells throughout. But **we do not fit a
+model today.** That starts in the next block, once the ideas are in place.
+:::
+
+
+# 1 · The statistical learning framework {.divider}
+
+::: {.divider-kicker}
+Part 1
+:::
+
+::: {.divider-note}
+Observations, features, targets, and the error nobody can remove.
+:::
+
+
+# It all starts with one table
+
+::: {.diagram}
+<svg width="1000" height="330" viewBox="0 0 1000 330" role="img" aria-label="A table whose rows are observations, whose first columns are features X, and whose last column is the target y">
+  <text x="410" y="42" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">features</text>
+  <text x="755" y="42" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#a8790b" font-weight="600">target</text>
+  <g stroke="#86b6ef" stroke-width="1.4" fill="none">
+    <path d="M 170 58 L 170 66 L 650 66 L 650 58"/>
+  </g>
+  <g stroke="#d99a1c" stroke-width="1.4" fill="none">
+    <path d="M 680 58 L 680 66 L 830 66 L 830 58"/>
+  </g>
+  <rect x="170" y="82" width="480" height="34" fill="#eef4fc"/>
+  <rect x="680" y="82" width="150" height="34" fill="#fbf3de"/>
+  <rect x="680" y="116" width="150" height="180" fill="#fdfaf2"/>
+  <g font-family="Cascadia Mono, monospace" font-size="14" fill="#0d366b">
+    <text x="230" y="104" text-anchor="middle">ret_1d</text>
+    <text x="350" y="104" text-anchor="middle">ret_5d</text>
+    <text x="470" y="104" text-anchor="middle">vol_20d</text>
+    <text x="590" y="104" text-anchor="middle">volume</text>
+  </g>
+  <text x="755" y="104" text-anchor="middle" font-family="Cascadia Mono, monospace" font-size="14" fill="#a8790b">ret_next</text>
+  <text x="105" y="104" text-anchor="middle" font-family="Cascadia Mono, monospace" font-size="14" fill="#52514e">date</text>
+  <g font-family="Cascadia Mono, monospace" font-size="13.5" fill="#141413">
+    <text x="105" y="139" text-anchor="middle" fill="#52514e">2024-11-04</text>
+    <text x="230" y="139" text-anchor="middle">-0.0018</text>
+    <text x="350" y="139" text-anchor="middle">0.0121</text>
+    <text x="470" y="139" text-anchor="middle">0.0143</text>
+    <text x="590" y="139" text-anchor="middle">41.2M</text>
+    <text x="755" y="139" text-anchor="middle" fill="#8a6508">0.0091</text>
+    <text x="105" y="175" text-anchor="middle" fill="#52514e">2024-11-05</text>
+    <text x="230" y="175" text-anchor="middle">0.0091</text>
+    <text x="350" y="175" text-anchor="middle">0.0087</text>
+    <text x="470" y="175" text-anchor="middle">0.0140</text>
+    <text x="590" y="175" text-anchor="middle">28.1M</text>
+    <text x="755" y="175" text-anchor="middle" fill="#8a6508">0.0042</text>
+    <text x="105" y="211" text-anchor="middle" fill="#52514e">2024-11-06</text>
+    <text x="230" y="211" text-anchor="middle">0.0042</text>
+    <text x="350" y="211" text-anchor="middle">0.0102</text>
+    <text x="470" y="211" text-anchor="middle">0.0138</text>
+    <text x="590" y="211" text-anchor="middle">54.6M</text>
+    <text x="755" y="211" text-anchor="middle" fill="#8a6508">-0.0033</text>
+    <text x="105" y="247" text-anchor="middle" fill="#52514e">2024-11-07</text>
+    <text x="230" y="247" text-anchor="middle">-0.0033</text>
+    <text x="350" y="247" text-anchor="middle">0.0064</text>
+    <text x="470" y="247" text-anchor="middle">0.0135</text>
+    <text x="590" y="247" text-anchor="middle">42.1M</text>
+    <text x="755" y="247" text-anchor="middle" fill="#8a6508">-0.0121</text>
+    <text x="105" y="283" text-anchor="middle" fill="#52514e">2024-11-08</text>
+    <text x="230" y="283" text-anchor="middle">-0.0121</text>
+    <text x="350" y="283" text-anchor="middle">-0.0009</text>
+    <text x="470" y="283" text-anchor="middle">0.0137</text>
+    <text x="590" y="283" text-anchor="middle">38.3M</text>
+    <text x="755" y="283" text-anchor="middle" fill="#8a6508">0.0107</text>
+  </g>
+  <g stroke="#e6e5df" stroke-width="1">
+    <line x1="40" y1="116" x2="650" y2="116"/>
+    <line x1="40" y1="152" x2="650" y2="152"/>
+    <line x1="40" y1="188" x2="650" y2="188"/>
+    <line x1="40" y1="224" x2="650" y2="224"/>
+    <line x1="40" y1="260" x2="650" y2="260"/>
+    <line x1="40" y1="296" x2="650" y2="296"/>
+  </g>
+  <g stroke="#e0d8c2" stroke-width="1">
+    <line x1="680" y1="116" x2="830" y2="116"/>
+    <line x1="680" y1="152" x2="830" y2="152"/>
+    <line x1="680" y1="188" x2="830" y2="188"/>
+    <line x1="680" y1="224" x2="830" y2="224"/>
+    <line x1="680" y1="260" x2="830" y2="260"/>
+    <line x1="680" y1="296" x2="830" y2="296"/>
+  </g>
+  <g stroke="#c3c2b7" stroke-width="1.2" fill="none">
+    <path d="M 880 116 L 895 116 L 895 296 L 880 296"/>
+  </g>
+  <text x="910" y="200" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">n rows</text>
+  <text x="910" y="220" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">= n obs.</text>
+</svg>
+:::
+
+::: {.diagram-note}
+Each row is one observation. Each feature column is something you know at that
+moment. The target column is what you want to predict.
+:::
+
+
+# The same objects, three vocabularies
+
+You already know most of these words. Machine learning just uses different ones.
+
+| econometrics | machine learning | in this table |
+|---|---|---|
+| observation | sample, instance, example | one row, one date |
+| independent variable, regressor | feature, predictor, input | `ret_1d`, `vol_20d` |
+| dependent variable | target, label, response, output | `ret_next` |
+| coefficient | weight, parameter | one number per feature |
+| residual | error | what the rule got wrong |
+| model | learner, estimator | the rule itself |
+
+: {.vocab}
+
+
+# Building that table, from prices
+
+```{pyodide}
+prices = pd.read_csv("data/prices.csv", parse_dates=["date"])
+wide = prices.pivot(index="date", columns="ticker", values="close")
+rets = wide.pct_change()
+
+aapl = pd.DataFrame({
+    "ret_1d": rets["AAPL"],
+    "ret_5d": rets["AAPL"].rolling(5).mean(),
+    "vol_20d": rets["AAPL"].rolling(20).std(),
+})
+aapl["ret_next"] = rets["AAPL"].shift(-1)
+aapl = aapl.dropna()
+aapl.tail(4)
+```
+
+::: {.muted .small}
+`shift(-1)` pulls tomorrow's return back onto today's row. Every feature on a
+row is known **before** the target happens. That is the rule that makes the
+table honest.
+:::
+
+
+# n and p
+
+The table has a standard notation, and it is the notation from Session 3.
+
+::: {.formula}
+$$
+\mathbf{X} \in \mathbb{R}^{\,n \times p}, \qquad
+\mathbf{y} \in \mathbb{R}^{\,n}
+$$
+:::
+
+- $n$ is the number of **observations**, the rows
+- $p$ is the number of **features**, the columns of $\mathbf{X}$
+- $x_{ij}$ is the value of feature $j$ for observation $i$
+- $y_i$ is the target for observation $i$
+
+::: {.muted .small}
+`aapl.shape` on the previous slide told you $n$ and $p+1$ directly. In NumPy
+$\mathbf{X}$ is a 2-dimensional array and $\mathbf{y}$ is a 1-dimensional one.
+:::
+
+
+# The assumption underneath everything
+
+::: {.formula}
+$$
+Y = \underbrace{f(X)}_{\text{signal}} \; + \; \underbrace{\varepsilon}_{\text{noise}}
+$$
+:::
+
+There is some true relationship $f$ between the features and the target, and
+whatever it does not account for is $\varepsilon$.
+
+::: {.muted .small}
+$f$ is fixed and unknown. $\varepsilon$ has mean zero and is independent of $X$.
+Everything in the rest of this course is an attempt to get at $f$.
+:::
+
+
+# The part that is really there
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(10.4, 3.4))
+ax.plot(XGRID, true_f(XGRID), color=INK, linewidth=2.2, label="the true $f$")
+ax.scatter(XT, YT, s=42, color=AMBER, zorder=3, label="what you observe")
+ax.set_xlabel("feature $x$")
+ax.set_ylabel("target $y$")
+ax.set_title("An invented example, so that the truth can be drawn", loc="left")
+ax.legend(loc="upper right")
+fig.tight_layout()
+plt.show()
+```
+
+::: {.muted .small}
+Invented data. With real data nobody can draw the black line, which is exactly
+why this picture is worth looking at now.
+:::
+
+
+# And the part that is not
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(10.4, 3.4))
+ax.plot(XGRID, true_f(XGRID), color=INK, linewidth=2.2, zorder=2)
+ax.vlines(XT, true_f(XT), YT, color=BRICK, linewidth=1.4, zorder=1)
+ax.scatter(XT, YT, s=42, color=AMBER, zorder=3)
+ax.set_xlabel("feature $x$")
+ax.set_ylabel("target $y$")
+ax.set_title(r"Every red segment is one $\varepsilon_i$", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+$\varepsilon$ is measurement error, features you did not collect, and genuine
+randomness, all at once. **In finance it is most of what you see.**
+
+
+# What you actually get
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(10.4, 3.4))
+ax.scatter(XT, YT, s=42, color=AMBER, zorder=3)
+ax.set_xlabel("feature $x$")
+ax.set_ylabel("target $y$")
+ax.set_title("The same data, without the answer key", loc="left")
+ax.set_ylim(-1.9, 1.9)
+fig.tight_layout()
+plt.show()
+```
+
+Thirty dots. No curve, no formula, and no way to check your answer against the
+truth. This is the situation you are always in.
+
+
+# So you estimate it
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+from numpy.polynomial import Polynomial
+
+fit3 = Polynomial.fit(XT, YT, 3)
+
+fig, ax = plt.subplots(figsize=(10.4, 3.4))
+ax.plot(XGRID, true_f(XGRID), color=GREY, linewidth=1.8, linestyle="--",
+        label="the true $f$ (never visible)")
+ax.plot(XGRID, fit3(XGRID), color=BLUE, linewidth=2.4, label=r"your $\hat{f}$")
+ax.scatter(XT, YT, s=42, color=AMBER, zorder=3)
+ax.set_xlabel("feature $x$")
+ax.set_ylabel("target $y$")
+ax.set_ylim(-1.9, 1.9)
+ax.legend(loc="upper right")
+fig.tight_layout()
+plt.show()
+```
+
+$\hat{f}$ is your estimate, built from the data you have. A **model** is a
+recipe for producing $\hat{f}$, and a **prediction** is $\hat{y} = \hat{f}(x)$.
+
+
+# Two reasons to want it
+
+<div class="compare">
+<div class="compare-col">
+<h3>Prediction</h3>
+<p>You want the prediction to be close to the truth, and you do not care how.</p>
+<ul>
+<li>what will this loan lose?</li>
+<li>will this trade be profitable?</li>
+<li>is this transaction fraudulent?</li>
+</ul>
+<p>The rule is allowed to be a black box.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Inference</h3>
+<p>You want to know <strong>which features matter, and how</strong>.</p>
+<ul>
+<li>does size explain returns after controlling for value?</li>
+<li>how much does one rating notch cost in spread?</li>
+<li>which factor drives this portfolio?</li>
+</ul>
+<p>The rule has to be readable.</p>
+</div>
+</div>
+
+::: {.muted .small}
+Econometrics leans hard on the right-hand column. Machine learning leans hard
+on the left. Same framework, different priority.
+:::
+
+
+# How wrong you can be, split in two
+
+::: {.formula}
+$$
+\mathbb{E}\left[(Y - \hat{Y})^2\right] \;=\;
+\underbrace{\left[f(X) - \hat{f}(X)\right]^2}_{\textbf{reducible}} \;+\;
+\underbrace{\operatorname{Var}(\varepsilon)}_{\textbf{irreducible}}
+$$
+:::
+
+<div class="compare">
+<div class="compare-col">
+<h3>Reducible</h3>
+<p>The gap between your estimate and the truth. Better features, more data or a better model shrink it.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Irreducible</h3>
+<p>The noise itself. No model, no data and no amount of compute removes it. It is a property of the problem.</p>
+</div>
+</div>
+
+
+# The floor, drawn
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+from numpy.polynomial import Polynomial
+
+fit1 = Polynomial.fit(XT, YT, 1)
+marks = np.linspace(0.06, 0.94, 12)
+
+fig, axes = plt.subplots(1, 2, figsize=(11.0, 3.2), sharey=True)
+
+ax = axes[0]
+ax.fill_between(XGRID, fit1(XGRID), true_f(XGRID), color=BLUE, alpha=0.16,
+                linewidth=0)
+ax.plot(XGRID, true_f(XGRID), color=INK, linewidth=2.0, label="the true $f$")
+ax.plot(XGRID, fit1(XGRID), color=BLUE, linewidth=2.2, label=r"your $\hat{f}$")
+ax.text(0.30, 1.45, "the gap you can close", ha="center", fontsize=11.5,
+        color=BLUE, fontweight="600")
+ax.set_title("Reducible: your curve is not the true curve", loc="left",
+             fontsize=12)
+ax.set_ylabel("target $y$")
+ax.legend(loc="lower left", fontsize=10)
+
+ax = axes[1]
+ax.vlines(XT, true_f(XT), YT, color=BRICK, linewidth=1.9)
+ax.plot(XGRID, true_f(XGRID), color=INK, linewidth=2.0)
+ax.scatter(XT, YT, s=26, color=AMBER, zorder=3)
+ax.set_title("Irreducible: even the true curve misses every point", loc="left",
+             fontsize=12)
+
+for ax in axes:
+    ax.set_xlabel("feature $x$")
+    ax.set_ylim(-2.1, 2.1)
+fig.tight_layout()
+plt.show()
+```
+
+You can move the blue curve until it lies on top of the black one. **The red
+segments would still be there**, because they are the $\varepsilon$ from
+earlier: the part of $y$ that no feature in your table accounts for.
+
+
+# In finance the floor is high
+
+<div class="statband">
+<div class="stat"><span class="stat-big">0.56</span><div class="stat-label">R&sup2; of Apple's return on the market's, <strong>same day</strong></div></div>
+<div class="stat stat-warn"><span class="stat-big">0.01</span><div class="stat-label">R&sup2; of Apple's return on <strong>yesterday's</strong> return, in sample</div></div>
+<div class="stat stat-warn"><span class="stat-big">-0.02</span><div class="stat-label">the same rule, on data it had not seen</div></div>
+</div>
+
+Explaining today with today is easy. Explaining tomorrow with today is close to
+impossible, because $\operatorname{Var}(\varepsilon)$ is enormous.
+
+::: {.muted .small}
+That last number is not a typo. We come back to it in Part 4.
+:::
+
+
+# You have already estimated an $f$
+
+Session 3 ended on this line:
+
+```python
+beta = np.linalg.inv(X.T @ X) @ X.T @ y
+```
+
+::: {.formula}
+$$
+\hat{f}(x) = \hat{\beta}_0 + \hat{\beta}_1 x,
+\qquad
+\hat{\boldsymbol\beta} = (\mathbf{X}^{\top}\mathbf{X})^{-1}\mathbf{X}^{\top}\mathbf{y}
+$$
+:::
+
+Linear regression **is** a machine learning model: a rule with parameters,
+chosen to fit a sample. It is the simplest one, and it is still the one to beat.
+
+
+# Assume a shape, or do not
+
+<div class="compare">
+<div class="compare-col">
+<h3>Parametric</h3>
+<p>Pick a form first, then find its numbers.</p>
+<p>Linear regression fixes one coefficient per feature, plus an intercept, whatever the sample size.</p>
+<p><strong>Cheap, stable, easy to read. Wrong if the true shape is not that shape.</strong></p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Non-parametric</h3>
+<p>Let the data choose the shape.</p>
+<p>Nearest neighbours, trees, splines. The rule grows with the sample.</p>
+<p><strong>Flexible. Needs far more data, and is harder to explain.</strong></p>
+</div>
+</div>
+
+
+# The same data, both ways
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+from numpy.polynomial import Polynomial
+
+def knn_curve(xs, x, y, k):
+    out = []
+    for xi in xs:
+        idx = np.argsort(np.abs(x - xi))[:k]
+        out.append(y[idx].mean())
+    return np.array(out)
+
+fig, axes = plt.subplots(1, 2, figsize=(11.0, 3.1), sharey=True)
+for ax, ttl in zip(axes, ["Parametric: a straight line",
+                          "Non-parametric: 5 nearest neighbours"]):
+    ax.scatter(XT, YT, s=30, color=GREY_LIGHT, zorder=2)
+    ax.set_xlabel("feature $x$")
+    ax.set_title(ttl, loc="left")
+axes[0].plot(XGRID, Polynomial.fit(XT, YT, 1)(XGRID), color=BLUE, linewidth=2.4)
+axes[1].plot(XGRID, knn_curve(XGRID, XT, YT, 5), color=AMBER, linewidth=2.4)
+axes[0].set_ylabel("target $y$")
+fig.tight_layout()
+plt.show()
+```
+
+Two shapes for the two coefficients you get on the left. On the right there are
+no coefficients at all: the rule is "average the five closest rows".
+
+
+# The rows you learn from, and the rows you check on
+
+A model has already seen the answers in the rows it was built from, and a
+flexible enough rule can simply memorise them. So a score computed on those
+rows is not evidence of anything.
+
+::: {.diagram}
+<svg width="1000" height="260" viewBox="0 0 1000 260" role="img" aria-label="The rows of the table split into a training block used to fit the model and a test block held back until the end">
+  <rect x="150" y="40" width="420" height="118" rx="6" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.6"/>
+  <rect x="150" y="166" width="420" height="52" rx="6" fill="#fbf3de" stroke="#b8860b" stroke-width="1.6"/>
+  <g stroke="#c7d8ee" stroke-width="1">
+    <line x1="150" y1="70" x2="570" y2="70"/>
+    <line x1="150" y1="100" x2="570" y2="100"/>
+    <line x1="150" y1="130" x2="570" y2="130"/>
+  </g>
+  <line x1="150" y1="192" x2="570" y2="192" stroke="#e6d3a8" stroke-width="1"/>
+  <text x="360" y="106" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">training set</text>
+  <text x="360" y="198" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#8a6508" font-weight="600">test set</text>
+  <text x="130" y="105" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">70 to 80%</text>
+  <text x="130" y="198" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">the rest</text>
+  <g stroke="#1c5cab" stroke-width="1.6" fill="none" marker-end="url(#arrowb)">
+    <path d="M 590 99 L 700 99"/>
+  </g>
+  <g stroke="#b8860b" stroke-width="1.6" fill="none" stroke-dasharray="5 4">
+    <path d="M 590 192 L 700 192"/>
+  </g>
+  <defs>
+    <marker id="arrowb" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#1c5cab"/>
+    </marker>
+  </defs>
+  <polygon points="700,188 700,196 710,192" fill="#b8860b"/>
+  <text x="720" y="93" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b">fit the model,</text>
+  <text x="720" y="113" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b">choose everything</text>
+  <text x="720" y="186" font-size="15" font-family="Segoe UI, sans-serif" fill="#8a6508">touched once,</text>
+  <text x="720" y="206" font-size="15" font-family="Segoe UI, sans-serif" fill="#8a6508">at the very end</text>
+</svg>
+:::
+
+::: {.muted .small}
+**Why** you split is today's business, and it runs through the rest of the
+session. **How** to split well, and how to reuse the training rows without ever
+touching the test rows, is model selection and cross-validation in the next
+block.
+:::
+
+
+# Your turn [1]{.chip .chip-turn} {.your-turn}
+
+`rets["MSFT"]` is a Series of daily returns. Build a two-column table whose
+target is **the return five days ahead**.
+
+```{pyodide}
+#| autorun: false
+msft = pd.DataFrame({"ret_1d": rets["MSFT"]})
+
+msft["ret_5d_ahead"] = ...
+msft = msft.dropna()
+msft.tail(3)
+```
+
+
+# Your turn 1: answer
+
+```python
+msft = pd.DataFrame({"ret_1d": rets["MSFT"]})
+
+msft["ret_5d_ahead"] = rets["MSFT"].shift(-5)
+msft = msft.dropna()
+msft.tail(3)
+```
+
+**A negative shift moves the future backwards onto today's row.** Shifting the
+wrong way gives you yesterday's return as a target, which you could predict
+perfectly and which would be worth nothing.
+
+
+# 2 · What kind of problem is it? {.divider}
+
+::: {.divider-kicker}
+Part 2
+:::
+
+::: {.divider-note}
+Supervised, unsupervised, and the one we are not covering.
+:::
+
+
+# One question decides almost everything
+
+::: {.diagram}
+<svg width="1000" height="320" viewBox="0 0 1000 320" role="img" aria-label="Decision tree: if the table has a target column the problem is supervised, and splits into regression for a numeric target and classification for a label; if not, it is unsupervised, and splits into clustering and dimension reduction">
+  <rect x="330" y="8" width="340" height="46" rx="7" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.6"/>
+  <text x="500" y="37" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">Is there a target column?</text>
+  <g stroke="#c3c2b7" stroke-width="1.4" fill="none">
+    <path d="M 500 54 L 500 72 L 230 72 L 230 96"/>
+    <path d="M 500 54 L 500 72 L 780 72 L 780 96"/>
+    <path d="M 230 142 L 230 160 L 120 160 L 120 186"/>
+    <path d="M 230 142 L 230 160 L 340 160 L 340 186"/>
+    <path d="M 780 142 L 780 160 L 670 160 L 670 186"/>
+    <path d="M 780 142 L 780 160 L 890 160 L 890 186"/>
+  </g>
+  <text x="350" y="90" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#1b7a4b" font-weight="600">yes</text>
+  <text x="660" y="90" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">no</text>
+  <rect x="110" y="96" width="240" height="46" rx="7" fill="#ffffff" stroke="#1c5cab" stroke-width="1.6"/>
+  <text x="230" y="125" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">Supervised</text>
+  <rect x="660" y="96" width="240" height="46" rx="7" fill="#ffffff" stroke="#b8860b" stroke-width="1.6"/>
+  <text x="780" y="125" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#8a6508" font-weight="600">Unsupervised</text>
+  <rect x="20" y="186" width="200" height="42" rx="7" fill="#f6f9fd" stroke="#86b6ef" stroke-width="1.4"/>
+  <text x="120" y="213" text-anchor="middle" font-size="15.5" font-family="Segoe UI, sans-serif" fill="#0d366b">Regression</text>
+  <rect x="240" y="186" width="200" height="42" rx="7" fill="#f6f9fd" stroke="#86b6ef" stroke-width="1.4"/>
+  <text x="340" y="213" text-anchor="middle" font-size="15.5" font-family="Segoe UI, sans-serif" fill="#0d366b">Classification</text>
+  <rect x="570" y="186" width="200" height="42" rx="7" fill="#fdf8ed" stroke="#e0c27a" stroke-width="1.4"/>
+  <text x="670" y="213" text-anchor="middle" font-size="15.5" font-family="Segoe UI, sans-serif" fill="#8a6508">Clustering</text>
+  <rect x="790" y="186" width="200" height="42" rx="7" fill="#fdf8ed" stroke="#e0c27a" stroke-width="1.4"/>
+  <text x="890" y="213" text-anchor="middle" font-size="15.5" font-family="Segoe UI, sans-serif" fill="#8a6508">Dimension reduction</text>
+  <g font-size="13" font-family="Segoe UI, sans-serif" fill="#898781">
+    <text x="120" y="256" text-anchor="middle">the target is</text>
+    <text x="120" y="274" text-anchor="middle">a number</text>
+    <text x="340" y="256" text-anchor="middle">the target is</text>
+    <text x="340" y="274" text-anchor="middle">a label</text>
+    <text x="670" y="256" text-anchor="middle">which rows</text>
+    <text x="670" y="274" text-anchor="middle">resemble each other</text>
+    <text x="890" y="256" text-anchor="middle">fewer columns,</text>
+    <text x="890" y="274" text-anchor="middle">same information</text>
+  </g>
+</svg>
+:::
+
+
+# Supervised: you have the answers
+
+For every row in the training data, somebody has already written down the
+target.
+
+::: {.why-grid}
+::: {.why-point}
+**Credit** <span>past loans, and whether each one defaulted</span>
+:::
+::: {.why-point}
+**Trading** <span>past days, and what the return turned out to be</span>
+:::
+::: {.why-point}
+**Fraud** <span>past transactions, and which were later confirmed as fraud</span>
+:::
+::: {.why-point}
+**Ratings** <span>past issuers, and the rating each was given</span>
+:::
+:::
+
+::: {.keypoint}
+The target column is the expensive part. Somebody had to observe it, or label
+it by hand, and there is usually far less of it than you would like.
+:::
+
+
+# Regression: the target is a number
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+x = RET["SPY"].values
+y = RET["AAPL"].values
+b1, b0 = np.polyfit(x, y, 1)
+grid = np.linspace(x.min(), x.max(), 50)
+
+fig, ax = plt.subplots(figsize=(9.6, 3.2))
+ax.scatter(x * 100, y * 100, s=7, color=BLUE, alpha=0.28, linewidths=0)
+ax.plot(grid * 100, (b0 + b1 * grid) * 100, color=INK, linewidth=2.0)
+ax.set_xlabel("market return that day (%)")
+ax.set_ylabel("Apple return (%)")
+ax.set_title("2,515 days. Predict a number: how much did Apple move?", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+The answer can be any value on the vertical axis. **This is the OLS picture you
+already know**, seen as a prediction problem.
+
+
+# Classification: the target is a label
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+x = RET["SPY"].values
+y = RET["AAPL"].values
+up = y > 0
+
+fig, ax = plt.subplots(figsize=(9.6, 3.2))
+ax.scatter(x[up] * 100, np.full(up.sum(), 1), s=9, color=BLUE, alpha=0.30,
+           linewidths=0, label="Apple up")
+ax.scatter(x[~up] * 100, np.full((~up).sum(), 0), s=9, color=BRICK, alpha=0.30,
+           linewidths=0, label="Apple down")
+ax.set_yticks([0, 1])
+ax.set_yticklabels(["down", "up"])
+ax.set_ylim(-0.6, 1.6)
+ax.set_xlabel("market return that day (%)")
+ax.set_title("The same 2,515 days. Predict a label: up or down?", loc="left")
+ax.legend(loc="center left")
+fig.tight_layout()
+plt.show()
+```
+
+Now there are only two possible answers, and being "nearly right" is not a
+thing.
+
+
+# The same data, two different problems
+
+::: {.keypoint}
+Nothing changed in the data. **You chose** what the target would be, and that
+choice changes the model you can use, the metric you score it with, and what a
+mistake costs you.
+:::
+
+::: {.why-grid}
+::: {.why-point}
+**As regression** <span>predict the return, then act on its size</span>
+:::
+::: {.why-point}
+**As classification** <span>predict the direction, then act on the direction</span>
+:::
+:::
+
+::: {.muted .small}
+Turning a number into a label always throws information away. A +0.02% day and
+a +6% day become the same "up". Sometimes that is the right trade, because
+direction is easier to get right than size.
+:::
+
+
+# Making the label yourself
+
+```{pyodide}
+labels = (rets["AAPL"] > 0).astype(int)
+
+print(labels.tail(6).to_string())
+print()
+print("share of up days:", round(labels.mean(), 4))
+```
+
+::: {.muted .small}
+A comparison gives `True` and `False`, and `.astype(int)` turns them into 1 and
+0. **53% of days are up**, which will matter a great deal when we start scoring
+classifiers.
+:::
+
+
+# Unsupervised: nobody wrote the answers down
+
+There is no target column. You have $\mathbf{X}$ and nothing else, and the
+question becomes "what is the structure in here?"
+
+::: {.why-grid}
+::: {.why-point}
+**Clustering** <span>which of these stocks behave alike, without being told the sectors</span>
+:::
+::: {.why-point}
+**Dimension reduction** <span>500 correlated series, and three factors that carry most of it</span>
+:::
+::: {.why-point}
+**Anomaly detection** <span>which trades do not look like any of the others</span>
+:::
+::: {.why-point}
+**Topic models** <span>what are these ten thousand filings about</span>
+:::
+:::
+
+
+# Eleven stocks, no target
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+vol = RET.std() * np.sqrt(252) * 100
+mean = RET.mean() * 252 * 100
+
+# Hand-placed labels: four of the eleven sit almost on top of each other.
+PLACE = {
+    "SPY": (-8, 9, "right"), "KO": (-9, -5, "right"), "JNJ": (0, -17, "center"),
+    "PG": (9, -3, "left"), "WMT": (0, 11, "center"), "MSFT": (-9, 4, "right"),
+    "AAPL": (9, 2, "left"), "JPM": (9, -3, "left"), "XOM": (9, -3, "left"),
+    "DIS": (-9, -4, "right"), "NVDA": (0, 12, "center"),
+}
+
+fig, ax = plt.subplots(figsize=(9.8, 3.4))
+ax.scatter(vol, mean, s=95, color=BLUE, zorder=3)
+for t in RET.columns:
+    dx, dy, ha = PLACE[t]
+    ax.annotate(t, (vol[t], mean[t]), xytext=(dx, dy), textcoords="offset points",
+                ha=ha, fontsize=11, color="#52514e")
+ax.set_xlabel("annualised volatility (%)")
+ax.set_ylabel("annualised mean return (%)")
+ax.set_xlim(13, 54)
+ax.set_ylim(0, 84)
+ax.set_title("Two features, no answer key", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+Nobody labelled these. You can still see that the defensive names sit together
+in the bottom left, and Nvidia sits alone. **That is clustering, done by eye.**
+
+
+# The catch with unsupervised work
+
+<div class="compare">
+<div class="compare-col">
+<h3>Supervised</h3>
+<p>There is a right answer, so there is a score.</p>
+<p>You can say "this model is better than that one" and defend it with a number.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Unsupervised</h3>
+<p>There is no right answer, so there is no score.</p>
+<p>Three clusters or five? Both are defensible. You are back to judgement.</p>
+</div>
+</div>
+
+::: {.muted .small}
+This is why supervised learning dominates in practice, and why most of this
+course is about it.
+:::
+
+
+# Reinforcement learning
+
+The third paradigm. No fixed table at all: an **agent** takes actions in an
+environment, gets rewards, and learns a policy that earns more of them.
+
+::: {.why-grid}
+::: {.why-point}
+**In principle** <span>optimal execution, hedging, market making, portfolio rebalancing</span>
+:::
+::: {.why-point}
+**In practice** <span>it needs an environment to practise in, and markets do not offer one</span>
+:::
+:::
+
+::: {.keypoint}
+**We do not cover reinforcement learning in this course.** You should know the
+word, and know that it is a different setting: the data depends on what the
+agent decided to do.
+:::
+
+
+# Your turn [2]{.chip .chip-turn} {.your-turn}
+
+Which is each of these?
+
+1. Predict a bond's yield spread next month
+2. Group 3,000 funds by how they behave, with no style labels
+3. Decide whether a filing will be followed by a restatement
+4. Compress 60 macro series into a handful of factors
+5. Predict how many basis points a stock moves after an earnings surprise
+
+
+# Your turn 2: answer
+
+1. Predict a spread ➜ **regression**, the target is a number
+2. Group funds ➜ **unsupervised**, clustering, no target exists
+3. Restatement or not ➜ **classification**, the target is a label
+4. Compress 60 series ➜ **unsupervised**, dimension reduction
+5. Basis points after a surprise ➜ **regression**, the target is a number
+
+::: {.muted .small}
+Number 3 could be made a regression by predicting the probability instead. The
+line is not always sharp, and the decision is yours to defend.
+:::
+
+
+# 3 · Real data is never that shape {.divider}
+
+::: {.divider-kicker}
+Part 3
+:::
+
+::: {.divider-note}
+Missing values, extreme values, and columns measured in different worlds.
+:::
+
+
+# Missing values, and where they come from
+
+::: {.why-grid}
+::: {.why-point}
+**Calendars disagree** <span>US and European exchanges keep different holidays, so a merged table has gaps</span>
+:::
+::: {.why-point}
+**The company was not there** <span>an IPO in 2019 has no 2015 rows, and a delisted firm has no 2024 rows</span>
+:::
+::: {.why-point}
+**Trading stopped** <span>halts, suspensions, and days with no quote</span>
+:::
+::: {.why-point}
+**Reporting is optional** <span>a fund reports until the month it would rather not</span>
+:::
+:::
+
+::: {.muted .small}
+The last one is the dangerous one, and we come back to it.
+:::
+
+
+# Finding them
+
+```{pyodide}
+calendar = pd.date_range(wide.index.min(), wide.index.max(), freq="D")
+daily = wide.reindex(calendar)
+
+print("rows before:", len(wide))
+print("rows after :", len(daily))
+print()
+print(daily.isna().sum().head(4).to_string())
+```
+
+::: {.muted .small}
+`reindex` forces the table onto a row per calendar day, which is what happens
+the moment you merge with anything daily. **1,136 of 3,652 days are now empty**,
+and `.isna().sum()` counts them column by column.
+:::
+
+
+# A picture of it
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+# One cell per day of 2024: weekday down, week across. The cause of the
+# missingness is then impossible to miss.
+cal = pd.date_range("2024-01-01", "2024-12-31", freq="D")
+missing = ~cal.isin(WIDE.index)
+weeks = ((cal - cal[0]).days + cal[0].weekday()) // 7
+grid_ = np.full((7, weeks.max() + 1), np.nan)
+for d, m, w in zip(cal, missing, weeks):
+    grid_[d.weekday(), w] = 1.0 if m else 0.0
+
+fig, ax = plt.subplots(figsize=(11.0, 2.5))
+ax.imshow(grid_, aspect="auto", interpolation="nearest",
+          cmap=mpl.colors.ListedColormap(["#dde7f4", BRICK]))
+ax.set_yticks(range(7))
+ax.set_yticklabels(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], fontsize=10)
+month_starts = [(w, d.strftime("%b")) for d, w in zip(cal, weeks) if d.day == 1]
+ax.set_xticks([w for w, _ in month_starts])
+ax.set_xticklabels([m for _, m in month_starts], fontsize=10)
+ax.grid(False)
+ax.set_title("Every day of 2024. Red means no row in the price table", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+Two solid rows of weekends, and **ten single red squares**: New Year, Martin
+Luther King Day, Presidents' Day, Good Friday, and the rest of the market
+holidays. A picture of missingness usually tells you the cause immediately,
+which is what you need before you decide what to do about it.
+
+
+# Three ways out
+
+::: {.why-grid}
+::: {.why-point}
+**Drop the rows** <span>`df.dropna()`. Safe when the gaps are few and unrelated to what you are studying.</span>
+:::
+::: {.why-point}
+**Drop the column** <span>if a feature is 60% empty it is usually not worth rescuing.</span>
+:::
+::: {.why-point}
+**Fill them in** <span>`fillna`, `ffill`, `interpolate`. You are inventing data, so be deliberate about it.</span>
+:::
+::: {.why-point}
+**Keep the fact** <span>add a column that records "this was missing". Sometimes that is the signal.</span>
+:::
+:::
+
+
+# What each choice looks like
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+seg = WIDE["AAPL"].loc["2024-04-01":"2024-06-28"]
+_r = np.random.default_rng(3)
+gaps = np.sort(_r.choice(np.arange(5, len(seg) - 5), 14, replace=False))
+obs = seg.copy()
+obs.iloc[gaps] = np.nan
+truth = seg.iloc[gaps]
+
+panels = [
+    # plotted with the NaNs left in, so the line genuinely breaks where the
+    # rows were dropped
+    ("Drop the rows", obs, None),
+    ("Fill with the mean", obs.fillna(obs.mean()), obs.fillna(obs.mean()).iloc[gaps]),
+    ("Forward fill", obs.ffill(), obs.ffill().iloc[gaps]),
+    ("Interpolate", obs.interpolate(), obs.interpolate().iloc[gaps]),
+]
+
+fig, axes = plt.subplots(2, 2, figsize=(11.0, 4.0), sharex=True, sharey=True)
+for ax, (name, series, guess) in zip(axes.ravel(), panels):
+    ax.plot(seg.index, seg.values, color="#b9b7ab", linewidth=1.1,
+            linestyle="--", zorder=1)
+    ax.plot(series.index, series.values, color=BLUE, linewidth=1.5, zorder=2)
+    ax.scatter(obs.dropna().index, obs.dropna().values, s=11, color=BLUE,
+               zorder=3)
+    if guess is not None:
+        ax.scatter(guess.index, guess.values, s=26, color=BRICK, marker="x",
+                   zorder=4)
+    ax.set_title(name, loc="left", fontsize=12)
+    ax.tick_params(labelsize=9)
+for ax in axes[:, 0]:
+    ax.set_ylabel("price (USD)")
+fig.tight_layout()
+plt.show()
+```
+
+::: {.muted .small}
+Grey dashed is the truth, red crosses are the invented values. Fourteen days
+removed from Apple's spring.
+:::
+
+
+# The accurate answer is the illegal one
+
+<div class="statband">
+<div class="stat stat-warn"><span class="stat-big">$10.86</span><div class="stat-label">mean error, fill with the column mean</div></div>
+<div class="stat"><span class="stat-big">$2.76</span><div class="stat-label">mean error, forward fill</div></div>
+<div class="stat"><span class="stat-big">$1.67</span><div class="stat-label">mean error, interpolate</div></div>
+</div>
+
+Interpolation wins, because it draws a line between the price **before** the gap
+and the price **after** it.
+
+::: {.keypoint}
+On 3 May you would not have known 8 May's price. Interpolation quietly puts
+tomorrow's information into today's row, and every result built on it is
+optimistic. **Forward fill only ever looks backwards.**
+:::
+
+
+# Why it is missing decides what you may do
+
+<div class="compare">
+<div class="compare-col">
+<h3>Missing for an unrelated reason</h3>
+<p>Thanksgiving. A vendor outage. A field nobody filled in.</p>
+<p>Dropping those rows costs you sample size and nothing else.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Missing because of the value</h3>
+<p>The fund stopped reporting after the month it lost 40%. The firm delisted because it failed.</p>
+<p>Drop those rows and your sample is only the survivors.</p>
+</div>
+</div>
+
+::: {.muted .small}
+The second case has a name in finance: **survivorship bias**. It is the reason a
+backtest on today's index members looks so good.
+:::
+
+
+# Extreme values
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+a = RET["AAPL"]
+big = a[a.abs() > 0.07]
+
+fig, ax = plt.subplots(figsize=(11.0, 2.9))
+ax.plot(a.index, a.values * 100, color=BLUE_LIGHT, linewidth=0.7)
+ax.scatter(big.index, big.values * 100, s=40, color=BRICK, zorder=3,
+           marker="x", linewidths=1.6)
+ax.axhline(0, color=GREY, linewidth=0.9)
+ax.set_ylabel("daily return (%)")
+ax.set_title("Apple, every day 2015 to 2024. Red: moves beyond 7%", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+Most of them are in March 2020, and they are not mistakes. **The worst day was
+-12.9%, the best was +12.0%, and they were eleven days apart.**
+
+
+# An error, or the whole point?
+
+<div class="compare">
+<div class="compare-col">
+<h3>Probably an error</h3>
+<p>A price of 0, or of 1,000,000. A return of +4,000% because of an unadjusted stock split. A date in 1901.</p>
+<p>Fix it or drop it, and write down what you did.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Probably the point</h3>
+<p>March 2020. The 2008 quarter. The day the takeover was announced.</p>
+<p>Delete these and you have built a model of a market where nothing ever happens.</p>
+</div>
+</div>
+
+::: {.keypoint}
+In most fields the extremes are noise. **In finance they are usually the
+phenomenon.** Risk lives in the tail, so removing the tail removes the subject.
+:::
+
+
+# Two rules of thumb, and their limits
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+a = RET["AAPL"] * 100
+q1, q3 = a.quantile([0.25, 0.75])
+iqr = q3 - q1
+lo, hi = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+
+fig, ax = plt.subplots(figsize=(10.8, 2.9))
+bp = ax.boxplot(a.values, vert=False, widths=0.42, whis=1.5,
+                showfliers=True, patch_artist=True)
+bp["boxes"][0].set(facecolor="#eef4fc", edgecolor=BLUE, linewidth=1.4)
+for part in ("whiskers", "caps"):
+    for line in bp[part]:
+        line.set(color=BLUE, linewidth=1.2)
+bp["medians"][0].set(color=INK, linewidth=1.6)
+for f in bp["fliers"]:
+    f.set(marker="o", markersize=3, markerfacecolor=BRICK,
+          markeredgecolor="none", alpha=0.45)
+
+# Name the parts, since the whole rule is built out of them. The box is narrow
+# next to the outliers, so the labels go outside it rather than on top.
+ax.text(q1 - 0.35, 0.70, "$Q_1$", ha="right", va="center", fontsize=12,
+        color=INK)
+ax.text(q3 + 0.35, 0.70, "$Q_3$", ha="left", va="center", fontsize=12,
+        color=INK)
+ax.annotate("", xy=(q1, 0.70), xytext=(q3, 0.70),
+            arrowprops=dict(arrowstyle="<->", color=AMBER, linewidth=1.6))
+ax.text((q1 + q3) / 2, 0.56, f"IQR = {iqr:.2f}", ha="center", fontsize=11.5,
+        color="#8a6508", fontweight="600")
+for x, lab in [(lo, f"{lo:.2f}%"), (hi, f"{hi:.2f}%")]:
+    ax.axvline(x, color=BRICK, linewidth=1.2, linestyle="--")
+    ax.text(x, 1.40, lab, ha="center", fontsize=11, color=BRICK)
+ax.set_yticks([])
+ax.set_ylim(0.42, 1.52)
+ax.set_xlabel("Apple daily return (%)")
+ax.set_title("Everything outside the dashed lines is flagged as an outlier",
+             loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+$Q_1$ and $Q_3$ are the 25th and 75th percentiles, and the **interquartile
+range** $\text{IQR} = Q_3 - Q_1$ is the width of the middle half of the data.
+
+::: {.formula}
+$$
+\text{IQR rule: outside } [\,Q_1 - 1.5\,\text{IQR},\; Q_3 + 1.5\,\text{IQR}\,]
+\qquad
+\text{z-score rule: } \left|\frac{x - \bar{x}}{s}\right| > 3
+$$
+:::
+
+
+# Both rules flag far too much
+
+<div class="statband">
+<div class="stat stat-warn"><span class="stat-big">138</span><div class="stat-label">days flagged by the IQR rule, 5.5% of the sample</div></div>
+<div class="stat stat-warn"><span class="stat-big">36</span><div class="stat-label">days beyond three standard deviations</div></div>
+<div class="stat"><span class="stat-big">7</span><div class="stat-label">days a normal distribution says you should get</div></div>
+</div>
+
+The rules assume a bell curve. Returns are not one, so the rules mark hundreds
+of perfectly real days as errors.
+
+::: {.muted .small}
+There is also a circular problem: one enormous day inflates $s$, which then
+makes that day look less extreme.
+:::
+
+
+# The tails are the whole story
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+a = RET["AAPL"].values * 100
+grid = np.linspace(-14, 14, 400)
+normal = (1 / (a.std() * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((grid - a.mean()) / a.std()) ** 2)
+
+fig, ax = plt.subplots(figsize=(10.6, 3.0))
+ax.hist(a, bins=90, density=True, color=BLUE_LIGHT, edgecolor="none")
+ax.plot(grid, normal, color=BRICK, linewidth=2.0,
+        label="a normal with the same mean and standard deviation")
+ax.set_yscale("log")
+ax.set_xlabel("Apple daily return (%)")
+ax.set_ylabel("density (log scale)")
+ax.set_title("Real returns against the bell curve", loc="left")
+ax.legend(loc="upper right")
+fig.tight_layout()
+plt.show()
+```
+
+The bars sit far above the red line at both ends. **Days that "cannot happen"
+happen several times a decade**, and they are the ones that decide whether a
+strategy survives.
+
+
+# So what do you actually do
+
+::: {.why-grid}
+::: {.why-point}
+**Check the source first** <span>most true errors are visible in one plot or one `.describe()`</span>
+:::
+::: {.why-point}
+**Do not delete by default** <span>a rule that flags 5% of your days is not finding errors, it is finding the market</span>
+:::
+::: {.why-point}
+**Score with a robust metric** <span>MAE cares far less about one bad day than MSE does. Part 4.</span>
+:::
+::: {.why-point}
+**Or transform** <span>a log squeezes the long right tail of prices, volumes and market caps</span>
+:::
+:::
+
+::: {.keypoint}
+Whatever you choose, **write it down**. "We dropped returns beyond ±20%, three
+observations" is a sentence that belongs in the report.
+:::
+
+
+# Levels, and changes
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(1, 2, figsize=(11.0, 2.9))
+axes[0].plot(WIDE.index, WIDE["AAPL"], color=BLUE, linewidth=1.2)
+axes[0].set_title("The level: price", loc="left")
+axes[0].set_ylabel("USD")
+axes[1].plot(RET.index, RET["AAPL"] * 100, color=BLUE_LIGHT, linewidth=0.6)
+axes[1].axhline(0, color=GREY, linewidth=0.9)
+axes[1].set_title("The change: daily return", loc="left")
+axes[1].set_ylabel("%")
+fig.tight_layout()
+plt.show()
+```
+
+The left panel wanders off and never comes back, so its mean means nothing. The
+right panel hovers around a fixed level, so its mean and standard deviation
+describe something real. **Model the changes, not the levels.**
+
+
+# Why logs
+
+::: {.formula}
+$$
+r_t^{\log} = \log\!\left(\frac{P_t}{P_{t-1}}\right) = \log P_t - \log P_{t-1}
+$$
+:::
+
+::: {.why-grid}
+::: {.why-point}
+**They add up** <span>a year's log return is the sum of its days. Simple returns have to be compounded.</span>
+:::
+::: {.why-point}
+**They are symmetric** <span>-50% then +100% gets you back to where you started, and in logs those cancel exactly</span>
+:::
+::: {.why-point}
+**They tame right skew** <span>market cap, volume and price are all long-tailed, and a log makes them workable</span>
+:::
+::: {.why-point}
+**They are nearly the same** <span>for small daily moves, `log(1 + r)` and `r` agree to three decimals</span>
+:::
+:::
+
+
+# Columns from different worlds
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+aapl_vol = PX[PX["ticker"] == "AAPL"].set_index("date")["volume"]
+scales = {
+    "daily return": RET["AAPL"].std(),
+    "price (USD)": WIDE["AAPL"].std(),
+    "volume (shares)": aapl_vol.std(),
+}
+fig, ax = plt.subplots(figsize=(10.4, 2.3))
+ax.barh(list(scales), list(scales.values()), color=BLUE, height=0.55)
+ax.set_xscale("log")
+ax.set_xlabel("standard deviation of the column (log scale)")
+ax.set_title("Three features of the same stock", loc="left")
+for i, v in enumerate(scales.values()):
+    ax.text(v * 1.5, i, f"{v:,.3g}", va="center", fontsize=11, color="#52514e")
+fig.tight_layout()
+plt.show()
+```
+
+The volume column varies about **four billion times** more than the return
+column. Any method that measures distance, or penalises large coefficients, will
+hear only the volume.
+
+
+# Standardising
+
+::: {.formula}
+$$
+z_i = \frac{x_i - \bar{x}}{s}
+$$
+:::
+
+```{pyodide}
+vol20 = rets["AAPL"].rolling(20).std().dropna()
+z = (vol20 - vol20.mean()) / vol20.std()
+
+print("original : mean %.5f  sd %.5f" % (vol20.mean(), vol20.std()))
+print("z-scored : mean %.5f  sd %.5f" % (z.mean(), z.std()))
+```
+
+::: {.muted .small}
+Every column now has mean 0 and standard deviation 1, so a coefficient of 0.4
+means the same thing in every column. OLS does not need this. Nearest
+neighbours, penalised regression and neural networks all do.
+:::
+
+
+# Columns that are not numbers
+
+```{pyodide}
+firms = pd.DataFrame({
+    "ticker": ["AAPL", "KO", "JPM", "XOM"],
+    "sector": ["Tech", "Staples", "Financials", "Energy"],
+})
+
+pd.get_dummies(firms, columns=["sector"], dtype=int)
+```
+
+::: {.muted .small}
+One column of text becomes one 0/1 column per category. This is **one-hot
+encoding**, and it is how a sector, a rating or a country gets into
+$\mathbf{X}$.
+:::
+
+
+# The rule that governs all of it
+
+::: {.keypoint}
+Every number you use to clean the data, the mean you filled with, the standard
+deviation you divided by, the quantiles you flagged outliers with, **must be
+computed on the training rows alone.**
+:::
+
+Those are the rows from Part 1 that the model is allowed to learn from.
+Compute the mean over the whole sample instead and it already contains the
+period you were going to test on, so your test score flatters you and the model
+disappoints in production.
+
+::: {.muted .small}
+It is the same look-ahead problem as interpolating across a gap, and it is the
+single most common mistake in student projects and in published finance papers
+alike.
+:::
+
+
+# Your turn [3]{.chip .chip-turn} {.your-turn}
+
+Apply the IQR rule to Microsoft's returns, and count how many days it flags.
+
+```{pyodide}
+#| autorun: false
+msft_ret = rets["MSFT"].dropna()
+q1, q3 = msft_ret.quantile([0.25, 0.75])
+
+iqr = ...
+flagged = ...
+
+print("days flagged:", flagged)
+print("out of       :", len(msft_ret))
+```
+
+
+# Your turn 3: answer
+
+```python
+msft_ret = rets["MSFT"].dropna()
+q1, q3 = msft_ret.quantile([0.25, 0.75])
+
+iqr = q3 - q1
+flagged = ((msft_ret < q1 - 1.5 * iqr) | (msft_ret > q3 + 1.5 * iqr)).sum()
+
+print("days flagged:", flagged)
+print("out of       :", len(msft_ret))
+```
+
+**134 days of 2,515, or 5.3%.** Almost exactly what the rule flagged for Apple,
+and far too many to be errors. The fences sit at -3.2% and +3.5%, so the rule is
+calling an ordinary bad Tuesday an outlier.
+
+
+# 4 · Was the prediction any good? {.divider}
+
+::: {.divider-kicker}
+Part 4
+:::
+
+::: {.divider-note}
+Turning a column of mistakes into one number you can defend.
+:::
+
+
+# A rule, and what it predicted
+
+Session 3 fitted Apple's return against the market's and got two numbers. That
+is a model:
+
+::: {.formula}
+$$
+\hat{y}_t = 0.00043 + 1.2073 \, x_t
+$$
+:::
+
+```{pyodide}
+market = rets["SPY"].dropna()
+actual = rets["AAPL"].dropna()
+
+predicted = 0.00043 + 1.2073 * market
+resid = actual - predicted
+
+pd.DataFrame({"actual": actual, "predicted": predicted, "resid": resid}).tail(4)
+```
+
+
+# The residual
+
+::: {.formula}
+$$
+e_i = y_i - \hat{y}_i
+$$
+:::
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+sub = RET.loc["2024-10":"2024-12"]
+xs = sub["SPY"].values * 100
+ys = sub["AAPL"].values * 100
+pred = (0.00043 + 1.2073 * sub["SPY"].values) * 100
+grid = np.linspace(xs.min() - 0.2, xs.max() + 0.2, 40)
+
+fig, ax = plt.subplots(figsize=(10.4, 3.0))
+ax.plot(grid, 0.043 + 1.2073 * grid, color=INK, linewidth=1.8, zorder=2)
+ax.vlines(xs, pred, ys, color=BRICK, linewidth=1.3, zorder=1)
+ax.scatter(xs, ys, s=34, color=AMBER, zorder=3)
+ax.set_xlabel("market return (%)")
+ax.set_ylabel("Apple return (%)")
+ax.set_title("The last quarter of 2024. Each red segment is one residual",
+             loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+
+# Why you cannot just add them up
+
+```{pyodide}
+print("sum of residuals  :", round(resid.sum(), 4))
+print("mean residual     :", round(resid.mean(), 8))
+print("mean size of one  :", round(resid.abs().mean(), 8))
+```
+
+::: {.muted .small}
+The average residual is four millionths. The average residual **size** is more
+than two thousand times bigger. Least squares picked the line that makes the
+positives and the negatives cancel, so **the sum tells you nothing at all about
+how wrong the model was.**
+:::
+
+You need to remove the signs first. There are two standard ways to do that.
+
+
+# Mean absolute error
+
+::: {.formula}
+$$
+\text{MAE} = \frac{1}{n}\sum_{i=1}^{n}\left|\,y_i - \hat{y}_i\,\right|
+$$
+:::
+
+The average size of a mistake, in the units of the target.
+
+::: {.muted .small}
+For this model, 0.83%. On a typical day the rule is wrong by about eight tenths
+of a percentage point, and that sentence is understandable by anybody.
+:::
+
+
+# Mean squared error, and its root
+
+::: {.formula}
+$$
+\text{MSE} = \frac{1}{n}\sum_{i=1}^{n}\left(y_i - \hat{y}_i\right)^2
+\qquad
+\text{RMSE} = \sqrt{\text{MSE}}
+$$
+:::
+
+Squaring removes the sign too, but it also **punishes a big miss much harder
+than several small ones**.
+
+::: {.muted .small}
+MSE is in squared units, which nobody can interpret: 0.000142 squared returns.
+Taking the root puts it back into percent, which is why RMSE is the one you
+report.
+:::
+
+
+# All three, on the real residuals
+
+```{pyodide}
+mae = resid.abs().mean()
+mse = (resid ** 2).mean()
+rmse = np.sqrt(mse)
+
+print("MAE  %.5f   (%.2f%%)" % (mae, mae * 100))
+print("MSE  %.6f" % mse)
+print("RMSE %.5f   (%.2f%%)" % (rmse, rmse * 100))
+```
+
+::: {.muted .small}
+RMSE is always at least as large as MAE. The gap between them tells you how
+uneven the errors are.
+:::
+
+
+# Why both exist
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+e = np.linspace(-4, 4, 300)
+fig, ax = plt.subplots(figsize=(9.6, 2.9))
+ax.plot(e, np.abs(e), color=BLUE, linewidth=2.4, label="absolute error  $|e|$")
+ax.plot(e, e ** 2, color=BRICK, linewidth=2.4, label="squared error  $e^2$")
+ax.set_xlabel("error")
+ax.set_ylabel("penalty")
+ax.set_ylim(0, 9)
+ax.legend(loc="upper center")
+ax.set_title("What each metric charges you for being wrong", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+Being wrong by 4 costs **four times** as much as being wrong by 1 under MAE, and
+**sixteen times** as much under MSE.
+
+
+# One terrible forecast
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+sub = RET.tail(60)
+ya = sub["AAPL"].values * 100
+yp = (0.00043 + 1.2073 * sub["SPY"].values) * 100
+yp_bad = yp.copy()
+yp_bad[30] = 40.0
+bad_day = sub.index[30]
+
+# A broken axis: the spike is 40%, the rest of the series lives inside +/-6%,
+# and drawing both on one scale would flatten everything that matters.
+fig, (top, low) = plt.subplots(2, 1, figsize=(11.0, 3.4), sharex=True,
+                               gridspec_kw={"height_ratios": [1, 3.2],
+                                            "hspace": 0.12})
+for ax in (top, low):
+    ax.plot(sub.index, ya, color=AMBER, linewidth=1.5, label="actual")
+    ax.plot(sub.index, yp_bad, color=BLUE, linewidth=1.5, label="predicted")
+
+top.scatter([bad_day], [40], s=70, color=BRICK, marker="o", zorder=5)
+top.annotate("the model says +40%", xy=(bad_day, 40), xytext=(12, -4),
+             textcoords="offset points", fontsize=11.5, color=BRICK,
+             fontweight="600", va="center")
+top.set_ylim(30, 48)
+top.set_yticks([40])
+top.spines["bottom"].set_visible(False)
+top.tick_params(bottom=False)
+top.set_title("The last 60 trading days. Actual against predicted", loc="left")
+
+low.set_ylim(-6, 6)
+low.spines["top"].set_visible(True)
+low.spines["top"].set_color("#c3c2b7")
+low.set_ylabel("return (%)")
+low.legend(loc="lower left", fontsize=10)
+
+# the diagonal strokes that mark the break, drawn on the axes edges so they
+# land in the right place whatever tight_layout decides
+break_mark = dict(marker=[(-1, -0.6), (1, 0.6)], markersize=9, linestyle="none",
+                  color="#898781", mec="#898781", mew=1.2, clip_on=False)
+top.plot([0, 1], [0, 0], transform=top.transAxes, **break_mark)
+low.plot([0, 1], [1, 1], transform=low.transAxes, **break_mark)
+fig.tight_layout()
+plt.show()
+```
+
+
+# The damage, in numbers
+
+<div class="statband">
+<div class="stat"><span class="stat-big">&times;1.8</span><div class="stat-label">MAE, 0.75% to 1.38%</div></div>
+<div class="stat stat-warn"><span class="stat-big">&times;5.1</span><div class="stat-label">RMSE, 0.99% to 5.09%</div></div>
+<div class="stat stat-warn"><span class="stat-big">&times;26</span><div class="stat-label">MSE</div></div>
+</div>
+
+One day in sixty. **MAE says the model got a little worse. MSE says it fell
+apart.**
+
+::: {.keypoint}
+Neither is lying. They answer different questions: "how wrong is this model on a
+normal day" and "how badly can this model hurt me".
+:::
+
+
+# A warning about MAPE
+
+::: {.formula}
+$$
+\text{MAPE} = \frac{100}{n}\sum_{i=1}^{n}\left|\frac{y_i - \hat{y}_i}{y_i}\right|
+$$
+:::
+
+Percentage error is attractive because it has no units, and it is common in
+sales and demand forecasting.
+
+::: {.keypoint}
+**Never use it on returns.** A day where the true return is 0.0001 makes the
+denominator almost zero, so one ordinary day can contribute thousands of percent
+to the average.
+:::
+
+
+# R², and what it compares against
+
+::: {.formula}
+$$
+R^2 = 1 - \frac{\sum_i (y_i - \hat{y}_i)^2}{\sum_i (y_i - \bar{y})^2}
+= 1 - \frac{\text{RSS}}{\text{TSS}}
+$$
+:::
+
+MAE and RMSE tell you how wrong you were. R² tells you how wrong you were
+**compared with the laziest possible model**: always predict the average.
+
+::: {.muted .small}
+$R^2 = 0$ means you matched that lazy model. $R^2 = 1$ means you fit every point
+exactly.
+:::
+
+
+# The two sums, drawn
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+sub = RET.loc["2024-10":"2024-12"]
+xs = sub["SPY"].values * 100
+ys = sub["AAPL"].values * 100
+pred = (0.00043 + 1.2073 * sub["SPY"].values) * 100
+grid = np.linspace(xs.min() - 0.2, xs.max() + 0.2, 40)
+
+fig, axes = plt.subplots(1, 2, figsize=(11.0, 3.0), sharey=True)
+ax = axes[0]
+ax.axhline(ys.mean(), color=INK, linewidth=1.8)
+ax.vlines(xs, ys.mean(), ys, color=AMBER, linewidth=1.2)
+ax.scatter(xs, ys, s=26, color=GREY, zorder=3)
+ax.set_title("TSS: distance from the average", loc="left")
+ax.set_ylabel("Apple return (%)")
+ax.set_xlabel("market return (%)")
+
+ax = axes[1]
+ax.plot(grid, 0.043 + 1.2073 * grid, color=INK, linewidth=1.8)
+ax.vlines(xs, pred, ys, color=BRICK, linewidth=1.2)
+ax.scatter(xs, ys, s=26, color=GREY, zorder=3)
+ax.set_title("RSS: distance from the model", loc="left")
+ax.set_xlabel("market return (%)")
+fig.tight_layout()
+plt.show()
+```
+
+R² is one minus the ratio of the red lengths to the amber ones, squared and
+added up.
+
+
+# R² on new data can be negative
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+d = pd.DataFrame({"y": RET["AAPL"], "x": RET["AAPL"].shift(1)}).dropna()
+tr, te = d.loc[:"2022"], d.loc["2023":]
+Xm = np.column_stack([np.ones(len(tr)), tr["x"]])
+coef = np.linalg.lstsq(Xm, tr["y"], rcond=None)[0]
+
+def r2(frame, baseline):
+    pred = coef[0] + coef[1] * frame["x"]
+    rss = ((frame["y"] - pred) ** 2).sum()
+    tss = ((frame["y"] - baseline) ** 2).sum()
+    return 1 - rss / tss
+
+vals = [r2(tr, tr["y"].mean()), r2(te, tr["y"].mean())]
+
+fig, ax = plt.subplots(figsize=(8.8, 2.3))
+ax.bar(["2015 to 2022\n(the data it was fitted on)", "2023 to 2024\n(data it had never seen)"],
+       vals, color=[BLUE, BRICK], width=0.45)
+ax.axhline(0, color=INK, linewidth=1.2)
+ax.set_ylabel("R²")
+ax.set_ylim(-0.03, 0.03)
+for i, v in enumerate(vals):
+    ax.text(i, v + (0.003 if v > 0 else -0.005), f"{v:+.4f}", ha="center",
+            fontsize=12, color="#52514e")
+ax.set_title("Predicting Apple's return from yesterday's return", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+Out of sample there is nothing forcing R² to be positive. **Negative means you
+would have done better by always predicting the average.**
+
+
+# And a tiny R² can still be worth a lot
+
+::: {.keypoint}
+An R² of 0.01 on next-day returns would be a serious result. It means 99% of
+what happens is noise to you, and the remaining 1%, applied every day across
+hundreds of names, is a business.
+:::
+
+::: {.muted .small}
+This is why finance is unlike most machine learning applications. A vision model
+with 1% explained variance is broken. A return model with 1% is a fund. Judge
+the number against the problem, never against 1.
+:::
+
+
+# Now change the target
+
+Everything since the start of this part assumed the target was a **number**, so
+"how far off were you" had an answer. Change the target to a **label** and that
+question stops making sense: what is "up" minus "down"?
+
+<div class="compare">
+<div class="compare-col">
+<h3>Regression, so far</h3>
+<p>predict Apple's return from the market's return</p>
+<p>score it by the size of the residuals: MAE, RMSE, R&sup2;</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Classification, from here</h3>
+<p>predict whether Apple <em>rose</em>, from whether the market rose</p>
+<p>there is no residual, so score it by counting right and wrong</p>
+</div>
+</div>
+
+::: {.muted .small}
+Same eleven stocks, same 2,515 days, same market feature. Only the target
+column changed, exactly as in Part 2.
+:::
+
+
+# Four things can happen
+
+::: {.why-grid}
+::: {.why-point}
+**You said up, and it went up** <span>a true positive</span>
+:::
+::: {.why-point}
+**You said up, and it went down** <span>a false positive, a false alarm</span>
+:::
+::: {.why-point}
+**You said down, and it went up** <span>a false negative, a miss</span>
+:::
+::: {.why-point}
+**You said down, and it went down** <span>a true negative</span>
+:::
+:::
+
+Every classification metric in use is built out of those four counts, and
+nothing else.
+
+
+# The confusion matrix
+
+::: {.diagram}
+<svg width="1000" height="300" viewBox="0 0 1000 300" role="img" aria-label="Confusion matrix for predicting whether Apple rose from whether the market rose: 1042 true positives, 297 false negatives, 331 false positives, 845 true negatives">
+  <text x="560" y="34" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#898781" letter-spacing="1.5">WHAT THE MODEL SAID</text>
+  <text x="430" y="70" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">up</text>
+  <text x="690" y="70" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">down</text>
+  <text x="285" y="140" text-anchor="end" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">it went up</text>
+  <text x="285" y="230" text-anchor="end" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">it went down</text>
+  <text x="285" y="70" text-anchor="end" font-size="15" font-family="Segoe UI, sans-serif" fill="#898781" letter-spacing="1.5">WHAT HAPPENED</text>
+  <rect x="300" y="88" width="260" height="90" rx="6" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.5"/>
+  <rect x="560" y="88" width="260" height="90" rx="6" fill="#fbf1f0" stroke="#e0b3ac" stroke-width="1.5"/>
+  <rect x="300" y="178" width="260" height="90" rx="6" fill="#fbf1f0" stroke="#e0b3ac" stroke-width="1.5"/>
+  <rect x="560" y="178" width="260" height="90" rx="6" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.5"/>
+  <g font-family="Segoe UI, sans-serif" text-anchor="middle">
+    <text x="430" y="126" font-size="26" font-weight="700" fill="#0d366b">1042</text>
+    <text x="430" y="152" font-size="13.5" fill="#52514e">true positives</text>
+    <text x="690" y="126" font-size="26" font-weight="700" fill="#b3402f">297</text>
+    <text x="690" y="152" font-size="13.5" fill="#8a4038">false negatives (misses)</text>
+    <text x="430" y="216" font-size="26" font-weight="700" fill="#b3402f">331</text>
+    <text x="430" y="242" font-size="13.5" fill="#8a4038">false positives (false alarms)</text>
+    <text x="690" y="216" font-size="26" font-weight="700" fill="#0d366b">845</text>
+    <text x="690" y="242" font-size="13.5" fill="#52514e">true negatives</text>
+  </g>
+</svg>
+:::
+
+::: {.diagram-note}
+Predicting "Apple rose today" from "the market rose today", over 2,515 days.
+:::
+
+
+# Counting them yourself
+
+```{pyodide}
+said_up = market > 0
+went_up = actual > 0
+
+tp = (said_up & went_up).sum()
+fp = (said_up & ~went_up).sum()
+fn = (~said_up & went_up).sum()
+tn = (~said_up & ~went_up).sum()
+
+print("TP %d   FP %d   FN %d   TN %d" % (tp, fp, fn, tn))
+print("accuracy: %.4f" % ((tp + tn) / (tp + fp + fn + tn)))
+```
+
+::: {.muted .small}
+Four boolean masks and four sums. Nothing here that Session 3 did not already
+give you.
+:::
+
+
+# Accuracy
+
+::: {.formula}
+$$
+\text{accuracy} = \frac{TP + TN}{TP + TN + FP + FN}
+$$
+:::
+
+**75.0% of days called correctly.** It is the first number everybody computes,
+and on its own it is close to useless.
+
+
+# Where accuracy falls apart
+
+Now predict something rare: a day when Apple falls more than 5%.
+
+<div class="statband">
+<div class="stat"><span class="stat-big">22</span><div class="stat-label">such days in ten years</div></div>
+<div class="stat"><span class="stat-big">99.1%</span><div class="stat-label">accuracy of a model that always says "no crash"</div></div>
+<div class="stat stat-warn"><span class="stat-big">0</span><div class="stat-label">crashes it would ever warn you about</div></div>
+</div>
+
+::: {.keypoint}
+A model with no skill whatsoever beats almost anything you will build, measured
+by accuracy. **When one class is rare, accuracy measures the class balance, not
+the model.**
+:::
+
+
+# Precision and recall
+
+::: {.formula}
+$$
+\text{precision} = \frac{TP}{TP + FP}
+\qquad
+\text{recall} = \frac{TP}{TP + FN}
+$$
+:::
+
+<div class="compare">
+<div class="compare-col">
+<h3>Precision: 75.9%</h3>
+<p>Of the days I called up, how many really were?</p>
+<p>Low precision means <strong>false alarms</strong>: you traded on a signal that was not there.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Recall: 77.8%</h3>
+<p>Of the days that really were up, how many did I catch?</p>
+<p>Low recall means <strong>misses</strong>: the move happened and you were not in it.</p>
+</div>
+</div>
+
+::: {.muted .small}
+Neither uses the true negatives, which is exactly why they survive an imbalanced
+problem when accuracy does not.
+:::
+
+
+# You choose where to sit
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+score = 0.00043 + 1.2073 * RET["SPY"].values
+truth = RET["AAPL"].values > 0
+ths = np.quantile(score, np.linspace(0.002, 0.998, 250))
+prec, rec = [], []
+for t in ths:
+    pred = score >= t
+    tp = (pred & truth).sum()
+    fp = (pred & ~truth).sum()
+    fn = (~pred & truth).sum()
+    prec.append(tp / max(tp + fp, 1))
+    rec.append(tp / max(tp + fn, 1))
+
+fig, axes = plt.subplots(1, 2, figsize=(11.0, 3.0))
+ax = axes[0]
+ax.hist(score[truth] * 100, bins=60, color=BLUE, alpha=0.65, label="really up")
+ax.hist(score[~truth] * 100, bins=60, color=BRICK, alpha=0.55, label="really down")
+ax.axvline(0, color=INK, linewidth=1.8)
+ax.text(0.15, ax.get_ylim()[1] * 0.82, "threshold", fontsize=10.5, color=INK)
+ax.set_xlabel("model score (%)")
+ax.set_ylabel("days")
+ax.set_title("Move the line, change the trade-off", loc="left")
+ax.legend(loc="upper left", fontsize=9.5)
+
+ax = axes[1]
+ax.plot(ths * 100, prec, color=BLUE, linewidth=2.2, label="precision")
+ax.plot(ths * 100, rec, color=AMBER, linewidth=2.2, label="recall")
+ax.set_xlabel("threshold (%)")
+ax.set_ylabel("rate")
+ax.set_title("One goes up as the other goes down", loc="left")
+ax.legend(loc="center right", fontsize=9.5)
+fig.tight_layout()
+plt.show()
+```
+
+Demand a score above +1% before calling a day up, and precision climbs to
+**91%** while recall collapses to **30%**.
+
+
+# One number, if you must have one
+
+::: {.formula}
+$$
+F_1 = 2 \cdot \frac{\text{precision} \cdot \text{recall}}{\text{precision} + \text{recall}}
+$$
+:::
+
+The harmonic mean, which is close to the smaller of the two. **Our model scores
+0.768.**
+
+::: {.muted .small}
+A plain average would let 100% precision and 1% recall look respectable. The
+harmonic mean does not: it lands at 2%.
+:::
+
+
+# The whole trade-off, in one curve
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+score = 0.00043 + 1.2073 * RET["SPY"].values
+truth = RET["AAPL"].values > 0
+order = np.argsort(-score)
+t_sorted = truth[order]
+tpr = np.cumsum(t_sorted) / t_sorted.sum()
+fpr = np.cumsum(~t_sorted) / (~t_sorted).sum()
+auc = np.sum(np.diff(fpr) * (tpr[1:] + tpr[:-1]) / 2)   # trapezoid rule
+
+fig, ax = plt.subplots(figsize=(6.6, 3.2))
+ax.plot([0, 1], [0, 1], color=GREY, linewidth=1.4, linestyle="--",
+        label="a coin flip")
+ax.plot(fpr, tpr, color=BLUE, linewidth=2.4, label=f"the model (AUC {auc:.2f})")
+ax.set_xlabel("false positive rate")
+ax.set_ylabel("true positive rate (recall)")
+ax.set_title("ROC curve", loc="left")
+ax.legend(loc="lower right")
+fig.tight_layout()
+plt.show()
+```
+
+Every threshold is one point on that curve. **AUC** is the area under it: 0.5 is
+a coin flip, 1.0 is perfect.
+
+
+# Which metric, and who decides
+
+| the question | the metric | why |
+|---|---|---|
+| how far off is a typical forecast | MAE | in the units of the target, robust |
+| how badly can it hurt me | RMSE | large errors dominate, which is the point |
+| is it better than predicting the mean | R² | scale free, comparable across targets |
+| the target is a label, classes balanced | accuracy | simple and honest here |
+| the target is rare | precision and recall | accuracy is meaningless |
+| I need to compare across thresholds | ROC AUC | threshold free |
+
+: {.vocab}
+
+::: {.keypoint}
+The metric is a business decision, not a technical one. What does a false alarm
+cost, and what does a miss cost?
+:::
+
+
+# Your turn [4]{.chip .chip-turn} {.your-turn}
+
+A "crash warning" model says the day will be bad whenever the market itself is
+down more than 1%. Compute its **recall** on Apple's 5% down days.
+
+```{pyodide}
+#| autorun: false
+crash = actual < -0.05
+warned = market < -0.01
+
+hits = ...
+recall = ...
+
+print("crash days:", crash.sum())
+print("recall    :", recall)
+```
+
+
+# Your turn 4: answer
+
+```python
+crash = actual < -0.05
+warned = market < -0.01
+
+hits = (warned & crash).sum()
+recall = hits / crash.sum()
+
+print("crash days:", crash.sum())
+print("recall    :", recall)
+```
+
+**It catches 19 of the 22 crashes, a recall of 0.864.** Before you celebrate,
+ask the other question: it warns on 278 days in total, so its precision is
+0.068. Thirteen false alarms for every real one.
+
+
+# 5 · Overfitting, and the trade-off {.divider}
+
+::: {.divider-kicker}
+Part 5
+:::
+
+::: {.divider-note}
+Why the model that fits best is usually the one to throw away.
+:::
+
+
+# A model that is never wrong
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+from numpy.polynomial import Polynomial
+
+fit15 = Polynomial.fit(XT, YT, 15)
+mse15 = ((fit15(XT) - YT) ** 2).mean()
+
+fig, ax = plt.subplots(figsize=(10.4, 3.2))
+ax.plot(XGRID, fit15(XGRID), color=BLUE, linewidth=2.2)
+ax.scatter(XT, YT, s=44, color=AMBER, zorder=3)
+ax.set_ylim(-2.2, 2.2)
+ax.set_xlabel("feature $x$")
+ax.set_ylabel("target $y$")
+ax.set_title(f"Training MSE = {mse15:.3f}", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+```{pyodide}
+#| include: false
+# The invented data from Part 1, put into the live namespace so the dial cell a
+# few slides on stays short enough to read on a slide.
+rng = np.random.default_rng(11)
+x_train = np.sort(rng.uniform(0, 1, 30))
+y_train = np.sin(2 * np.pi * x_train) + rng.normal(0, 0.28, 30)
+grid = np.linspace(0, 1, 200)
+```
+
+The same invented data from Part 1, and a curve that passes through almost every
+point. **By every metric in Part 4, this is an excellent model.**
+
+
+# So: is that the model you want? {.your-turn}
+
+Before the next slide, decide what you think.
+
+- What does this curve say will happen at $x = 0.55$?
+- If I collected thirty new observations, would it still fit them?
+- Which parts of that curve are the relationship, and which are the noise?
+
+::: {.muted .small}
+There is no trick. The answer is the whole of the rest of this session.
+:::
+
+
+# Three fits of the same thirty points
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+from numpy.polynomial import Polynomial
+
+fig, axes = plt.subplots(1, 3, figsize=(11.0, 2.9), sharey=True)
+for ax, deg in zip(axes, [1, 4, 15]):
+    p = Polynomial.fit(XT, YT, deg)
+    ax.plot(XGRID, true_f(XGRID), color=GREY, linewidth=1.4, linestyle="--")
+    ax.plot(XGRID, p(XGRID), color=BLUE, linewidth=2.2)
+    ax.scatter(XT, YT, s=26, color=AMBER, zorder=3)
+    ax.set_ylim(-2.2, 2.2)
+    ax.set_xlabel("$x$")
+    ax.set_title(f"degree {deg}: train MSE {((p(XT) - YT) ** 2).mean():.3f}",
+                 loc="left", fontsize=12)
+axes[0].set_ylabel("$y$")
+fig.tight_layout()
+plt.show()
+```
+
+Grey dashed is the truth. **Training error falls every time you add flexibility,
+and it will keep falling all the way to zero.**
+
+
+# The same three, on data they never saw
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+from numpy.polynomial import Polynomial
+
+fig, axes = plt.subplots(1, 3, figsize=(11.0, 2.9), sharey=True)
+for ax, deg in zip(axes, [1, 4, 15]):
+    p = Polynomial.fit(XT, YT, deg)
+    ax.plot(XGRID, true_f(XGRID), color=GREY, linewidth=1.4, linestyle="--")
+    ax.plot(XGRID, p(XGRID), color=BLUE, linewidth=2.2)
+    ax.scatter(XE, YE, s=8, color=BRICK, alpha=0.35, linewidths=0, zorder=3)
+    ax.set_ylim(-2.2, 2.2)
+    ax.set_xlabel("$x$")
+    ax.set_title(f"degree {deg}: test MSE {((p(XE) - YE) ** 2).mean():.3f}",
+                 loc="left", fontsize=12)
+axes[0].set_ylabel("$y$")
+fig.tight_layout()
+plt.show()
+```
+
+Four hundred new points. The middle model is now the best by a distance, and the
+flexible one is **thirty times worse** than it was on its own training data.
+
+
+# Two ways to be wrong
+
+<div class="compare">
+<div class="compare-col">
+<h3>Underfitting</h3>
+<p>The model is too rigid to represent the relationship.</p>
+<p>Bad on the training data, bad on new data, and <strong>bad in the same way on both</strong>.</p>
+<p>The straight line above.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Overfitting</h3>
+<p>The model has learned the noise as if it were signal.</p>
+<p>Excellent on the training data, poor on new data. <strong>The gap is the symptom.</strong></p>
+<p>The degree-15 curve above.</p>
+</div>
+</div>
+
+::: {.keypoint}
+You cannot tell them apart from the training score. That is the entire reason
+for everything on the next few slides.
+:::
+
+
+# The picture worth remembering
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+from numpy.polynomial import Polynomial
+
+degrees = np.arange(1, 16)
+tr_err, te_err = [], []
+for d in degrees:
+    p = Polynomial.fit(XT, YT, d)
+    tr_err.append(((p(XT) - YT) ** 2).mean())
+    te_err.append(((p(XE) - YE) ** 2).mean())
+best = degrees[int(np.argmin(te_err))]
+
+fig, ax = plt.subplots(figsize=(10.4, 3.3))
+ax.plot(degrees, tr_err, color=BLUE, linewidth=2.4, marker="o", markersize=4,
+        label="training error")
+ax.plot(degrees, te_err, color=BRICK, linewidth=2.4, marker="o", markersize=4,
+        label="test error")
+ax.axhline(SD ** 2, color=GREY, linewidth=1.4, linestyle="--")
+ax.text(14.6, SD ** 2 + 0.02, "irreducible error", ha="right", fontsize=10.5,
+        color="#898781")
+ax.axvline(best, color=AMBER, linewidth=1.4)
+ax.text(best + 0.25, 0.028, "the model you want", fontsize=11, color="#8a6508")
+ax.set_yscale("log")
+ax.set_xlabel("flexibility (polynomial degree)")
+ax.set_ylabel("mean squared error (log scale)")
+ax.set_xticks(degrees)
+ax.legend(loc="upper center")
+fig.tight_layout()
+plt.show()
+```
+
+::: {.muted .small}
+Training error falls forever. Test error falls, bottoms out, and then climbs.
+Every model selection procedure in this course is a way of finding that bottom
+without cheating.
+:::
+
+
+# Turn the dial yourself
+
+```{pyodide}
+#| autorun: false
+degree = 3                          # try 1, then 4, then 15
+coef = np.polyfit(x_train, y_train, degree)
+
+fig, ax = plt.subplots(figsize=(8.0, 1.5))
+ax.scatter(x_train, y_train, s=26, color="#b8860b", zorder=3)
+ax.plot(grid, np.polyval(coef, grid), color="#1c5cab", linewidth=2.2)
+ax.set_ylim(-2.4, 2.4)
+plt.show()
+```
+
+::: {.muted .small}
+`x_train` and `y_train` are the thirty invented points from a few slides back.
+:::
+
+
+# Which is why you held rows back
+
+Training error kept improving all the way to degree 15. Test error stopped
+improving at 5. **Only one of those two numbers was available while the curve
+was being chosen.**
+
+::: {.keypoint}
+The rows you set aside in Part 1 are what turn "my model fits well" into
+evidence. Everything after today, cross-validation included, is a way of
+estimating that test error better without spending the test set.
+:::
+
+
+# Splitting the table
+
+```{pyodide}
+train = aapl.loc[:"2022-12-31"]
+test = aapl.loc["2023-01-01":]
+
+print("train rows:", len(train), "from", train.index.min().date(),
+      "to", train.index.max().date())
+print("test rows :", len(test), "from", test.index.min().date(),
+      "to", test.index.max().date())
+```
+
+::: {.muted .small}
+`aapl` is the feature table from Part 1. Splitting it is one line, because a
+DataFrame index knows about dates.
+:::
+
+
+# Time series break the usual rule
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+n = 120
+rs = np.random.default_rng(4)
+is_test_random = rs.random(n) < 0.25
+is_test_chrono = np.arange(n) >= int(n * 0.75)
+
+fig, axes = plt.subplots(2, 1, figsize=(11.0, 2.7), sharex=True)
+for ax, flags, ttl in [
+    (axes[0], is_test_random, "Shuffled: test days scattered through the sample"),
+    (axes[1], is_test_chrono, "Chronological: test days are the future"),
+]:
+    ax.bar(np.arange(n), np.ones(n), width=1.0,
+           color=[AMBER if f else BLUE for f in flags])
+    ax.set_yticks([])
+    ax.grid(False)
+    ax.set_title(ttl, loc="left", fontsize=12)
+    for side in ("left", "bottom"):
+        ax.spines[side].set_visible(False)
+axes[1].set_xlabel("trading day")
+fig.tight_layout()
+plt.show()
+```
+
+In the top panel the model trains on Wednesday and Friday to predict Thursday.
+**It knows the future.** Any backtest built that way will look wonderful and
+lose money.
+
+
+# The many faces of look-ahead bias
+
+::: {.why-grid}
+::: {.why-point}
+**Shuffling a time series** <span>the split has to be a date, not a random draw</span>
+:::
+::: {.why-point}
+**Scaling on the full sample** <span>the mean you subtracted contains the test period</span>
+:::
+::: {.why-point}
+**Interpolating across a gap** <span>Part 3: the fill used the price after the gap</span>
+:::
+::: {.why-point}
+**Choosing features after peeking** <span>you tried forty ideas and kept the one the test set liked</span>
+:::
+::: {.why-point}
+**Restated fundamentals** <span>the numbers in the database today are not the ones published then</span>
+:::
+::: {.why-point}
+**Today's index members** <span>the failures dropped out, so the sample is only the survivors</span>
+:::
+:::
+
+
+# Where the error comes from
+
+Test error is not one thing. Split it into two, and everything about model
+choice becomes clearer.
+
+<div class="compare">
+<div class="compare-col">
+<h3>Bias</h3>
+<p>Error from the model being too simple to represent the truth.</p>
+<p>It would still be there if you had a million rows.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Variance</h3>
+<p>Error from the model being too sensitive to the particular sample you drew.</p>
+<p>Collect a different sample, get a different model.</p>
+</div>
+</div>
+
+
+# The same model, twenty different samples
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+from numpy.polynomial import Polynomial
+
+fig, axes = plt.subplots(1, 2, figsize=(11.0, 3.0), sharey=True)
+for ax, deg, ttl in [(axes[0], 1, "Degree 1: high bias, low variance"),
+                     (axes[1], 12, "Degree 12: low bias, high variance")]:
+    for k in range(20):
+        g = np.random.default_rng(200 + k)
+        xs = np.sort(g.uniform(0, 1, 30))
+        ys = true_f(xs) + g.normal(0, SD, 30)
+        ax.plot(XGRID, Polynomial.fit(xs, ys, deg)(XGRID), color=BLUE_LIGHT,
+                linewidth=0.9, alpha=0.75)
+    ax.plot(XGRID, true_f(XGRID), color=INK, linewidth=2.2)
+    ax.set_ylim(-2.6, 2.6)
+    ax.set_xlabel("$x$")
+    ax.set_title(ttl, loc="left", fontsize=12)
+axes[0].set_ylabel("$y$")
+fig.tight_layout()
+plt.show()
+```
+
+Left: every line is wrong in the same way, and they all miss the curve. Right:
+the lines are right on average and **wildly different from each other**.
+
+
+# Both, on one target
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+
+cases = [("Low bias, low variance", 0.00, 0.10),
+         ("Low bias, high variance", 0.00, 0.42),
+         ("High bias, low variance", 0.62, 0.10),
+         ("High bias, high variance", 0.62, 0.42)]
+
+fig, axes = plt.subplots(1, 4, figsize=(11.0, 3.0))
+for ax, (ttl, off, spread) in zip(axes, cases):
+    for radius, colour in [(1.0, "#f0eee6"), (0.66, "#e3e9f2"), (0.33, "#cfdff2")]:
+        ax.add_patch(plt.Circle((0, 0), radius, color=colour, zorder=1))
+    ax.add_patch(plt.Circle((0, 0), 0.1, color=BRICK, zorder=2))
+    g = np.random.default_rng(9)
+    ang = g.uniform(0, 2 * np.pi)
+    cx, cy = off * np.cos(ang), off * np.sin(ang)
+    ax.scatter(cx + g.normal(0, spread, 14), cy + g.normal(0, spread, 14),
+               s=26, color=BLUE, zorder=3)
+    ax.set_xlim(-1.15, 1.15)
+    ax.set_ylim(-1.15, 1.15)
+    ax.set_aspect("equal")
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.grid(False)
+    for side in ("left", "bottom"):
+        ax.spines[side].set_visible(False)
+    ax.set_title(ttl, fontsize=11.5)
+fig.tight_layout()
+plt.show()
+```
+
+Each dot is the model you would have got from one sample. **Bias is how far the
+cluster sits from the centre. Variance is how spread out it is.**
+
+
+# The decomposition
+
+::: {.formula}
+$$
+\mathbb{E}\left[\left(y_0 - \hat{f}(x_0)\right)^2\right] =
+\underbrace{\operatorname{Var}\!\left(\hat{f}(x_0)\right)}_{\text{variance}} +
+\underbrace{\left[\operatorname{Bias}\!\left(\hat{f}(x_0)\right)\right]^2}_{\text{bias}^2} +
+\underbrace{\operatorname{Var}(\varepsilon)}_{\text{irreducible}}
+$$
+:::
+
+Three non-negative terms. Expected test error can never fall below the third
+one, and **making one of the first two smaller usually makes the other larger.**
+
+::: {.muted .small}
+This is a statement about expected error over all possible training samples, not
+about the one sample you happen to have.
+:::
+
+
+# The trade-off, drawn
+
+```{python}
+#| echo: false
+#| fig-align: center
+import matplotlib.pyplot as plt
+from numpy.polynomial import Polynomial
+
+xs_eval = np.linspace(0.03, 0.97, 80)
+truth_eval = true_f(xs_eval)
+
+def knn_predict(query, x, y, k):
+    return np.array([y[np.argsort(np.abs(x - q))[:k]].mean() for q in query])
+
+neighbours = [40, 25, 15, 10, 7, 5, 3, 2, 1]
+bias2, var = [], []
+for k in neighbours:
+    preds = []
+    for s in range(250):
+        g = np.random.default_rng(9000 + s)
+        xs = np.sort(g.uniform(0, 1, 60))
+        ys = true_f(xs) + g.normal(0, SD, 60)
+        preds.append(knn_predict(xs_eval, xs, ys, k))
+    A = np.array(preds)
+    bias2.append(((A.mean(axis=0) - truth_eval) ** 2).mean())
+    var.append(A.var(axis=0).mean())
+bias2, var = np.array(bias2), np.array(var)
+total = bias2 + var + SD ** 2
+pos = np.arange(len(neighbours))
+
+fig, ax = plt.subplots(figsize=(10.4, 3.3))
+ax.plot(pos, bias2, color=AMBER, linewidth=2.4, marker="o", markersize=4,
+        label="bias$^2$")
+ax.plot(pos, var, color=BLUE, linewidth=2.4, marker="o", markersize=4,
+        label="variance")
+ax.plot(pos, total, color=BRICK, linewidth=2.6, marker="o", markersize=4,
+        label="expected test error")
+ax.axhline(SD ** 2, color=GREY, linewidth=1.4, linestyle="--")
+ax.text(len(pos) - 1, SD ** 2 + 0.008, "irreducible", ha="right", fontsize=10.5,
+        color="#898781")
+ax.set_xticks(pos)
+ax.set_xticklabels(neighbours)
+ax.set_xlabel("neighbours averaged  (fewer to the right, so more flexible)")
+ax.set_ylabel("contribution to error")
+ax.set_ylim(0, 0.32)
+ax.legend(loc="upper center", ncol=3)
+fig.tight_layout()
+plt.show()
+```
+
+Bias falls, variance rises, and their sum has a minimum somewhere in between.
+**The red curve is the same U as before, now explained.**
+
+::: {.muted .small}
+The dial here is the number of neighbours rather than a polynomial degree, since
+it separates the two pieces more cleanly. Flexibility is the general idea; the
+particular knob does not matter.
+:::
+
+
+# What you actually do about it
+
+::: {.why-grid}
+::: {.why-point}
+**Get more data** <span>variance falls as $n$ grows, and nothing else is as reliable</span>
+:::
+::: {.why-point}
+**Use fewer features** <span>every extra column is another way to fit noise</span>
+:::
+::: {.why-point}
+**Simplify the model** <span>a linear model is hard to overfit, which is why it is still the benchmark</span>
+:::
+::: {.why-point}
+**Penalise complexity** <span>ridge and lasso deliberately add bias to remove more variance</span>
+:::
+::: {.why-point}
+**Cross-validate** <span>reuse the training data to estimate test error, without touching the test set</span>
+:::
+::: {.why-point}
+**Hold something back** <span>and do not look at it until you have finished deciding</span>
+:::
+:::
+
+::: {.muted .small}
+The last three are the subject of the next block. You now know what problem they
+are solving.
+:::
+
+
+# There is no best model
+
+::: {.keypoint}
+There is no model that is best for every problem. Whether flexibility helps
+depends on the shape of the true $f$ and on how much noise sits on top of it,
+and you do not get to see either one.
+:::
+
+So the job is not to find the best model. **It is to make the trade-off
+deliberately, and to be honest about how you measured it.**
+
+
+# What stays with you {.smaller}
+
+::: {.recap-grid}
+::: {.recap-item}
+**One table**
+Rows are observations, columns are features, one column is the target.
+:::
+::: {.recap-item}
+**$Y = f(X) + \varepsilon$**
+You estimate $f$. You never remove $\varepsilon$.
+:::
+::: {.recap-item}
+**Supervised or not**
+A target column decides it. Number means regression, label means classification.
+:::
+::: {.recap-item}
+**Cleaning is the work**
+Missing, extreme, wrong scale, not numeric. In that order, most days.
+:::
+::: {.recap-item}
+**Nothing from the future**
+Not in a fill, not in a scaler, not in a split.
+:::
+::: {.recap-item}
+**Pick the metric first**
+MAE, RMSE and R² answer different questions. So do precision and recall.
+:::
+::: {.recap-item}
+**Training error always falls**
+Which is exactly why it cannot be used to choose a model.
+:::
+::: {.recap-item}
+**Bias against variance**
+Too simple misses the shape. Too flexible learns the noise.
+:::
+:::
+
+
+# Where this goes next
+
+<div class="timeline">
+<div class="tl-row tl-now"><span class="tl-week">now</span><span class="tl-topic">the framework, the metrics, the trade-off</span><span class="tl-who">no models fitted</span></div>
+<div class="tl-row"><span class="tl-week">next</span><span class="tl-topic">model selection and cross-validation</span><span class="tl-who">finding the bottom of the U</span></div>
+<div class="tl-row tl-future"><span class="tl-week">then</span><span class="tl-topic">regression and classification methods, trees, ensembles</span><span class="tl-who">scikit-learn</span></div>
+</div>
+
+::: {.keypoint}
+Everything from here is a different way of building $\hat{f}$. The questions you
+ask of it are the ones from today, and they do not change.
+:::
+
+
+# The course case, Part 4 [case]{.chip .chip-case}
+
+Four sessions ago the case asked which of two stocks was riskier. It has grown
+every session since:
+
+::: {.why-grid}
+::: {.why-point}
+**Part 1** <span>two stocks, a first look, arithmetic by hand</span>
+:::
+::: {.why-point}
+**Part 2** <span>proper volatility, with loops and a function</span>
+:::
+::: {.why-point}
+**Part 3** <span>all eleven stocks, pandas, and figures</span>
+:::
+::: {.why-point}
+**Part 4** <span>the same data, reframed as a prediction problem</span>
+:::
+:::
+
+
+# Case Part 4: this week
+
+You will take the table you built in Part 3 and turn it into a learning problem:
+
+- choose a target, and build the features that are known before it
+- find the missing values and the extremes, and decide what to do about each
+- split by date, and say why the split has to be a date
+- choose the metric you would judge a model by, and defend the choice
+- state the prediction question precisely enough for somebody to answer it
+
+::: {.keypoint}
+You still do not fit anything. Part 4 finishes the setup, so that the first
+model you ever fit is one you already know how to judge.
+:::
+
+
+# Before next time
+
+- **Exercises**: the statistical learning framework, data problems, metrics, and
+  over- and underfitting. Longer than usual, and worth the time.
+- **Case Part 4**: the risk report becomes a prediction problem.
+
+::: {.muted .small}
+Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email me at
+**jobo@econ.au.dk**.
+:::

@@ -320,6 +320,100 @@ e("fig.savefig('name.png', dpi=200)", "Save it to a file. Use .pdf for something
   "fig.savefig('name.png', dpi=200, bbox_inches='tight')", since="S3", run=False,
   result="(writes name.png next to your notebook)")
 
+section("Features and a target",
+        "Session 4's table: one row per observation, one column per feature, and one "
+        "column you are trying to predict. Every model assumes it.")
+e("s.shift(-1)", "Move a column UP, so tomorrow's value sits on today's row. This is how a target is built.",
+  'r = wide["AAPL"].pct_change()\npd.DataFrame({"today": r, "target": r.shift(-1)}).tail(3).round(4)',
+  since="S4")
+e("s.rolling(20).mean()", "A feature over the last twenty rows. It only ever looks backwards, which is what makes it legal.",
+  'r = wide["AAPL"].pct_change()\nr.rolling(20).std().tail(2).round(4)', since="S4")
+e("(s > 0).astype(int)", "Turn a number into a 0/1 label, which turns a regression into a classification.",
+  'r = wide["AAPL"].pct_change()\n(r.shift(-1) > 0).astype(int).tail(4)', since="S4")
+e("n and p", "The two numbers that describe a learning problem: observations, and feature columns. The target is not a feature.",
+  'r = wide["AAPL"].pct_change()\nt = pd.DataFrame({"vol": r.rolling(20).std(),\n                  "target": r.shift(-1)}).dropna()\n(t.shape[0], t.shape[1] - 1)',
+  since="S4")
+
+section("Missing values",
+        "Real tables have holes in them. What you do about the holes changes your "
+        "answer, so it is a decision rather than a formality.")
+e("pd.date_range(start, end, freq='D')", "Every calendar day between two dates.",
+  'pd.date_range("2024-01-01", "2024-01-05", freq="D")', since="S4")
+e("frame.reindex(index)", "Force a table onto different row labels. Rows that did not exist arrive empty.",
+  'cal = pd.date_range(wide.index.min(), wide.index.max(), freq="D")\nwide.reindex(cal).shape',
+  since="S4")
+e("frame.isna().sum()", "Count the missing values in each column.",
+  'cal = pd.date_range(wide.index.min(), wide.index.max(), freq="D")\nwide.reindex(cal).isna().sum().head(3)',
+  since="S4")
+e("s.ffill()", "Carry the last known value forward. It only looks backwards, so a forecast may use it.",
+  's = pd.Series([1.0, None, None, 4.0])\ns.ffill().tolist()', since="S4")
+e("s.fillna(value)", "Fill with something you choose. Filling with the column mean shrinks the variance, so be deliberate.",
+  's = pd.Series([1.0, None, 4.0])\ns.fillna(s.mean()).tolist()', since="S4")
+e("s.interpolate()", "Draw a straight line across the gap. It uses the value AFTER the gap, so never in a forecast.",
+  's = pd.Series([1.0, None, 3.0])\ns.interpolate().tolist()', since="S4")
+e("s.isna().astype(int)", "Record that a value was missing. Sometimes that fact is itself the signal.",
+  's = pd.Series([1.0, None, 3.0])\ns.isna().astype(int).tolist()', since="S4")
+
+section("Extremes, and changing the scale")
+e("s.quantile([0.25, 0.75])", "The percentiles. Q1 and Q3 are the edges of the middle half of the data.",
+  'r = wide["AAPL"].pct_change().dropna()\nr.quantile([0.25, 0.75]).round(4)', since="S4")
+e("the IQR rule", "Flag anything outside Q1 - 1.5 IQR to Q3 + 1.5 IQR. On returns it flags far more than it should.",
+  'r = wide["AAPL"].pct_change().dropna()\nq1, q3 = r.quantile([0.25, 0.75])\niqr = q3 - q1\nint(((r < q1 - 1.5 * iqr) | (r > q3 + 1.5 * iqr)).sum())',
+  since="S4")
+e("np.log(values)", "The natural log. Log returns add up over time, and a log tames a long right tail.",
+  'np.log(wide["AAPL"]).diff().tail(2).round(4)', since="S4")
+e("(s - s.mean()) / s.std()", "Standardise: mean 0, standard deviation 1. Compute those two numbers on the training rows only.",
+  'r = wide["AAPL"].pct_change().dropna()\nz = (r - r.mean()) / r.std()\nround(z.mean(), 8), round(z.std(), 4)',
+  since="S4")
+e("pd.get_dummies(frame, columns=[...])", "One 0/1 column per category. This is how text gets into a feature table.",
+  'f = pd.DataFrame({"t": ["AAPL", "KO"], "sector": ["Tech", "Staples"]})\npd.get_dummies(f, columns=["sector"], dtype=int)',
+  since="S4")
+
+section("Scoring a prediction of a number",
+        "Choose the metric before you see the answer, and always report it beside a "
+        "baseline.")
+e("MAE", "Mean absolute error: the average size of a mistake, in the units of the target.",
+  'y = np.array([2.0, 4.0, 6.0, 8.0])\np = np.array([3.0, 4.0, 5.0, 11.0])\nnp.abs(y - p).mean()',
+  since="S4")
+e("MSE", "Mean squared error: one large miss dominates it, which is sometimes exactly what you want.",
+  'y = np.array([2.0, 4.0, 6.0, 8.0])\np = np.array([3.0, 4.0, 5.0, 11.0])\n((y - p) ** 2).mean()',
+  since="S4")
+e("RMSE", "The root of the MSE, back in the units of the target. The one to report.",
+  'y = np.array([2.0, 4.0, 6.0, 8.0])\np = np.array([3.0, 4.0, 5.0, 11.0])\nnp.sqrt(((y - p) ** 2).mean())',
+  since="S4")
+e("R squared", "How much better than always predicting the average. Zero means no better at all, and out of sample it can be negative.",
+  'y = np.array([2.0, 4.0, 6.0, 8.0])\np = np.array([3.0, 4.0, 5.0, 11.0])\n1 - ((y - p) ** 2).sum() / ((y - y.mean()) ** 2).sum()',
+  since="S4")
+e("np.full(n, value)", "The baseline prediction: one number, repeated. Nothing counts as a result until it beats this.",
+  'y = np.array([2.0, 4.0, 6.0, 8.0])\nbase = np.full(len(y), y.mean())\nnp.sqrt(((y - base) ** 2).mean())',
+  since="S4")
+
+section("Scoring a prediction of a label",
+        "No residuals here. Four counts, and every classification metric is built out "
+        "of them.")
+e("TP, FP, FN, TN", "Combine the two boolean columns with & and ~, then count.",
+  'said = pd.Series([True, True, False, False])\nwas = pd.Series([True, False, True, False])\n[int((said & was).sum()), int((said & ~was).sum()),\n int((~said & was).sum()), int((~said & ~was).sum())]',
+  since="S4")
+e("accuracy", "The share called correctly. Meaningless when one class is rare.",
+  'tp, fp, fn, tn = 1, 1, 1, 1\n(tp + tn) / (tp + fp + fn + tn)', since="S4")
+e("precision", "Of the times I said yes, how often was I right? Low precision means false alarms.",
+  'tp, fp = 1042, 331\ntp / (tp + fp)', since="S4")
+e("recall", "Of the times it really happened, how many did I catch? Low recall means misses.",
+  'tp, fn = 1042, 297\ntp / (tp + fn)', since="S4")
+e("F1", "The harmonic mean of the two, which sits close to the smaller one.",
+  'p, r = 0.759, 0.778\n2 * p * r / (p + r)', since="S4")
+
+section("Training rows and test rows",
+        "A score computed on the rows a model learned from is not evidence.")
+e("frame.loc[:'2022-12-31']", "Split by date, never at random. A shuffled time series lets a model train on the future.",
+  'r = wide["AAPL"].pct_change().dropna()\n(len(r.loc[:"2024-06-30"]), len(r.loc["2024-07-01":]))',
+  since="S4")
+e("np.polyfit(x, y, degree)", "Fit a polynomial of that degree. Raising the degree always lowers training error.",
+  'x = np.linspace(0, 1, 12)\ny = np.sin(2 * np.pi * x)\nnp.round(np.polyfit(x, y, 1), 3)', since="S4")
+e("np.polyval(coef, x)", "Evaluate a fitted polynomial, so you can score it on rows it never saw.",
+  'x = np.linspace(0, 1, 12)\ny = np.sin(2 * np.pi * x)\nc = np.polyfit(x, y, 3)\nround(float(((np.polyval(c, x) - y) ** 2).mean()), 5)',
+  since="S4")
+
 section("Reading error messages",
         "The last line names the problem. Read it before you change anything: it is "
         "almost always telling you the truth.")

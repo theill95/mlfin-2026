@@ -20,6 +20,8 @@ This repository is published:
   <https://theill95.github.io/mlfin-2026/session_02/session_02.html>
 - Interactive lecture, Session 3:
   <https://theill95.github.io/mlfin-2026/session_03/session_03.html>
+- Interactive lecture, Session 4:
+  <https://theill95.github.io/mlfin-2026/session_04/session_04.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
 The site has five pages, linked from the sidebar:
@@ -86,17 +88,21 @@ session_01/
 └── data/                     # the small CSV files this session uses
 ```
 
-Sessions 2 and 3 have the same shape. Current contents:
+Sessions 2 to 4 have the same shape. Current contents:
 
 | session | lecture | exercises | case |
 |:--|:--|:--|:--|
 | 1 · Beginning Python for Financial Data | `session_01.qmd` | 53 | Part 1, 10 questions |
 | 2 · Functions, Loops, and Dictionaries | `session_02.qmd` | 60 | Part 2, 10 questions |
 | 3 · Packages: NumPy, pandas, matplotlib | `session_03.qmd` | 70 | Part 3, 14 questions |
+| 4 · Foundations of Machine Learning | `session_04.qmd` | 65 | Part 4, 14 questions |
 
-Session 3 is the first one whose deck loads numpy, pandas and matplotlib into the
-browser runtime (about 20 MB, once per page load). Open it and run one cell a few
-minutes before class so it is warm.
+Sessions 3 and 4 load numpy, pandas and matplotlib into the browser runtime
+(about 20 MB, once per page load). Open the deck and run one cell a few minutes
+before class so it is warm.
+
+Session 4 is the only deck with mathematics on the slides; it renders through
+KaTeX, set in the `.qmd` front matter.
 
 The `.qmd` file **is** the lecture: it is at once the slide deck, the lecture
 narrative, and the source of every executable code demonstration. There is no

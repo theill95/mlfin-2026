@@ -99,7 +99,7 @@
     code span.vs { color: #032f62; } /* VerbatimString */
     code span.wa { color: #ff5555; } /* Warning */
   </style>
-  <link rel="stylesheet" href="session_03_files/libs/revealjs/dist/theme/quarto-d7b8aa25c891471cc796e7428a5a924f.css">
+  <link rel="stylesheet" href="session_03_files/libs/revealjs/dist/theme/quarto-26c6d12199685ebd96b8ccd81c526460.css">
   <link href="session_03_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="session_03_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="session_03_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
@@ -243,7 +243,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="" aria-hidden="true" tabindex="-1"></a>prices <span class="op">=</span> pd.read_csv(<span class="st">"data/prices.csv"</span>, parse_dates<span class="op">=</span>[<span class="st">"date"</span>])</span>
 <span id="cb2-2"><a href="" aria-hidden="true" tabindex="-1"></a>daily <span class="op">=</span> prices.pivot(index<span class="op">=</span><span class="st">"date"</span>, columns<span class="op">=</span><span class="st">"ticker"</span>, values<span class="op">=</span><span class="st">"close"</span>).pct_change()</span>
 <span id="cb2-3"><a href="" aria-hidden="true" tabindex="-1"></a>daily.std().sort_values(ascending<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="5ecdb72f" class="cell" data-execution_count="2">
+<div id="173a444d" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-stdout">
 <pre><code>ticker
 NVDA    0.0306
@@ -799,7 +799,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <section id="why-arrays-are-worth-it" class="title-slide slide level1 smaller center">
 <h1>Why arrays are worth it</h1>
 <p>Squaring a million numbers, first with a loop and then with an array:</p>
-<div id="a0565138" class="cell" data-execution_count="3">
+<div id="8f37ba8b" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb13-2"><a href="" aria-hidden="true" tabindex="-1"></a>xs, arr <span class="op">=</span> <span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">1_000_000</span>)), np.arange(<span class="dv">1_000_000</span>)</span>
 <span id="cb13-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
@@ -815,7 +815,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <span id="cb13-13"><a href="" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-14"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"loop: </span><span class="sc">{</span>loop<span class="sc">:.3f}</span><span class="ss"> s     numpy: </span><span class="sc">{</span>vec<span class="sc">:.4f}</span><span class="ss"> s     </span><span class="sc">{</span>loop <span class="op">/</span> vec<span class="sc">:.0f}</span><span class="ss"> times faster"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>loop: 0.079 s     numpy: 0.0019 s     42 times faster</code></pre>
+<pre><code>loop: 0.081 s     numpy: 0.0024 s     34 times faster</code></pre>
 </div>
 </div>
 <div class="muted small">
@@ -1155,7 +1155,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <section id="a-figure-is-made-of-two-things" class="title-slide slide level1 center">
 <h1>A figure is made of two things</h1>
 <div class="diagram">
-<div id="5417ad00" class="cell" data-execution_count="4">
+<div id="57c54892" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1240,7 +1240,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIi
 
 <section id="four-kinds-of-plot" class="title-slide slide level1 center">
 <h1>Four kinds of plot</h1>
-<div id="44febb28" class="cell" data-execution_count="5">
+<div id="7be13078" class="cell" data-execution_count="5">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1300,7 +1300,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="the-chart-everybody-makes-first" class="title-slide slide level1 center">
 <h1>The chart everybody makes first</h1>
-<div id="b56b89bb" class="cell" data-execution_count="6">
+<div id="439b1c9c" class="cell" data-execution_count="6">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1317,7 +1317,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="say-one-thing-instead" class="title-slide slide level1 center">
 <h1>Say one thing instead</h1>
-<div id="66301921" class="cell" data-execution_count="7">
+<div id="8158986c" class="cell" data-execution_count="7">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1359,7 +1359,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="it-can-look-much-better-than-this" class="title-slide slide level1 center">
 <h1>It can look much better than this</h1>
-<div id="df787690" class="cell" data-execution_count="8">
+<div id="6e9a3c19" class="cell" data-execution_count="8">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1414,7 +1414,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="the-whole-ranking-in-four-lines" class="title-slide slide level1 center">
 <h1>The whole ranking, in four lines</h1>
-<div id="17b1cace" class="cell" data-execution_count="9">
+<div id="bbedf64a" class="cell" data-execution_count="9">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>

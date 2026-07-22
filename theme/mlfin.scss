@@ -1092,9 +1092,15 @@ $selection-background-color: #dcebfd;
   line-height: 1.35;
 }
 
-.reveal .cell-output-pyodide img {
+// A live matplotlib figure arrives as a <canvas class="img-fluid">, and
+// Bootstrap's img-fluid stretches it to the full container width whatever its
+// natural size is. Cap the height instead, so a figure can never push the rest
+// of a slide off the bottom.
+.reveal .cell-output-pyodide img,
+.reveal .cell-output-pyodide canvas {
   max-height: 268px;
   width: auto;
+  height: auto;
   max-width: 100%;
 }
 
@@ -1132,4 +1138,142 @@ $selection-background-color: #dcebfd;
 .reveal table.dataframe tbody th {
   color: #52514e;
   text-align: left;
+}
+
+// ---------- maths on slides (Session 4 onwards) ----------
+// MathJax renders at body size, which is far too large for a 720px slide.
+
+.reveal .math.display {
+  font-size: 0.82em;
+  margin: 0.45em 0;
+}
+
+.reveal .math.inline {
+  font-size: 0.95em;
+}
+
+// a single equation given its own band, the way a key point gets one
+.formula {
+  background: #f4f7fb;
+  border: 1px solid #dde6f2;
+  border-radius: 8px;
+  padding: 0.15em 1em 0.3em;
+  margin: 0.5em 0;
+  text-align: center;
+}
+
+.formula .math.display {
+  margin: 0.35em 0;
+}
+
+.formula-note {
+  text-align: center;
+  color: #898781;
+  font-size: 0.62em;
+  margin: 0.1em 0 0.5em;
+}
+
+// the three colours used to name the parts of an equation, matching the
+// figures: blue = the thing you control, amber = the thing you cannot,
+// brick = the error itself
+.t-blue { color: #1c5cab; font-weight: 600; }
+.t-amber { color: #a8790b; font-weight: 600; }
+.t-brick { color: #b3402f; font-weight: 600; }
+
+// ---------- two-column comparison (Session 4) ----------
+// Neutral sibling of .dodont: two ideas side by side, neither one wrong.
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 0.6em;
+}
+
+.compare-col {
+  border: 1px solid #e6e5df;
+  border-top: 3px solid #86b6ef;
+  border-radius: 8px;
+  padding: 0.6em 0.9em;
+  font-size: 0.72em;
+  background: #ffffff;
+}
+
+.compare-col.cmp-alt {
+  border-top-color: #d99a1c;
+}
+
+.compare-col h3 {
+  font-size: 0.92em;
+  color: #0d366b;
+  margin-bottom: 0.3em;
+}
+
+.compare-col.cmp-alt h3 {
+  color: #a8790b;
+}
+
+.compare-col ul {
+  margin-left: 0.9em;
+  margin-bottom: 0;
+}
+
+.compare-col li {
+  margin-bottom: 0.25em;
+  line-height: 1.45;
+}
+
+// ---------- a row of computed numbers (Session 4) ----------
+// Sibling of .exam-facts, in the deck's blue rather than amber, and it takes
+// any number of columns.
+
+.statband {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0.6em 0;
+}
+
+.stat {
+  border: 1px solid #e6e5df;
+  border-top: 4px solid #1c5cab;
+  border-radius: 8px;
+  padding: 0.55em 0.6em;
+  text-align: center;
+}
+
+.stat.stat-warn {
+  border-top-color: #b3402f;
+}
+
+.stat .stat-big {
+  font-size: 1.05em;
+  font-weight: 700;
+  color: #0d366b;
+  display: block;
+  font-family: $font-family-monospace;
+}
+
+.stat.stat-warn .stat-big {
+  color: #b3402f;
+}
+
+.stat .stat-label {
+  font-size: 0.6em;
+  color: #52514e;
+  margin-top: 0.15em;
+  line-height: 1.35;
+}
+
+// ---------- vocabulary table (Session 4) ----------
+// The same object has a different name in econometrics, statistics and ML.
+
+.reveal table.vocab {
+  font-size: 0.62em;
+  margin: 0.5em auto;
+}
+
+.reveal table.vocab td:first-child {
+  color: #0d366b;
+  font-weight: 600;
 }

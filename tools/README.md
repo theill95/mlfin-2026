@@ -104,6 +104,7 @@ python tools/verify/colab_data_access.py      # run this after touching any load
 python tools/verify/session_03_exercises.py   # every folded solution, against real data
 python tools/verify/session_03_case.py        # the case solutions, chained in one namespace
 python tools/verify/session_03_deck.py        # every live cell in the deck
+python tools/verify/session_04_deck.py        # same, for Session 4
 ```
 
 `colab_data_access.py` is the important one. It runs each notebook's loader
@@ -134,3 +135,15 @@ Needs Quarto and the `quarto-live` extension in `_extensions/`. The rendered
 `session_NN.html` and its `session_NN_files/` folder are both committed: the
 deck will not run without the second one, and it cannot be self-contained
 because the Pyodide runtime cannot load its worker from a `data:` URI.
+
+Editing `theme/mlfin.scss` changes the compiled stylesheet's hash, so every
+re-render leaves the previous `quarto-<hash>.css` behind inside
+`session_NN_files/`. After a theme change, re-render **all** the decks so they
+share one stylesheet, then:
+
+```bash
+python tools/prune_render_cruft.py            # list the orphans
+python tools/prune_render_cruft.py --delete   # remove them
+```
+
+It only removes a stylesheet that no `session_NN.html` refers to.
