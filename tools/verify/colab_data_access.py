@@ -28,6 +28,33 @@ NOTEBOOKS = [
 ]
 
 
+def check_coverage():
+    """Every notebook that reads a file must be in NOTEBOOKS.
+
+    Sessions 1 and 2 keep their prices in literal lists, so they are absent on
+    purpose. Without this, adding a loader to one of them would quietly go
+    unchecked and only surface as a dead first cell in Colab.
+    """
+    listed = {p.name for p in NOTEBOOKS}
+    stray = []
+    for path in sorted(ROOT.glob("session_*/session_*.ipynb")):
+        if path.name in listed:
+            continue
+        nb = json.loads(path.read_text(encoding="utf-8"))
+        src = "\n".join("".join(c["source"]) for c in nb["cells"]
+                        if c["cell_type"] == "code")
+        if re.search(r"read_csv|open\(|REPO_RAW_URL", src):
+            stray.append(path.name)
+    if stray:
+        print("[FAIL] these notebooks load data but are not checked here:")
+        for name in stray:
+            print(f"         {name}   add it to NOTEBOOKS")
+        sys.exit(1)
+    print(f"{len(listed)} notebooks load data; the other "
+          f"{len(list(ROOT.glob('session_*/session_*.ipynb'))) - len(listed)} "
+          f"read no files at all")
+
+
 def loader_cell(path):
     nb = json.loads(path.read_text(encoding="utf-8"))
     for cell in nb["cells"]:
@@ -51,6 +78,8 @@ def run(src, cwd):
         os.chdir(here)
     return out.getvalue().strip(), ns
 
+
+check_coverage()
 
 failures = []
 for nb_path in NOTEBOOKS:

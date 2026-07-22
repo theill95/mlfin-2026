@@ -36,6 +36,7 @@ CHECK = [
     ("data loads the way Colab will", "tools/verify/colab_data_access.py"),
     ("the exercise ladder",           "tools/verify/exercise_ladder.py"),
     ("blank Run-all is safe",        "tools/verify/blank_safety.py"),
+    ("markdown Colab can render",     "tools/verify/colab_markup.py"),
     ("session 1 exercise solutions",  "tools/verify/session_01_exercises.py"),
     ("session 1 case solutions",      "tools/verify/session_01_case.py"),
     ("session 2 exercise solutions",  "tools/verify/session_02_exercises.py"),

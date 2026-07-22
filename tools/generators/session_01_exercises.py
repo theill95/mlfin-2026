@@ -2,7 +2,7 @@
 """Regenerate session_01_exercises.ipynb (v2, per instructor review).
 
 Changes from v1:
-- Toolkit: placeholder names made explicit + hover docs (<abbr title>).
+- Toolkit: placeholder names made explicit + hover docs (title= on the chip).
 - Em-dashes removed throughout.
 - B2 reframed (average of three, a real parentheses trap, not a math puzzle).
 - B6 reframed to a 'translate the stated formula' exercise (present value).
@@ -117,24 +117,27 @@ md(
 "**placeholders**: you put your own value or variable there. Only the tool's "
 "name, the dots, the brackets and the quotes are fixed syntax. **Hover any tool** "
 "to see what it does and what goes in.\n\n"
-'<p><strong>Functions</strong> &nbsp; you call these by name<br>\n'
-'<abbr title="Show one or more values. Separate several with commas; each prints with a space between."><code>print(value)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Tell you what kind of value it is: int, float, str or bool."><code>type(value)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Round number to ndigits decimals. round(3.14159, 2) gives 3.14."><code>round(number, ndigits)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="How many items are inside: characters in a string, elements in a list."><code>len(sequence)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="The smallest of the values. Give it a list, or several values."><code>min(values)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="The largest of the values. Give it a list, or several values."><code>max(values)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Add up every number in a list."><code>sum(numbers)</code></abbr></p>\n\n'
-'<p><strong>Methods</strong> &nbsp; these hang off a value with a dot<br>\n'
-"<abbr title=\"An UPPERCASE copy of the string. 'aapl'.upper() is 'AAPL'.\"><code>text.upper()</code></abbr> &nbsp;·&nbsp; "
-'<abbr title="How many times part appears inside the string."><code>text.count(part)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Add value to the end of the list. It changes the list itself."><code>prices.append(value)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="The position (counting from 0) where value first appears in the list."><code>prices.index(value)</code></abbr></p>\n\n'
-'<p><strong>Turn text into a number</strong><br>\n'
-"<abbr title=\"Turn a piece of text into a decimal number. float('52.40') is 52.4.\"><code>float(text)</code></abbr></p>\n\n"
-'<p><strong>Format inside an f-string</strong><br>\n'
-'<abbr title="Show price with 2 decimal places, e.g. 248.83."><code>f\"{price:.2f}\"</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Show r as a percentage with 2 decimals. 0.0231 becomes 2.31%."><code>f\"{r:.2%}\"</code></abbr></p>\n\n'
+'<p style="line-height:2.1"><strong>Functions</strong> &nbsp; you call these by name<br>\n'
+'<code style="cursor:help" title="Show one or more values. Separate several with commas; each prints with a space between.">print(value)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Tell you what kind of value it is: int, float, str or bool.">type(value)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Round number to ndigits decimals. round(3.14159, 2) gives 3.14.">round(number, ndigits)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="How many items are inside: characters in a string, elements in a list.">len(sequence)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="The smallest of the values. Give it a list, or several values.">min(values)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="The largest of the values. Give it a list, or several values.">max(values)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Add up every number in a list.">sum(numbers)</code></p>\n\n'
+'<p style="line-height:2.1"><strong>Methods</strong> &nbsp; these hang off a value with a dot<br>\n'
+"<code style=\"cursor:help\" title=\"An UPPERCASE copy of the string. 'aapl'.upper() is 'AAPL'.\">text.upper()</code> &nbsp;&nbsp; "
+'<code style="cursor:help" title="How many times part appears inside the string.">text.count(part)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Add value to the end of the list. It changes the list itself.">prices.append(value)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="The position (counting from 0) where value first appears in the list.">prices.index(value)</code></p>\n\n'
+'<p style="line-height:2.1"><strong>Turn text into a number</strong><br>\n'
+"<code style=\"cursor:help\" title=\"Turn a piece of text into a decimal number. float('52.40') is 52.4.\">float(text)</code></p>\n\n"
+'<p style="line-height:2.1"><strong>Format inside an f-string</strong><br>\n'
+'<code style="cursor:help" title="Show price with 2 decimal places, e.g. 248.83.">f\"{price:.2f}\"</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Show r as a percentage with 2 decimals. 0.0231 becomes 2.31%.">f\"{r:.2%}\"</code></p>'
+)
+
+md(
 "**Formulas you will reach for**\n\n"
 r"| what | formula |"
 "\n|:--|:--|\n"

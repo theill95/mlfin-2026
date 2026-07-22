@@ -2,7 +2,7 @@
 """Build session_02_exercises.ipynb.
 
 Same conventions as Session 1 (approved 2026-07-20): pleasant intro, 1-5 star
-badges, toolkit card with <abbr> hover docs, task -> work cell (blank-safe
+badges, toolkit card with title= hover docs, task -> work cell (blank-safe
 `...`) -> 1-2 folded hints -> folded solution, two-cell pattern for errors,
 no em-dashes, plain academic tone.
 
@@ -163,42 +163,45 @@ md(
 "**placeholders**: you put your own value or variable there. Only the keyword, the "
 "colon, the brackets and the indentation are fixed syntax. **Hover any tool** to "
 "see what it does.\n\n"
-'<p><strong>Repeating</strong><br>\n'
-'<abbr title="Run the indented body once for every item in the list. item takes each value in turn."><code>for item in items:</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Run the body once for each whole number 0, 1, ... , n-1. Use it when you care about positions."><code>for i in range(n):</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="The whole numbers from start up to but NOT including stop. range(1, 5) gives 1, 2, 3, 4."><code>range(start, stop)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Keep running the body for as long as the condition stays True. Something inside must change, or it never stops."><code>while condition:</code></abbr></p>\n\n'
-'<p><strong>Choosing</strong><br>\n'
-'<abbr title="Run the indented block only when the condition is True."><code>if condition:</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Checked only if the earlier conditions were False. Short for else-if. You can have several."><code>elif condition:</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Runs when none of the conditions above were True."><code>else:</code></abbr></p>\n\n'
-'<p><strong>Updating a variable from itself</strong><br>\n'
-'<abbr title="Add value to total and store it back. Exactly the same as total = total + value."><code>total += value</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Multiply value by factor and store it back. Same as value = value * factor."><code>value *= factor</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Subtract from the variable and store it back. Same as total = total - value."><code>total -= value</code></abbr></p>\n\n'
-'<p><strong>Collecting results</strong><br>\n'
-'<abbr title="A brand new list with nothing in it yet, ready to be filled by a loop."><code>results = []</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Add value to the end of the list. It changes the list itself, so there is no results = ... on the left."><code>results.append(value)</code></abbr></p>\n\n'
-'<p><strong>Your own functions</strong><br>\n'
-'<abbr title="Create a function called name that takes these parameters. The indented body is what it does."><code>def name(parameters):</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Hand a value back to whoever called the function, and stop there. Without it the function returns None."><code>return value</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="A default: if the caller does not pass rate, it is 0.05. Defaults come after the ordinary parameters."><code>def name(x, rate=0.05):</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="A docstring: a short description in triple quotes just under the def. Editors show it when you hover the function."><code>"""What it does."""</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Print a function\'s documentation, including its docstring."><code>help(name)</code></abbr></p>\n\n'
-'<p><strong>Dictionaries</strong> &nbsp; values stored by name instead of position<br>\n'
-'<abbr title="A dictionary literal: each key points to a value. Keys are usually strings such as a ticker."><code>{"AAPL": 0.36}</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Read the value stored under that key. Fails with a KeyError if the key is not there."><code>data[key]</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Store a value under that key. Adds the key if it is new, overwrites it if it already exists."><code>data[key] = value</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Loop over a dictionary and key takes each KEY in turn. Read its value with data[key]."><code>for key in data:</code></abbr></p>\n\n'
-'<p><strong>Still yours from Session 1</strong><br>\n'
-'<abbr title="Show one or more values. Separate several with commas."><code>print(value)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="How many items are in the list."><code>len(items)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Add up every number in a list."><code>sum(numbers)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="The largest / smallest of the values."><code>max(values)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="The largest / smallest of the values."><code>min(values)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Round number to ndigits decimals."><code>round(number, ndigits)</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="The item at that position, counting from 0. Negative counts from the end, so [-1] is the last."><code>prices[i]</code></abbr> &nbsp;·&nbsp; '
-'<abbr title="Show r as a percentage with 2 decimals. 0.0231 becomes 2.31%."><code>f\"{r:.2%}\"</code></abbr></p>\n\n'
+'<p style="line-height:2.1"><strong>Repeating</strong><br>\n'
+'<code style="cursor:help" title="Run the indented body once for every item in the list. item takes each value in turn.">for item in items:</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Run the body once for each whole number 0, 1, ... , n-1. Use it when you care about positions.">for i in range(n):</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="The whole numbers from start up to but NOT including stop. range(1, 5) gives 1, 2, 3, 4.">range(start, stop)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Keep running the body for as long as the condition stays True. Something inside must change, or it never stops.">while condition:</code></p>\n\n'
+'<p style="line-height:2.1"><strong>Choosing</strong><br>\n'
+'<code style="cursor:help" title="Run the indented block only when the condition is True.">if condition:</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Checked only if the earlier conditions were False. Short for else-if. You can have several.">elif condition:</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Runs when none of the conditions above were True.">else:</code></p>\n\n'
+'<p style="line-height:2.1"><strong>Updating a variable from itself</strong><br>\n'
+'<code style="cursor:help" title="Add value to total and store it back. Exactly the same as total = total + value.">total += value</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Multiply value by factor and store it back. Same as value = value * factor.">value *= factor</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Subtract from the variable and store it back. Same as total = total - value.">total -= value</code></p>\n\n'
+'<p style="line-height:2.1"><strong>Collecting results</strong><br>\n'
+'<code style="cursor:help" title="A brand new list with nothing in it yet, ready to be filled by a loop.">results = []</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Add value to the end of the list. It changes the list itself, so there is no results = ... on the left.">results.append(value)</code></p>\n\n'
+'<p style="line-height:2.1"><strong>Your own functions</strong><br>\n'
+'<code style="cursor:help" title="Create a function called name that takes these parameters. The indented body is what it does.">def name(parameters):</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Hand a value back to whoever called the function, and stop there. Without it the function returns None.">return value</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="A default: if the caller does not pass rate, it is 0.05. Defaults come after the ordinary parameters.">def name(x, rate=0.05):</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="A docstring: a short description in triple quotes just under the def. Editors show it when you hover the function.">"""What it does."""</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Print a function\'s documentation, including its docstring.">help(name)</code></p>\n\n'
+'<p style="line-height:2.1"><strong>Dictionaries</strong> &nbsp; values stored by name instead of position<br>\n'
+'<code style="cursor:help" title="A dictionary literal: each key points to a value. Keys are usually strings such as a ticker.">{"AAPL": 0.36}</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Read the value stored under that key. Fails with a KeyError if the key is not there.">data[key]</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Store a value under that key. Adds the key if it is new, overwrites it if it already exists.">data[key] = value</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Loop over a dictionary and key takes each KEY in turn. Read its value with data[key].">for key in data:</code></p>\n\n'
+'<p style="line-height:2.1"><strong>Still yours from Session 1</strong><br>\n'
+'<code style="cursor:help" title="Show one or more values. Separate several with commas.">print(value)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="How many items are in the list.">len(items)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Add up every number in a list.">sum(numbers)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="The largest / smallest of the values.">max(values)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="The largest / smallest of the values.">min(values)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Round number to ndigits decimals.">round(number, ndigits)</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="The item at that position, counting from 0. Negative counts from the end, so [-1] is the last.">prices[i]</code> &nbsp;&nbsp; '
+'<code style="cursor:help" title="Show r as a percentage with 2 decimals. 0.0231 becomes 2.31%.">f\"{r:.2%}\"</code></p>'
+)
+
+md(
 "**Formulas you will reach for**\n\n"
 r"| what | formula |"
 "\n|:--|:--|\n"

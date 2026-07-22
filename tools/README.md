@@ -101,6 +101,32 @@ genuinely load-bearing; a tag that is merely true is noise.
 stars in range, at least four of the five levels used per session, and every
 `revisits` tag pointing at an **earlier** session.
 
+### Markdown Colab will actually render
+
+Colab does not use Jupyter's markdown renderer. The two agree on almost
+everything, and disagree on one thing that has already bitten us: **once a
+markdown cell emits block-level raw HTML, Colab stops parsing what follows as
+markdown.** Jupyter carries on, so the cell looks right locally and reaches
+students as a wall of literal `|` characters, one stacked line per row. That is
+what happened to the toolkit card, whose `<p>` chips were followed by the
+"Formulas you will reach for" table.
+
+The rule, which costs nothing to obey:
+
+> markdown first, raw HTML last, and never markdown again after the HTML.
+
+Put anything that must stay markdown, a table above all, in its **own cell**.
+`tools/verify/colab_markup.py` enforces this across all eight notebooks.
+
+The toolkit chips are `<code style="cursor:help" title="...">`, not `<abbr>`.
+`abbr` draws a dotted underline that reads like a spelling error and fights the
+code styling; a plain `<code>` inherits whatever the platform already uses for
+inline code and looks right in Jupyter, Colab and VS Code alike. The `title` is
+what carries the hover doc, and the cursor is the only affordance for it, so
+keep both. Note the escaping: in a double-quoted Python string the attribute
+quotes have to be `\"`, or the string ends early and the generator will not
+parse.
+
 ## The site pages
 
 ```bash
@@ -139,6 +165,15 @@ cell with the local search path emptied, which forces the download that Google
 Colab depends on, and confirms the result matches the local files. Colab has no
 `data/` folder, so if `REPO_RAW_URL` is ever unset or wrong, every "Open in
 Colab" button on the site leads to a notebook that dies on its first cell.
+
+It also checks its own coverage: any notebook that reads a file and is **not**
+in its `NOTEBOOKS` list is a failure. Sessions 1 and 2 keep their prices in
+literal lists and so are absent on purpose; without the check, adding a loader
+to one of them would go unnoticed until a student hit it in Colab.
+
+Nothing else is needed at runtime: across all eight notebooks the only
+third-party imports are numpy, pandas and matplotlib, which Colab preinstalls,
+so no notebook needs a `pip install` cell.
 
 The `session_0N_exercises.py` and `session_0N_case.py` verifiers extract each
 folded solution and run it, so the stated answers cannot drift away from the
