@@ -313,7 +313,7 @@ q("Q5", "What the cleaning cost",
    "The lost rows are the difference. Think about which end of the sample each kind "
    "of missing row sits at."],
   "n_before = len(features)\nn_after = len(table)\nprint('rows before:', n_before)\nprint('rows after :', n_after)\nprint('lost       :', n_before - n_after)",
-  f"**{N_RAW - N_TBL} rows lost from {N_RAW:,}.** Nineteen at the start, where the "
+  f"**{N_RAW - N_TBL} rows lost from {N_RAW:,}.** Twenty at the start, where the "
   "twenty-day windows had not filled up yet, and twenty at the end, where the "
   "target reaches past the last date in the file.\n\n"
   "Neither loss is a data quality problem. Both are the price of asking a question "
@@ -593,9 +593,9 @@ md(
 "## What is still wrong with it\n\n"
 "Three things, and noticing them yourself is the point of having built it:\n\n"
 "- **The rows are not independent.** Consecutive days share nineteen of their "
-"twenty return observations, so 2,457 rows is nowhere near 2,457 independent "
-"pieces of evidence. Any confidence interval you computed here would be far too "
-"narrow.\n"
+f"twenty return observations, so {N_TBL:,} rows is nowhere near {N_TBL:,} "
+"independent pieces of evidence. Any confidence interval you computed here would "
+"be far too narrow.\n"
 "- **One split is one experiment.** You chose the end of 2022 because it was "
 "convenient. A different cut could easily give a different verdict.\n"
 "- **The regimes differ.** The training years contain a crash and the test years "

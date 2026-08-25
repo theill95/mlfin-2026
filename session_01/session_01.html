@@ -542,7 +542,7 @@ Compute this week’s return
 
 <section id="running-a-cell" class="title-slide slide level1 center">
 <h1>Running a cell</h1>
-<p>Click a cell and press <strong>Shift + Enter</strong>. The cell runs and shows the value of its <strong>last line</strong> — only the last one.</p>
+<p>Click into a code cell and press <strong>Ctrl + Enter</strong>. The cell runs and shows the value of its <strong>last line</strong>, and only the last one.</p>
 <p>These slides run Python too. Run this: just one number appears.</p>
 <div>
 <div id="pyodide-1" class="exercise-cell">
@@ -553,7 +553,49 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 </script>
 </div>
 <div class="muted small">
-<p>A real Python cell, running in your browser. Change the numbers and run it again. The same thing works identically in Colab.</p>
+<p>A real Python cell, running in your browser. Change the numbers and run it again. Clicking <strong>Run</strong> does exactly the same thing.</p>
+</div>
+</section>
+
+<section id="the-keys-that-run-a-cell" class="title-slide slide level1 center">
+<h1>The keys that run a cell</h1>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>key</th>
+<th>what it does</th>
+<th>where</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Ctrl + Enter</code></td>
+<td>runs the cell, stays put</td>
+<td>everywhere, including these slides</td>
+</tr>
+<tr class="even">
+<td><code>Shift + Enter</code></td>
+<td>runs the cell, moves to the next</td>
+<td>Colab, Jupyter, VS Code</td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
+<p>On a Mac, use <strong>Cmd</strong> in place of <strong>Ctrl</strong>.</p>
+<div class="callout callout-note callout-style-simple">
+<div class="callout-body">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-content">
+<p><code>Shift + Enter</code> is the habit most people settle into in Colab. The little editor built into these slides is the one place it does nothing at all, so here use <code>Ctrl + Enter</code> or the <strong>Run</strong> button.</p>
+</div>
+</div>
 </div>
 </section>
 
@@ -723,7 +765,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIi
 
 <section id="naming-your-judgment" class="title-slide slide level1 center">
 <h1>Naming: your judgment</h1>
-<p>Both are legal. Only one will make sense to you next week:</p>
+<p>Both are legal. Only one will make sense to you next month:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> <span class="fl">0.0212</span></span>
 <span id="cb1-2"><a href="" aria-hidden="true" tabindex="-1"></a>weekly_return <span class="op">=</span> <span class="fl">0.0212</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="keypoint">
@@ -1488,7 +1530,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 </script>
 </div>
 <div class="muted small">
-<p>Apple lost about three-quarters of a percent on the first trading day of 2024.</p>
+<p>Apple lost about three-quarters of a percent on 3 January, its second trading day of 2024. A return always belongs to the <em>later</em> of the two days.</p>
 </div>
 </section>
 
@@ -1524,14 +1566,14 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <section id="two-lists-kept-in-step" class="title-slide slide level1 center">
 <h1>Two lists, kept in step</h1>
 <div class="keypoint">
-<p>Dates in one list, prices in another, connected only by position. Next week a data <strong>table</strong> keeps them in one object, so they can never drift apart.</p>
+<p>Dates in one list, prices in another, connected only by position. In Session 3 a data <strong>table</strong> keeps them in one object, so they can never drift apart.</p>
 </div>
 <p>That single idea — many aligned columns in one structure — is what makes pandas, and everything after it, possible.</p>
 </section>
 
 <section id="the-year-that-week-came-from" class="title-slide slide level1 center">
 <h1>The year that week came from</h1>
-<div id="97ca7de1" class="cell" data-execution_count="1">
+<div id="ede81c2f" class="cell" data-execution_count="1">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>

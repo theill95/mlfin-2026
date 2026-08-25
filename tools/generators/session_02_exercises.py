@@ -1503,9 +1503,10 @@ checkpoint("you can find a function you were never taught, read its signature, a
 # =========================================== M. Still yours from Session 1
 section(
 "## \U0001f501 M · Still yours from Session 1\n\n"
-"*Nothing here is new. Every one of these needs a Session 1 tool, used inside a "
-"Session 2 loop. That combination is what the case runs on, and it is what the "
-"exam asks for.*\n\n"
+"*Almost nothing here is new. Every one of these needs a Session 1 tool, used "
+"inside a Session 2 loop. That combination is what the case runs on, and it is "
+"what the exam asks for. One task needs a string method nobody has shown you, "
+"and the hint hands it over: after section L, that should feel normal.*\n\n"
 "**Drills:** f-strings inside a loop, string methods on messy input, slicing a "
 "window, and the float trap that catches everybody once."
 )

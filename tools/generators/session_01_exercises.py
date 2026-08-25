@@ -701,7 +701,7 @@ headline''',
 
 ex("F5", "How much of the name?", 3,
 r"""For `name = "Coca-Cola Company"`, compute the fraction of its characters that are a lowercase
-`"o"`, and show it as a percentage (for example `17.65%`). You will need a method *and* a
+`"o"`, and show it as a percentage formatted like `12.34%`. You will need a method *and* a
 function.""",
 '''name = "Coca-Cola Company"
 
@@ -1215,10 +1215,12 @@ f"`'Compounded: {((1+0.012)*(1-0.004)*(1+0.008)*(1-0.011) - 1):.2%}'`, against a
 
 ex("I9", "The one-line risk report", 4,
 r"""The capstone. From one week of closes, build a **single** formatted line reporting the week's return
-(as a percent), the average price (2 decimals), and the highest and lowest prices. Aim for something
-like:
+(as a percent), the average price (2 decimals), and the highest and lowest prices.
 
-`Week 3.68% | avg 74.10 | high 76.00 | low 70.50`""",
+Match this *shape* exactly. The numbers below come from a different week, so do not expect yours to
+agree with them:
+
+`Week 2.14% | avg 55.30 | high 57.10 | low 53.90`""",
 '''closes = [71.2, 72.0, 70.5, 73.1, 74.4, 73.9, 75.2, 74.8, 76.0, 75.5]
 
 week_return = ...

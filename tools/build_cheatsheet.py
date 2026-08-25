@@ -61,7 +61,7 @@ e("**", "To the power of. Compound growth, and square roots as ** 0.5.",
   '1.07 ** 10')
 e("round(number, ndigits)", "Round to a number of decimals.",
   'round(0.014287, 4)')
-e("abs(number)", "Distance from zero, sign discarded.", 'abs(-0.0482)')
+e("abs(number)", "Distance from zero, sign discarded.", 'abs(-0.0482)', since="S2")
 
 section("Text")
 e('"text"', "A string. Single or double quotes, as long as they match.",
@@ -74,14 +74,23 @@ e('f"{r:.2%}"', "As a percentage with 2 decimals. The recipe for returns.",
   'r = 0.014287\nf"{r:.2%}"')
 e('f"{x:.2f}"', "As a plain number with 2 decimals. The recipe for prices.",
   'f"{183.5622:.2f}"')
+e('f"{name:<6}"  f"{x:>7.1%}"', "A field width: pad left-aligned text, or right-align a number, so a column of output lines up.",
+  'vol = {"AAPL": 0.0141, "KO": 0.0080}\nfor t in vol:\n    print(f"{t:<6}{vol[t]:>7.2%}")',
+  since="S2")
+e("text.upper()  .lower()", "A copy of the string in one case. Tickers arrive in every mixture of both.",
+  '"aapl".upper()')
+e("text.strip()", "A copy with the spaces at each end removed. The first thing you do to text from a file.",
+  '"  aapl ".strip().upper()', since="S2")
+e("text.count(part)", "How many times a piece of text appears inside a string.",
+  '"Coca-Cola Company".count("o")')
 
 section("True and false")
 e("==  !=", "Equal, and not equal. Two equals signs, because one assigns.",
   '"AAPL" == "KO"')
 e("<  >  <=  >=", "The usual comparisons. The answer is True or False.",
   '0.0331 > 0.0141')
-e("and  or  not", "Combine conditions.",
-  'r = -0.02\nr < 0 and r > -0.05')
+e("and  or  not", "Combine conditions. In pandas the same job is done by & and |.",
+  'r = -0.02\nr < 0 and r > -0.05', since="S2")
 
 section("Types")
 e("type(value)", "What kind of thing this is.", 'type(0.0143)')
@@ -97,9 +106,14 @@ e("sum(numbers)", "Add them all up.", 'sum([0.012, -0.004, 0.008])')
 e("min(values)  max(values)", "Smallest and largest.",
   'print(min(closes), max(closes))')
 e("sorted(values)", "A new list, in order. The original is untouched.",
-  'sorted([0.03, 0.01, 0.02])')
+  'sorted([0.03, 0.01, 0.02])', since="S2")
 e("range(start, stop)", "Whole numbers from start up to but NOT including stop.",
-  'list(range(1, 5))')
+  'list(range(1, 5))', since="S2")
+e("enumerate(items)", "The position and the value together, so you need no counter of your own.",
+  'for i, r in enumerate([0.012, -0.004]):\n    print(i, r)', since="S2")
+e("zip(a, b)", "Walk two lists in step, with no indexing. Stops at the shorter one.",
+  'for d, c in zip(["Jan 02", "Jan 03"], [183.56, 182.19]):\n    print(d, c)',
+  since="S2")
 e("help(thing)", "Print the documentation. Works offline.",
   'help(round)', since="S2")
 e("dir(thing)", "List everything an object can do. Useful when you half-remember a name.",
@@ -159,6 +173,13 @@ e("data[key] = value", "Add a new key, or overwrite an existing one.",
   'vol = {"AAPL": 0.0143}\nvol["NVDA"] = 0.0331\nvol', since="S2")
 e("for key in data:", "Loop over the keys. Read each value with data[key].",
   'vol = {"AAPL": 0.0143, "KO": 0.0080}\nfor t in vol:\n    print(t, vol[t])', since="S2")
+e("data.keys()  data.values()", "The names on their own, or the numbers on their own. max, min, sum and for all accept them.",
+  'vol = {"AAPL": 0.0143, "KO": 0.0080, "NVDA": 0.0331}\nmax(vol.values())', since="S2")
+e("data.items()", "The key and the value together, so you need no lookup. Name two variables in the for line.",
+  'vol = {"AAPL": 0.0143, "KO": 0.0080}\nfor t, v in vol.items():\n    print(t, f"{v:.2%}")',
+  since="S2")
+e("{}", "An empty dictionary, ready for a loop to fill. The counterpart of [].",
+  'out = {}\nout["AAPL"] = 0.0141\nout', since="S2")
 
 section("Packages")
 e("import numpy as np", "Bring a package in under a short name. np, pd and plt are conventions everybody uses.",
@@ -225,6 +246,9 @@ e("s * 2", "Maths applies to every value, and the labels come along.",
   'pd.Series({"AAPL": 0.0143, "KO": 0.0080}) * np.sqrt(252)', since="S3")
 e("s.mean()  .std()  .min()  .max()", "A Series summarises itself, like an array.",
   'wide["AAPL"].mean()', since="S3")
+e("s.median()", "The middle value. Compare it with the mean: a gap between them means a skewed tail.",
+  'r = wide["AAPL"].pct_change().dropna()\nround(r.mean(), 5), round(r.median(), 5)',
+  since="S4")
 e("s.sort_values()", "In order. ascending=False for largest first.",
   's = pd.Series({"AAPL": 0.0143, "KO": 0.0080, "NVDA": 0.0331})\ns.sort_values(ascending=False)',
   since="S3")
@@ -330,6 +354,11 @@ e("s.rolling(20).mean()", "A feature over the last twenty rows. It only ever loo
   'r = wide["AAPL"].pct_change()\nr.rolling(20).std().tail(2).round(4)', since="S4")
 e("(s > 0).astype(int)", "Turn a number into a 0/1 label, which turns a regression into a classification.",
   'r = wide["AAPL"].pct_change()\n(r.shift(-1) > 0).astype(int).tail(4)', since="S4")
+e("s.corr(other)", "How strongly two columns move together, between -1 and +1. A feature that correlates almost perfectly with the target is a leak, not a discovery.",
+  'r = wide["AAPL"].pct_change()\nt = pd.DataFrame({"vol": r.rolling(20).std(),\n                  "target": r.rolling(20).std().shift(-20)}).dropna()\nround(t["vol"].corr(t["target"]), 3)',
+  since="S4")
+e("s.diff()", "The difference between each row and the one before it. On logged prices this is the log return.",
+  'np.log(wide["AAPL"]).diff().tail(2).round(4)', since="S4")
 e("n and p", "The two numbers that describe a learning problem: observations, and feature columns. The target is not a feature.",
   'r = wide["AAPL"].pct_change()\nt = pd.DataFrame({"vol": r.rolling(20).std(),\n                  "target": r.shift(-1)}).dropna()\n(t.shape[0], t.shape[1] - 1)',
   since="S4")

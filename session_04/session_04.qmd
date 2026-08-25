@@ -1096,8 +1096,7 @@ daily = wide.reindex(calendar)
 
 print("rows before:", len(wide))
 print("rows after :", len(daily))
-print()
-print(daily.isna().sum().head(4).to_string())
+print(daily.isna().sum().head(3).to_string())
 ```
 
 ::: {.muted .small}
@@ -1220,9 +1219,10 @@ Interpolation wins, because it draws a line between the price **before** the gap
 and the price **after** it.
 
 ::: {.keypoint}
-On 3 May you would not have known 8 May's price. Interpolation quietly puts
-tomorrow's information into today's row, and every result built on it is
-optimistic. **Forward fill only ever looks backwards.**
+Standing on 8 May you would not have known 9 May's price, and that is the price
+the interpolated value is drawn from. Interpolation quietly puts tomorrow's
+information into today's row, and every result built on it is optimistic.
+**Forward fill only ever looks backwards.**
 :::
 
 
@@ -1268,8 +1268,9 @@ fig.tight_layout()
 plt.show()
 ```
 
-Most of them are in March 2020, and they are not mistakes. **The worst day was
--12.9%, the best was +12.0%, and they were eleven days apart.**
+Most of them are in March 2020, and they are not mistakes. **The best day was
++12.0% and the worst was -12.9%, on the Friday and the Monday of the same
+weekend.**
 
 
 # An error, or the whole point?
@@ -1622,7 +1623,7 @@ actual = rets["AAPL"].dropna()
 predicted = 0.00043 + 1.2073 * market
 resid = actual - predicted
 
-pd.DataFrame({"actual": actual, "predicted": predicted, "resid": resid}).tail(4)
+pd.DataFrame({"actual": actual, "predicted": predicted, "resid": resid}).tail(3)
 ```
 
 
@@ -2145,7 +2146,7 @@ plt.show()
 ```
 
 Demand a score above +1% before calling a day up, and precision climbs to
-**91%** while recall collapses to **30%**.
+**91%** while recall collapses to **33%**.
 
 
 # One number, if you must have one

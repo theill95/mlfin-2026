@@ -887,7 +887,7 @@ Values can be anything, including whole price series:
 ```{pyodide}
 prices = {
     "AAPL": [183.56, 182.19, 179.87],
-    "KO": [59.20, 59.05, 59.40],
+    "KO": [55.64, 55.77, 55.58],
 }
 prices["KO"]
 ```
@@ -1032,12 +1032,13 @@ This calls the `volatility` function defined on the previous slide.
 The same function, a different list:
 
 ```{pyodide}
-ko = [59.20, 59.05, 59.40, 59.10, 59.25]
+ko = [55.64, 55.77, 55.58, 55.50, 55.91]
 volatility(ko)
 ```
 
 ::: {.muted .small}
-A smaller number than Apple's: Coca-Cola's price moved less from day to day.
+Coca-Cola's real closes for the same five days. A much smaller number than
+Apple's: this price moved less from day to day.
 :::
 
 

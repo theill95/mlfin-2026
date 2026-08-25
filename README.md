@@ -5,8 +5,7 @@ to finance and economics students. The course assumes econometrics (OLS) but
 **no prior Python or machine-learning experience**, and begins in Google
 Colab.
 
-Each session is a single self-contained folder. Sessions 1 to 3 are complete;
-later sessions are added as the course is built.
+Each session is a single self-contained folder. All four sessions are complete.
 
 ## Live site
 
@@ -111,8 +110,10 @@ separate lecture notebook.
 ## Running the presentation
 
 The rendered `session_01/session_01.html` opens in any modern browser and
-supports keyboard navigation (arrow keys, `f` for fullscreen, `s` for the
-speaker view, `Esc` for the slide overview).
+supports keyboard navigation: arrow keys, `f` for fullscreen, `s` for the
+speaker view, `m` for a menu of every slide by title, and `e` to lay the whole
+deck out as one scrollable page (which is also how you print it to PDF).
+Inside a code cell, `Ctrl+Enter` runs it; `Shift+Enter` does nothing there.
 
 **Serve it over HTTP, do not open it from a `file://` path.** The lecture's
 code cells are **live and editable** — you can run and change them in front of

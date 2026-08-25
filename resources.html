@@ -57,7 +57,9 @@
         &nbsp;arrays and linear algebra. Start with
         <a href="https://numpy.org/doc/stable/user/absolute_beginners.html" target="_blank" rel="noopener">NumPy for absolute beginners</a>.</li>
     <li><a href="https://pandas.pydata.org/docs/" target="_blank" rel="noopener">pandas.pydata.org/docs</a>
-        &nbsp;tables. The
+        &nbsp;tables. Start with
+        <a href="https://pandas.pydata.org/docs/user_guide/10min.html" target="_blank" rel="noopener">10 minutes to pandas</a>,
+        which covers most of Session 3 in one page. The
         <a href="https://pandas.pydata.org/pandas-docs/stable/user_guide/index.html" target="_blank" rel="noopener">user guide</a>
         explains the ideas; the API reference is what you look details up in.</li>
     <li><a href="https://matplotlib.org/stable/gallery/index.html" target="_blank" rel="noopener">The matplotlib gallery</a>
@@ -91,11 +93,38 @@
         <strong>chapter 2</strong> closely: sections 2.1 and 2.2 cover the statistical
         learning framework, the reducible and irreducible error, the assessment of model
         accuracy and the bias-variance trade-off, in the same order the lecture does. If you
-        read one thing beyond the slides, read that chapter.</li>
+        read one thing beyond the slides, read that chapter. The same site carries the
+        book's <strong>Python labs</strong>, which are the worked code behind each
+        chapter and a good second look at anything the lecture went past quickly.</li>
     <li><a href="https://wesmckinney.com/book/" target="_blank" rel="noopener"><strong>Python for Data Analysis</strong></a>
         (Wes McKinney, who wrote pandas). Free to read online. The chapters on NumPy and
         pandas are the natural next step after Session 3.
         <span class="tag tag-extra">extra</span></li>
+  </ul>
+
+  <h2 id="stuck">When something has not clicked <span class="tag tag-need">needed</span></h2>
+  <p>Almost every beginner gets stuck in the same two places: what a variable actually
+     holds after a line runs, and what a loop is doing on each pass. Reading the code
+     again rarely fixes either. Watching it run does.</p>
+  <ul class="plain">
+    <li><a href="https://pythontutor.com/python-compiler.html" target="_blank" rel="noopener"><strong>Python Tutor</strong></a>
+        &nbsp;paste in a short piece of code and step through it one line at a time. It
+        draws every variable as it changes, and the arrows from names to values are the
+        picture the Session 1 slides use. Free, in the browser, nothing to install. Twenty
+        lines is about the limit, which is exactly the size of the exercises.</li>
+    <li><strong><code>print</code> is the other debugger.</strong> When a loop gives the
+        wrong answer, put a <code>print</code> inside it and run it once. Seeing the wrong
+        value appear on the pass where it first goes wrong is usually the whole diagnosis.</li>
+  </ul>
+
+  <h2 id="offline-revision">Revising away from a screen <span class="tag tag-extra">extra</span></h2>
+  <p>Both of the course's own reference pages print cleanly, which is worth knowing before
+     an offline exam.</p>
+  <ul class="plain">
+    <li>The <a href="cheatsheet.html">cheatsheet</a>: <code>Ctrl+P</code> saves it as a PDF
+        with the menus dropped out.</li>
+    <li>Any lecture: press <kbd>e</kbd> to lay the whole deck out as one long page, then
+        <code>Ctrl+P</code>. The code cells print as code, so you keep the examples.</li>
   </ul>
 
   <h2 id="practice">More practice <span class="tag tag-extra">extra</span></h2>

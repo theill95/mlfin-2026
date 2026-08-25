@@ -487,10 +487,12 @@ Then add a closing line naming the riskiest and calmest stock.""",
 
 summary = ...
 print(summary)''',
-['Inside the loop, `print(ticker, f"vol {vol[ticker]:.2%}")` is enough.',
+['Inside the loop, one f-string does it: the ticker, then its volatility. Exercise M1 showed how to '
+ 'line the columns up, with `f"{ticker:<6}"` for a name padded to six characters.',
+ '`print(f"{ticker:<6}vol {vol[ticker]:.2%}")`, then '
  '`summary = f"Riskiest: {riskiest} | Calmest: {calmest}"`, reusing what Q9 stored.'],
 '''for ticker in vol:
-    print(ticker, f"vol {vol[ticker]:.2%}")
+    print(f"{ticker:<6}vol {vol[ticker]:.2%}")
 
 summary = f"Riskiest: {riskiest} | Calmest: {calmest}"
 print(summary)''',

@@ -195,8 +195,9 @@ q("Q3", "Apple again, the short way",
   "Both give **{:.4f}**. Two loops, an empty list and a function of your own, "
   "replaced by `.pct_change().std()`.\n\n"
   "*Compare more decimals and they differ very slightly. Your Part 2 function "
-  "divided by $n$; pandas divides by $n-1$ by default. On 251 returns that moves "
-  "the fifth decimal, and neither is wrong.*".format(VOL["AAPL"]))
+  "divided by $n$; pandas divides by $n-1$ by default. On 251 returns that is a "
+  "difference of about 0.2%, enough to change the fourth decimal of some stocks "
+  "and neither version is wrong.*".format(VOL["AAPL"]))
 
 # ==================================================================== Q4
 q("Q4", "All eleven at once",
@@ -208,8 +209,8 @@ q("Q4", "All eleven at once",
    "ascending=False)` puts the riskiest at the top."],
   "vol = p24.pct_change().std().sort_values(ascending=False)\nvol",
   "Eleven answers, one line. Nvidia at **{:.4f}** is more than four times as "
-  "volatile as the calmest thing in the table. Your five Part 2 numbers are all in "
-  "here, unchanged.".format(VOL.iloc[0]))
+  "volatile as the calmest thing in the table. All five of your Part 2 numbers are "
+  "in here too, up to the $n$ against $n-1$ rounding Q3 explained.".format(VOL.iloc[0]))
 
 # ==================================================================== Q5
 q("Q5", "Check it a second way",
@@ -255,10 +256,12 @@ q("Q6", "The ranking that put the index first",
   "**returns**. SPY trades near 600 dollars a share and Coca-Cola near 60, so the "
   "ranking they produced is essentially a ranking by share price. Nothing about "
   "risk is in it at all.\n\n"
-  "The units were the clue, and they usually are. A volatility of 598 is not a "
-  "number that can mean anything: a stock cannot move 598% a year and still be "
-  "there in the morning. **When a result is off by orders of magnitude, check what "
-  "you took the statistic *of* before you check the arithmetic.**")
+  "The units were the clue, and they usually are. Yours are decimal fractions of a "
+  "price, so 0.126 reads as 12.6% a year. Theirs are dollars, and 598 of them, "
+  "which is not a volatility at all: read on the same scale it would be a stock "
+  "moving by nearly six hundred times its own value in a year. **When a result is "
+  "off by orders of magnitude, check what you took the statistic *of* before you "
+  "check the arithmetic.**")
 
 # ==================================================================== Q7
 q("Q7", "Put it in the units the desk uses",
@@ -305,7 +308,8 @@ q("Q9", "A loop, a dictionary, and a Series",
   ["Inside the first loop: `by_hand[ticker] = volatility(p24[ticker])`.",
    "Afterwards, `pd.Series(by_hand).sort_values(ascending=False)` turns the "
    "dictionary into the same object `annual_vol` is.",
-   "For the report, loop over `by_hand.index` and use the Session 1 recipe: "
+   "For the report, loop over `by_hand.index` and use the f-string with widths "
+   "from the Session 2 exercises: "
    '`print(f"{ticker:<6}{by_hand[ticker]:>7.1%}")`.'],
   "by_hand = {}\nfor ticker in TICKERS:\n    by_hand[ticker] = volatility(p24[ticker])\n\n"
   "by_hand = pd.Series(by_hand).sort_values(ascending=False)\n\n"

@@ -285,8 +285,8 @@ nothing to install. You need only a Google account.
 
 # Running a cell
 
-Click a cell and press **Shift + Enter**. The cell runs and shows the value of
-its **last line** — only the last one.
+Click into a code cell and press **Ctrl + Enter**. The cell runs and shows the
+value of its **last line**, and only the last one.
 
 These slides run Python too. Run this: just one number appears.
 
@@ -297,7 +297,25 @@ These slides run Python too. Run this: just one number appears.
 
 ::: {.muted .small}
 A real Python cell, running in your browser. Change the numbers and run it
-again. The same thing works identically in Colab.
+again. Clicking **Run** does exactly the same thing.
+:::
+
+
+# The keys that run a cell
+
+| key | what it does | where |
+|---|---|---|
+| `Ctrl + Enter` | runs the cell, stays put | everywhere, including these slides |
+| `Shift + Enter` | runs the cell, moves to the next | Colab, Jupyter, VS Code |
+
+<br>
+
+On a Mac, use **Cmd** in place of **Ctrl**.
+
+::: {.callout-note appearance="simple"}
+`Shift + Enter` is the habit most people settle into in Colab. The little
+editor built into these slides is the one place it does nothing at all, so
+here use `Ctrl + Enter` or the **Run** button.
 :::
 
 
@@ -460,7 +478,7 @@ Python **requires**:
 
 # Naming: your judgment
 
-Both are legal. Only one will make sense to you next week:
+Both are legal. Only one will make sense to you next month:
 
 ```python
 x = 0.0212
@@ -1193,7 +1211,8 @@ closes = [183.56, 182.19, 179.87, 179.15, 183.48]
 ```
 
 ::: {.muted .small}
-Apple lost about three-quarters of a percent on the first trading day of 2024.
+Apple lost about three-quarters of a percent on 3 January, its second trading
+day of 2024. A return always belongs to the *later* of the two days.
 :::
 
 
@@ -1232,7 +1251,7 @@ same position in the other list.
 # Two lists, kept in step
 
 ::: {.keypoint}
-Dates in one list, prices in another, connected only by position. Next week a
+Dates in one list, prices in another, connected only by position. In Session 3 a
 data **table** keeps them in one object, so they can never drift apart.
 :::
 

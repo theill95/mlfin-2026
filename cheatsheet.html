@@ -126,7 +126,7 @@ total</code></pre>
       </div>
     </div>
     <div class="cs-entry">
-      <div class="cs-call"><span class="cs-since">Session 1</span>abs(number)</div>
+      <div class="cs-call"><span class="cs-since">Session 2</span>abs(number)</div>
       <div class="cs-what">Distance from zero, sign discarded.</div>
       <div class="cs-demo">
         <pre><code>abs(-0.0482)</code></pre>
@@ -179,6 +179,41 @@ f&quot;{r:.2%}&quot;</code></pre>
         <div class="cs-out">&#x27;183.56&#x27;</div>
       </div>
     </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>f&quot;{name:&lt;6}&quot;  f&quot;{x:&gt;7.1%}&quot;</div>
+      <div class="cs-what">A field width: pad left-aligned text, or right-align a number, so a column of output lines up.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0141, &quot;KO&quot;: 0.0080}
+for t in vol:
+    print(f&quot;{t:&lt;6}{vol[t]:&gt;7.2%}&quot;)</code></pre>
+        <div class="cs-out">AAPL    1.41%
+KO      0.80%</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>text.upper()  .lower()</div>
+      <div class="cs-what">A copy of the string in one case. Tickers arrive in every mixture of both.</div>
+      <div class="cs-demo">
+        <pre><code>&quot;aapl&quot;.upper()</code></pre>
+        <div class="cs-out">&#x27;AAPL&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>text.strip()</div>
+      <div class="cs-what">A copy with the spaces at each end removed. The first thing you do to text from a file.</div>
+      <div class="cs-demo">
+        <pre><code>&quot;  aapl &quot;.strip().upper()</code></pre>
+        <div class="cs-out">&#x27;AAPL&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>text.count(part)</div>
+      <div class="cs-what">How many times a piece of text appears inside a string.</div>
+      <div class="cs-demo">
+        <pre><code>&quot;Coca-Cola Company&quot;.count(&quot;o&quot;)</code></pre>
+        <div class="cs-out">3</div>
+      </div>
+    </div>
   </section>
   <section class="cs-section" id="true-and-false">
     <h2>True and false</h2>
@@ -199,8 +234,8 @@ f&quot;{r:.2%}&quot;</code></pre>
       </div>
     </div>
     <div class="cs-entry">
-      <div class="cs-call"><span class="cs-since">Session 1</span>and  or  not</div>
-      <div class="cs-what">Combine conditions.</div>
+      <div class="cs-call"><span class="cs-since">Session 2</span>and  or  not</div>
+      <div class="cs-what">Combine conditions. In pandas the same job is done by &amp; and |.</div>
       <div class="cs-demo">
         <pre><code>r = -0.02
 r &lt; 0 and r &gt; -0.05</code></pre>
@@ -264,7 +299,7 @@ print(x)</code></pre>
       </div>
     </div>
     <div class="cs-entry">
-      <div class="cs-call"><span class="cs-since">Session 1</span>sorted(values)</div>
+      <div class="cs-call"><span class="cs-since">Session 2</span>sorted(values)</div>
       <div class="cs-what">A new list, in order. The original is untouched.</div>
       <div class="cs-demo">
         <pre><code>sorted([0.03, 0.01, 0.02])</code></pre>
@@ -272,11 +307,31 @@ print(x)</code></pre>
       </div>
     </div>
     <div class="cs-entry">
-      <div class="cs-call"><span class="cs-since">Session 1</span>range(start, stop)</div>
+      <div class="cs-call"><span class="cs-since">Session 2</span>range(start, stop)</div>
       <div class="cs-what">Whole numbers from start up to but NOT including stop.</div>
       <div class="cs-demo">
         <pre><code>list(range(1, 5))</code></pre>
         <div class="cs-out">[1, 2, 3, 4]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>enumerate(items)</div>
+      <div class="cs-what">The position and the value together, so you need no counter of your own.</div>
+      <div class="cs-demo">
+        <pre><code>for i, r in enumerate([0.012, -0.004]):
+    print(i, r)</code></pre>
+        <div class="cs-out">0 0.012
+1 -0.004</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>zip(a, b)</div>
+      <div class="cs-what">Walk two lists in step, with no indexing. Stops at the shorter one.</div>
+      <div class="cs-demo">
+        <pre><code>for d, c in zip([&quot;Jan 02&quot;, &quot;Jan 03&quot;], [183.56, 182.19]):
+    print(d, c)</code></pre>
+        <div class="cs-out">Jan 02 183.56
+Jan 03 182.19</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -553,6 +608,36 @@ for t in vol:
 KO 0.008</div>
       </div>
     </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>data.keys()  data.values()</div>
+      <div class="cs-what">The names on their own, or the numbers on their own. max, min, sum and for all accept them.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080, &quot;NVDA&quot;: 0.0331}
+max(vol.values())</code></pre>
+        <div class="cs-out">0.0331</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>data.items()</div>
+      <div class="cs-what">The key and the value together, so you need no lookup. Name two variables in the for line.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080}
+for t, v in vol.items():
+    print(t, f&quot;{v:.2%}&quot;)</code></pre>
+        <div class="cs-out">AAPL 1.43%
+KO 0.80%</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>{}</div>
+      <div class="cs-what">An empty dictionary, ready for a loop to fill. The counterpart of [].</div>
+      <div class="cs-demo">
+        <pre><code>out = {}
+out[&quot;AAPL&quot;] = 0.0141
+out</code></pre>
+        <div class="cs-out">{&#x27;AAPL&#x27;: 0.0141}</div>
+      </div>
+    </div>
   </section>
   <section class="cs-section" id="packages">
     <h2>Packages</h2>
@@ -562,7 +647,7 @@ KO 0.008</div>
       <div class="cs-demo">
         <pre><code>import numpy as np
 np.sqrt(144)</code></pre>
-        <div class="cs-out">12.0</div>
+        <div class="cs-out">np.float64(12.0)</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -615,7 +700,7 @@ close</code></pre>
       <div class="cs-what">The average.</div>
       <div class="cs-demo">
         <pre><code>returns.mean()</code></pre>
-        <div class="cs-out">-7.66487498582262e-06</div>
+        <div class="cs-out">np.float64(-7.66487498582262e-06)</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -623,7 +708,7 @@ close</code></pre>
       <div class="cs-what">The standard deviation. This is what volatility is.</div>
       <div class="cs-demo">
         <pre><code>returns.std()</code></pre>
-        <div class="cs-out">0.014300824856182554</div>
+        <div class="cs-out">np.float64(0.014300824856182554)</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -639,7 +724,7 @@ close</code></pre>
       <div class="cs-what">Square root. np.sqrt(252) annualises a daily volatility.</div>
       <div class="cs-demo">
         <pre><code>0.0143 * np.sqrt(252)</code></pre>
-        <div class="cs-out">0.2270054624893419</div>
+        <div class="cs-out">np.float64(0.2270054624893419)</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -655,7 +740,7 @@ close</code></pre>
       <div class="cs-what">Count the Trues, because True counts as 1.</div>
       <div class="cs-demo">
         <pre><code>(returns &gt; 0).sum()</code></pre>
-        <div class="cs-out">1</div>
+        <div class="cs-out">np.int64(1)</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -663,7 +748,7 @@ close</code></pre>
       <div class="cs-what">The share that are True.</div>
       <div class="cs-demo">
         <pre><code>(returns &gt; 0).mean()</code></pre>
-        <div class="cs-out">0.25</div>
+        <div class="cs-out">np.float64(0.25)</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -731,7 +816,7 @@ X.T.shape</code></pre>
       <div class="cs-what">Matrix multiplication. For two vectors this is the dot product.</div>
       <div class="cs-demo">
         <pre><code>np.array([0.5, 0.3, 0.2]) @ np.array([0.012, -0.004, 0.031])</code></pre>
-        <div class="cs-out">0.011000000000000001</div>
+        <div class="cs-out">np.float64(0.011000000000000001)</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -795,7 +880,7 @@ dtype: float64</div>
       <div class="cs-demo">
         <pre><code>s = pd.Series({&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080})
 s[&quot;AAPL&quot;]</code></pre>
-        <div class="cs-out">0.0143</div>
+        <div class="cs-out">np.float64(0.0143)</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -813,7 +898,16 @@ dtype: float64</div>
       <div class="cs-what">A Series summarises itself, like an array.</div>
       <div class="cs-demo">
         <pre><code>wide[&quot;AAPL&quot;].mean()</code></pre>
-        <div class="cs-out">205.45739523809527</div>
+        <div class="cs-out">np.float64(205.45739523809527)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.median()</div>
+      <div class="cs-what">The middle value. Compare it with the mean: a gap between them means a skewed tail.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change().dropna()
+round(r.mean(), 5), round(r.median(), 5)</code></pre>
+        <div class="cs-out">(np.float64(0.00131), np.float64(0.0016))</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -1258,7 +1352,7 @@ ax.legend()
         <pre><code>fig, ax = plt.subplots()
 ax.set_ylim(0, 0.55)
 ax.get_ylim()</code></pre>
-        <div class="cs-out">(0.0, 0.55)</div>
+        <div class="cs-out">(np.float64(0.0), np.float64(0.55))</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -1317,7 +1411,29 @@ Name: AAPL, dtype: float64</div>
 2024-12-27    0
 2024-12-30    0
 2024-12-31    0
-Name: AAPL, dtype: int32</div>
+Name: AAPL, dtype: int64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.corr(other)</div>
+      <div class="cs-what">How strongly two columns move together, between -1 and +1. A feature that correlates almost perfectly with the target is a leak, not a discovery.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change()
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std(),
+                  &quot;target&quot;: r.rolling(20).std().shift(-20)}).dropna()
+round(t[&quot;vol&quot;].corr(t[&quot;target&quot;]), 3)</code></pre>
+        <div class="cs-out">np.float64(0.129)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.diff()</div>
+      <div class="cs-what">The difference between each row and the one before it. On logged prices this is the log return.</div>
+      <div class="cs-demo">
+        <pre><code>np.log(wide[&quot;AAPL&quot;]).diff().tail(2).round(4)</code></pre>
+        <div class="cs-out">date
+2024-12-30   -0.0134
+2024-12-31   -0.0071
+Name: AAPL, dtype: float64</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -1446,7 +1562,7 @@ Name: AAPL, dtype: float64</div>
         <pre><code>r = wide[&quot;AAPL&quot;].pct_change().dropna()
 z = (r - r.mean()) / r.std()
 round(z.mean(), 8), round(z.std(), 4)</code></pre>
-        <div class="cs-out">(0.0, 1.0)</div>
+        <div class="cs-out">(np.float64(0.0), np.float64(1.0))</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -1471,7 +1587,7 @@ pd.get_dummies(f, columns=[&quot;sector&quot;], dtype=int)</code></pre>
         <pre><code>y = np.array([2.0, 4.0, 6.0, 8.0])
 p = np.array([3.0, 4.0, 5.0, 11.0])
 np.abs(y - p).mean()</code></pre>
-        <div class="cs-out">1.25</div>
+        <div class="cs-out">np.float64(1.25)</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -1481,7 +1597,7 @@ np.abs(y - p).mean()</code></pre>
         <pre><code>y = np.array([2.0, 4.0, 6.0, 8.0])
 p = np.array([3.0, 4.0, 5.0, 11.0])
 ((y - p) ** 2).mean()</code></pre>
-        <div class="cs-out">2.75</div>
+        <div class="cs-out">np.float64(2.75)</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -1491,7 +1607,7 @@ p = np.array([3.0, 4.0, 5.0, 11.0])
         <pre><code>y = np.array([2.0, 4.0, 6.0, 8.0])
 p = np.array([3.0, 4.0, 5.0, 11.0])
 np.sqrt(((y - p) ** 2).mean())</code></pre>
-        <div class="cs-out">1.6583123951777</div>
+        <div class="cs-out">np.float64(1.6583123951777)</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -1501,7 +1617,7 @@ np.sqrt(((y - p) ** 2).mean())</code></pre>
         <pre><code>y = np.array([2.0, 4.0, 6.0, 8.0])
 p = np.array([3.0, 4.0, 5.0, 11.0])
 1 - ((y - p) ** 2).sum() / ((y - y.mean()) ** 2).sum()</code></pre>
-        <div class="cs-out">0.44999999999999996</div>
+        <div class="cs-out">np.float64(0.44999999999999996)</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -1511,7 +1627,7 @@ p = np.array([3.0, 4.0, 5.0, 11.0])
         <pre><code>y = np.array([2.0, 4.0, 6.0, 8.0])
 base = np.full(len(y), y.mean())
 np.sqrt(((y - base) ** 2).mean())</code></pre>
-        <div class="cs-out">2.23606797749979</div>
+        <div class="cs-out">np.float64(2.23606797749979)</div>
       </div>
     </div>
   </section>

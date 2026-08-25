@@ -1581,7 +1581,7 @@ axi.grid(False)
 fig.text(0.085, 0.93, "Apple, ten years", fontsize=17, fontweight="600",
          color=INK)
 fig.text(0.085, 0.865,
-         "Split-adjusted close, 2015 to 2024, with drawdown from the running peak",
+         "Split- and dividend-adjusted close, 2015 to 2024, with drawdown from the running peak",
          fontsize=10.5, color="#898781")
 plt.show()
 ```
