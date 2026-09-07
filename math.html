@@ -1,0 +1,1309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maths brush-up · Machine Learning in Finance</title>
+<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+
+  <!-- nav:start -->
+  <nav class="sidenav" aria-label="Course pages">
+    <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
+    <ul>
+      <li><a href="index.html">Sessions</a></li>
+      <li><a href="cheatsheet.html">Cheatsheet</a></li>
+      <li><a href="math.html" aria-current="page">Maths brush-up</a></li>
+      <li><a href="setup.html">Setup &amp; tools</a></li>
+      <li><a href="resources.html">Resources</a></li>
+      <li><a href="downloads.html">Downloads</a></li>
+    </ul>
+    <div class="nav-foot">
+      <div class="nav-owner">Jonas Theill Bøjstrup</div>
+      <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>
+      <div class="nav-legal">Aarhus University<br>&copy; 2026 Jonas Theill Bøjstrup</div>
+    </div>
+  </nav>
+  <!-- nav:end -->
+
+  <main class="wrap" id="main">
+  <header>
+    <div class="accent"></div>
+    <div class="eyebrow">What the course assumes you have seen</div>
+    <h1>Maths brush-up</h1>
+    <p class="lede">The course assumes econometrics at the level of <em>Applied Financial
+       Econometrics</em>. That is a large course, and this page is not a summary of it. It
+       is the smaller part you need in order to <strong>read</strong> the models we use:
+       matrices, vectors, and above all the notation they are written in. Almost every
+       formula in machine learning is a weighted sum, a sum of squares, or a minimisation.
+       Once the symbols stop getting in the way, most of them say something you already
+       know.</p>
+  </header>
+
+  <div class="note">
+    <strong>This is revision, not new material.</strong> Nothing here is examined on its
+    own. It is examined every time you read a formula: in every later session, and in the
+    exam. Read it once now, then come back to the section you need. If a section is
+    <em>unfamiliar</em> rather than rusty, say so early:
+    <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
+  </div>
+
+  <div class="note warn">
+    <strong>Notation is a convention, and conventions differ.</strong> This page writes
+    vectors and matrices in bold, but that is a house style, not a law. Plenty of authors,
+    including whoever wrote your other course notes, use plain italic throughout and expect
+    you to know that \(\beta\) is a vector and \(y\) is a column of numbers. The same goes
+    for the transpose, written \(\mathbf{X}^{\top}\) here and \(X'\) elsewhere, and for
+    which letters stand for what. So do not read the typography, read the
+    <strong>object</strong>: ask what kind of thing each symbol has to be, and check that
+    the dimensions of the expression fit together. If they only fit one way, you have
+    worked out what everything is, whatever font it was set in.
+    <br><br>
+    <strong>At the exam this is not left to you.</strong> Every symbol in an exam question
+    will be stated explicitly, and the dimensions will be there to confirm it. Practising
+    the habit here is so that reading a formula in the wild, in a paper or a textbook or a
+    later course, costs you nothing either.
+  </div>
+
+  <ul class="cs-toc">
+    <li><a href="#objects">Three kinds of object</a></li>
+    <li><a href="#dimensions">Dimensions</a></li>
+    <li><a href="#indices">Indices and sums</a></li>
+    <li><a href="#vectors">Vectors</a></li>
+    <li><a href="#matrices">Matrices</a></li>
+    <li><a href="#multiplication">Matrix multiplication</a></li>
+    <li><a href="#vectorisation">Vectorisation</a></li>
+    <li><a href="#inverse">Inverses and singular matrices</a></li>
+    <li><a href="#ols">Deriving OLS</a></li>
+    <li><a href="#calculus">Derivatives and minima</a></li>
+    <li><a href="#logs">Sums, logs and the sigmoid</a></li>
+    <li><a href="#probability">Probability notation</a></li>
+    <li><a href="#distance">Distance and scale</a></li>
+    <li><a href="#objective">Reading an objective function</a></li>
+    <li><a href="#trees">Notation for trees</a></li>
+    <li><a href="#gallery">The equation gallery</a></li>
+    <li><a href="#numpy">Notation to NumPy</a></li>
+    <li><a href="#traps">Traps and look-alikes</a></li>
+    <li><a href="#check">Check yourself</a></li>
+    <li><a href="#glossary">Symbols and Greek letters</a></li>
+  </ul>
+
+  <!-- ============================================================ objects -->
+  <h2 id="objects">Three kinds of object</h2>
+  <p class="m-why">A number, a list of numbers, a table of numbers. That is the whole
+     inventory.</p>
+
+  <p>Everything in this course is built from three objects, and most confusion about a
+     formula is really confusion about which of the three a symbol refers to.</p>
+
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th>Object</th><th>Written</th><th>Example</th><th>Shape</th><th>In NumPy</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Scalar</strong><br>a single number</td>
+        <td>lower case italic: \(x\), \(\lambda\), \(n\)</td>
+        <td>\(x = 3.5\)</td>
+        <td>no shape</td>
+        <td><code>3.5</code></td>
+      </tr>
+      <tr>
+        <td><strong>Vector</strong><br>a list of numbers</td>
+        <td>bold lower case: \(\mathbf{x}\), \(\boldsymbol\beta\)</td>
+        <td>\(\mathbf{x} = \begin{bmatrix}3.5\\ 1.2\\ 0.8\end{bmatrix}\)</td>
+        <td>\(3 \times 1\)</td>
+        <td>1-dimensional array</td>
+      </tr>
+      <tr>
+        <td><strong>Matrix</strong><br>a table of numbers</td>
+        <td>bold upper case: \(\mathbf{X}\)</td>
+        <td>\(\mathbf{X} = \begin{bmatrix}1 &amp; 2\\ 1 &amp; 3\\ 1 &amp; 5\end{bmatrix}\)</td>
+        <td>\(3 \times 2\)</td>
+        <td>2-dimensional array</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>The <strong>bold is a convention, not a rule</strong>. This site bolds vectors and
+     matrices because it makes a formula easier to scan, and Session 4 does the same.
+     Plenty of textbooks, and probably your econometrics notes, write \(X\) and \(\beta\)
+     in plain italic and leave you to work out which is which from context. That is normal,
+     and it is why the next section matters more than this one.</p>
+
+  <h3>Sets, and the \(\in\) symbol</h3>
+  <p>\(\mathbb{R}\) is the set of all real numbers, meaning every ordinary number. Built
+     from it:</p>
+  <ul class="m-anno">
+    <li><span class="s">\(x \in \mathbb{R}\)</span><span>\(x\) is a single real number</span></li>
+    <li><span class="s">\(\mathbf{x} \in \mathbb{R}^{p}\)</span><span>\(\mathbf{x}\) is a list of \(p\) real numbers</span></li>
+    <li><span class="s">\(\mathbf{X} \in \mathbb{R}^{n \times p}\)</span><span>\(\mathbf{X}\) is a table of real numbers with \(n\) rows and \(p\) columns</span></li>
+    <li><span class="s">\(y_i \in \{0, 1\}\)</span><span>the target takes one of the two values in that set</span></li>
+    <li><span class="s">\(\lambda \ge 0\)</span><span>\(\lambda\) is a number that is never negative</span></li>
+  </ul>
+  <p>The symbol \(\in\) is read <em>is in</em>, or <em>belongs to</em>. A line like
+     \(\mathbf{X} \in \mathbb{R}^{n\times p}\) looks forbidding and says very little: it is
+     a sentence about shape. Curly braces list the members of a set, so
+     \(\{1, \dots, K\}\) is the label set for a problem with \(K\) classes.</p>
+
+  <!-- ========================================================= dimensions -->
+  <h2 id="dimensions">Dimensions are the grammar</h2>
+  <p class="m-why">If the shapes fit, the expression means something. If they do not, it is
+     not a hard formula, it is a mistake.</p>
+
+  <p>The single most useful habit in this course: <strong>write the shape under every
+     symbol</strong>. A matrix expression is only legal when the shapes line up, so
+     checking shapes catches most errors before you have understood anything else, and it
+     tells you what an unfamiliar expression is going to produce.</p>
+
+  <p>The standard table of symbols, fixed from Session 4 onward:</p>
+  <ul class="m-anno">
+    <li><span class="s">\(n\)</span><span>the number of <strong>observations</strong>, the rows. For us, usually trading days.</span></li>
+    <li><span class="s">\(p\)</span><span>the number of <strong>features</strong>, the columns of \(\mathbf{X}\)</span></li>
+    <li><span class="s">\(\mathbf{X} \in \mathbb{R}^{n \times p}\)</span><span>the <strong>design matrix</strong>: one row per observation, one column per feature</span></li>
+    <li><span class="s">\(\mathbf{y} \in \mathbb{R}^{n}\)</span><span>the <strong>target</strong>: one number per observation</span></li>
+    <li><span class="s">\(\boldsymbol\beta \in \mathbb{R}^{p}\)</span><span>the <strong>coefficients</strong>: one per feature</span></li>
+  </ul>
+
+  <p>Now look at \(\mathbf{X}\boldsymbol\beta\) with the shapes written underneath.</p>
+
+  <div class="m-dims">
+    <span class="dim-box"><b>\(\mathbf{X}\)</b><small>\(n \times \textcolor{#1c5cab}{p}\)</small></span>
+    <span class="dim-op">·</span>
+    <span class="dim-box"><b>\(\boldsymbol\beta\)</b><small>\(\textcolor{#1c5cab}{p} \times 1\)</small></span>
+    <span class="dim-op">=</span>
+    <span class="dim-box res"><b>\(\mathbf{X}\boldsymbol\beta\)</b><small>\(n \times 1\)</small></span>
+  </div>
+  <p class="m-cap">The two inner numbers must match, and then they cancel. The outer two are
+     the shape of the answer. That is the whole rule, and it is worth knowing before you
+     know how the multiplication is actually done.</p>
+
+  <p>So \(\mathbf{X}\boldsymbol\beta\) is a column of \(n\) numbers, one per observation:
+     the fitted values. And \(\boldsymbol\beta\mathbf{X}\), in that order, is not defined at
+     all, because \(1 \times p\) against \(n \times p\) does not line up. Order matters,
+     always.</p>
+
+  <div class="note">
+    <strong>A shape check you can do in your head.</strong>
+    \(\mathbf{X}^{\top}\mathbf{X}\) is \((p \times n)(n \times p) = p \times p\): a small
+    square matrix, whatever the sample size. \(\mathbf{X}^{\top}\mathbf{y}\) is
+    \((p \times n)(n \times 1) = p \times 1\). So
+    \((\mathbf{X}^{\top}\mathbf{X})^{-1}\mathbf{X}^{\top}\mathbf{y}\) is
+    \((p\times p)(p \times 1) = p \times 1\), which is exactly one coefficient per feature.
+    The formula had to come out that way.
+  </div>
+
+  <!-- ============================================================ indices -->
+  <h2 id="indices">Indices, subscripts and sums</h2>
+  <p class="m-why">Subscripts say which row, which column, or which of something else. Most
+     of the time there are only two of them.</p>
+
+  <p>Two indices do nearly all the work, and they always mean the same thing:</p>
+  <ul class="m-anno">
+    <li><span class="s">\(i = 1, \dots, n\)</span><span>runs down the <strong>rows</strong>, over observations</span></li>
+    <li><span class="s">\(j = 1, \dots, p\)</span><span>runs across the <strong>columns</strong>, over features</span></li>
+  </ul>
+
+  <p>Which gives three things that look alike and are not:</p>
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th>Written</th><th>Is a</th><th>Means</th></tr></thead>
+    <tbody>
+      <tr><td>\(x_{ij}\)</td><td>scalar</td><td>the value of feature \(j\) for observation \(i\): one cell of the table</td></tr>
+      <tr><td>\(\mathbf{x}_i\)</td><td>vector, length \(p\)</td><td>observation \(i\): one whole row, all its features</td></tr>
+      <tr><td>\(\mathbf{x}_{\cdot j}\) or \(\mathbf{X}_j\)</td><td>vector, length \(n\)</td><td>feature \(j\): one whole column, over all observations</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>A single subscript is genuinely ambiguous between the second and third of these, and
+     authors are not consistent. Resolve it by shape: if the text goes on to write
+     \(\mathbf{x}_i^{\top}\boldsymbol\beta\), then \(\mathbf{x}_i\) must have length \(p\),
+     so it is a row of the table.</p>
+
+  <h3>Summation</h3>
+  <div class="m-eq">
+    $$\sum_{i=1}^{n} a_i \;=\; a_1 + a_2 + \dots + a_n$$
+    <div class="m-say">Read: <em>the sum, over \(i\) from 1 to \(n\), of \(a_i\)</em>. The
+      \(\sum\) is a capital Greek sigma, and it is shorthand for a loop that adds things
+      up. In Python it is <code>sum(...)</code>, or a <code>for</code> loop with
+      <code>total += a</code>.</div>
+  </div>
+
+  <p>Everything you need to know about it:</p>
+  <ul>
+    <li>The letter under the \(\sum\) is the counter. It exists only inside the sum, exactly
+        like the loop variable in <code>for i in range(n)</code>.</li>
+    <li>Limits are often dropped once they are obvious, so \(\sum_i a_i\) and even
+        \(\sum a_i\) mean the same thing as above.</li>
+    <li>Constants come out: \(\sum_i c\,a_i = c \sum_i a_i\), and \(\sum_{i=1}^{n} c = nc\).</li>
+    <li>The mean is a sum: \(\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i\).</li>
+    <li>Two indices give a double sum, \(\sum_{i=1}^{n}\sum_{j=1}^{p} x_{ij}\), which is a
+        loop inside a loop: add up every cell of the table.</li>
+    <li>\(\prod\) (capital pi) is the same idea with multiplication instead of addition.
+        You meet it once, in a likelihood.</li>
+  </ul>
+
+  <h3>Hats, bars and the difference between them</h3>
+  <ul class="m-anno">
+    <li><span class="s">\(\bar{x}\)</span><span><em>x bar</em>: the sample mean of \(x\)</span></li>
+    <li><span class="s">\(\hat{\beta}\)</span><span><em>beta hat</em>: an <strong>estimate</strong> of \(\beta\), computed from data. The hat is the whole difference between the truth and your guess at it.</span></li>
+    <li><span class="s">\(\hat{y}_i\)</span><span>the model's prediction for observation \(i\), as against \(y_i\), what actually happened</span></li>
+    <li><span class="s">\(\hat{f}\)</span><span>your fitted model, as against \(f\), the true relationship nobody ever sees</span></li>
+  </ul>
+  <p>The hat is not decoration. \(\beta\) is a fixed unknown number; \(\hat\beta\) is a
+     number you calculated, which would come out differently on a different sample. Nearly
+     all of statistics is about the gap between the two.</p>
+
+  <!-- ============================================================ vectors -->
+  <h2 id="vectors">Vectors</h2>
+  <p class="m-why">A list of numbers with an agreed order. The one operation that matters is
+     the dot product, and it is a weighted sum.</p>
+
+  <p>By convention a vector is a <strong>column</strong> unless it is transposed. So
+     \(\mathbf{x} \in \mathbb{R}^{3}\) is \(3 \times 1\), and \(\mathbf{x}^{\top}\), read
+     <em>x transpose</em>, is the same numbers laid out as a row, \(1 \times 3\).</p>
+
+  <div class="m-eq">
+    $$\mathbf{x} = \begin{bmatrix} 3 \\ 4 \\ 0 \end{bmatrix}, \qquad
+      \mathbf{x}^{\top} = \begin{bmatrix} 3 & 4 & 0 \end{bmatrix}$$
+    <div class="m-say">Same three numbers. Only the shape changed, and shape is what decides
+      whether the next multiplication is legal.</div>
+  </div>
+
+  <p>Adding two vectors and multiplying by a scalar both work entry by entry, which is what
+     NumPy does when you write <code>a + b</code> or <code>2 * a</code>. Both vectors must
+     be the same length.</p>
+
+  <h3>The dot product</h3>
+  <div class="m-eq">
+    $$\mathbf{w}^{\top}\mathbf{r} \;=\; \sum_{j=1}^{p} w_j r_j \;=\; w_1 r_1 + w_2 r_2 + \dots + w_p r_p$$
+    <div class="m-say">Multiply the two lists entry by entry, then add up. The result is a
+      single number: \((1 \times p)(p \times 1) = 1 \times 1\).</div>
+  </div>
+
+  <p>You already use this constantly, under other names. A portfolio with weights
+     \(\mathbf{w} = (0.5,\, 0.3,\, 0.2)\) holding assets that returned
+     \(\mathbf{r} = (0.02,\, -0.01,\, 0.04)\) earned</p>
+  <div class="m-eq">
+    $$\mathbf{w}^{\top}\mathbf{r} = 0.5(0.02) + 0.3(-0.01) + 0.2(0.04) = 0.015$$
+  </div>
+  <p>A portfolio return is a dot product. So is a fitted value: replace the weights with
+     coefficients and the returns with features, and
+     \(\hat{y}_i = \mathbf{x}_i^{\top}\boldsymbol\beta\) is the prediction for one
+     observation. <strong>Whenever you see a transpose next to a vector, expect a weighted
+     sum.</strong> In NumPy the dot product is <code>w @ r</code>.</p>
+
+  <h3>Length, and the two norms you need</h3>
+  <ul class="m-anno">
+    <li><span class="s">\(\|\mathbf{x}\|_2\)</span><span>the <strong>Euclidean norm</strong>, \(\sqrt{\sum_j x_j^2}\). Ordinary straight-line length. For \((3,4)\) it is \(\sqrt{9+16}=5\).</span></li>
+    <li><span class="s">\(\|\mathbf{x}\|_2^2\)</span><span>the same thing squared, so just \(\sum_j x_j^2 = \mathbf{x}^{\top}\mathbf{x}\), a sum of squares. This is the form you actually meet, because it drops the square root.</span></li>
+    <li><span class="s">\(\|\mathbf{x}\|_1\)</span><span>the <strong>\(\ell_1\) norm</strong>, \(\sum_j |x_j|\). Add up the sizes, ignoring signs. For \((3,-4)\) it is 7.</span></li>
+  </ul>
+  <p>Double bars are a norm, of a vector. Single bars are either absolute value, of a
+     number, or a determinant, of a matrix. The subscript says which norm. These two are the
+     entire difference between ridge and lasso, so they are worth being sure about.</p>
+
+  <!-- =========================================================== matrices -->
+  <h2 id="matrices">Matrices</h2>
+  <p class="m-why">A table of numbers, and a few special ones with names.</p>
+
+  <p>\(\mathbf{A} \in \mathbb{R}^{m \times n}\) has \(m\) rows and \(n\) columns, and
+     \(a_{ij}\) is the entry in row \(i\), column \(j\). <strong>Rows first, always.</strong>
+     A matrix is <em>square</em> if \(m = n\).</p>
+
+  <h3>Transpose</h3>
+  <p>The transpose \(\mathbf{A}^{\top}\) flips the table over its diagonal: rows become
+     columns. An \(m \times n\) matrix becomes \(n \times m\), and \(a_{ij}\) moves to
+     position \(ji\).</p>
+  <div class="m-eq">
+    $$\mathbf{A} = \begin{bmatrix} 1 & 2 & 0 \\ 0 & 1 & 3 \end{bmatrix}
+      \quad\Longrightarrow\quad
+      \mathbf{A}^{\top} = \begin{bmatrix} 1 & 0 \\ 2 & 1 \\ 0 & 3 \end{bmatrix}$$
+    <div class="m-say">In NumPy: <code>A.T</code>. Two rules to keep:
+      \((\mathbf{A}^{\top})^{\top} = \mathbf{A}\), and
+      \((\mathbf{A}\mathbf{B})^{\top} = \mathbf{B}^{\top}\mathbf{A}^{\top}\), which reverses
+      the order. That second rule is used in the OLS derivation below.</div>
+  </div>
+  <div class="note warn">
+    <strong>Two notations, one meaning.</strong> Econometrics usually writes the transpose
+    as a prime, \(X'\), and says <em>X prime</em>. Machine learning usually writes
+    \(\mathbf{X}^{\top}\) or \(\mathbf{X}^{T}\). They are the same operation, so
+    \(X'X = \mathbf{X}^{\top}\mathbf{X}\). The prime here has nothing to do with
+    derivatives, and \(\mathbf{X}^{T}\) is not \(\mathbf{X}\) raised to a power \(T\).
+  </div>
+
+  <h3>Matrices with names</h3>
+  <ul class="m-anno">
+    <li><span class="s">\(\mathbf{I}\) or \(\mathbf{I}_p\)</span><span>the <strong>identity</strong>: ones down the diagonal, zeros everywhere else, \(p \times p\). It is the matrix version of the number 1, in that \(\mathbf{A}\mathbf{I} = \mathbf{I}\mathbf{A} = \mathbf{A}\). In NumPy, <code>np.eye(p)</code>.</span></li>
+    <li><span class="s">diagonal</span><span>zero off the diagonal. Multiplying by one just rescales each entry.</span></li>
+    <li><span class="s">symmetric</span><span>\(\mathbf{A}^{\top} = \mathbf{A}\), so it is unchanged by a flip. \(\mathbf{X}^{\top}\mathbf{X}\) is always symmetric, and so is a covariance matrix.</span></li>
+    <li><span class="s">\(\mathbf{0}\)</span><span>a vector or matrix of zeros. In bold it is not the number zero, though it plays the same role.</span></li>
+  </ul>
+
+  <!-- ===================================================== multiplication -->
+  <h2 id="multiplication">Matrix multiplication</h2>
+  <p class="m-why">Every entry of the answer is one dot product. Nothing more is going on.</p>
+
+  <p>To multiply \(\mathbf{A}\) (\(m \times n\)) by \(\mathbf{B}\) (\(n \times k\)), the
+     inner dimensions must match. Then entry \((i, j)\) of the product is row \(i\) of
+     \(\mathbf{A}\) dotted with column \(j\) of \(\mathbf{B}\):</p>
+
+  <div class="m-eq">
+    $$(\mathbf{A}\mathbf{B})_{ij} \;=\; \sum_{\ell=1}^{n} a_{i\ell}\, b_{\ell j}$$
+    <div class="m-say">Row from the left, column from the right. Say it once out loud and
+      the formula stops being a formula.</div>
+  </div>
+
+  <p>Worked out, with \(\mathbf{A}\) being \(2 \times 3\) and \(\mathbf{B}\) being
+     \(3 \times 2\), so the product is \(2 \times 2\):</p>
+  <div class="m-eq">
+    $$\begin{bmatrix} 1 & 2 & 0 \\ 0 & 1 & 3 \end{bmatrix}
+      \begin{bmatrix} 2 & 1 \\ 0 & 4 \\ 5 & 0 \end{bmatrix}
+      = \begin{bmatrix} 2 & 9 \\ 15 & 4 \end{bmatrix}$$
+    <div class="m-say">Top left: \(1(2) + 2(0) + 0(5) = 2\). Top right:
+      \(1(1) + 2(4) + 0(0) = 9\). Bottom left: \(0(2) + 1(0) + 3(5) = 15\). Bottom right:
+      \(0(1) + 1(4) + 3(0) = 4\).</div>
+  </div>
+
+  <div class="note warn">
+    <strong>\(\mathbf{A}\mathbf{B}\) is not \(\mathbf{B}\mathbf{A}\).</strong> Often the
+    second one is not even defined, and when it is, it is usually a different matrix. So
+    you cannot reorder factors, and when you multiply both sides of an equation by
+    something you must do it on the <em>same side</em> of both. That single fact is behind
+    half of the steps in the OLS derivation.
+    <br><br>
+    Also: \(\mathbf{A}\mathbf{B}\) is <strong>not</strong> entry-by-entry multiplication.
+    In NumPy, matrix multiplication is <code>A @ B</code> and entry-by-entry is
+    <code>A * B</code>. They are different operations that both run without complaint, so
+    this is a real source of silent wrong answers.
+  </div>
+
+  <h3>Two ways to read \(\mathbf{X}\boldsymbol\beta\)</h3>
+  <p>Both readings are useful, and switching between them is most of what "thinking in
+     matrices" means.</p>
+  <div class="m-two">
+    <div class="m-panel">
+      <h4>Row by row</h4>
+      <p>Each entry of \(\mathbf{X}\boldsymbol\beta\) is one observation's features dotted
+         with the coefficients:
+         \((\mathbf{X}\boldsymbol\beta)_i = \mathbf{x}_i^{\top}\boldsymbol\beta\). So
+         \(\mathbf{X}\boldsymbol\beta\) is <em>all \(n\) predictions at once</em>. This is
+         the reading to use when you want to know what the model does.</p>
+    </div>
+    <div class="m-panel">
+      <h4>Column by column</h4>
+      <p>\(\mathbf{X}\boldsymbol\beta = \beta_1 \mathbf{X}_1 + \dots + \beta_p \mathbf{X}_p\),
+         a weighted sum of the feature columns. So the fitted values are whatever you can
+         build by mixing your columns. This is the reading that explains
+         multicollinearity, below.</p>
+    </div>
+  </div>
+
+  <!-- ====================================================== vectorisation -->
+  <h2 id="vectorisation">Vectorisation: from \(n\) equations to one</h2>
+  <p class="m-why">The one idea that makes matrix notation worth learning. If you take one
+     thing from this page, take this section.</p>
+
+  <p>Write the linear model for a single observation \(i\), the way it is usually
+     introduced:</p>
+  <div class="m-eq">
+    $$y_i \;=\; \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \dots + \beta_p x_{ip} + \varepsilon_i,
+      \qquad i = 1, \dots, n$$
+    <div class="m-say">This is \(n\) separate equations, one per trading day, all with the
+      same unknown coefficients.</div>
+  </div>
+
+  <p>Two compressions turn that into a single line. First, the right-hand side of each
+     equation is a dot product, so one observation reads
+     \(y_i = \mathbf{x}_i^{\top}\boldsymbol\beta + \varepsilon_i\), where \(\mathbf{x}_i\)
+     starts with a 1 so that \(\beta_0\) has something to multiply. Second, stack the \(n\)
+     equations on top of each other:</p>
+
+  <div class="m-eq">
+    $$\underbrace{\begin{bmatrix} y_1 \\ y_2 \\ \vdots \\ y_n \end{bmatrix}}_{\mathbf{y},\; n \times 1}
+      =
+      \underbrace{\begin{bmatrix}
+        1 & x_{11} & \cdots & x_{1p} \\
+        1 & x_{21} & \cdots & x_{2p} \\
+        \vdots & \vdots & & \vdots \\
+        1 & x_{n1} & \cdots & x_{np}
+      \end{bmatrix}}_{\mathbf{X},\; n \times (p+1)}
+      \underbrace{\begin{bmatrix} \beta_0 \\ \beta_1 \\ \vdots \\ \beta_p \end{bmatrix}}_{\boldsymbol\beta,\; (p+1) \times 1}
+      +
+      \underbrace{\begin{bmatrix} \varepsilon_1 \\ \varepsilon_2 \\ \vdots \\ \varepsilon_n \end{bmatrix}}_{\boldsymbol\varepsilon,\; n \times 1}$$
+  </div>
+
+  <div class="m-eq big">
+    $$\mathbf{y} = \mathbf{X}\boldsymbol\beta + \boldsymbol\varepsilon$$
+    <div class="m-say">Read: <em>y equals X beta plus epsilon</em>. It says exactly what the
+      \(n\) equations said. Not a summary of them, not an approximation to them: the same
+      statement, written once.</div>
+  </div>
+
+  <p>Three things follow, and they are the reason everyone writes models this way.</p>
+  <ul>
+    <li><strong>The column of ones is where the intercept went.</strong> \(\beta_0\)
+        multiplies a feature that equals 1 for every observation, so it survives into the
+        matrix form without needing a special case. That is why the design matrix has
+        \(p+1\) columns when there are \(p\) real features, and why
+        <code>np.column_stack([np.ones(n), x])</code> shows up in code.</li>
+    <li><strong>The sample size vanished.</strong> \(n\) appears nowhere in
+        \(\mathbf{y} = \mathbf{X}\boldsymbol\beta + \boldsymbol\varepsilon\). The same three
+        symbols describe 10 observations or 10 million, which means every result you prove
+        about it holds for any sample size.</li>
+    <li><strong>Sums of squares become products.</strong> The residual vector is
+        \(\mathbf{e} = \mathbf{y} - \mathbf{X}\hat{\boldsymbol\beta}\), and</li>
+  </ul>
+
+  <div class="m-eq">
+    $$\sum_{i=1}^{n} e_i^2 \;=\; \mathbf{e}^{\top}\mathbf{e} \;=\; \|\mathbf{e}\|_2^2
+      \;=\; \|\mathbf{y} - \mathbf{X}\boldsymbol\beta\|_2^2$$
+    <div class="m-say">All four of these are the residual sum of squares. Seeing them as the
+      same object is most of what it takes to read a paper.</div>
+  </div>
+
+  <div class="note">
+    <strong>The same idea is why NumPy exists.</strong> Session 3 made this point in code:
+    <code>X @ beta</code> computes all \(n\) predictions in one operation, with no loop over
+    observations, and it runs far faster than the loop would. Vectorised maths and
+    vectorised code are the same habit of thought. If you can turn a \(\sum_i\) into a
+    matrix product on paper, you can turn a <code>for</code> loop into one line of NumPy.
+  </div>
+
+  <!-- ============================================================ inverse -->
+  <h2 id="inverse">Inverses, singular matrices, and multicollinearity</h2>
+  <p class="m-why">Where OLS comes from, and the one thing that stops it from existing.</p>
+
+  <p>For a square matrix \(\mathbf{A}\), the inverse \(\mathbf{A}^{-1}\) is the matrix that
+     undoes it:</p>
+  <div class="m-eq">
+    $$\mathbf{A}\mathbf{A}^{-1} = \mathbf{A}^{-1}\mathbf{A} = \mathbf{I}$$
+    <div class="m-say">It is the matrix version of dividing by a number. There is no
+      "matrix division", so this is how you move a matrix from one side of an equation to
+      the other.</div>
+  </div>
+
+  <div class="note warn">
+    <strong>\(\mathbf{A}^{-1}\) is not a power, and not \(1/\mathbf{A}\).</strong> The
+    superscript \(-1\) is a name for an operation, not an exponent, and
+    \(\mathbf{A}^{-1}\) is <em>not</em> the matrix of reciprocals \(1/a_{ij}\). The entries
+    of \(\mathbf{A}^{-1}\) can look nothing like the entries of \(\mathbf{A}\). The same
+    superscript is used elsewhere for the same reason, for instance \(f^{-1}\) for the
+    inverse of a function, which is also not \(1/f\).
+  </div>
+
+  <p>A \(2 \times 2\) example, which is small enough to check by hand:</p>
+  <div class="m-eq">
+    $$\mathbf{A} = \begin{bmatrix} 2 & 1 \\ 1 & 1 \end{bmatrix}, \qquad
+      \mathbf{A}^{-1} = \begin{bmatrix} 1 & -1 \\ -1 & 2 \end{bmatrix}, \qquad
+      \mathbf{A}\mathbf{A}^{-1} = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}$$
+    <div class="m-say">Not a reciprocal in sight. For a \(2\times2\) matrix the recipe is
+      \(\frac{1}{ad - bc}\begin{bmatrix} d & -b \\ -c & a\end{bmatrix}\), and the number
+      \(ad - bc\) is the <strong>determinant</strong>, written \(\det(\mathbf{A})\) or
+      \(|\mathbf{A}|\).</div>
+  </div>
+
+  <h3>When there is no inverse</h3>
+  <p>Look at the recipe: it divides by the determinant. If \(\det(\mathbf{A}) = 0\) there is
+     nothing to divide by and <strong>the inverse does not exist</strong>. Such a matrix is
+     called <strong>singular</strong>. The three ways of saying it are worth collecting,
+     because different sources use different ones:</p>
+  <ul class="m-anno">
+    <li><span class="s">singular</span><span>no inverse exists</span></li>
+    <li><span class="s">\(\det(\mathbf{A}) = 0\)</span><span>the determinant is zero</span></li>
+    <li><span class="s">rank deficient</span><span>the columns are not linearly independent: one of them is a weighted sum of the others, so it carries no information the rest do not already carry</span></li>
+  </ul>
+  <p>These are three descriptions of one situation. The <strong>rank</strong> of a matrix is
+     the number of genuinely independent columns in it; <em>full rank</em> means all of them
+     are, which for a square matrix is the same as being invertible.</p>
+
+  <div class="m-eq">
+    $$\mathbf{A} = \begin{bmatrix} 1 & 2 \\ 2 & 4 \end{bmatrix}, \qquad
+      \det(\mathbf{A}) = 1(4) - 2(2) = 0$$
+    <div class="m-say">The second column is exactly twice the first, so it adds nothing.
+      This matrix has no inverse.</div>
+  </div>
+
+  <h3>Perfect multicollinearity</h3>
+  <p>Now put that into a regression. OLS needs \((\mathbf{X}^{\top}\mathbf{X})^{-1}\), and
+     \(\mathbf{X}^{\top}\mathbf{X}\) is singular exactly when a column of \(\mathbf{X}\) is
+     a weighted sum of the others. That is <strong>perfect multicollinearity</strong>, and
+     when it happens there is no unique answer: infinitely many \(\boldsymbol\beta\) give
+     exactly the same fitted values, so the data cannot choose between them. Reading it
+     through the column-by-column view above, if one column duplicates a mix of the others
+     then the same weighted sum can be built in more than one way.</p>
+  <p>In practice it is nearly always one of these, and all three are self-inflicted:</p>
+  <ul>
+    <li>The same variable in two units, say a return in percent and the same return as a
+        decimal. One column is 100 times the other.</li>
+    <li>A dummy for every category <em>and</em> an intercept. The dummies add up to the
+        column of ones, so the intercept is redundant. This is the dummy variable trap, and
+        the fix is to drop one category.</li>
+    <li>A variable that is the sum of two others already in the model, such as total return
+        alongside its price and dividend parts.</li>
+  </ul>
+  <p><strong>Near</strong> multicollinearity, where columns are strongly but not perfectly
+     related, is the more common problem. The inverse exists, so software returns an answer,
+     but the determinant is close to zero and the coefficients become huge and unstable:
+     tiny changes in the data swing them wildly. The estimates are still unbiased; they are
+     just useless one at a time.</p>
+
+  <div class="note">
+    <strong>This is what ridge regression is for.</strong> Ridge estimates
+    \(\hat{\boldsymbol\beta} = (\mathbf{X}^{\top}\mathbf{X} + \lambda\mathbf{I})^{-1}\mathbf{X}^{\top}\mathbf{y}\).
+    Adding \(\lambda\) to the diagonal makes the matrix invertible again, even when
+    \(\mathbf{X}^{\top}\mathbf{X}\) on its own is singular, and even when \(p > n\), where
+    OLS has no answer at all. When you meet that formula later, the \(+\lambda\mathbf{I}\)
+    is not a trick; it is the direct repair of the problem in this section.
+  </div>
+
+  <div class="note warn">
+    <strong>In code, do not invert.</strong> <code>np.linalg.inv(A)</code> exists, and the
+    cheatsheet lists it because the formula does. But <code>np.linalg.solve(A, b)</code> is
+    both faster and numerically more accurate for the same job, and it is what you should
+    write. Session 3 also warns that NumPy running inside the browser returns
+    <code>nan</code> for a singular matrix rather than raising an error, so a silent
+    <code>nan</code> in your coefficients is a multicollinearity symptom.
+  </div>
+
+  <!-- ================================================================ ols -->
+  <h2 id="ols">Solving a matrix equation, and where OLS comes from</h2>
+  <p class="m-why">You are not asked to reproduce this derivation in this course. You are
+     asked to read it without flinching.</p>
+
+  <p>Start with the scalar case, which you know. To solve \(ax = b\) for \(x\), divide both
+     sides by \(a\), which works as long as \(a \ne 0\). The matrix version replaces
+     division by multiplication by the inverse, and because order matters you must multiply
+     both sides on the <em>same</em> side:</p>
+
+  <div class="m-eq">
+    $$\mathbf{A}\mathbf{b} = \mathbf{c}
+      \quad\Longrightarrow\quad
+      \mathbf{A}^{-1}\mathbf{A}\mathbf{b} = \mathbf{A}^{-1}\mathbf{c}
+      \quad\Longrightarrow\quad
+      \mathbf{b} = \mathbf{A}^{-1}\mathbf{c}$$
+    <div class="m-say">The middle step used \(\mathbf{A}^{-1}\mathbf{A} = \mathbf{I}\) and
+      \(\mathbf{I}\mathbf{b} = \mathbf{b}\). Note that \(\mathbf{A}^{-1}\) went on the
+      <strong>left</strong> of both sides. Writing \(\mathbf{c}\mathbf{A}^{-1}\) would be a
+      different expression, and here not even a defined one. The requirement
+      \(a \ne 0\) has become the requirement that \(\mathbf{A}\) is not singular.</div>
+  </div>
+
+  <h3>Two rules of matrix calculus</h3>
+  <p>Differentiating with respect to a vector means taking the derivative with respect to
+     each entry and collecting the results into a vector. Two results cover the derivation
+     below, and both are the obvious generalisation of the scalar case:</p>
+  <div class="m-eq">
+    $$\frac{\partial\, (\mathbf{a}^{\top}\mathbf{b})}{\partial \mathbf{b}} = \mathbf{a},
+      \qquad
+      \frac{\partial\, (\mathbf{b}^{\top}\mathbf{A}\mathbf{b})}{\partial \mathbf{b}} = 2\mathbf{A}\mathbf{b}
+      \;\;\text{ when } \mathbf{A} \text{ is symmetric}$$
+    <div class="m-say">Compare \(\frac{d}{dx}(ax) = a\) and \(\frac{d}{dx}(ax^2) = 2ax\).
+      Same statements, one dimension up. The symmetry condition holds here because
+      \(\mathbf{X}^{\top}\mathbf{X}\) always is symmetric.</div>
+  </div>
+
+  <h3>The derivation, four lines</h3>
+  <p>OLS chooses the \(\boldsymbol\beta\) that makes the residual sum of squares as small as
+     possible. Write that objective, expand it, differentiate, set to zero.</p>
+
+  <div class="m-steps">
+    <div class="m-step">
+      <div class="m-step-n">1</div>
+      <div>
+        <p>The objective, in matrix form:</p>
+        $$S(\boldsymbol\beta) = \sum_{i=1}^{n}\left(y_i - \mathbf{x}_i^{\top}\boldsymbol\beta\right)^2
+          = (\mathbf{y} - \mathbf{X}\boldsymbol\beta)^{\top}(\mathbf{y} - \mathbf{X}\boldsymbol\beta)$$
+      </div>
+    </div>
+    <div class="m-step">
+      <div class="m-step-n">2</div>
+      <div>
+        <p>Multiply it out, using \((\mathbf{A}\mathbf{B})^{\top} = \mathbf{B}^{\top}\mathbf{A}^{\top}\):</p>
+        $$S(\boldsymbol\beta) = \mathbf{y}^{\top}\mathbf{y}
+          - 2\,\boldsymbol\beta^{\top}\mathbf{X}^{\top}\mathbf{y}
+          + \boldsymbol\beta^{\top}\mathbf{X}^{\top}\mathbf{X}\boldsymbol\beta$$
+        <p class="m-cap">The two cross terms are each single numbers, and a number equals
+          its own transpose, which is why they combine into one term with a 2.</p>
+      </div>
+    </div>
+    <div class="m-step">
+      <div class="m-step-n">3</div>
+      <div>
+        <p>Differentiate with respect to \(\boldsymbol\beta\) and set the result to zero,
+           because at a minimum the slope is flat in every direction:</p>
+        $$\frac{\partial S}{\partial \boldsymbol\beta}
+          = -2\mathbf{X}^{\top}\mathbf{y} + 2\mathbf{X}^{\top}\mathbf{X}\boldsymbol\beta = \mathbf{0}
+          \quad\Longrightarrow\quad
+          \mathbf{X}^{\top}\mathbf{X}\hat{\boldsymbol\beta} = \mathbf{X}^{\top}\mathbf{y}$$
+        <p class="m-cap">Those are the <strong>normal equations</strong>. Note the right-hand
+          side is now a bold zero vector, one equation per coefficient.</p>
+      </div>
+    </div>
+    <div class="m-step">
+      <div class="m-step-n">4</div>
+      <div>
+        <p>This is \(\mathbf{A}\mathbf{b} = \mathbf{c}\) from the top of this section, with
+           \(\mathbf{A} = \mathbf{X}^{\top}\mathbf{X}\). Multiply both sides on the left by
+           \(\mathbf{A}^{-1}\):</p>
+        $$\hat{\boldsymbol\beta} = (\mathbf{X}^{\top}\mathbf{X})^{-1}\mathbf{X}^{\top}\mathbf{y}$$
+      </div>
+    </div>
+  </div>
+
+  <p>Two things to notice, because they are what the derivation is really teaching.</p>
+  <ul>
+    <li>The last step needs \((\mathbf{X}^{\top}\mathbf{X})^{-1}\) to exist. That is the
+        no-perfect-multicollinearity assumption, and it is not a technicality: without it
+        there is no unique \(\hat{\boldsymbol\beta}\) to compute.</li>
+    <li>\(\mathbf{X}\) itself is never inverted. It is \(n \times p\), not square, so it
+        has no inverse. Only the \(p \times p\) product does. This is why the formula is
+        written in that particular clumsy-looking way.</li>
+  </ul>
+
+  <!-- =========================================================== calculus -->
+  <h2 id="calculus">Derivatives, gradients and minima</h2>
+  <p class="m-why">Every model in this course is defined as the solution to a minimisation,
+     so you need to know what "the minimum" means operationally.</p>
+
+  <ul class="m-anno">
+    <li><span class="s">\(\frac{df}{dx}\), \(f'(x)\)</span><span>the <strong>derivative</strong>: the slope of \(f\) at \(x\). Positive means going up as \(x\) increases, negative means going down.</span></li>
+    <li><span class="s">\(\frac{\partial f}{\partial \beta_j}\)</span><span>a <strong>partial derivative</strong>: the slope in the \(\beta_j\) direction with every other coefficient held fixed. The curly \(\partial\) is what signals "there are other variables".</span></li>
+    <li><span class="s">\(\nabla f\)</span><span>the <strong>gradient</strong>: all the partial derivatives collected into one vector, \(\left(\frac{\partial f}{\partial \beta_1}, \dots, \frac{\partial f}{\partial \beta_p}\right)^{\top}\). It points in the direction where \(f\) increases fastest. Pronounced <em>nabla</em> or <em>grad</em>.</span></li>
+  </ul>
+
+  <p>At a minimum, the slope is zero in every direction, so \(\nabla f = \mathbf{0}\). That
+     is the entire method used in the OLS derivation, and it is the standard route to a
+     closed-form estimator: write the objective, differentiate, set to zero, solve.</p>
+
+  <p>A zero gradient is a flat point, which could also be a maximum or a saddle. For the
+     objectives in this course that worry is handled for you: they are all
+     <strong>convex</strong>, meaning bowl-shaped, so a flat point can only be the bottom
+     and there is exactly one of them. This is why sum-of-squares and log-loss objectives
+     are so popular, and why the word convex appears whenever anybody claims their
+     optimiser found the right answer.</p>
+
+  <h3>When there is no formula</h3>
+  <p>OLS and ridge have closed-form solutions: a formula you can evaluate directly. Lasso,
+     logistic regression, and everything built out of trees do not. For those, the answer is
+     found by walking downhill, and the notation for one step is:</p>
+  <div class="m-eq">
+    $$\boldsymbol\beta^{(t+1)} \;=\; \boldsymbol\beta^{(t)} - \eta\, \nabla L\!\left(\boldsymbol\beta^{(t)}\right)$$
+    <div class="m-say">Read: the next guess is the current guess, moved a little way in the
+      direction the loss falls fastest. \(\eta\) (eta) is the <strong>learning rate</strong>,
+      the size of the step. The superscript \((t)\) in brackets is an iteration counter, not
+      a power, and not a transpose.</div>
+  </div>
+  <p>That is <strong>gradient descent</strong>, and it is one line. When you meet
+     scikit-learn options called <code>max_iter</code>, <code>tol</code> or
+     <code>learning_rate</code>, they are settings for this loop.</p>
+
+  <!-- =============================================================== logs -->
+  <h2 id="logs">Sums, logs, exponentials and the sigmoid</h2>
+  <p class="m-why">Where the strange-looking classification formulas come from.</p>
+
+  <p>Three rules of logarithms carry all the weight, and only the first really matters:</p>
+  <div class="m-eq">
+    $$\log(ab) = \log a + \log b, \qquad
+      \log(a/b) = \log a - \log b, \qquad
+      \log(a^k) = k \log a$$
+    <div class="m-say">In this field \(\log\) means the <strong>natural</strong> logarithm,
+      base \(e \approx 2.718\), which some texts write \(\ln\). It is
+      <code>np.log</code> in NumPy.</div>
+  </div>
+
+  <p>The first rule is why likelihoods are always logged. The probability of seeing \(n\)
+     independent observations is a <em>product</em> of \(n\) terms, which is awkward to
+     differentiate and underflows to zero on a computer. Taking logs turns it into a sum,
+     and since \(\log\) is increasing, whatever maximises the sum maximises the product:</p>
+  <div class="m-eq">
+    $$\log \prod_{i=1}^{n} L_i \;=\; \sum_{i=1}^{n} \log L_i$$
+    <div class="m-say">That is the whole reason the phrase <em>log-likelihood</em> exists.
+      Session 4's use of log returns is the same trick: products of gross returns become
+      sums of log returns.</div>
+  </div>
+
+  <p>The exponential \(e^x\), also written \(\exp(x)\), undoes the logarithm. It is always
+     positive, which is exactly what you want when a formula has to produce a probability
+     or a variance. Combine the two and you get the function that defines logistic
+     regression:</p>
+
+  <div class="m-eq">
+    $$\sigma(z) = \frac{1}{1 + e^{-z}}$$
+    <div class="m-say">The <strong>sigmoid</strong>, or logistic function. It takes any real
+      number and returns something strictly between 0 and 1, so it converts an unbounded
+      score into a probability. \(\sigma(0) = 0.5\), \(\sigma(2) \approx 0.88\),
+      \(\sigma(-2) \approx 0.12\).</div>
+  </div>
+
+  <p>So logistic regression computes the same linear score as OLS,
+     \(z_i = \mathbf{x}_i^{\top}\boldsymbol\beta\), and then squashes it:
+     \(P(Y_i = 1 \mid \mathbf{x}_i) = \sigma(\mathbf{x}_i^{\top}\boldsymbol\beta)\).
+     Rearranged, the model says the <strong>log odds</strong> are linear:</p>
+  <div class="m-eq">
+    $$\log\!\left(\frac{P(Y=1 \mid \mathbf{x})}{1 - P(Y=1\mid\mathbf{x})}\right) = \mathbf{x}^{\top}\boldsymbol\beta$$
+    <div class="m-say">Which is why a logistic coefficient is interpreted per unit of log
+      odds and not as a change in probability. Same dot product as before, on a different
+      scale.</div>
+  </div>
+
+  <!-- ======================================================== probability -->
+  <h2 id="probability">Probability and statistics notation</h2>
+  <p class="m-why">Mostly one symbol you already know, plus the convention about capital
+     letters.</p>
+
+  <ul class="m-anno">
+    <li><span class="s">\(X\), \(Y\)</span><span>capital letters are <strong>random variables</strong>: the thing before you observe it</span></li>
+    <li><span class="s">\(x\), \(y\)</span><span>lower case is a <strong>realisation</strong>: the value it actually took. So \(P(Y = 1 \mid X = x)\) asks about a particular observed \(x\).</span></li>
+    <li><span class="s">\(P(A)\)</span><span>the probability of \(A\), a number between 0 and 1</span></li>
+    <li><span class="s">\(P(A \mid B)\)</span><span>the vertical bar is read <strong>given</strong>: the probability of \(A\) once \(B\) is known. Nearly every classifier is an estimate of \(P(Y = 1 \mid \mathbf{x})\).</span></li>
+    <li><span class="s">\(\mathbb{E}[X]\)</span><span>the <strong>expectation</strong>, or population mean, of \(X\). Square brackets are the convention, and they are not a function call or an index.</span></li>
+    <li><span class="s">\(\operatorname{Var}(X)\), \(\sigma^2\)</span><span>the variance, \(\mathbb{E}\!\left[(X - \mathbb{E}[X])^2\right]\); \(\sigma\) is its square root, the standard deviation</span></li>
+    <li><span class="s">\(\operatorname{Cov}(X, Y)\)</span><span>the covariance; divided by both standard deviations it becomes the correlation \(\rho\), between \(-1\) and \(1\)</span></li>
+    <li><span class="s">\(X \sim N(\mu, \sigma^2)\)</span><span>the tilde is read <strong>is distributed as</strong>. Here: normal with mean \(\mu\) and variance \(\sigma^2\).</span></li>
+    <li><span class="s">i.i.d.</span><span>independent and identically distributed: every observation drawn the same way, none influencing another. Financial time series routinely break this, which is why the ordering of train and test data matters.</span></li>
+  </ul>
+
+  <p>Two uses of this notation are worth reading closely, because Session 4 leans on both.
+     The relationship a supervised model is trying to recover is a conditional
+     expectation,</p>
+  <div class="m-eq">
+    $$f(\mathbf{x}) = \mathbb{E}\!\left[Y \mid \mathbf{X} = \mathbf{x}\right]$$
+    <div class="m-say">Read: the average value of the target among all observations having
+      those feature values. That is what "the true relationship \(f\)" means precisely.</div>
+  </div>
+  <p>And the bias-variance decomposition, which is a statement about the expected squared
+     error of a prediction:</p>
+  <div class="m-eq">
+    $$\mathbb{E}\!\left[(y_0 - \hat{f}(x_0))^2\right]
+      = \underbrace{\operatorname{Var}(\hat{f}(x_0))}_{\text{variance}}
+      + \underbrace{\left[\operatorname{Bias}(\hat{f}(x_0))\right]^2}_{\text{bias}^2}
+      + \underbrace{\operatorname{Var}(\varepsilon)}_{\text{irreducible}}$$
+    <div class="m-say">The expectation is over repeated samples: imagine refitting the model
+      on a fresh draw of data many times. The third term does not involve \(\hat{f}\) at
+      all, which is exactly why no model can drive the error to zero.</div>
+  </div>
+
+  <!-- =========================================================== distance -->
+  <h2 id="distance">Distance, and why scale matters</h2>
+  <p class="m-why">Needed for k-nearest neighbours, and for understanding why standardising
+     is not optional there.</p>
+
+  <p>The distance between two observations is the length of the vector between them:</p>
+  <div class="m-eq">
+    $$d(\mathbf{x}, \mathbf{z}) = \|\mathbf{x} - \mathbf{z}\|_2
+      = \sqrt{\sum_{j=1}^{p} (x_j - z_j)^2}$$
+    <div class="m-say">The <strong>Euclidean distance</strong>: Pythagoras in \(p\)
+      dimensions. Subtract feature by feature, square, add, take the root. The
+      \(\ell_1\) version, \(\sum_j |x_j - z_j|\), is the Manhattan distance, and both show
+      up as options in scikit-learn.</div>
+  </div>
+
+  <p>Now notice what the formula does with units. Each feature contributes
+     \((x_j - z_j)^2\), in whatever units that feature happens to be measured in. Session 4
+     showed that a volume column varies about four billion times more than a return column,
+     so in that sum the return term is invisible: the distance is the volume difference,
+     and every "nearest neighbour" is really the nearest by volume. Standardising each
+     column first,</p>
+  <div class="m-eq">
+    $$z_{ij} = \frac{x_{ij} - \bar{x}_j}{s_j}$$
+    <div class="m-say">puts every feature on the same footing, mean 0 and standard deviation
+      1, so the distance is a fair comparison. OLS does not need this. Anything that
+      measures distance, or penalises the size of coefficients, does.</div>
+  </div>
+
+  <!-- ========================================================== objective -->
+  <h2 id="objective">Reading an objective function</h2>
+  <p class="m-why">Half the models in this course are defined by one template, and once you
+     can read the template each new model is a one-line change.</p>
+
+  <p>First, the notation for a minimisation:</p>
+  <div class="m-eq">
+    $$\hat{\boldsymbol\beta} = \operatorname*{arg\,min}_{\boldsymbol\beta} \; L(\boldsymbol\beta)$$
+    <div class="m-say">Read: <em>the \(\boldsymbol\beta\) that makes \(L\) as small as
+      possible</em>. The subscript names what you are free to vary. \(\min L\) is the
+      smallest <em>value</em> of \(L\); \(\arg\min L\) is the <em>argument</em> that
+      achieves it. In a model definition you almost always want the second, because the
+      coefficients are the point. \(\arg\max\) is the same with the sign flipped.</div>
+  </div>
+
+  <p>Now the template. Nearly every linear model in this course is</p>
+  <div class="m-eq big">
+    $$\operatorname*{arg\,min}_{\boldsymbol\beta} \;
+      \underbrace{\big[\,\text{how badly it fits}\,\big]}_{\text{loss}}
+      \; + \; \lambda \, \underbrace{\big[\,\text{how big the coefficients are}\,\big]}_{\text{penalty}}$$
+    <div class="m-say">\(\lambda \ge 0\) is a tuning parameter that sets the exchange rate
+      between the two. \(\lambda = 0\) removes the penalty entirely; large \(\lambda\)
+      cares mostly about keeping coefficients small, and shrinks the fit toward nothing.</div>
+  </div>
+
+  <p>Four familiar models, differing only in that second bracket:</p>
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th>Model</th><th>Objective</th><th>What the penalty does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>OLS</strong></td>
+        <td>$$\|\mathbf{y} - \mathbf{X}\boldsymbol\beta\|_2^2$$</td>
+        <td>no penalty at all</td>
+      </tr>
+      <tr>
+        <td><strong>Ridge</strong></td>
+        <td>$$\|\mathbf{y} - \mathbf{X}\boldsymbol\beta\|_2^2 + \lambda\|\boldsymbol\beta\|_2^2$$</td>
+        <td>squared size: shrinks every coefficient toward zero, but none of them all the way</td>
+      </tr>
+      <tr>
+        <td><strong>Lasso</strong></td>
+        <td>$$\|\mathbf{y} - \mathbf{X}\boldsymbol\beta\|_2^2 + \lambda\|\boldsymbol\beta\|_1$$</td>
+        <td>absolute size: sets some coefficients exactly to zero, so it also selects features</td>
+      </tr>
+      <tr>
+        <td><strong>Elastic net</strong></td>
+        <td>$$\|\mathbf{y} - \mathbf{X}\boldsymbol\beta\|_2^2 + \lambda_1\|\boldsymbol\beta\|_1 + \lambda_2\|\boldsymbol\beta\|_2^2$$</td>
+        <td>both, in a mix you choose</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The only symbol that changes across those rows is the subscript on the norm, 1 or 2.
+     That is the whole formal difference between three methods that get separate lectures,
+     and it is a good example of why the notation is worth twenty minutes.</p>
+
+  <p>Classification uses the same template with a different loss. For logistic regression
+     the loss is the negative log-likelihood, usually called log-loss or cross-entropy:</p>
+  <div class="m-eq">
+    $$L(\boldsymbol\beta) = -\sum_{i=1}^{n}\Big[\, y_i \log \hat{p}_i + (1 - y_i)\log(1 - \hat{p}_i) \,\Big],
+      \qquad \hat{p}_i = \sigma(\mathbf{x}_i^{\top}\boldsymbol\beta)$$
+    <div class="m-say">It looks worse than it is. \(y_i\) is 0 or 1, so exactly one of the
+      two terms survives for each observation: if \(y_i = 1\) the term is
+      \(-\log \hat{p}_i\), which is small when \(\hat{p}_i\) is near 1 and blows up as it
+      approaches 0. The sum is a penalty for confident mistakes. That bracket is a switch,
+      not arithmetic.</div>
+  </div>
+
+  <!-- ============================================================== trees -->
+  <h2 id="trees">Notation for trees and ensembles</h2>
+  <p class="m-why">Tree formulas look unlike regression formulas, but they use only two new
+     pieces of notation.</p>
+
+  <h3>The indicator function</h3>
+  <div class="m-eq">
+    $$\mathbf{1}\{A\} = \begin{cases} 1 & \text{if } A \text{ is true} \\ 0 & \text{otherwise} \end{cases}$$
+    <div class="m-say">Also written \(I(A)\) or \(\mathbf{1}_A\). It turns a yes-or-no
+      question into a number so it can be used in arithmetic. In Python it is exactly what
+      <code>(s &gt; 0).astype(int)</code> does, from the Session 4 cheatsheet: a comparison
+      produces True and False, and the cast makes them 1 and 0.</div>
+  </div>
+  <p>With it, "count how many of these are true" is \(\sum_i \mathbf{1}\{\dots\}\), and
+     "what fraction are true" is \(\frac{1}{n}\sum_i \mathbf{1}\{\dots\}\). Accuracy is a
+     mean of indicators, \(\frac{1}{n}\sum_i \mathbf{1}\{\hat{y}_i = y_i\}\).</p>
+
+  <h3>Regions</h3>
+  <p>A regression tree cuts the feature space into \(M\) non-overlapping boxes
+     \(R_1, \dots, R_M\), the leaves, and predicts one constant in each. Written out, the
+     whole model is:</p>
+  <div class="m-eq">
+    $$\hat{f}(\mathbf{x}) = \sum_{m=1}^{M} c_m \, \mathbf{1}\{\mathbf{x} \in R_m\}$$
+    <div class="m-say">Every term is zero except the one box the observation falls into, so
+      the sum picks out a single \(c_m\). It is a lookup table written as a sum, which is a
+      pattern worth recognising: a sum over regions with an indicator is nearly always
+      "find the right one".</div>
+  </div>
+
+  <p>The constant in a leaf is the mean of the training targets in it, and the split is
+     chosen to make the resulting sum of squares small. For classification, the quality of a
+     leaf is measured by how mixed it is, and the two standard measures are:</p>
+  <div class="m-eq">
+    $$G = \sum_{k=1}^{K} \hat{p}_k (1 - \hat{p}_k)
+      \qquad\qquad
+      D = -\sum_{k=1}^{K} \hat{p}_k \log \hat{p}_k$$
+    <div class="m-say">Gini on the left, entropy on the right; \(\hat{p}_k\) is the fraction
+      of the leaf belonging to class \(k\), and \(k\) runs over classes, a third index to
+      keep separate from \(i\) and \(j\). Both are zero when a leaf is pure, meaning one
+      \(\hat{p}_k\) is 1 and the rest are 0, and both are largest when the classes are
+      evenly mixed.</div>
+  </div>
+
+  <h3>Ensembles: averaging and adding</h3>
+  <p>Once there are many trees, an extra index appears for <em>which tree</em>, usually
+     \(b\) or \(m\). There are only two ways to combine them, and the notation tells you
+     which one you are looking at:</p>
+  <div class="m-two">
+    <div class="m-panel">
+      <h4>Average them (bagging, random forest)</h4>
+      $$\hat{f}(\mathbf{x}) = \frac{1}{B}\sum_{b=1}^{B} \hat{f}^{\,b}(\mathbf{x})$$
+      <p>\(B\) trees are grown independently on different resamples, then averaged. The
+         \(1/B\) is the giveaway: independent votes, equal weight. Averaging cuts variance,
+         which is why a forest beats a single deep tree.</p>
+    </div>
+    <div class="m-panel">
+      <h4>Add them up (boosting, XGBoost)</h4>
+      $$\hat{f}_{m}(\mathbf{x}) = \hat{f}_{m-1}(\mathbf{x}) + \nu\, h_m(\mathbf{x})$$
+      <p>Each new small tree \(h_m\) is fitted to what the previous ones still get wrong, and
+         added on with a shrinkage factor \(\nu\). No \(1/B\), and the subscript refers to a
+         previous stage: that recursion is the signature of boosting.</p>
+    </div>
+  </div>
+  <p>The superscript \(b\) in \(\hat{f}^{\,b}\) is a label, not a power. Superscripts as
+     labels are common once there are several models to keep apart, and context is the only
+     way to tell them from exponents. A superscript in brackets, \(\hat{f}^{(m)}\), is
+     always a label.</p>
+
+  <!-- ============================================================ gallery -->
+  <h2 id="gallery">The equation gallery</h2>
+  <p class="m-why">The formulas you will actually be shown, each read out symbol by symbol.
+     This is the drill: cover the notes, read the equation aloud, then check.</p>
+
+  <p>None of these is derived here, and several belong to later sessions. The point is only
+     that by now you should be able to say what every symbol in them is, and what shape it
+     has. If you can do that, an unfamiliar model is a short read rather than a wall.</p>
+
+  <div class="m-card">
+    <div class="m-card-h">Ordinary least squares</div>
+    $$\hat{\boldsymbol\beta} = (\mathbf{X}^{\top}\mathbf{X})^{-1}\mathbf{X}^{\top}\mathbf{y}$$
+    <div class="m-say"><em>Beta hat equals, X transpose X, inverse, X transpose y.</em></div>
+    <ul class="m-anno">
+      <li><span class="s">\(\hat{\boldsymbol\beta}\)</span><span>the estimated coefficients, \(p \times 1\), one per feature</span></li>
+      <li><span class="s">\(\mathbf{X}^{\top}\mathbf{X}\)</span><span>\(p \times p\) and symmetric. Must be invertible, which is exactly the no-perfect-multicollinearity condition.</span></li>
+      <li><span class="s">\((\cdot)^{-1}\)</span><span>matrix inverse. Not a power, not a reciprocal.</span></li>
+      <li><span class="s">\(\mathbf{X}^{\top}\mathbf{y}\)</span><span>\(p \times 1\). Entry \(j\) is the dot product of feature \(j\) with the target.</span></li>
+    </ul>
+  </div>
+
+  <div class="m-card">
+    <div class="m-card-h">Ridge regression</div>
+    $$\hat{\boldsymbol\beta}^{\text{ridge}}
+      = \operatorname*{arg\,min}_{\boldsymbol\beta} \; \|\mathbf{y} - \mathbf{X}\boldsymbol\beta\|_2^2 + \lambda\|\boldsymbol\beta\|_2^2
+      \;=\; (\mathbf{X}^{\top}\mathbf{X} + \lambda\mathbf{I})^{-1}\mathbf{X}^{\top}\mathbf{y}$$
+    <div class="m-say"><em>The beta minimising the sum of squared residuals plus lambda times
+      the sum of squared coefficients.</em> Unusually, this one has both a definition and a
+      closed form, and they are the same thing.</div>
+    <ul class="m-anno">
+      <li><span class="s">\(\|\cdot\|_2^2\)</span><span>squared Euclidean norm, so both terms are sums of squares</span></li>
+      <li><span class="s">\(\lambda\)</span><span>a single non-negative number you choose, not estimated from the fit. \(\lambda = 0\) gives OLS back exactly.</span></li>
+      <li><span class="s">\(\lambda\mathbf{I}\)</span><span>\(\lambda\) added down the diagonal only. This is what makes the matrix invertible even when \(\mathbf{X}^{\top}\mathbf{X}\) is not.</span></li>
+      <li><span class="s">superscript ridge</span><span>a label saying which estimator, not an exponent</span></li>
+    </ul>
+  </div>
+
+  <div class="m-card">
+    <div class="m-card-h">Lasso</div>
+    $$\hat{\boldsymbol\beta}^{\text{lasso}}
+      = \operatorname*{arg\,min}_{\boldsymbol\beta} \; \sum_{i=1}^{n}\left(y_i - \mathbf{x}_i^{\top}\boldsymbol\beta\right)^2 + \lambda \sum_{j=1}^{p} |\beta_j|$$
+    <div class="m-say">Written here with sums rather than norms, which is the same statement
+      as the ridge line above with \(\|\cdot\|_1\) in place of \(\|\cdot\|_2^2\). Being able
+      to move between the two spellings is the skill.</div>
+    <ul class="m-anno">
+      <li><span class="s">\(i\) vs \(j\)</span><span>the first sum runs over observations, the second over coefficients. Different loops, and the intercept is normally left out of the second.</span></li>
+      <li><span class="s">\(|\beta_j|\)</span><span>absolute value of a single number, single bars. Not a norm and not a determinant.</span></li>
+    </ul>
+  </div>
+
+  <div class="m-card">
+    <div class="m-card-h">Logistic regression</div>
+    $$P(Y = 1 \mid \mathbf{x}) = \frac{1}{1 + e^{-\mathbf{x}^{\top}\boldsymbol\beta}}$$
+    <div class="m-say"><em>The probability that the label is 1, given these features, equals
+      one over one plus e to the minus x transpose beta.</em></div>
+    <ul class="m-anno">
+      <li><span class="s">\(\mathbf{x}^{\top}\boldsymbol\beta\)</span><span>a scalar: the same weighted sum OLS forms. Everything outside it exists only to map that number into \((0,1)\).</span></li>
+      <li><span class="s">\(\mid\)</span><span>read <em>given</em>. Not division, not absolute value.</span></li>
+      <li><span class="s">\(Y = 1\)</span><span>which class counts as the positive one, a choice you make when you build the target</span></li>
+    </ul>
+  </div>
+
+  <div class="m-card">
+    <div class="m-card-h">k-nearest neighbours</div>
+    $$\hat{y}_0 = \frac{1}{k} \sum_{i \in \mathcal{N}_k(\mathbf{x}_0)} y_i$$
+    <div class="m-say"><em>The prediction at a new point is the average of the targets of its
+      k nearest training points.</em> For classification, replace the average with a vote:
+      \(\hat{y}_0 = \arg\max_c \sum_{i \in \mathcal{N}_k} \mathbf{1}\{y_i = c\}\), the class
+      that appears most often among the neighbours.</div>
+    <ul class="m-anno">
+      <li><span class="s">\(\mathcal{N}_k(\mathbf{x}_0)\)</span><span>a <strong>set</strong>: the indices of the \(k\) training observations closest to \(\mathbf{x}_0\). Script capitals usually name a set.</span></li>
+      <li><span class="s">\(i \in \mathcal{N}_k\)</span><span>the sum runs over the members of that set, not over \(1\) to \(n\). A sum can be indexed by any set.</span></li>
+      <li><span class="s">closest</span><span>by the Euclidean distance above, which is why the columns must be standardised first</span></li>
+    </ul>
+  </div>
+
+  <div class="m-card">
+    <div class="m-card-h">Mean squared error</div>
+    $$\text{MSE} = \frac{1}{n}\sum_{i=1}^{n}\left(y_i - \hat{y}_i\right)^2
+      = \frac{1}{n}\|\mathbf{y} - \hat{\mathbf{y}}\|_2^2$$
+    <div class="m-say">Session 4's scoring metric, in its two equivalent spellings. The
+      second is the first, vectorised. Once you read them as the same object, the step from
+      "average of squared errors" to "squared norm of the error vector" stops being a
+      translation and becomes a glance.</div>
+  </div>
+
+  <!-- ============================================================== numpy -->
+  <h2 id="numpy">Notation to NumPy</h2>
+  <p class="m-why">The same objects, in the language you will write them in. Everything here
+     is on the <a href="cheatsheet.html">cheatsheet</a> except where noted.</p>
+
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th>Maths</th><th>NumPy</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td>\(\mathbf{X} \in \mathbb{R}^{n \times p}\)</td><td><code>X.shape</code> is <code>(n, p)</code></td><td>rows first, same order as the maths</td></tr>
+      <tr><td>\(x_{ij}\)</td><td><code>X[i, j]</code></td><td>Python counts from 0, the maths from 1</td></tr>
+      <tr><td>\(\mathbf{x}_i\), row \(i\)</td><td><code>X[i, :]</code></td><td>one observation</td></tr>
+      <tr><td>\(\mathbf{X}_j\), column \(j\)</td><td><code>X[:, j]</code></td><td>one feature</td></tr>
+      <tr><td>\(\mathbf{X}^{\top}\)</td><td><code>X.T</code></td><td></td></tr>
+      <tr><td>\(\mathbf{X}\boldsymbol\beta\)</td><td><code>X @ beta</code></td><td><code>*</code> would be entry by entry, which is a different thing</td></tr>
+      <tr><td>\(\mathbf{x}^{\top}\mathbf{y}\)</td><td><code>x @ y</code></td><td>for two 1-dimensional arrays this is the dot product</td></tr>
+      <tr><td>\(\mathbf{X}^{\top}\mathbf{X}\)</td><td><code>X.T @ X</code></td><td></td></tr>
+      <tr><td>\(\mathbf{A}^{-1}\)</td><td><code>np.linalg.inv(A)</code></td><td>prefer <code>np.linalg.solve(A, b)</code> for \(\mathbf{A}^{-1}\mathbf{b}\)</td></tr>
+      <tr><td>\(\mathbf{I}_p\)</td><td><code>np.eye(p)</code></td><td>not on the cheatsheet</td></tr>
+      <tr><td>column of ones</td><td><code>np.column_stack([np.ones(n), x])</code></td><td>the intercept column</td></tr>
+      <tr><td>\(\sum_i x_i\)</td><td><code>x.sum()</code></td><td></td></tr>
+      <tr><td>\(\bar{x}\)</td><td><code>x.mean()</code></td><td></td></tr>
+      <tr><td>\(\|\mathbf{x}\|_2^2\)</td><td><code>x @ x</code></td><td>a sum of squares is a vector dotted with itself</td></tr>
+      <tr><td>\(\|\mathbf{x}\|_2\)</td><td><code>np.sqrt(x @ x)</code></td><td>or <code>np.linalg.norm(x)</code>, not on the cheatsheet</td></tr>
+      <tr><td>\(\mathbf{1}\{x &gt; 0\}\)</td><td><code>(x &gt; 0).astype(int)</code></td><td>the indicator function</td></tr>
+      <tr><td>\(\log\)</td><td><code>np.log</code></td><td>natural log, as everywhere in this course</td></tr>
+      <tr><td>\(e^{x}\)</td><td><code>np.exp(x)</code></td><td></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>The whole OLS formula, once, so the correspondence is concrete:</p>
+  <pre><code>beta_hat = np.linalg.solve(X.T @ X, X.T @ y)   # preferred
+beta_hat = np.linalg.inv(X.T @ X) @ X.T @ y    # the formula, literally</code></pre>
+  <p>Both lines compute \((\mathbf{X}^{\top}\mathbf{X})^{-1}\mathbf{X}^{\top}\mathbf{y}\).
+     The first solves the normal equations \(\mathbf{X}^{\top}\mathbf{X}\hat{\boldsymbol\beta}
+     = \mathbf{X}^{\top}\mathbf{y}\) directly, which is faster and better behaved when the
+     columns are nearly collinear.</p>
+
+  <!-- ============================================================== traps -->
+  <h2 id="traps">Traps and look-alikes</h2>
+  <p class="m-why">Symbols that mean different things depending on where they sit. These are
+     the ones that cause real confusion in an exam.</p>
+
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th>You see</th><th>It is not</th><th>It is</th></tr></thead>
+    <tbody>
+      <tr><td>\(\mathbf{A}^{-1}\)</td><td>a power, or \(1/a_{ij}\)</td><td>the matrix inverse, an operation with its own definition</td></tr>
+      <tr><td>\(\mathbf{X}^{\top}\), \(\mathbf{X}^{T}\), \(X'\)</td><td>a power \(T\), or a derivative</td><td>three spellings of the transpose. The prime is the econometrics convention.</td></tr>
+      <tr><td>\(|\beta_j|\) vs \(\|\boldsymbol\beta\|\) vs \(|\mathbf{A}|\)</td><td>the same bars</td><td>absolute value of a number, norm of a vector, determinant of a matrix</td></tr>
+      <tr><td>\(\sum\) vs \(\boldsymbol\Sigma\)</td><td>the same symbol</td><td>capital sigma is both "add these up" and, in bold or in a variance context, a covariance matrix</td></tr>
+      <tr><td>\(\sigma\) vs \(\sigma(z)\)</td><td>the same object</td><td>lower case sigma alone is a standard deviation; with an argument it is usually the sigmoid</td></tr>
+      <tr><td>\(p\)</td><td>one thing</td><td>the number of features, and also a probability. Context decides, and \(\hat{p}_k\) with a class index is always a probability.</td></tr>
+      <tr><td>\(x_i\) vs \(x_j\) vs \(x_{ij}\)</td><td>interchangeable</td><td>a row, a column, and a single cell</td></tr>
+      <tr><td>\(\varepsilon_i\) vs \(e_i\)</td><td>the same number</td><td>the true error, which you never see, and the residual \(y_i - \hat{y}_i\), which you compute</td></tr>
+      <tr><td>\(\beta\) vs \(\hat{\beta}\)</td><td>the same number</td><td>the unknown truth and your estimate of it. Every hat is a claim about data.</td></tr>
+      <tr><td>\(\mathbf{A}\mathbf{B}\)</td><td>\(\mathbf{B}\mathbf{A}\)</td><td>order matters, and often only one of them is even defined</td></tr>
+      <tr><td>\(\mathbf{A}\mathbf{B}\) in code</td><td><code>A * B</code></td><td><code>A @ B</code>. The <code>*</code> multiplies entry by entry and does not complain.</td></tr>
+      <tr><td>\(\hat{f}^{(m)}\), \(\hat{f}^{\,b}\)</td><td>powers</td><td>labels: iteration \(m\), tree \(b\). A superscript in brackets is always a label.</td></tr>
+      <tr><td>\(\mathbb{E}[X]\)</td><td>a function call or an index</td><td>expectation. Square brackets are just the convention.</td></tr>
+      <tr><td>\(\mathbf{0}\), \(\mathbf{I}\)</td><td>the numbers 0 and 1</td><td>the zero vector or matrix, and the identity matrix</td></tr>
+      <tr><td>\(\log\)</td><td>base 10</td><td>the natural logarithm, base \(e\). Written \(\ln\) in some texts, never in this one.</td></tr>
+      <tr><td>\(\arg\min\)</td><td>\(\min\)</td><td>the input achieving the minimum, not the minimum value</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <!-- ============================================================== check -->
+  <h2 id="check">Check yourself</h2>
+  <p class="m-why">Twelve questions. If you can answer them without looking, this page has
+     done its job.</p>
+
+  <p>Answer each one before expanding it. Several are shape questions, and shape questions
+     are the ones worth being fast at.</p>
+
+  <details class="m-check">
+    <summary>1. \(\mathbf{X}\) is \(n \times p\) and \(\mathbf{y}\) is \(n \times 1\). What shape is \(\mathbf{X}^{\top}\mathbf{y}\)?</summary>
+    <p>\(p \times 1\). The transpose makes \(\mathbf{X}^{\top}\) a \(p \times n\) matrix, and
+       \((p \times n)(n \times 1) = p \times 1\). One number per feature.</p>
+  </details>
+
+  <details class="m-check">
+    <summary>2. Of \(\mathbf{X}\boldsymbol\beta\), \(\boldsymbol\beta\mathbf{X}\) and \(\boldsymbol\beta^{\top}\mathbf{X}^{\top}\), which are defined?</summary>
+    <p>The first and the third. \(\mathbf{X}\boldsymbol\beta\) is \((n \times p)(p \times 1) = n \times 1\).
+       \(\boldsymbol\beta^{\top}\mathbf{X}^{\top}\) is \((1 \times p)(p \times n) = 1 \times n\),
+       the same numbers as a row. \(\boldsymbol\beta\mathbf{X}\) is \((p \times 1)(n \times p)\),
+       and \(1 \ne n\), so it is not defined.</p>
+  </details>
+
+  <details class="m-check">
+    <summary>3. Read \(\hat{\boldsymbol\beta} = (\mathbf{X}^{\top}\mathbf{X})^{-1}\mathbf{X}^{\top}\mathbf{y}\) out loud.</summary>
+    <p>"Beta hat equals the inverse of X transpose X, times X transpose y." If you said
+       "X to the power T" or "one over X transpose X", read the
+       <a href="#traps">traps</a> section again.</p>
+  </details>
+
+  <details class="m-check">
+    <summary>4. Why is it \((\mathbf{X}^{\top}\mathbf{X})^{-1}\) rather than \(\mathbf{X}^{-1}(\mathbf{X}^{\top})^{-1}\)?</summary>
+    <p>Because \(\mathbf{X}\) is \(n \times p\) and not square, so it has no inverse at all.
+       Only the \(p \times p\) product \(\mathbf{X}^{\top}\mathbf{X}\) can be inverted. The
+       rule \((\mathbf{A}\mathbf{B})^{-1} = \mathbf{B}^{-1}\mathbf{A}^{-1}\) needs both
+       factors to be invertible, and here neither is.</p>
+  </details>
+
+  <details class="m-check">
+    <summary>5. You include a stock's daily return in percent and the same return as a decimal as two features. What happens?</summary>
+    <p>Perfect multicollinearity: one column is exactly 100 times the other, so
+       \(\mathbf{X}^{\top}\mathbf{X}\) is singular and has no inverse. There is no unique
+       \(\hat{\boldsymbol\beta}\), because any increase in one coefficient can be offset
+       exactly by a change in the other. Software will either drop a column, return
+       nonsense, or fail.</p>
+  </details>
+
+  <details class="m-check">
+    <summary>6. In ridge regression, what does \(\lambda = 0\) give you? And very large \(\lambda\)?</summary>
+    <p>\(\lambda = 0\) removes the penalty, so the objective is the OLS objective and you get
+       OLS back exactly. Very large \(\lambda\) makes the penalty dominate, so the
+       coefficients are pushed toward zero and the fitted values toward a flat line at the
+       mean of \(\mathbf{y}\).</p>
+  </details>
+
+  <details class="m-check">
+    <summary>7. What is the difference between \(\varepsilon_i\) and \(e_i\)?</summary>
+    <p>\(\varepsilon_i\) is the true error, the part of \(y_i\) that the true relationship
+       \(f\) does not explain. You never observe it. \(e_i = y_i - \hat{y}_i\) is the
+       residual, computed from your fitted model, and it changes if you change the model.
+       Same idea, one unobservable and one on your screen.</p>
+  </details>
+
+  <details class="m-check">
+    <summary>8. In \(\sum_{i=1}^{n}(y_i - \hat{y}_i)^2\), what is \(i\) and how many terms are there?</summary>
+    <p>\(i\) is a counter over observations, with no meaning outside the sum, exactly like
+       the variable in <code>for i in range(n)</code>. There are \(n\) terms, one per
+       observation, and each is a single squared number.</p>
+  </details>
+
+  <details class="m-check">
+    <summary>9. Write \(\sum_{i=1}^{n}(y_i - \hat{y}_i)^2\) in matrix notation.</summary>
+    <p>\(\mathbf{e}^{\top}\mathbf{e}\), or equivalently
+       \(\|\mathbf{y} - \mathbf{X}\hat{\boldsymbol\beta}\|_2^2\), where
+       \(\mathbf{e} = \mathbf{y} - \mathbf{X}\hat{\boldsymbol\beta}\). A sum of squares is
+       always a vector dotted with itself, and in NumPy it is <code>e @ e</code>.</p>
+  </details>
+
+  <details class="m-check">
+    <summary>10. What is \(\mathbf{1}\{\mathbf{x} \in R_3\}\) when \(\mathbf{x}\) is not in \(R_3\)?</summary>
+    <p>Zero. The indicator is 1 when the condition holds and 0 otherwise, which is what lets
+       a sum over all the leaves of a tree pick out the single leaf an observation falls
+       into.</p>
+  </details>
+
+  <details class="m-check">
+    <summary>11. What kind of object is \(\mathbf{x}_i^{\top}\boldsymbol\beta\), and what does it mean?</summary>
+    <p>A single number: \((1 \times p)(p \times 1) = 1 \times 1\). It is the weighted sum of
+       one observation's features, so it is that observation's fitted value in a linear
+       model, and its score before squashing in a logistic one.</p>
+  </details>
+
+  <details class="m-check">
+    <summary>12. What is the difference between \(\min_\beta L(\beta)\) and \(\arg\min_\beta L(\beta)\)?</summary>
+    <p>The first is the smallest value the loss takes, a number on the vertical axis. The
+       second is the \(\beta\) that produces it, a point on the horizontal axis. A model
+       definition wants the second: the coefficients are the answer, not the loss.</p>
+  </details>
+
+  <!-- =========================================================== glossary -->
+  <h2 id="glossary">Symbols and Greek letters</h2>
+  <p class="m-why">A lookup table for when a symbol appears and nothing on the slide says
+     what it is.</p>
+
+  <h3>Greek letters you will meet</h3>
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th>Symbol</th><th>Name</th><th>Usually means</th></tr></thead>
+    <tbody>
+      <tr><td>\(\alpha\)</td><td>alpha</td><td>an intercept, a significance level, or a mixing weight</td></tr>
+      <tr><td>\(\beta\), \(\boldsymbol\beta\)</td><td>beta</td><td>a regression coefficient; in bold, the whole vector of them</td></tr>
+      <tr><td>\(\varepsilon\)</td><td>epsilon</td><td>the error term, the part of \(y\) no model can explain</td></tr>
+      <tr><td>\(\eta\)</td><td>eta</td><td>a learning rate, the step size in gradient descent</td></tr>
+      <tr><td>\(\lambda\)</td><td>lambda</td><td>a penalty strength in ridge, lasso and elastic net</td></tr>
+      <tr><td>\(\mu\)</td><td>mu</td><td>a population mean</td></tr>
+      <tr><td>\(\nu\)</td><td>nu</td><td>a shrinkage factor in boosting</td></tr>
+      <tr><td>\(\rho\)</td><td>rho</td><td>a correlation</td></tr>
+      <tr><td>\(\sigma\), \(\sigma^2\)</td><td>sigma</td><td>standard deviation and variance; with an argument, the sigmoid</td></tr>
+      <tr><td>\(\sum\)</td><td>capital sigma</td><td>add these up</td></tr>
+      <tr><td>\(\boldsymbol\Sigma\)</td><td>capital sigma, bold</td><td>a covariance matrix</td></tr>
+      <tr><td>\(\prod\)</td><td>capital pi</td><td>multiply these together</td></tr>
+      <tr><td>\(\theta\), \(\boldsymbol\theta\)</td><td>theta</td><td>parameters in general, when the model is not specifically a regression</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Everything else</h3>
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th>Symbol</th><th>Read as</th><th>Means</th></tr></thead>
+    <tbody>
+      <tr><td>\(\in\)</td><td>is in, belongs to</td><td>membership of a set</td></tr>
+      <tr><td>\(\mathbb{R}^{n \times p}\)</td><td>R, n by p</td><td>the real matrices with \(n\) rows and \(p\) columns</td></tr>
+      <tr><td>\(\{0, 1\}\)</td><td>the set zero, one</td><td>the two values a binary target can take</td></tr>
+      <tr><td>\(\mathcal{N}_k(\mathbf{x})\)</td><td>the neighbourhood of x</td><td>a named set, here the \(k\) nearest points</td></tr>
+      <tr><td>\(\mathbf{A}^{\top}\)</td><td>A transpose</td><td>rows and columns swapped</td></tr>
+      <tr><td>\(\mathbf{A}^{-1}\)</td><td>A inverse</td><td>the matrix undoing \(\mathbf{A}\)</td></tr>
+      <tr><td>\(\hat{x}\)</td><td>x hat</td><td>an estimate computed from data</td></tr>
+      <tr><td>\(\bar{x}\)</td><td>x bar</td><td>a sample mean</td></tr>
+      <tr><td>\(|x|\)</td><td>the absolute value of x</td><td>size, ignoring sign</td></tr>
+      <tr><td>\(\|\mathbf{x}\|_2\), \(\|\mathbf{x}\|_1\)</td><td>the two-norm, the one-norm</td><td>root of the sum of squares; sum of absolute values</td></tr>
+      <tr><td>\(\mathbb{E}[\cdot]\)</td><td>the expectation of</td><td>the population average</td></tr>
+      <tr><td>\(P(A \mid B)\)</td><td>the probability of A given B</td><td>a conditional probability</td></tr>
+      <tr><td>\(\sim\)</td><td>is distributed as</td><td>names the distribution of a random variable</td></tr>
+      <tr><td>\(\mathbf{1}\{\cdot\}\)</td><td>the indicator of</td><td>1 if true, 0 if false</td></tr>
+      <tr><td>\(\nabla\)</td><td>nabla, grad</td><td>the vector of all partial derivatives</td></tr>
+      <tr><td>\(\partial\)</td><td>partial</td><td>a derivative holding other variables fixed</td></tr>
+      <tr><td>\(\operatorname*{arg\,min}\), \(\operatorname*{arg\,max}\)</td><td>arg min, arg max</td><td>the input that minimises or maximises</td></tr>
+      <tr><td>\(\approx\)</td><td>is approximately</td><td></td></tr>
+      <tr><td>\(\propto\)</td><td>is proportional to</td><td>equal up to a constant factor that does not matter here</td></tr>
+      <tr><td>\(\Rightarrow\)</td><td>implies</td><td>the next line follows from the last</td></tr>
+      <tr><td>\(\forall\), \(\exists\)</td><td>for all, there exists</td><td>rare in this course, common in the textbooks</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <!-- ============================================================ further -->
+  <h2 id="further">If you want a proper refresher <span class="tag tag-extra">extra</span></h2>
+  <p>None of this is required, and none of it is examined. It is here for the case where a
+     section above was unfamiliar rather than rusty.</p>
+  <ul class="plain">
+    <li><a href="https://www.3blue1brown.com/topics/linear-algebra" target="_blank" rel="noopener"><strong>Essence of linear algebra</strong></a>
+        &nbsp;a short video series that shows what a matrix <em>does</em>, geometrically.
+        About three hours in total, and the best available cure for matrices feeling like
+        bookkeeping.</li>
+    <li><a href="https://www.statlearning.com/" target="_blank" rel="noopener"><strong>An Introduction to Statistical Learning</strong></a>
+        &nbsp;chapter 3 is linear regression written at exactly the level this course
+        assumes, and chapter 6 is where ridge, lasso and elastic net appear in the notation
+        used above. Free PDF, and already the course's conceptual reference.</li>
+    <li><a href="https://cs229.stanford.edu/section/cs229-linalg.pdf" target="_blank" rel="noopener"><strong>Linear algebra review and reference</strong></a>
+        &nbsp;the Stanford CS229 handout. Thirty pages, dense, and the closest thing to a
+        formal version of this page if you want the definitions stated properly.</li>
+  </ul>
+
+  <footer>
+    Found something here that is wrong, or a piece of notation the course uses and this page
+    does not explain? Email me at <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a> and I
+    will add it.
+  </footer>
+  </main>
+</div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script>
+  // Typeset the maths once the page and KaTeX have both loaded. Inline maths is
+  // written \( ... \) rather than $ ... $ so that a dollar sign in the prose can
+  // never start an equation by accident.
+  document.addEventListener("DOMContentLoaded", function () {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "\\[", right: "\\]", display: true },
+        { left: "\\(", right: "\\)", display: false }
+      ],
+      throwOnError: false
+    });
+  });
+</script>
+</body>
+</html>

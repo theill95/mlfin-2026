@@ -23,12 +23,13 @@ This repository is published:
   <https://theill95.github.io/mlfin-2026/session_04/session_04.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
-The site has five pages, linked from the sidebar:
+The site has six pages, linked from the sidebar:
 
 | page | what it is |
 |:--|:--|
 | `index.html` | the sessions: lecture, exercises and case for each |
 | `cheatsheet.html` | every function the course has used, with a worked example. **Generated** by `tools/build_cheatsheet.py`, which executes every example against the real data, so do not edit it by hand |
+| `math.html` | the maths the course assumes: matrix and vector notation, dimensions, vectorisation, inverses and multicollinearity, and how to read the objective functions behind OLS, ridge, lasso, logistic regression and trees. Hand-written; maths renders through KaTeX from a CDN |
 | `setup.html` | installing Python and VS Code, and the extras (scripts vs notebooks, virtual environments, Git), each marked needed or optional |
 | `resources.html` | official docs, ISLP, Kaggle, and the AI-use policy |
 | `downloads.html` | every notebook and CSV, plus `downloads/mlfin-course.zip` |

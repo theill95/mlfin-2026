@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """Stamp the shared sidebar into every site page.
 
 The sidebar lives in one place, assets/nav.html. This copies it into each page
 between the <!-- nav:start --> and <!-- nav:end --> markers, marking the current
-page as you go. Without this the nav is repeated five times and drifts the first
+page as you go. Without this the nav is repeated six times and drifts the first
 time somebody edits one copy.
 
     python tools/build_nav.py
@@ -18,7 +18,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "assets" / "nav.html"
 
-PAGES = ["index.html", "setup.html", "resources.html", "downloads.html"]
+PAGES = ["index.html", "math.html", "setup.html", "resources.html",
+         "downloads.html"]
 
 START = "  <!-- nav:start -->"
 END = "  <!-- nav:end -->"
