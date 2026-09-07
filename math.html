@@ -54,11 +54,18 @@
 
   <div class="note warn">
     <strong>Notation is a convention, and conventions differ.</strong> This page writes
-    vectors and matrices in bold, but that is a house style, not a law. Plenty of authors,
-    including whoever wrote your other course notes, use plain italic throughout and expect
-    you to know that \(\beta\) is a vector and \(y\) is a column of numbers. The same goes
-    for the transpose, written \(\mathbf{X}^{\top}\) here and \(X'\) elsewhere, and for
-    which letters stand for what. So do not read the typography, read the
+    vectors and matrices in bold, purely because it makes a long formula easier to scan on
+    a screen. That is a house style, not a standard, and it is <em>not</em> what most
+    writing in this field does. Machine-learning papers and textbooks very often set
+    everything in plain italic, \(X\) and \(\beta\) and \(y\), and simply expect you to
+    know that \(\beta\) is a vector and \(y\) is a column of numbers. Econometrics texts
+    usually do the same. Some sources bold only matrices, some bold only vectors, some
+    change their minds between chapters. You will meet both styles, often in the same week,
+    and neither is more correct.
+    <br><br>
+    The same goes for everything else on the surface of a formula: the transpose is
+    \(\mathbf{X}^{\top}\) here, \(X^{T}\) in one book and \(X'\) in the next, and which
+    letters stand for what varies too. So do not read the typography, read the
     <strong>object</strong>: ask what kind of thing each symbol has to be, and check that
     the dimensions of the expression fit together. If they only fit one way, you have
     worked out what everything is, whatever font it was set in.
@@ -102,7 +109,7 @@
 
   <div class="scroll-x">
   <table>
-    <thead><tr><th>Object</th><th>Written</th><th>Example</th><th>Shape</th><th>In NumPy</th></tr></thead>
+    <thead><tr><th>Object</th><th>Written here</th><th>Example</th><th>Shape</th><th>In NumPy</th></tr></thead>
     <tbody>
       <tr>
         <td><strong>Scalar</strong><br>a single number</td>
@@ -129,11 +136,13 @@
   </table>
   </div>
 
-  <p>The <strong>bold is a convention, not a rule</strong>. This site bolds vectors and
-     matrices because it makes a formula easier to scan, and Session 4 does the same.
-     Plenty of textbooks, and probably your econometrics notes, write \(X\) and \(\beta\)
-     in plain italic and leave you to work out which is which from context. That is normal,
-     and it is why the next section matters more than this one.</p>
+  <p>The <em>written here</em> column is <strong>this page's</strong> convention, not a
+     rule, and as the note at the top said, plain italic is at least as common in machine
+     learning as bold is. Expect to see \(\mathbf{X}\boldsymbol\beta\),
+     \(X\boldsymbol\beta\) and \(X\beta\) all meaning the same product. The
+     <em>shape</em> column is the one that never varies: an object either has a shape or it
+     does not, and that is what tells you which of the three rows you are looking at. It is
+     why the next section matters more than this one.</p>
 
   <h3>Sets, and the \(\in\) symbol</h3>
   <p>\(\mathbb{R}\) is the set of all real numbers, meaning every ordinary number. Built
@@ -1087,6 +1096,7 @@ beta_hat = np.linalg.inv(X.T @ X) @ X.T @ y    # the formula, literally</code></
   <table>
     <thead><tr><th>You see</th><th>It is not</th><th>It is</th></tr></thead>
     <tbody>
+      <tr><td>\(X\) vs \(\mathbf{X}\)</td><td>necessarily two different objects</td><td>usually one object in two authors' styles. Bold is a scanning aid, and much of the machine-learning literature does without it. Decide what a symbol is from its shape, not its font.</td></tr>
       <tr><td>\(\mathbf{A}^{-1}\)</td><td>a power, or \(1/a_{ij}\)</td><td>the matrix inverse, an operation with its own definition</td></tr>
       <tr><td>\(\mathbf{X}^{\top}\), \(\mathbf{X}^{T}\), \(X'\)</td><td>a power \(T\), or a derivative</td><td>three spellings of the transpose. The prime is the econometrics convention.</td></tr>
       <tr><td>\(|\beta_j|\) vs \(\|\boldsymbol\beta\|\) vs \(|\mathbf{A}|\)</td><td>the same bars</td><td>absolute value of a number, norm of a vector, determinant of a matrix</td></tr>
@@ -1216,7 +1226,7 @@ beta_hat = np.linalg.inv(X.T @ X) @ X.T @ y    # the formula, literally</code></
     <thead><tr><th>Symbol</th><th>Name</th><th>Usually means</th></tr></thead>
     <tbody>
       <tr><td>\(\alpha\)</td><td>alpha</td><td>an intercept, a significance level, or a mixing weight</td></tr>
-      <tr><td>\(\beta\), \(\boldsymbol\beta\)</td><td>beta</td><td>a regression coefficient; in bold, the whole vector of them</td></tr>
+      <tr><td>\(\beta\), \(\boldsymbol\beta\)</td><td>beta</td><td>a regression coefficient, or the whole vector of them. This page bolds the vector; many sources write both the same way.</td></tr>
       <tr><td>\(\varepsilon\)</td><td>epsilon</td><td>the error term, the part of \(y\) no model can explain</td></tr>
       <tr><td>\(\eta\)</td><td>eta</td><td>a learning rate, the step size in gradient descent</td></tr>
       <tr><td>\(\lambda\)</td><td>lambda</td><td>a penalty strength in ridge, lasso and elastic net</td></tr>
