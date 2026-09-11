@@ -24,7 +24,7 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SESSIONS = ["01", "02", "03", "04"]
+SESSIONS = ["01", "02", "03", "04", "05"]
 
 HEAD = re.compile(r"^### ([A-Z])(\d+) · (.+?)\s+([★☆]{5})(?:\s+· revisits (S\d))?\s*$")
 

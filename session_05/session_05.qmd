@@ -1,0 +1,1459 @@
+---
+title: "Model selection and cross-validation"
+subtitle: "Machine Learning in Finance · Session 5"
+# Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
+# from a data: URI, so embed-resources is off. Ship session_05.html together
+# with session_05_files/ and data/, and SERVE OVER HTTP (double-click
+# serve.cmd, or publish to a URL). Opened from a file:// path the live code
+# cells do not merely fail to run, they do not appear at all.
+#
+# This deck loads numpy, pandas, matplotlib and scikit-learn into the browser
+# runtime. scikit-learn brings scipy and a BLAS with it, so the cold load is
+# roughly 45 MB rather than Session 4's 20 MB. Open the deck and run one cell
+# several minutes before class so it is warm.
+format:
+  live-revealjs:
+    theme: [default, ../theme/mlfin.scss]
+    width: 1280
+    height: 720
+    margin: 0.06
+    center: false
+    transition: fade
+    transition-speed: fast
+    background-transition: none
+    slide-number: c/t
+    controls: false
+    progress: true
+    hash: true
+    history: false
+    code-line-numbers: false
+    highlight-style: github
+    auto-stretch: false
+html-math-method: katex
+engine: jupyter
+pyodide:
+  packages:
+    - numpy
+    - pandas
+    - matplotlib
+    - scikit-learn
+  resources:
+    - data/prices.csv
+  cell-options:
+    autorun: true
+    startover: true
+execute:
+  echo: true
+  warning: false
+---
+
+# You have everything except a model
+
+```{python}
+#| include: false
+# House style for every precomputed figure in this deck, plus the data and the
+# one table the whole session works on.
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+MLFIN_STYLE = {
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "savefig.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"],
+    "font.size": 12, "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+}
+plt.rcParams.update(MLFIN_STYLE)
+
+from pathlib import Path
+import numpy as np
+import pandas as pd
+
+_data = Path("../data/prices.csv")
+if not _data.exists():
+    raise FileNotFoundError(
+        "Missing ../data/prices.csv - clone the full course repository, or "
+        "run tools/build_dataset.py from the repository root."
+    )
+PX = pd.read_csv(_data, parse_dates=["date"])
+RET = PX.pivot(index="date", columns="ticker", values="close").pct_change().dropna() * 100
+R = RET["AAPL"]
+
+TBL = pd.DataFrame({
+    "vol_20d": R.rolling(20).std(),
+    "vol_60d": R.rolling(60).std(),
+    "ret_20d": R.rolling(20).mean(),
+})
+TBL["vol_next"] = R.rolling(20).std().shift(-20)
+TBL = TBL.dropna()
+TRAIN = TBL.loc[:"2022-12-31"]
+TEST = TBL.loc["2023-01-01":]
+
+A = ["vol_20d"]
+B = ["vol_20d", "vol_60d"]
+C = ["vol_20d", "vol_60d", "ret_20d"]
+
+BLUE = "#1c5cab"
+BLUE_LIGHT = "#86b6ef"
+AMBER = "#b8860b"
+BRICK = "#b3402f"
+GREY = "#c3c2b7"
+GREY_LIGHT = "#d8d7d0"
+INK = "#141413"
+```
+
+```{pyodide}
+#| include: false
+# House style for the live figures, so they match the printed ones.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+plt.rcParams.update({
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"], "font.size": 12,
+    "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+    "figure.dpi": 100,
+})
+```
+
+::: {.diagram}
+<svg width="980" height="270" viewBox="0 0 980 270" role="img" aria-label="A table whose columns are features and one target, with its earlier rows marked as training data and its later rows kept back as test data">
+  <text x="330" y="30" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">features</text>
+  <text x="640" y="30" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#a8790b" font-weight="600">target</text>
+  <rect x="180" y="44" width="300" height="30" rx="4" fill="#a9c8ec"/>
+  <rect x="520" y="44" width="150" height="30" rx="4" fill="#eccf8a"/>
+  <rect x="180" y="82" width="300" height="106" fill="#cfe0f5"/>
+  <rect x="520" y="82" width="150" height="106" fill="#f6e3b8"/>
+  <rect x="180" y="192" width="300" height="52" fill="#f3cdc8"/>
+  <rect x="520" y="192" width="150" height="52" fill="#f3cdc8"/>
+  <g stroke="#ffffff" stroke-width="2.4">
+    <line x1="180" y1="100" x2="670" y2="100"/>
+    <line x1="180" y1="118" x2="670" y2="118"/>
+    <line x1="180" y1="136" x2="670" y2="136"/>
+    <line x1="180" y1="154" x2="670" y2="154"/>
+    <line x1="180" y1="172" x2="670" y2="172"/>
+    <line x1="180" y1="210" x2="670" y2="210"/>
+    <line x1="180" y1="228" x2="670" y2="228"/>
+    <line x1="280" y1="82" x2="280" y2="244"/>
+    <line x1="380" y1="82" x2="380" y2="244"/>
+  </g>
+  <g font-family="Segoe UI, sans-serif" font-size="14" fill="#26333f" text-anchor="middle" font-weight="600">
+    <text x="330" y="64">what you knew that day</text>
+    <text x="595" y="64">what happened next</text>
+  </g>
+  <g font-family="Segoe UI, sans-serif" font-size="15" fill="#0d366b">
+    <text x="160" y="120" text-anchor="end" font-weight="600">training rows</text>
+    <text x="160" y="144" text-anchor="end" font-size="13" fill="#898781">the earlier dates</text>
+  </g>
+  <g font-family="Segoe UI, sans-serif" font-size="15" fill="#b3402f">
+    <text x="160" y="216" text-anchor="end" font-weight="600">test rows</text>
+    <text x="160" y="238" text-anchor="end" font-size="13" fill="#898781">the later dates</text>
+  </g>
+  <line x1="180" y1="190" x2="670" y2="190" stroke="#b3402f" stroke-width="2"/>
+  <text x="700" y="120" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">a rule is allowed</text>
+  <text x="700" y="140" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">to learn from these</text>
+  <text x="700" y="212" font-size="14" font-family="Segoe UI, sans-serif" fill="#b3402f">nothing may look</text>
+  <text x="700" y="232" font-size="14" font-family="Segoe UI, sans-serif" fill="#b3402f">at these until the end</text>
+</svg>
+:::
+
+::: {.diagram-note}
+Last time you built a table like this and split it by date. This session fits a
+model to the training rows.
+:::
+
+
+# Some things are easier to predict than others
+
+```{python}
+#| echo: false
+#| fig-align: center
+fig, axes = plt.subplots(2, 1, figsize=(11.0, 3.4), sharex=True)
+axes[0].plot(R.index, R.values, color=BLUE, linewidth=0.9)
+axes[0].axhline(0, color=GREY, linewidth=0.9)
+axes[0].set_ylabel("daily return (%)")
+axes[0].set_title("Apple, every trading day", loc="left")
+v = R.rolling(20).std()
+axes[1].plot(v.index, v.values, color=BRICK, linewidth=1.8)
+axes[1].set_ylabel("volatility (%)")
+axes[1].set_title("The same days, as a 20-day standard deviation", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+Returns are close to unpredictable. Volatility is not. **It clusters**: calm
+months are followed by calm months, so today's volatility says something about
+next month's.
+
+
+# Today
+
+- fit a model with **scikit-learn** and score it on unseen days
+- compare it with two rules that need no model at all
+- see why the lowest error is often the wrong model to keep
+- hold out a **validation** block, and see why one is not enough
+- use **cross-validation**, with folds that respect the calendar
+
+<br>
+
+The lecture introduces each of these. The exercises and the case are where you
+practise them.
+
+
+# 1 · Fitting a model {.divider}
+
+::: {.divider-kicker}
+Part 1
+:::
+
+::: {.divider-note}
+Setting up the prediction problem, and fitting a linear regression to it.
+:::
+
+
+# The question
+
+**How volatile will Apple be over the next twenty trading days?**
+
+::: {.why-grid}
+::: {.why-point}
+**Why it matters** <span>option prices, margin requirements and risk limits are all set from a volatility forecast</span>
+:::
+::: {.why-point}
+**What you know today** <span>how volatile the last twenty days were, how volatile the last sixty were, and how the stock has drifted</span>
+:::
+:::
+
+::: {.muted .small}
+The answer is not known for twenty days, which makes this a forecast rather
+than a description.
+:::
+
+
+# The table
+
+```{pyodide}
+prices = pd.read_csv("data/prices.csv", parse_dates=["date"])
+rets = prices.pivot(index="date", columns="ticker", values="close").pct_change().dropna() * 100
+
+r = rets["AAPL"]
+
+table = pd.DataFrame({
+    "vol_20d": r.rolling(20).std(),
+    "vol_60d": r.rolling(60).std(),
+    "ret_20d": r.rolling(20).mean(),
+})
+table["vol_next"] = r.rolling(20).std().shift(-20)
+table = table.dropna()
+
+table.head(3)
+```
+
+::: {.muted .small}
+`rolling` and `shift` were both covered last time. Multiplying by 100 converts
+the returns to percent, which keeps the numbers easier to read.
+:::
+
+
+# The three features and the target
+
+```{pyodide}
+table.shape
+```
+
+::: {.diagram}
+<svg width="900" height="120" viewBox="0 0 900 120" role="img" aria-label="The three feature columns look back in time and the target column looks forward">
+  <rect x="60" y="34" width="330" height="46" rx="6" fill="#eef4fc" stroke="#86b6ef" stroke-width="1.5"/>
+  <rect x="470" y="34" width="200" height="46" rx="6" fill="#fbf3de" stroke="#d99a1c" stroke-width="1.5"/>
+  <text x="225" y="63" text-anchor="middle" font-size="15" font-family="Cascadia Mono, monospace" fill="#0d366b">vol_20d  vol_60d  ret_20d</text>
+  <text x="570" y="63" text-anchor="middle" font-size="15" font-family="Cascadia Mono, monospace" fill="#8a6508">vol_next</text>
+  <text x="225" y="22" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">looking back from today</text>
+  <text x="570" y="22" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">looking forward from today</text>
+  <g stroke="#c3c2b7" stroke-width="1.6" fill="none"><path d="M 400 57 L 458 57"/></g>
+  <polygon points="458,52 458,62 468,57" fill="#c3c2b7"/>
+  <text x="720" y="63" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">2,436 rows</text>
+</svg>
+:::
+
+
+# Is there anything there?
+
+```{python}
+#| echo: false
+#| fig-align: center
+fig, ax = plt.subplots(figsize=(8.4, 3.0))
+ax.scatter(TBL["vol_20d"], TBL["vol_next"], s=8, color=BLUE, alpha=0.30,
+           linewidths=0)
+ax.set_xlabel("volatility of the last 20 days (%)")
+ax.set_ylabel("volatility of the next 20 days (%)")
+fig.tight_layout()
+plt.show()
+```
+
+Each dot is one day. The cloud slopes upwards, so a volatile month tends to be
+followed by another one. A linear regression finds the line through it.
+
+
+# Splitting by date
+
+```{pyodide}
+train = table.loc[:"2022-12-31"]
+test = table.loc["2023-01-01":]
+
+print(len(train))
+print(len(test))
+```
+
+::: {.keypoint}
+Split on a **date**, not at random. A random test day would sit between two
+training days with almost identical volatility, so the score would come out too
+good.
+:::
+
+
+# X and y
+
+scikit-learn takes the features and the target as two separate objects.
+
+```{pyodide}
+X_train = train[["vol_20d"]]
+y_train = train["vol_next"]
+
+X_train.head(3)
+```
+
+::: {.muted .small}
+Two pairs of brackets: the inner pair is a **list of columns**, as in
+`prices[["date", "close"]]`. One pair returns a single column, which cannot be
+used as `X`.
+:::
+
+
+# scikit-learn
+
+scikit-learn contains all sorts of models, and it is already installed in
+Colab.
+
+::: {.why-grid}
+::: {.why-point}
+**Models** <span>linear regression today; ridge, lasso and trees later in the course</span>
+:::
+::: {.why-point}
+**Metrics** <span>mean squared error, R², and the other scoring measures covered last time</span>
+:::
+::: {.why-point}
+**Splitting** <span>tools for dividing the data into training, validation and test blocks</span>
+:::
+:::
+
+::: {.muted .small}
+The package is installed under the name `scikit-learn` but imported as
+`sklearn`.
+:::
+
+
+# Import, create, fit
+
+```{pyodide}
+from sklearn.linear_model import LinearRegression
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+print(model)
+```
+
+`LinearRegression()` creates a model that has not been fitted to anything yet.
+Calling `.fit()` with the training features and the training target computes the
+coefficients.
+
+::: {.muted .small}
+Printing the model shows only which kind of model it is. The coefficients it
+computed are stored on the object itself.
+:::
+
+
+# What it learned
+
+```{pyodide}
+print(model.intercept_)
+print(model.coef_)
+```
+
+::: {.muted .small}
+A trailing underscore marks an attribute **computed from the data**.
+`model.coef_` does not exist until `.fit()` has run.
+:::
+
+
+# Reading the two numbers
+
+::: {.formula}
+$$
+\widehat{\text{vol}}_{\text{next}} = 0.88 + 0.49 \times \text{vol}_{20d}
+$$
+:::
+
+```{python}
+#| echo: false
+#| fig-align: center
+from sklearn.linear_model import LinearRegression as _LR
+_m = _LR().fit(TRAIN[A], TRAIN["vol_next"])
+gx = np.linspace(TBL["vol_20d"].min(), TBL["vol_20d"].max(), 50)
+
+fig, ax = plt.subplots(figsize=(8.4, 2.6))
+ax.scatter(TBL["vol_20d"], TBL["vol_next"], s=8, color=GREY_LIGHT, alpha=0.6,
+           linewidths=0)
+ax.plot(gx, _m.intercept_ + _m.coef_[0] * gx, color=BLUE, linewidth=2.4)
+ax.set_xlabel("volatility of the last 20 days (%)")
+ax.set_ylabel("volatility of the next 20 days (%)")
+fig.tight_layout()
+plt.show()
+```
+
+The slope is 0.49, not 1: only half of this month's excess volatility carries
+into next month. **Volatility is pulled back towards its average**, which is
+called mean reversion.
+
+
+# Predicting
+
+```{pyodide}
+X_test = test[["vol_20d"]]
+
+predictions = model.predict(X_test)
+predictions[:5]
+```
+
+::: {.muted .small}
+`.predict()` returns one number per row of `X_test`. These are days in 2023 and
+2024, none of which were used to fit the model.
+:::
+
+
+# The forecast, against what happened
+
+```{python}
+#| echo: false
+#| fig-align: center
+_pred = _m.predict(TEST[A])
+fig, ax = plt.subplots(figsize=(11.0, 2.8))
+ax.plot(TEST.index, TEST["vol_next"], color=AMBER, linewidth=1.6,
+        label="what happened")
+ax.plot(TEST.index, _pred, color=BLUE, linewidth=1.6, label="the forecast")
+ax.set_ylabel("20-day volatility (%)")
+ax.legend(loc="upper right")
+fig.tight_layout()
+plt.show()
+```
+
+The forecast tracks the broad moves but lags at every turn. Comparing it with
+anything else needs a number, not a picture.
+
+
+# 2 · Scoring the model {.divider}
+
+::: {.divider-kicker}
+Part 2
+:::
+
+::: {.divider-note}
+Measuring the error, and choosing something sensible to compare it with.
+:::
+
+
+# Mean squared error
+
+```{pyodide}
+from sklearn.metrics import mean_squared_error
+
+mean_squared_error(test["vol_next"], predictions)
+```
+
+::: {.muted .small}
+Every metric in scikit-learn takes the true values first and the predictions
+second.
+:::
+
+
+# Root mean squared error
+
+```{pyodide}
+rmse = np.sqrt(mean_squared_error(test["vol_next"], predictions))
+print(rmse)
+```
+
+The square root puts the error back into percentage points: **the forecast is
+wrong by about 0.41 percentage points on a typical day.**
+
+
+# Is 0.41 good?
+
+An RMSE of 0.41 does not mean anything on its own. To judge it, compare it
+against two rules that are so simple they need no model.
+
+::: {.why-grid}
+::: {.why-point}
+**Guess the average** <span>predict the same number every day and ignore the features entirely</span>
+:::
+::: {.why-point}
+**Repeat what just happened** <span>predict that the next twenty days will be as volatile as the last twenty</span>
+:::
+:::
+
+::: {.muted .small}
+Neither rule has parameters and neither needs fitting. Together they set the
+minimum that a model has to beat.
+:::
+
+
+# Rule one: always guess the average
+
+```{pyodide}
+guess = train["vol_next"].mean()
+print(guess)
+
+flat = [guess] * len(test)
+print(np.sqrt(mean_squared_error(test["vol_next"], flat)))
+```
+
+::: {.muted .small}
+The average is computed on the **training** rows. Using the test average would
+require information that was not available when the forecast was made.
+:::
+
+
+# Rule two: repeat this month
+
+```{pyodide}
+print(np.sqrt(mean_squared_error(test["vol_next"], test["vol_20d"])))
+```
+
+The forecast for the next twenty days is simply the last twenty, with no
+fitting involved. Because volatility clusters, it is already accurate.
+
+
+# The three forecasts compared
+
+```{python}
+#| echo: false
+#| fig-align: center
+from sklearn.metrics import mean_squared_error as _mse
+_base = TRAIN["vol_next"].mean()
+_vals = [float(np.sqrt(_mse(TEST["vol_next"], np.full(len(TEST), _base)))),
+         float(np.sqrt(_mse(TEST["vol_next"], TEST["vol_20d"]))),
+         float(np.sqrt(_mse(TEST["vol_next"], _m.predict(TEST[A]))))]
+_names = ["guess the\naverage", "repeat this\nmonth", "the fitted\nmodel"]
+
+fig, ax = plt.subplots(figsize=(8.6, 2.6))
+bars = ax.bar(_names, _vals, color=[GREY, BLUE_LIGHT, BLUE], width=0.5)
+for b, vv in zip(bars, _vals):
+    ax.text(b.get_x() + b.get_width() / 2, vv + 0.012, "%.3f" % vv,
+            ha="center", fontsize=12, color="#52514e")
+ax.set_ylim(0, 0.62)
+ax.set_ylabel("test RMSE (percentage points)")
+fig.tight_layout()
+plt.show()
+```
+
+The model wins, but only by about three percent over a rule with no parameters.
+**Margins that small are normal in finance.**
+
+
+# Your turn [1]{.chip .chip-turn} {.your-turn}
+
+Fit the same model on `vol_60d` instead of `vol_20d`, and score it the same
+way. Does the longer window predict better?
+
+```{pyodide}
+#| autorun: false
+long_model = LinearRegression()
+long_model.fit(...)
+
+long_pred = long_model.predict(test[["vol_60d"]])
+print(np.sqrt(mean_squared_error(test["vol_next"], long_pred)))
+```
+
+::: {.muted .small}
+`.fit()` takes two arguments, and the last two lines show what shape each
+one has.
+:::
+
+
+# Your turn 1: answer
+
+```python
+long_model.fit(train[["vol_60d"]], train["vol_next"])
+```
+
+**0.419**, against 0.406 for `vol_20d`. A sixty-day average reacts more slowly,
+so it lags further at the turns.
+
+::: {.muted .small}
+The features come from `train`, not `test`, and need the same double brackets
+as `predict`. The target is one column, so it takes a single pair.
+:::
+
+::: {.muted .small}
+A natural next question is whether using both features together does better
+than either one alone.
+:::
+
+
+# 3 · Choosing between models {.divider}
+
+::: {.divider-kicker}
+Part 3
+:::
+
+::: {.divider-note}
+Comparing several models, and deciding which one to keep.
+:::
+
+
+# Three candidates
+
+```{pyodide}
+A = ["vol_20d"]
+B = ["vol_20d", "vol_60d"]
+C = ["vol_20d", "vol_60d", "ret_20d"]
+```
+
+All three use the same model, the same rows and the same target. They differ
+only in which columns go into `X`.
+
+::: {.muted .small}
+Naming the three lists here lets the later slides write `train[A]` instead of
+repeating the column names.
+:::
+
+
+# Scoring on the training rows
+
+```{pyodide}
+for columns in [A, B, C]:
+    m = LinearRegression()
+    m.fit(train[columns], train["vol_next"])
+    error = np.sqrt(mean_squared_error(train["vol_next"], m.predict(train[columns])))
+    print(len(columns), "features:", round(error, 4))
+```
+
+The error falls each time a column is added.
+
+
+# More columns always fit better
+
+Adding a column can never worsen the fit. A useless column can be given a
+coefficient of zero, reproducing the previous fit exactly.
+
+::: {.keypoint}
+Training error therefore always favours the largest model. It measures the fit
+on these rows, not whether the extra columns help on new ones.
+:::
+
+::: {.muted .small}
+This is overfitting: a model with enough freedom fits the noise in its own
+training rows.
+:::
+
+
+# Scoring on the test rows
+
+```{pyodide}
+for columns in [A, B, C]:
+    m = LinearRegression()
+    m.fit(train[columns], train["vol_next"])
+    error = np.sqrt(mean_squared_error(test["vol_next"], m.predict(test[columns])))
+    print(len(columns), "features:", round(error, 4))
+```
+
+The ranking reverses. **The one-feature model has the lowest test error**, so
+the two extra columns were fitting noise rather than signal.
+
+
+# So use the test rows to choose?
+
+It is tempting. The test rows are the honest out-of-sample score, and they just
+gave a clear answer.
+
+::: {.keypoint}
+The problem is what the word **lowest** is doing. Three test errors were
+computed and the smallest was kept. Part of being smallest is being genuinely
+better, and part of it is luck.
+:::
+
+::: {.muted .small}
+The winner's 0.406 is therefore too good. It is the best of three draws, not an
+unbiased estimate of what the model will do next year.
+:::
+
+
+# It gets worse with every choice
+
+Three candidates is mild. A real project compares far more, and every
+comparison is another look at the test rows.
+
+::: {.why-grid}
+::: {.why-point}
+**Features** <span>which columns to include, which to transform, how long a window to use</span>
+:::
+::: {.why-point}
+**Settings** <span>every model from here has them: ridge has a shrinkage parameter, a tree has a depth</span>
+:::
+::: {.why-point}
+**And they multiply** <span>ten settings tried on four feature sets is forty looks at the test rows</span>
+:::
+:::
+
+::: {.keypoint}
+Nothing from the test rows ever entered the code. It entered through **your
+decisions**, which is the hardest kind of leakage to notice.
+:::
+
+
+# Choosing and reporting are different jobs
+
+<div class="compare">
+<div class="compare-col">
+<h3>Choosing</h3>
+<p>Comparing candidates and keeping one. This happens repeatedly, and every comparison uses up a little of the honesty of whatever rows it was done on.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Reporting</h3>
+<p>Measuring how well the chosen model does on rows that played no part in the choosing. This happens once, and that number is the one reported.</p>
+</div>
+</div>
+
+::: {.keypoint}
+Two jobs means two blocks of data. Choosing needs held-out rows of its own.
+:::
+
+
+# A third block, for choosing
+
+::: {.diagram}
+<svg width="1000" height="205" viewBox="0 0 1000 205" role="img" aria-label="The rows split into a training block, a validation block and a test block, each with its own job">
+  <rect x="40" y="42" width="500" height="56" rx="7" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.6"/>
+  <rect x="552" y="42" width="200" height="56" rx="7" fill="#fdf8ed" stroke="#d99a1c" stroke-width="1.6"/>
+  <rect x="764" y="42" width="196" height="56" rx="7" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.6"/>
+  <text x="290" y="76" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">training</text>
+  <text x="652" y="76" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#8a6508" font-weight="600">validation</text>
+  <text x="862" y="76" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">test</text>
+  <text x="290" y="30" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">earliest dates</text>
+  <text x="862" y="30" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">latest dates</text>
+  <g stroke="#c3c2b7" stroke-width="1.2">
+    <line x1="290" y1="104" x2="290" y2="122"/>
+    <line x1="652" y1="104" x2="652" y2="122"/>
+    <line x1="862" y1="104" x2="862" y2="122"/>
+  </g>
+  <text x="290" y="144" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">fit each candidate</text>
+  <text x="652" y="144" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#8a6508" font-weight="600">compare them</text>
+  <text x="862" y="144" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">report one number</text>
+  <text x="290" y="168" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">as often as you like</text>
+  <text x="652" y="168" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">as often as you like</text>
+  <text x="862" y="168" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">once, at the end</text>
+</svg>
+:::
+
+::: {.diagram-note}
+The training block is split again by date. The test block stays unused until
+the end.
+:::
+
+
+# Cutting the training block in two
+
+```{pyodide}
+fit = train.loc[:"2020-12-31"]
+val = train.loc["2021-01-01":]
+
+print(len(fit))
+print(len(val))
+```
+
+::: {.muted .small}
+Fit on everything to the end of 2020, then compare on 2021 and 2022. The test
+years remain unused.
+:::
+
+
+# Choosing on the validation block
+
+```{pyodide}
+for columns in [A, B, C]:
+    m = LinearRegression()
+    m.fit(fit[columns], fit["vol_next"])
+    error = np.sqrt(mean_squared_error(val["vol_next"], m.predict(val[columns])))
+    print(len(columns), "features:", round(error, 4))
+```
+
+The **three-feature model wins**, and the test rows played no part in it. On
+the test rows the ranking was the other way round.
+
+
+# Your turn [2]{.chip .chip-turn} {.your-turn}
+
+Move the cut one year earlier. Fit on everything up to the end of **2019** and
+compare the candidates on 2020, 2021 and 2022.
+
+```{pyodide}
+#| autorun: false
+fit_early = train.loc[:...]
+val_early = train.loc[...:]
+
+for columns in [A, B, C]:
+    m = LinearRegression()
+    m.fit(fit_early[columns], fit_early["vol_next"])
+    error = np.sqrt(mean_squared_error(val_early["vol_next"], m.predict(val_early[columns])))
+    print(len(columns), "features:", round(error, 4))
+```
+
+
+# Your turn 2: answer
+
+```python
+fit_early = train.loc[:"2019-12-31"]
+val_early = train.loc["2020-01-01":]
+```
+
+The errors are **0.9978, 1.0025 and 1.0704**. The one-feature model now has the
+lowest error, by a clear margin.
+
+::: {.keypoint}
+The three candidates and the training block are unchanged. Only the cut date
+moved, and a different model came out best.
+:::
+
+
+# 4 · One split is one experiment {.divider}
+
+::: {.divider-kicker}
+Part 4
+:::
+
+::: {.divider-note}
+What happens when the validation block is placed somewhere else.
+:::
+
+
+# Two cuts, two winners
+
+2021 and 2022 were chosen for convenience, not for any real reason. Moving the
+cut changed which model came out best.
+
+::: {.keypoint}
+When the cut date determines which model is kept, the result says more about
+the choice of cut date than about the models.
+:::
+
+
+# Every cut date, side by side
+
+```{python}
+#| echo: false
+#| fig-align: center
+from sklearn.linear_model import LinearRegression as _LR2
+from sklearn.metrics import mean_squared_error as _mse2
+
+_cuts = ["2018-12-31", "2019-12-31", "2020-12-31", "2021-12-31"]
+_sets = [A, B, C]
+fig, axes = plt.subplots(1, 4, figsize=(11.0, 2.6))
+for ax, cut in zip(axes, _cuts):
+    f = TRAIN.loc[:cut]
+    v = TRAIN.loc[cut:]
+    errs = []
+    for cols in _sets:
+        mm = _LR2().fit(f[cols], f["vol_next"])
+        errs.append(float(np.sqrt(_mse2(v["vol_next"], mm.predict(v[cols])))))
+    best = int(np.argmin(errs))
+    lo, hi = min(errs), max(errs)
+    pad = (hi - lo) * 0.55 + 1e-9
+    for i, e in enumerate(errs):
+        on = i == best
+        ax.plot([i, i], [lo - pad, e], color=GREY_LIGHT, linewidth=1.2,
+                zorder=1)
+        ax.scatter([i], [e], s=140 if on else 70,
+                   color=BLUE if on else GREY, zorder=3)
+    ax.set_xlim(-0.6, 2.6)
+    ax.set_ylim(lo - pad, hi + pad)
+    ax.set_xticks([0, 1, 2])
+    ax.set_xticklabels(["1", "2", "3"])
+    ax.set_title("cut at end of " + cut[:4], loc="left", fontsize=11.5)
+    ax.set_xlabel("features")
+    ax.tick_params(labelsize=9.5)
+    ax.text(best, hi + pad * 0.55, "best", ha="center", fontsize=10.5,
+            color=BLUE, fontweight="600")
+axes[0].set_ylabel("validation RMSE")
+fig.tight_layout()
+plt.show()
+```
+
+With the cut after 2018 or 2019 the one-feature model has the lowest error.
+With the cut after 2020 or 2021 the three-feature model does.
+
+::: {.muted .small}
+Each panel has its own scale, so compare the dots within a panel, not across
+them.
+:::
+
+
+# Why the winner changes
+
+::: {.why-grid}
+::: {.why-point}
+**Each block is a single period** <span>2020 contains a crash and 2021 does not, so the two periods favour different models</span>
+:::
+::: {.why-point}
+**Each block is small** <span>a few hundred rows, and consecutive rows overlap heavily because their windows do</span>
+:::
+::: {.why-point}
+**Validation rows are not fitted on** <span>every row held back for validation is a row the model does not learn from</span>
+:::
+:::
+
+::: {.keypoint}
+The candidates differ by less than the periods do, so one cut date cannot
+separate them.
+:::
+
+
+# Using several cut dates
+
+Since the cut dates disagree, there is no reason to trust any one of them.
+**Use several cut dates and average the results.**
+
+::: {.muted .small}
+Every cut is an honest measurement on its own. Averaging them stops any single
+period deciding the winner.
+:::
+
+
+# 5 · Cross-validation {.divider}
+
+::: {.divider-kicker}
+Part 5
+:::
+
+::: {.divider-note}
+Averaging over several cut dates, and reading the result.
+:::
+
+
+# Every row takes a turn
+
+Split the training rows into $K$ blocks, called **folds**. Each fold is held
+back once, scored by a model fitted without it, and the $K$ scores are averaged.
+
+::: {.why-grid}
+::: {.why-point}
+**$K$ measurements, not one** <span>the average of five is far steadier than any one of them, as the four cut dates already showed</span>
+:::
+::: {.why-point}
+**Every row is scored once** <span>no row is left out of the judging, so no part of the sample is ignored</span>
+:::
+::: {.why-point}
+**And still fitted on** <span>each row is used for fitting in the other folds, so none is permanently lost to validation</span>
+:::
+::: {.why-point}
+**The spread comes free** <span>$K$ numbers say how much the answer moves from period to period, which one number cannot</span>
+:::
+:::
+
+
+# The arithmetic
+
+Write $\mathcal{F}_k$ for the rows scored in fold $k$, and $n_k$ for how many
+there are:
+
+::: {.formula}
+$$
+e_k = \sqrt{\frac{1}{n_k}\sum_{i \in \mathcal{F}_k}\left(y_i - \hat{y}_i\right)^2}
+\qquad\qquad
+\text{CV}_K = \frac{1}{K}\sum_{k=1}^{K} e_k
+$$
+:::
+
+- every $\hat{y}_i$ comes from a model fitted **without** fold $k$
+- $e_k$ is the RMSE on one fold, and $\text{CV}_K$ is the average of the $K$ of them
+- drop the square root and $\text{CV}_K$ is the textbook version, in MSE
+
+
+# Five cuts instead of one
+
+<div class="foldgrid">
+<div class="fg-head"><span class="fg-lab"></span><span class="fg-cell fg-ghost">2015-16</span><span class="fg-cell fg-ghost">2016-17</span><span class="fg-cell fg-ghost">2017-19</span><span class="fg-cell fg-ghost">2019-20</span><span class="fg-cell fg-ghost">2020-21</span><span class="fg-cell fg-ghost">2021-22</span><span class="fg-score">RMSE</span></div>
+<div class="fg-row fragment" data-fragment-index="1"><span class="fg-lab">cut 1</span><span class="fg-cell">fit</span><span class="fg-cell fg-val">score</span><span class="fg-cell fg-empty"></span><span class="fg-cell fg-empty"></span><span class="fg-cell fg-empty"></span><span class="fg-cell fg-empty"></span><span class="fg-score">0.583</span></div>
+<div class="fg-row fragment" data-fragment-index="2"><span class="fg-lab">cut 2</span><span class="fg-cell">fit</span><span class="fg-cell">fit</span><span class="fg-cell fg-val">score</span><span class="fg-cell fg-empty"></span><span class="fg-cell fg-empty"></span><span class="fg-cell fg-empty"></span><span class="fg-score">0.703</span></div>
+<div class="fg-row fragment" data-fragment-index="3"><span class="fg-lab">cut 3</span><span class="fg-cell">fit</span><span class="fg-cell">fit</span><span class="fg-cell">fit</span><span class="fg-cell fg-val">score</span><span class="fg-cell fg-empty"></span><span class="fg-cell fg-empty"></span><span class="fg-score">1.255</span></div>
+<div class="fg-row fragment" data-fragment-index="4"><span class="fg-lab">cut 4</span><span class="fg-cell">fit</span><span class="fg-cell">fit</span><span class="fg-cell">fit</span><span class="fg-cell">fit</span><span class="fg-cell fg-val">score</span><span class="fg-cell fg-empty"></span><span class="fg-score">0.582</span></div>
+<div class="fg-row fragment" data-fragment-index="5"><span class="fg-lab">cut 5</span><span class="fg-cell">fit</span><span class="fg-cell">fit</span><span class="fg-cell">fit</span><span class="fg-cell">fit</span><span class="fg-cell">fit</span><span class="fg-cell fg-val">score</span><span class="fg-score">0.580</span></div>
+<div class="fg-total fragment" data-fragment-index="6"><span class="fg-lab">average</span><span class="fg-avg">the score of the one-feature model is <strong>0.740</strong></span></div>
+</div>
+
+::: {.muted .small}
+The scored block always comes after the fitted rows. Each cut is a **fold**,
+and averaging over folds is **cross-validation**.
+:::
+
+
+# TimeSeriesSplit
+
+```{pyodide}
+from sklearn.model_selection import TimeSeriesSplit
+
+folds = TimeSeriesSplit(n_splits=5)
+
+for fit_rows, score_rows in folds.split(train):
+    print(len(fit_rows), "fitted", len(score_rows), "scored")
+```
+
+::: {.muted .small}
+`.split()` returns the row positions for each fold. `cross_val_score` runs this
+loop automatically, but printing it once shows what the folds actually
+contain.
+:::
+
+
+# cross_val_score
+
+```{pyodide}
+from sklearn.model_selection import cross_val_score
+
+scores = cross_val_score(LinearRegression(), train[A], train["vol_next"],
+                         cv=folds, scoring="neg_root_mean_squared_error")
+scores
+```
+
+The call fits five models and returns five scores. Each fold is scored by a
+model that was not fitted on it.
+
+
+# Why they are negative
+
+scikit-learn reports every score so that **larger is better**. Errors are
+flipped to negative to fit that convention.
+
+```{pyodide}
+print(-scores)
+print(-scores.mean())
+```
+
+::: {.muted .small}
+A value of `-0.583` means an RMSE of `0.583`. Remove the minus sign before
+reporting it.
+:::
+
+
+# The five fold scores
+
+<div class="statband">
+<div class="stat"><span class="stat-big">0.583</span><div class="stat-label">2016-17</div></div>
+<div class="stat"><span class="stat-big">0.703</span><div class="stat-label">2017-19</div></div>
+<div class="stat stat-warn"><span class="stat-big">1.255</span><div class="stat-label">2019-20</div></div>
+<div class="stat"><span class="stat-big">0.582</span><div class="stat-label">2020-21</div></div>
+<div class="stat"><span class="stat-big">0.580</span><div class="stat-label">2021-22</div></div>
+</div>
+
+Four of the folds give similar errors and one is roughly twice as large. That
+fold is scored on the period containing **March 2020**.
+
+::: {.keypoint}
+Two models can share an average and differ completely: one steady across five
+folds, another poor in one. Report the spread as well.
+:::
+
+
+# Choosing with cross-validation
+
+```{pyodide}
+for columns in [A, B, C]:
+    scores = cross_val_score(LinearRegression(), train[columns], train["vol_next"],
+                             cv=folds, scoring="neg_root_mean_squared_error")
+    print(len(columns), "features:", round(-scores.mean(), 4))
+```
+
+The **one-feature model has the lowest average error**. That result is an
+average over five cut dates rather than a single measurement.
+
+
+# Your turn [3]{.chip .chip-turn} {.your-turn}
+
+Build a fourth candidate that keeps `vol_20d` and `ret_20d` but drops
+`vol_60d`, and cross-validate it against the current best.
+
+```{pyodide}
+#| autorun: false
+D = [...]
+
+for columns in [A, D]:
+    scores = cross_val_score(LinearRegression(), train[columns], train["vol_next"],
+                             cv=folds, scoring="neg_root_mean_squared_error")
+    print(columns, round(-scores.mean(), 4))
+```
+
+
+# Your turn 3: answer
+
+```python
+D = ["vol_20d", "ret_20d"]
+```
+
+The errors are **0.7404 and 0.7477**. `vol_20d` on its own is still better, so
+`ret_20d` was not the column holding the larger models back.
+
+::: {.muted .small}
+None of the four beats the simplest. Say so in the report: the extra columns
+were tested and did not help.
+:::
+
+
+# 6 · KFold and time order {.divider}
+
+::: {.divider-kicker}
+Part 6
+:::
+
+::: {.divider-note}
+The standard form of cross-validation, and why it does not suit this table.
+:::
+
+
+# When the rows are not in time order
+
+`KFold` shuffles the rows and cuts the folds anywhere, which assumes the rows
+are interchangeable. That holds for a table of loan applications, or of firms.
+
+```{python}
+#| echo: false
+#| fig-align: center
+n_demo = 120
+rs = np.random.default_rng(4)
+fold_shuf = rs.integers(0, 5, n_demo)
+fold_block = np.minimum(np.arange(n_demo) // 24, 4)
+
+fig, axes = plt.subplots(2, 1, figsize=(11.0, 2.3), sharex=True)
+pal = [BLUE, BLUE_LIGHT, GREY, AMBER, BRICK]
+for ax, flags, ttl in [
+    (axes[0], fold_shuf, "KFold: the folds are shuffled through the rows"),
+    (axes[1], fold_block, "TimeSeriesSplit: the folds move forward in time"),
+]:
+    ax.bar(np.arange(n_demo), np.ones(n_demo), width=1.0,
+           color=[pal[f] for f in flags])
+    ax.set_yticks([])
+    ax.grid(False)
+    ax.set_title(ttl, loc="left", fontsize=12)
+    for side in ("left", "bottom"):
+        ax.spines[side].set_visible(False)
+axes[1].set_xlabel("row")
+fig.tight_layout()
+plt.show()
+```
+
+
+# KFold on the three candidates
+
+```{pyodide}
+from sklearn.model_selection import KFold
+
+shuffled = KFold(n_splits=5, shuffle=True, random_state=0)
+
+for columns in [A, B, C]:
+    scores = cross_val_score(LinearRegression(), train[columns], train["vol_next"],
+                             cv=shuffled, scoring="neg_root_mean_squared_error")
+    print(len(columns), "features:", round(-scores.mean(), 4))
+```
+
+`KFold` gives the lowest error to the three-feature model, which had the
+**highest** error on the test rows.
+
+
+# Why shuffled folds flatter the score
+
+::: {.diagram}
+<svg width="920" height="150" viewBox="0 0 920 150" role="img" aria-label="Two neighbouring rows have twenty-day windows that overlap in nineteen days">
+  <text x="40" y="44" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">Monday's row</text>
+  <rect x="220" y="28" width="380" height="24" rx="4" fill="#eef4fc" stroke="#86b6ef" stroke-width="1.4"/>
+  <rect x="620" y="28" width="240" height="24" rx="4" fill="#fbf3de" stroke="#d99a1c" stroke-width="1.4"/>
+  <text x="40" y="98" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">Tuesday's row</text>
+  <rect x="239" y="82" width="380" height="24" rx="4" fill="#eef4fc" stroke="#86b6ef" stroke-width="1.4"/>
+  <rect x="639" y="82" width="240" height="24" rx="4" fill="#fbf3de" stroke="#d99a1c" stroke-width="1.4"/>
+  <rect x="239" y="24" width="361" height="86" fill="#b3402f" opacity="0.09"/>
+  <text x="420" y="132" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#b3402f">nineteen of the twenty days are the same</text>
+  <text x="410" y="18" text-anchor="middle" font-size="13" font-family="Segoe UI, sans-serif" fill="#0d366b">the feature window</text>
+  <text x="740" y="18" text-anchor="middle" font-size="13" font-family="Segoe UI, sans-serif" fill="#8a6508">the target window</text>
+</svg>
+:::
+
+Shuffling can put Monday in the fitting rows and Tuesday in the scored rows.
+They share nineteen of their twenty days, so Tuesday's score is far too good.
+
+
+# The same overlap, at the boundary
+
+The last rows in a fitting block have targets that extend twenty days into the
+block used for scoring. The `gap` argument drops those rows.
+
+```{pyodide}
+gapped = TimeSeriesSplit(n_splits=5, gap=20)
+
+scores = cross_val_score(LinearRegression(), train[A], train["vol_next"],
+                         cv=gapped, scoring="neg_root_mean_squared_error")
+print(round(-scores.mean(), 4))
+```
+
+::: {.muted .small}
+The change is small because twenty rows are little against blocks of several
+hundred. It matters far more when the target spans a longer window.
+:::
+
+
+# Expanding and rolling windows
+
+```{python}
+#| echo: false
+#| fig-align: center
+from sklearn.model_selection import TimeSeriesSplit as _TSS
+
+n_row = 600
+fig, axes = plt.subplots(1, 2, figsize=(11.0, 2.7), sharey=True)
+for ax, cvo, ttl in [
+    (axes[0], _TSS(n_splits=5), "expanding: keep every past row"),
+    (axes[1], _TSS(n_splits=5, max_train_size=120), "rolling: keep the last two years"),
+]:
+    for i, (tr, va) in enumerate(cvo.split(np.arange(n_row))):
+        ax.barh(5 - i, len(tr), left=tr[0], height=0.55, color=BLUE)
+        ax.barh(5 - i, len(va), left=va[0], height=0.55, color=AMBER)
+        if i == 0:
+            ax.text(len(tr) / 2, 5.55, "fit", ha="center", fontsize=10.5,
+                    color=BLUE, fontweight="600")
+            ax.text(va[0] + len(va) / 2, 5.55, "score", ha="center",
+                    fontsize=10.5, color="#8a6508", fontweight="600")
+    ax.set_xlim(0, n_row)
+    ax.set_ylim(0.4, 6.0)
+    ax.set_yticks(range(1, 6))
+    ax.set_yticklabels(["cut 5", "cut 4", "cut 3", "cut 2", "cut 1"], fontsize=10)
+    ax.grid(False)
+    ax.set_xlabel("trading day")
+    ax.set_title(ttl, loc="left", fontsize=12.5)
+    ax.spines["left"].set_visible(False)
+    ax.tick_params(left=False)
+fig.tight_layout()
+plt.show()
+```
+
+`max_train_size=500` produces the version on the right. Use a rolling window
+when older years have stopped being relevant, and an expanding window when they
+have not.
+
+
+# 7 · More candidates than three {.divider}
+
+::: {.divider-kicker}
+Part 7
+:::
+
+::: {.divider-note}
+Searching a long list of feature sets, and knowing when to stop.
+:::
+
+
+# Where the candidates come from
+
+These three feature sets were written by hand. With $p$ features there are
+$2^p$ subsets: a thousand at ten features, a million at twenty.
+
+::: {.keypoint}
+Fitting every subset stops being possible at about twenty features. The usual
+answer is to walk through the subsets one feature at a time instead.
+:::
+
+
+# Three ways to walk
+
+::: {.why-grid}
+::: {.why-point}
+**Forward selection** <span>start with nothing. Add the feature that lowers the error most, then the best of those left, and stop when it stops falling.</span>
+:::
+::: {.why-point}
+**Backward selection** <span>start with every feature. Drop the one that costs least, and repeat. It needs more rows than features to get started.</span>
+:::
+::: {.why-point}
+**Stepwise selection** <span>forward, but after each addition check whether an earlier feature has become redundant and can be dropped.</span>
+:::
+:::
+
+::: {.muted .small}
+At ten features, forward selection fits 55 models instead of 1,024. None of the
+three is guaranteed to find the best subset, and all three usually get close.
+:::
+
+
+# AIC and BIC
+
+Each walk still needs a rule for when to stop. AIC and BIC score a model by its
+fit **and** its size, so the two can be traded off in one number:
+
+::: {.formula}
+$$
+\text{AIC} = n\log(\text{MSE}) + 2d
+\qquad\qquad
+\text{BIC} = n\log(\text{MSE}) + d\log(n)
+$$
+:::
+
+- the first term falls as the fit improves, the second charges for each of the $d$ parameters
+- smaller is better, and adding a useless feature raises the total
+- $\log(n)$ is larger than 2 here, so BIC charges more and prefers smaller models
+
+::: {.muted .small}
+One fit per candidate and no folds at all, which is why they are still used.
+Cross-validation is slower but assumes nothing about the shape of the errors.
+:::
+
+
+# The order it all happens in
+
+::: {.diagram}
+<svg width="1000" height="235" viewBox="0 0 1000 235" role="img" aria-label="The workflow: seal the test rows, list candidates, cross-validate on the training rows, choose, refit on all training rows, then score once on the test rows">
+  <rect x="8" y="38" width="148" height="66" rx="8" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.6"/>
+  <text x="82" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">1. seal the</text>
+  <text x="82" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">test rows</text>
+  <rect x="176" y="38" width="148" height="66" rx="8" fill="#ffffff" stroke="#86b6ef" stroke-width="1.6"/>
+  <text x="250" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">2. list the</text>
+  <text x="250" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">candidates</text>
+  <rect x="344" y="38" width="186" height="66" rx="8" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.8"/>
+  <text x="437" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">3. cross-validate</text>
+  <text x="437" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">on the training rows</text>
+  <rect x="550" y="38" width="148" height="66" rx="8" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.8"/>
+  <text x="624" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">4. keep the</text>
+  <text x="624" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">winner</text>
+  <rect x="718" y="38" width="148" height="66" rx="8" fill="#fdf8ed" stroke="#d99a1c" stroke-width="1.6"/>
+  <text x="792" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#8a6508" font-weight="600">5. refit on all</text>
+  <text x="792" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#8a6508" font-weight="600">training rows</text>
+  <rect x="886" y="38" width="106" height="66" rx="8" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.8"/>
+  <text x="939" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">6. score,</text>
+  <text x="939" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">once</text>
+  <g fill="#c3c2b7">
+    <polygon points="160,66 160,76 172,71"/>
+    <polygon points="328,66 328,76 340,71"/>
+    <polygon points="534,66 534,76 546,71"/>
+    <polygon points="702,66 702,76 714,71"/>
+    <polygon points="870,66 870,76 882,71"/>
+  </g>
+  <path d="M 624 110 L 624 138 L 250 138 L 250 116" stroke="#86b6ef" stroke-width="1.5" fill="none" stroke-dasharray="5 4"/>
+  <polygon points="245,122 255,122 250,112" fill="#86b6ef"/>
+  <text x="437" y="160" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">go round as often as you like: none of this has touched the test rows</text>
+  <rect x="8" y="182" width="858" height="42" rx="7" fill="#f4f7fb" stroke="#dde6f2" stroke-width="1.3"/>
+  <text x="437" y="209" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b">choosing happens in here</text>
+  <rect x="886" y="182" width="106" height="42" rx="7" fill="#fbf1f0" stroke="#e0b3ac" stroke-width="1.3"/>
+  <text x="939" y="209" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">reporting</text>
+</svg>
+:::
+
+
+# Refit, then open the test rows
+
+Cross-validation chose the one-feature model. Fit it on **all** the training
+rows, then score it once on the test rows.
+
+```{pyodide}
+final = LinearRegression()
+final.fit(train[A], train["vol_next"])
+
+final_pred = final.predict(test[A])
+print(np.sqrt(mean_squared_error(test["vol_next"], final_pred)))
+```
+
+::: {.muted .small}
+The folds were only a way of estimating this number. With the choice made, the
+model can use every training row.
+:::
+
+
+# The model against the two baselines
+
+<div class="statband">
+<div class="stat"><span class="stat-big">0.520</span><div class="stat-label">guess the average</div></div>
+<div class="stat"><span class="stat-big">0.417</span><div class="stat-label">repeat this month</div></div>
+<div class="stat"><span class="stat-big">0.406</span><div class="stat-label">the model selected by cross-validation</div></div>
+</div>
+
+The model has the lowest error of the three, and the number can be defended:
+nothing in the selection used 2023 or 2024.
+
+
+# What stays with you {.smaller}
+
+::: {.recap-grid}
+::: {.recap-item}
+**Fitting a model**
+`LinearRegression()`, `.fit(X, y)`, `.predict(X)`. Later models change only the first line.
+:::
+::: {.recap-item}
+**X is a table, y is a column**
+`train[["vol_20d"]]` with two brackets, `train["vol_next"]` with one.
+:::
+::: {.recap-item}
+**Always report a baseline**
+Compare the model against the training average and against a simple rule that uses no model.
+:::
+::: {.recap-item}
+**Training error always prefers more columns**
+Adding a column can never worsen the fit, so training error cannot say whether the column helps.
+:::
+::: {.recap-item}
+**Choosing uses up data**
+Rows used to compare candidates can no longer give an honest score for the winner.
+:::
+::: {.recap-item}
+**One split is one measurement**
+Moving the cut date can change the winner. Cross-validation averages over several cuts.
+:::
+::: {.recap-item}
+**Read the folds, not only the mean**
+A fold much worse than the others points to a period the model handles badly.
+:::
+::: {.recap-item}
+**Folds must follow the calendar**
+Use `TimeSeriesSplit` for a time series. `KFold` shuffles, and here it chose the worst of the three models.
+:::
+:::
+
+
+# Where this goes next
+
+<div class="timeline">
+<div class="tl-row"><span class="tl-week">before</span><span class="tl-topic">features and targets, metrics, over- and underfitting</span><span class="tl-who">nothing fitted</span></div>
+<div class="tl-row tl-now"><span class="tl-week">now</span><span class="tl-topic">fitting a model, and choosing between models honestly</span><span class="tl-who">scikit-learn</span></div>
+<div class="tl-row tl-future"><span class="tl-week">next</span><span class="tl-topic">ridge and lasso, which add a setting you have to choose</span><span class="tl-who">the same folds, searched over a grid</span></div>
+<div class="tl-row tl-future"><span class="tl-week">then</span><span class="tl-topic">classification, trees, ensembles</span><span class="tl-who">the same workflow</span></div>
+</div>
+
+::: {.keypoint}
+Every method later in the course has settings that have to be chosen. The
+procedure for choosing them is the one from this session.
+:::
+
+
+# Before next time [case]{.chip .chip-case}
+
+- **Exercises**: fitting, predicting, scoring against a baseline, and cross-validating a handful of candidates.
+- **Case Part 5**: the risk report gets its first model, and has to justify the choice.
+
+::: {.muted .small}
+Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email
+**jobo@econ.au.dk**.
+:::

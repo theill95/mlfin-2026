@@ -69,6 +69,8 @@
     <li><a href="#scoring-a-prediction-of-a-number">Scoring a prediction of a number</a></li>
     <li><a href="#scoring-a-prediction-of-a-label">Scoring a prediction of a label</a></li>
     <li><a href="#training-rows-and-test-rows">Training rows and test rows</a></li>
+    <li><a href="#fitting-a-model">Fitting a model</a></li>
+    <li><a href="#choosing-between-models">Choosing between models</a></li>
     <li><a href="#reading-error-messages">Reading error messages</a></li>
   </ul>
   <section class="cs-section" id="running-code">
@@ -639,6 +641,24 @@ out</code></pre>
         <div class="cs-out">{&#x27;AAPL&#x27;: 0.0141}</div>
       </div>
     </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>min(data, key=data.get)</div>
+      <div class="cs-what">The KEY with the smallest value, not the value itself. max works the same way.</div>
+      <div class="cs-demo">
+        <pre><code>rmse = {&quot;A&quot;: 0.740, &quot;B&quot;: 0.772, &quot;C&quot;: 0.747}
+min(rmse, key=rmse.get)</code></pre>
+        <div class="cs-out">&#x27;A&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>sorted(data, key=data.get)</div>
+      <div class="cs-what">All the keys, ordered by their values. Best first with reverse=True.</div>
+      <div class="cs-demo">
+        <pre><code>rmse = {&quot;A&quot;: 0.740, &quot;B&quot;: 0.772, &quot;C&quot;: 0.747}
+sorted(rmse, key=rmse.get)</code></pre>
+        <div class="cs-out">[&#x27;A&#x27;, &#x27;C&#x27;, &#x27;B&#x27;]</div>
+      </div>
+    </div>
   </section>
   <section class="cs-section" id="packages">
     <h2>Packages</h2>
@@ -766,6 +786,24 @@ close</code></pre>
       <div class="cs-demo">
         <pre><code>week.shape</code></pre>
         <div class="cs-out">(5,)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>values.argmax()  .argmin()</div>
+      <div class="cs-what">The POSITION of the largest or smallest element. Feed it to an index to get the label.</div>
+      <div class="cs-demo">
+        <pre><code>folds = np.array([0.583, 0.703, 1.255, 0.582, 0.580])
+print(folds.argmax(), folds.max())</code></pre>
+        <div class="cs-out">2 1.255</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>np.random.default_rng(0)</div>
+      <div class="cs-what">A random number generator with a fixed seed, so the same code gives the same numbers every time.</div>
+      <div class="cs-demo">
+        <pre><code>rng = np.random.default_rng(0)
+rng.normal(0, 1, 4).round(3)</code></pre>
+        <div class="cs-out">array([ 0.126, -0.132,  0.64 ,  0.105])</div>
       </div>
     </div>
   </section>
@@ -931,6 +969,15 @@ dtype: float64</div>
         <div class="cs-out">(251,)</div>
       </div>
     </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.abs()</div>
+      <div class="cs-what">The size of every value, sign dropped. abs() on its own does the same for one number.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change().dropna()
+r.abs().mean().round(5)</code></pre>
+        <div class="cs-out">np.float64(0.01034)</div>
+      </div>
+    </div>
   </section>
   <section class="cs-section" id="pandas--a-table">
     <h2>pandas: a table</h2>
@@ -1036,6 +1083,16 @@ big.shape</code></pre>
       </div>
     </div>
     <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>~mask</div>
+      <div class="cs-what">Flip a mask: every True becomes False. How you get &quot;the other half&quot; without writing the condition twice.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change().dropna()
+calm = r.abs() &lt; r.abs().median()
+print(calm.sum(), (~calm).sum())</code></pre>
+        <div class="cs-out">125 126</div>
+      </div>
+    </div>
+    <div class="cs-entry">
       <div class="cs-call"><span class="cs-since">Session 3</span>.copy()</div>
       <div class="cs-what">Take your own copy before modifying a selection, so pandas knows what you meant.</div>
       <div class="cs-demo">
@@ -1113,6 +1170,19 @@ Name: 2024-12-31 00:00:00, dtype: float64</div>
         <pre><code>m = wide[[&quot;AAPL&quot;, &quot;KO&quot;]].values
 print(type(m).__name__, m.shape)</code></pre>
         <div class="cs-out">ndarray (252, 2)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>frame.set_index(&#x27;date&#x27;)</div>
+      <div class="cs-what">Move a column into the index, so .loc can slice by it.</div>
+      <div class="cs-demo">
+        <pre><code>a = prices[prices[&quot;ticker&quot;] == &quot;AAPL&quot;].set_index(&quot;date&quot;)
+a.loc[&quot;2024-01-02&quot;:&quot;2024-01-04&quot;, [&quot;close&quot;]]</code></pre>
+        <div class="cs-out">               close
+date                
+2024-01-02  183.5622
+2024-01-03  182.1878
+2024-01-04  179.8739</div>
       </div>
     </div>
   </section>
@@ -1354,6 +1424,16 @@ ax.legend()
 ax.set_ylim(0, 0.55)
 ax.get_ylim()</code></pre>
         <div class="cs-out">(np.float64(0.0), np.float64(0.55))</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>ax.axhline(0)</div>
+      <div class="cs-what">A horizontal reference line. Zero on an error plot, or an average across bars.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.axhline(0, color=&quot;grey&quot;, linewidth=1)
+&quot;drawn&quot;</code></pre>
+        <div class="cs-out">&#x27;drawn&#x27;</div>
       </div>
     </div>
     <div class="cs-entry">
@@ -1714,6 +1794,155 @@ y = np.sin(2 * np.pi * x)
 c = np.polyfit(x, y, 3)
 round(float(((np.polyval(c, x) - y) ** 2).mean()), 5)</code></pre>
         <div class="cs-out">0.00656</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="fitting-a-model">
+    <h2>Fitting a model</h2>
+    <p class="lede">Session 5&#x27;s four lines. Every model in scikit-learn takes them, so the only thing that changes later is the first one.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>from sklearn.linear_model import LinearRegression</div>
+      <div class="cs-what">The model. It installs as scikit-learn and imports as sklearn.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import LinearRegression
+LinearRegression()</code></pre>
+        <div class="cs-out">LinearRegression()</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>frame[[&#x27;col&#x27;]]</div>
+      <div class="cs-what">A LIST of column names, so the result stays a table. X always has to be two-dimensional.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change()
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()}).dropna()
+(t[&quot;vol&quot;].shape, t[[&quot;vol&quot;]].shape)</code></pre>
+        <div class="cs-out">((232,), (232, 1))</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>model.fit(X, y)</div>
+      <div class="cs-what">Read the training rows and compute the coefficients. Features first, target second.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import LinearRegression
+r = wide[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+m = LinearRegression().fit(t[[&quot;vol&quot;]], t[&quot;target&quot;])
+round(float(m.coef_[0]), 3)</code></pre>
+        <div class="cs-out">0.14</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>model.predict(X)</div>
+      <div class="cs-what">One prediction per row of X, in the same order, as a plain numpy array.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import LinearRegression
+r = wide[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+m = LinearRegression().fit(t[[&quot;vol&quot;]], t[&quot;target&quot;])
+m.predict(t[[&quot;vol&quot;]])[:3].round(3)</code></pre>
+        <div class="cs-out">array([1.391, 1.394, 1.39 ])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>model.intercept_  and  model.coef_</div>
+      <div class="cs-what">What the fit found. A trailing underscore means it came from the data rather than from you.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import LinearRegression
+r = wide[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+m = LinearRegression().fit(t[[&quot;vol&quot;]], t[&quot;target&quot;])
+(round(float(m.intercept_), 3), m.coef_.round(3))</code></pre>
+        <div class="cs-out">(1.203, array([0.14]))</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>mean_squared_error(y_true, y_pred)</div>
+      <div class="cs-what">The truth goes first. Take np.sqrt of it to get back into the units of the target.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.metrics import mean_squared_error
+round(float(np.sqrt(mean_squared_error([1.0, 2.0, 3.0], [1.2, 1.9, 3.4]))), 4)</code></pre>
+        <div class="cs-out">0.2646</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="choosing-between-models">
+    <h2>Choosing between models</h2>
+    <p class="lede">Rows used to compare candidates can no longer give the winner an honest score. That is what the folds are for.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>TimeSeriesSplit(n_splits=5)</div>
+      <div class="cs-what">Folds that move forward in time, so every scored block comes after the rows fitted on.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.model_selection import TimeSeriesSplit
+r = wide[&quot;AAPL&quot;].pct_change().dropna()
+[(len(a), len(b)) for a, b in TimeSeriesSplit(n_splits=3).split(r)]</code></pre>
+        <div class="cs-out">[(65, 62), (127, 62), (189, 62)]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>TimeSeriesSplit(..., max_train_size=500)</div>
+      <div class="cs-what">A rolling window instead of an expanding one: the oldest rows drop out.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.model_selection import TimeSeriesSplit
+r = wide[&quot;AAPL&quot;].pct_change().dropna()
+[len(a) for a, b in TimeSeriesSplit(n_splits=3, max_train_size=500).split(r)]</code></pre>
+        <div class="cs-out">[65, 127, 189]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>TimeSeriesSplit(..., gap=20)</div>
+      <div class="cs-what">Drop the rows whose target reaches into the block about to be scored.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.model_selection import TimeSeriesSplit
+r = wide[&quot;AAPL&quot;].pct_change().dropna()
+[len(a) for a, b in TimeSeriesSplit(n_splits=3, gap=20).split(r)]</code></pre>
+        <div class="cs-out">[45, 107, 169]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>KFold(n_splits=5, shuffle=True)</div>
+      <div class="cs-what">The textbook folds. They assume the rows are interchangeable, which a time series is not.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.model_selection import KFold
+r = wide[&quot;AAPL&quot;].pct_change().dropna()
+[(len(a), len(b)) for a, b in KFold(n_splits=3, shuffle=True, random_state=0).split(r)]</code></pre>
+        <div class="cs-out">[(167, 84), (167, 84), (168, 83)]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>folds.split(frame)</div>
+      <div class="cs-what">The row positions in each fold, as pairs. cross_val_score loops over this for you.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.model_selection import TimeSeriesSplit
+r = wide[&quot;AAPL&quot;].pct_change().dropna()
+folds = TimeSeriesSplit(n_splits=3)
+for fit_rows, score_rows in folds.split(r):
+    print(len(fit_rows), len(score_rows))</code></pre>
+        <div class="cs-out">65 62
+127 62
+189 62</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>cross_val_score(model, X, y, cv=folds, scoring=...)</div>
+      <div class="cs-what">Fit and score once per fold. Errors come back negative, because scikit-learn reports every score so that larger is better.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_score, TimeSeriesSplit
+r = wide[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+s = cross_val_score(LinearRegression(), t[[&quot;vol&quot;]], t[&quot;target&quot;],
+                    cv=TimeSeriesSplit(n_splits=5),
+                    scoring=&quot;neg_root_mean_squared_error&quot;)
+(-s).round(3)</code></pre>
+        <div class="cs-out">array([0.62 , 0.483, 0.325, 0.212, 0.604])</div>
       </div>
     </div>
   </section>

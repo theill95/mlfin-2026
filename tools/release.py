@@ -27,6 +27,8 @@ BUILD = [
     ("notebooks: session 3 case",      "tools/generators/session_03_case.py"),
     ("notebooks: session 4 exercises", "tools/generators/session_04_exercises.py"),
     ("notebooks: session 4 case",      "tools/generators/session_04_case.py"),
+    ("notebooks: session 5 exercises", "tools/generators/session_05_exercises.py"),
+    ("notebooks: session 5 case",      "tools/generators/session_05_case.py"),
     ("site: sidebar",                  "tools/build_nav.py"),
     ("site: cheatsheet",               "tools/build_cheatsheet.py"),
     ("site: download bundle",          "tools/build_download_bundle.py"),
@@ -47,6 +49,9 @@ CHECK = [
     ("session 4 exercise solutions",  "tools/verify/session_04_exercises.py"),
     ("session 4 case solutions",      "tools/verify/session_04_case.py"),
     ("session 4 deck cells",          "tools/verify/session_04_deck.py"),
+    ("session 5 exercise solutions",  "tools/verify/session_05_exercises.py"),
+    ("session 5 case solutions",      "tools/verify/session_05_case.py"),
+    ("session 5 deck cells",          "tools/verify/session_05_deck.py"),
 ]
 
 

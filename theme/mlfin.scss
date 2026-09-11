@@ -1277,3 +1277,90 @@ $selection-background-color: #dcebfd;
   color: #0d366b;
   font-weight: 600;
 }
+
+// ---------- cross-validation fold grid (Session 5) ----------
+// One row per fold, revealed a fragment at a time, so the class watches each
+// fold take its turn as the validation block and sees the scores accumulate.
+
+.foldgrid {
+  margin: 0.7em auto 0.3em;
+  max-width: 1060px;
+}
+
+.foldgrid .fg-head,
+.foldgrid .fg-row,
+.foldgrid .fg-total {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.foldgrid .fg-lab {
+  flex: 0 0 5.4em;
+  text-align: right;
+  font-size: 0.58em;
+  color: #52514e;
+  font-weight: 600;
+}
+
+.foldgrid .fg-cell {
+  flex: 1 1 0;
+  height: 40px;
+  border-radius: 5px;
+  background: #eef4fc;
+  border: 1px solid #c7d8ee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.5em;
+  color: #1c5cab;
+  font-family: $font-family-sans-serif;
+}
+
+.foldgrid .fg-cell.fg-val {
+  background: #fbf3de;
+  border-color: #d99a1c;
+  color: #8a6508;
+  font-weight: 700;
+}
+
+// blocks a fold does not use at all: present, so the columns stay aligned,
+// but visually absent
+.foldgrid .fg-cell.fg-empty {
+  background: transparent;
+  border: 1px dashed #e6e5df;
+}
+
+.foldgrid .fg-cell.fg-ghost {
+  background: transparent;
+  border: none;
+  height: 22px;
+  color: #898781;
+  font-size: 0.46em;
+}
+
+.foldgrid .fg-score {
+  flex: 0 0 4.6em;
+  text-align: right;
+  font-size: 0.56em;
+  font-family: $font-family-monospace;
+  color: #0d366b;
+}
+
+.foldgrid .fg-total {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e6e5df;
+}
+
+.foldgrid .fg-avg {
+  flex: 1 1 auto;
+  font-size: 0.62em;
+  color: #52514e;
+}
+
+.foldgrid .fg-avg strong {
+  color: #0d366b;
+  font-family: $font-family-monospace;
+}

@@ -5,7 +5,7 @@ to finance and economics students. The course assumes econometrics (OLS) but
 **no prior Python or machine-learning experience**, and begins in Google
 Colab.
 
-Each session is a single self-contained folder. All four sessions are complete.
+Each session is a single self-contained folder. All five sessions are complete.
 
 ## Live site
 
@@ -21,6 +21,8 @@ This repository is published:
   <https://theill95.github.io/mlfin-2026/session_03/session_03.html>
 - Interactive lecture, Session 4:
   <https://theill95.github.io/mlfin-2026/session_04/session_04.html>
+- Interactive lecture, Session 5:
+  <https://theill95.github.io/mlfin-2026/session_05/session_05.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
 The site has six pages, linked from the sidebar:
@@ -88,7 +90,7 @@ session_01/
 └── data/                     # the small CSV files this session uses
 ```
 
-Sessions 2 to 4 have the same shape. Current contents:
+Sessions 2 to 5 have the same shape. Current contents:
 
 | session | lecture | exercises | case |
 |:--|:--|:--|:--|
@@ -96,13 +98,15 @@ Sessions 2 to 4 have the same shape. Current contents:
 | 2 · Functions, Loops, and Dictionaries | `session_02.qmd` | 64 | Part 2, 11 questions |
 | 3 · Packages: NumPy, pandas, matplotlib | `session_03.qmd` | 76 | Part 3, 15 questions |
 | 4 · Foundations of Machine Learning | `session_04.qmd` | 73 | Part 4, 17 questions |
+| 5 · Model Selection and Cross-Validation | `session_05.qmd` | 63 | Part 5, 18 questions |
 
-Sessions 3 and 4 load numpy, pandas and matplotlib into the browser runtime
-(about 20 MB, once per page load). Open the deck and run one cell a few minutes
-before class so it is warm.
+Sessions 3 to 5 load numpy, pandas and matplotlib into the browser runtime
+(about 20 MB, once per page load). Session 5 adds scikit-learn, which brings
+scipy and a BLAS with it, so its cold load is nearer 45 MB. Open the deck and
+run one cell several minutes before class so it is warm.
 
-Session 4 is the only deck with mathematics on the slides; it renders through
-KaTeX, set in the `.qmd` front matter.
+Sessions 4 and 5 are the decks with mathematics on the slides; it renders
+through KaTeX, set in the `.qmd` front matter.
 
 The `.qmd` file **is** the lecture: it is at once the slide deck, the lecture
 narrative, and the source of every executable code demonstration. There is no
@@ -197,7 +201,8 @@ pip install -r requirements.txt
 ```
 
 Built and tested with Python 3.12, pandas 2.2, numpy 1.26, matplotlib 3.9,
-scikit-learn 1.5. All core materials run **offline** once this environment is
+scikit-learn 1.5. Session 5 is the first to use scikit-learn in the materials
+themselves, in the deck, the exercises and the case. All core materials run **offline** once this environment is
 installed and the repository is cloned.
 
 ## Working the notebooks (students)

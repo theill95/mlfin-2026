@@ -7,7 +7,7 @@ example raises, the build fails rather than publishing a wrong page.
 
     python tools/build_cheatsheet.py
 
-Adding a session: append entries below with since="S4". Nothing else to change.
+Adding a session: append entries below with since="S5". Nothing else to change.
 """
 import ast
 import html
@@ -180,6 +180,10 @@ e("data.items()", "The key and the value together, so you need no lookup. Name t
   since="S2")
 e("{}", "An empty dictionary, ready for a loop to fill. The counterpart of [].",
   'out = {}\nout["AAPL"] = 0.0141\nout', since="S2")
+e("min(data, key=data.get)", "The KEY with the smallest value, not the value itself. max works the same way.",
+  'rmse = {"A": 0.740, "B": 0.772, "C": 0.747}\nmin(rmse, key=rmse.get)', since="S5")
+e("sorted(data, key=data.get)", "All the keys, ordered by their values. Best first with reverse=True.",
+  'rmse = {"A": 0.740, "B": 0.772, "C": 0.747}\nsorted(rmse, key=rmse.get)', since="S5")
 
 section("Packages")
 e("import numpy as np", "Bring a package in under a short name. np, pd and plt are conventions everybody uses.",
@@ -215,6 +219,11 @@ e("values[values > 0]", "Keep only the elements where the condition holds.",
   'returns[returns > 0]', since="S3")
 e("values.shape", "How big it is. For a 1-D array it prints as (n,).",
   'week.shape', since="S3")
+e("values.argmax()  .argmin()", "The POSITION of the largest or smallest element. Feed it to an index to get the label.",
+  'folds = np.array([0.583, 0.703, 1.255, 0.582, 0.580])\nprint(folds.argmax(), folds.max())',
+  since="S5")
+e("np.random.default_rng(0)", "A random number generator with a fixed seed, so the same code gives the same numbers every time.",
+  'rng = np.random.default_rng(0)\nrng.normal(0, 1, 4).round(3)', since="S4")
 
 section("NumPy matrices",
         "A matrix is a 2-D array: rows first, then columns.")
@@ -254,6 +263,8 @@ e("s.sort_values()", "In order. ascending=False for largest first.",
   since="S3")
 e("s.dropna()", "Throw away the missing values.",
   'wide["AAPL"].pct_change().dropna().shape', since="S3")
+e("s.abs()", "The size of every value, sign dropped. abs() on its own does the same for one number.",
+  'r = wide["AAPL"].pct_change().dropna()\nr.abs().mean().round(5)', since="S4")
 
 section("pandas: a table",
         "A DataFrame is several Series side by side, sharing one index.")
@@ -274,6 +285,9 @@ e("frame[frame['ticker'] == 'AAPL']", "Keep only the rows where the condition is
   'prices[prices["ticker"] == "AAPL"].shape', since="S3")
 e("&  |", "And, or. Each condition needs its own brackets.",
   'big = prices[(prices["ticker"] == "AAPL")\n             & (prices["close"] > 250)]\nbig.shape', since="S3")
+e("~mask", "Flip a mask: every True becomes False. How you get \"the other half\" without writing the condition twice.",
+  'r = wide["AAPL"].pct_change().dropna()\ncalm = r.abs() < r.abs().median()\nprint(calm.sum(), (~calm).sum())',
+  since="S4")
 e(".copy()", "Take your own copy before modifying a selection, so pandas knows what you meant.",
   'aapl = prices[prices["ticker"] == "AAPL"].copy()\naapl.shape', since="S3")
 e("frame['ret'] = ...", "Assign to a name that does not exist yet, and the column appears.",
@@ -290,6 +304,9 @@ e("frame.iloc[0]  .iloc[-1]", "Rows by position: the first row, the last row.",
   'wide.iloc[-1].head(3)', since="S3")
 e("frame.values", "The plain numbers underneath, as a NumPy array, labels dropped.",
   'm = wide[["AAPL", "KO"]].values\nprint(type(m).__name__, m.shape)', since="S3")
+e("frame.set_index('date')", "Move a column into the index, so .loc can slice by it.",
+  'a = prices[prices["ticker"] == "AAPL"].set_index("date")\na.loc["2024-01-02":"2024-01-04", ["close"]]',
+  since="S4")
 
 section("pandas: groups and shapes")
 e("frame.groupby('ticker').size()", "Split by a column, then count the rows in each group.",
@@ -338,6 +355,8 @@ e("label= and ax.legend()", "Name each line, then show the key. Needed as soon a
   'fig, ax = plt.subplots()\nax.plot([1, 2], [1, 2], label="AAPL")\nax.legend()\n"drawn"', since="S3")
 e("ax.set_ylim(a, b)", "Fix the vertical range. For bars, always start at zero.",
   'fig, ax = plt.subplots()\nax.set_ylim(0, 0.55)\nax.get_ylim()', since="S3")
+e("ax.axhline(0)", "A horizontal reference line. Zero on an error plot, or an average across bars.",
+  'fig, ax = plt.subplots()\nax.axhline(0, color="grey", linewidth=1)\n"drawn"', since="S4")
 e("plt.show()", "Display the figure. The last line of a plotting cell.",
   'plt.show()', since="S3", run=False, result="(the figure appears under the cell)")
 e("fig.savefig('name.png', dpi=200)", "Save it to a file. Use .pdf for something that stays sharp at any size.",
@@ -443,6 +462,49 @@ e("np.polyval(coef, x)", "Evaluate a fitted polynomial, so you can score it on r
   'x = np.linspace(0, 1, 12)\ny = np.sin(2 * np.pi * x)\nc = np.polyfit(x, y, 3)\nround(float(((np.polyval(c, x) - y) ** 2).mean()), 5)',
   since="S4")
 
+section("Fitting a model",
+        "Session 5's four lines. Every model in scikit-learn takes them, so the "
+        "only thing that changes later is the first one.")
+e("from sklearn.linear_model import LinearRegression", "The model. It installs as scikit-learn and imports as sklearn.",
+  'from sklearn.linear_model import LinearRegression\nLinearRegression()', since="S5")
+e("frame[['col']]", "A LIST of column names, so the result stays a table. X always has to be two-dimensional.",
+  'r = wide["AAPL"].pct_change()\nt = pd.DataFrame({"vol": r.rolling(20).std()}).dropna()\n(t["vol"].shape, t[["vol"]].shape)',
+  since="S5")
+e("model.fit(X, y)", "Read the training rows and compute the coefficients. Features first, target second.",
+  'from sklearn.linear_model import LinearRegression\nr = wide["AAPL"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nm = LinearRegression().fit(t[["vol"]], t["target"])\nround(float(m.coef_[0]), 3)',
+  since="S5")
+e("model.predict(X)", "One prediction per row of X, in the same order, as a plain numpy array.",
+  'from sklearn.linear_model import LinearRegression\nr = wide["AAPL"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nm = LinearRegression().fit(t[["vol"]], t["target"])\nm.predict(t[["vol"]])[:3].round(3)',
+  since="S5")
+e("model.intercept_  and  model.coef_", "What the fit found. A trailing underscore means it came from the data rather than from you.",
+  'from sklearn.linear_model import LinearRegression\nr = wide["AAPL"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nm = LinearRegression().fit(t[["vol"]], t["target"])\n(round(float(m.intercept_), 3), m.coef_.round(3))',
+  since="S5")
+e("mean_squared_error(y_true, y_pred)", "The truth goes first. Take np.sqrt of it to get back into the units of the target.",
+  'from sklearn.metrics import mean_squared_error\nround(float(np.sqrt(mean_squared_error([1.0, 2.0, 3.0], [1.2, 1.9, 3.4]))), 4)',
+  since="S5")
+
+section("Choosing between models",
+        "Rows used to compare candidates can no longer give the winner an honest "
+        "score. That is what the folds are for.")
+e("TimeSeriesSplit(n_splits=5)", "Folds that move forward in time, so every scored block comes after the rows fitted on.",
+  'from sklearn.model_selection import TimeSeriesSplit\nr = wide["AAPL"].pct_change().dropna()\n[(len(a), len(b)) for a, b in TimeSeriesSplit(n_splits=3).split(r)]',
+  since="S5")
+e("TimeSeriesSplit(..., max_train_size=500)", "A rolling window instead of an expanding one: the oldest rows drop out.",
+  'from sklearn.model_selection import TimeSeriesSplit\nr = wide["AAPL"].pct_change().dropna()\n[len(a) for a, b in TimeSeriesSplit(n_splits=3, max_train_size=500).split(r)]',
+  since="S5")
+e("TimeSeriesSplit(..., gap=20)", "Drop the rows whose target reaches into the block about to be scored.",
+  'from sklearn.model_selection import TimeSeriesSplit\nr = wide["AAPL"].pct_change().dropna()\n[len(a) for a, b in TimeSeriesSplit(n_splits=3, gap=20).split(r)]',
+  since="S5")
+e("KFold(n_splits=5, shuffle=True)", "The textbook folds. They assume the rows are interchangeable, which a time series is not.",
+  'from sklearn.model_selection import KFold\nr = wide["AAPL"].pct_change().dropna()\n[(len(a), len(b)) for a, b in KFold(n_splits=3, shuffle=True, random_state=0).split(r)]',
+  since="S5")
+e("folds.split(frame)", "The row positions in each fold, as pairs. cross_val_score loops over this for you.",
+  'from sklearn.model_selection import TimeSeriesSplit\nr = wide["AAPL"].pct_change().dropna()\nfolds = TimeSeriesSplit(n_splits=3)\nfor fit_rows, score_rows in folds.split(r):\n    print(len(fit_rows), len(score_rows))',
+  since="S5")
+e("cross_val_score(model, X, y, cv=folds, scoring=...)", "Fit and score once per fold. Errors come back negative, because scikit-learn reports every score so that larger is better.",
+  'from sklearn.linear_model import LinearRegression\nfrom sklearn.model_selection import cross_val_score, TimeSeriesSplit\nr = wide["AAPL"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\ns = cross_val_score(LinearRegression(), t[["vol"]], t["target"],\n                    cv=TimeSeriesSplit(n_splits=5),\n                    scoring="neg_root_mean_squared_error")\n(-s).round(3)',
+  since="S5")
+
 section("Reading error messages",
         "The last line names the problem. Read it before you change anything: it is "
         "almost always telling you the truth.")
@@ -546,7 +608,8 @@ def slug(title):
     return "".join(c if c.isalnum() else "-" for c in title.lower()).strip("-")
 
 
-SINCE_LABEL = {"S1": "Session 1", "S2": "Session 2", "S3": "Session 3", "S4": "Session 4"}
+SINCE_LABEL = {"S1": "Session 1", "S2": "Session 2", "S3": "Session 3",
+               "S4": "Session 4", "S5": "Session 5"}
 
 # The sidebar comes from the same template every other page uses, so this page
 # cannot drift away from them.
