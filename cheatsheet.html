@@ -71,6 +71,7 @@
     <li><a href="#training-rows-and-test-rows">Training rows and test rows</a></li>
     <li><a href="#fitting-a-model">Fitting a model</a></li>
     <li><a href="#choosing-between-models">Choosing between models</a></li>
+    <li><a href="#penalised-regression">Penalised regression</a></li>
     <li><a href="#reading-error-messages">Reading error messages</a></li>
   </ul>
   <section class="cs-section" id="running-code">
@@ -1943,6 +1944,222 @@ s = cross_val_score(LinearRegression(), t[[&quot;vol&quot;]], t[&quot;target&quo
                     scoring=&quot;neg_root_mean_squared_error&quot;)
 (-s).round(3)</code></pre>
         <div class="cs-out">array([0.62 , 0.483, 0.325, 0.212, 0.604])</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="penalised-regression">
+    <h2>Penalised regression</h2>
+    <p class="lede">Session 6: linear regression with a charge on the size of the coefficients, the scaling that charge needs, and a search over how strong it should be.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>Ridge(alpha=1000)</div>
+      <div class="cs-what">Linear regression plus alpha times the sum of squared slopes. alpha=0 is OLS; larger alpha pulls every slope towards zero.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+m = Ridge(alpha=1000).fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+m.coef_.round(4)</code></pre>
+        <div class="cs-out">array([0.178 , 0.1677, 0.0729])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>Lasso(alpha=0.1)</div>
+      <div class="cs-what">The same with a charge on the sum of absolute slopes. Sets some coefficients to exactly zero.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Lasso
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+m = Lasso(alpha=0.1).fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+m.coef_.round(4)</code></pre>
+        <div class="cs-out">array([0.1793, 0.1582, 0.    ])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>ElasticNet(alpha=0.1, l1_ratio=0.5)</div>
+      <div class="cs-what">Both penalties at once. l1_ratio=1 is the lasso, l1_ratio=0 is ridge.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import ElasticNet
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+m = ElasticNet(alpha=0.1, l1_ratio=0.5).fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+m.coef_.round(4)</code></pre>
+        <div class="cs-out">array([0.1867, 0.2175, 0.    ])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>StandardScaler().fit(X_train)</div>
+      <div class="cs-what">Learn each column&#x27;s mean and standard deviation from the TRAINING rows. The penalty charges by coefficient size, and size depends on units.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.preprocessing import StandardScaler
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+sc = StandardScaler().fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]])
+print(sc.mean_.round(3), sc.scale_.round(3))</code></pre>
+        <div class="cs-out">[1.532 1.633 1.688] [1.001 0.769 0.638]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>scaler.transform(X)</div>
+      <div class="cs-what">Subtract the learned mean and divide by the learned standard deviation. Returns a NumPy array; use it on the test rows too, with the training numbers.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.preprocessing import StandardScaler
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+sc = StandardScaler().fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]])
+X = sc.transform(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]])
+print(X[:, 1].mean().round(6), X[:, 1].std().round(6))</code></pre>
+        <div class="cs-out">0.0 1.0</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>Pipeline([(&#x27;scale&#x27;, StandardScaler()), (&#x27;ridge&#x27;, Ridge(alpha=1000))])</div>
+      <div class="cs-what">Two steps as one model: .fit scales then fits, .predict scales with the fitted scaler then predicts. Cross-validation refits the scaler inside every fold.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+pipe = Pipeline([(&quot;scale&quot;, StandardScaler()), (&quot;ridge&quot;, Ridge(alpha=1000))])
+pipe.fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+pipe.predict(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]])[:3].round(3)</code></pre>
+        <div class="cs-out">array([1.671, 1.596, 1.593])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>pipe.named_steps[&#x27;ridge&#x27;].coef_</div>
+      <div class="cs-what">Reach the fitted object inside a step. The pipeline itself has no coef_.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+pipe = Pipeline([(&quot;scale&quot;, StandardScaler()), (&quot;ridge&quot;, Ridge(alpha=1000))])
+pipe.fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+pipe.named_steps[&quot;ridge&quot;].coef_.round(4)</code></pre>
+        <div class="cs-out">array([0.1585, 0.1595, 0.0571])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>{&#x27;ridge__alpha&#x27;: [1, 10, 100, 1000, 10000]}</div>
+      <div class="cs-what">A grid: the setting to search and the values to try. Step name, two underscores, argument name. Several keys multiply.</div>
+      <div class="cs-demo">
+        <pre><code>grid = {&quot;ridge__alpha&quot;: [1, 10, 100, 1000, 10000]}
+len(grid[&quot;ridge__alpha&quot;])</code></pre>
+        <div class="cs-out">5</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>GridSearchCV(pipe, grid, cv=folds, scoring=...)</div>
+      <div class="cs-what">Fit every value on every fold, keep the best mean score, and refit it on all the training rows. Always pass cv; the default ignores time order.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+pipe = Pipeline([(&quot;scale&quot;, StandardScaler()), (&quot;ridge&quot;, Ridge())])
+s = GridSearchCV(pipe, {&quot;ridge__alpha&quot;: [1, 100, 10000]}, cv=TimeSeriesSplit(n_splits=3),
+                 scoring=&quot;neg_root_mean_squared_error&quot;)
+s.fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+print(s.best_params_, round(-s.best_score_, 4))</code></pre>
+        <div class="cs-out">{&#x27;ridge__alpha&#x27;: 100} 0.697</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>search.best_estimator_  ·  search.predict(X)</div>
+      <div class="cs-what">The winning pipeline, refitted on every training row, and predictions from it. Open the test rows once, here.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+pipe = Pipeline([(&quot;scale&quot;, StandardScaler()), (&quot;ridge&quot;, Ridge())])
+s = GridSearchCV(pipe, {&quot;ridge__alpha&quot;: [1, 100, 10000]}, cv=TimeSeriesSplit(n_splits=3),
+                 scoring=&quot;neg_root_mean_squared_error&quot;).fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+print(s.best_estimator_.named_steps[&quot;ridge&quot;].alpha, s.predict(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]])[:2].round(3))</code></pre>
+        <div class="cs-out">100 [1.666 1.58 ]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>pd.DataFrame(search.cv_results_)</div>
+      <div class="cs-what">The whole grid as a table: every value tried, its mean score over the folds, the spread, and its rank.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+pipe = Pipeline([(&quot;scale&quot;, StandardScaler()), (&quot;ridge&quot;, Ridge())])
+s = GridSearchCV(pipe, {&quot;ridge__alpha&quot;: [1, 100, 10000]}, cv=TimeSeriesSplit(n_splits=3),
+                 scoring=&quot;neg_root_mean_squared_error&quot;).fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+pd.DataFrame(s.cv_results_)[[&quot;param_ridge__alpha&quot;, &quot;mean_test_score&quot;, &quot;rank_test_score&quot;]]</code></pre>
+        <div class="cs-out">   param_ridge__alpha  mean_test_score  rank_test_score
+0                   1        -0.697869                2
+1                 100        -0.696999                1
+2               10000        -0.777811                3</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>model.get_params()</div>
+      <div class="cs-what">Every argument of an object and its current value. help(Ridge) prints the documentation.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+Ridge(alpha=1000).get_params()[&quot;alpha&quot;]</code></pre>
+        <div class="cs-out">1000</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>Lasso(alpha=0.001, max_iter=10000)</div>
+      <div class="cs-what">More passes for the lasso solver. Raise it when the ConvergenceWarning appears; standardise first, which is the usual cause.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Lasso
+Lasso(alpha=0.001, max_iter=10000).get_params()[&quot;max_iter&quot;]</code></pre>
+        <div class="cs-out">10000</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>np.logspace(0, 4, 5)</div>
+      <div class="cs-what">Values spaced by a constant factor: 1, 10, 100, 1000, 10000. The right shape for a grid of alphas.</div>
+      <div class="cs-demo">
+        <pre><code>np.logspace(0, 4, 5)</code></pre>
+        <div class="cs-out">array([1.e+00, 1.e+01, 1.e+02, 1.e+03, 1.e+04])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>ax.set_xscale(&#x27;log&#x27;)</div>
+      <div class="cs-what">A logarithmic axis, so factors of ten are evenly spaced. For a validation curve over alpha.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.plot([1, 10, 100, 1000], [0.72, 0.69, 0.62, 0.56])
+ax.set_xscale(&quot;log&quot;)
+ax.get_xscale()</code></pre>
+        <div class="cs-out">&#x27;log&#x27;</div>
       </div>
     </div>
   </section>

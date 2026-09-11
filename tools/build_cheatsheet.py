@@ -7,7 +7,7 @@ example raises, the build fails rather than publishing a wrong page.
 
     python tools/build_cheatsheet.py
 
-Adding a session: append entries below with since="S5". Nothing else to change.
+Adding a session: append entries below with since="S7" and add it to SINCE_LABEL.
 """
 import ast
 import html
@@ -505,6 +505,51 @@ e("cross_val_score(model, X, y, cv=folds, scoring=...)", "Fit and score once per
   'from sklearn.linear_model import LinearRegression\nfrom sklearn.model_selection import cross_val_score, TimeSeriesSplit\nr = wide["AAPL"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\ns = cross_val_score(LinearRegression(), t[["vol"]], t["target"],\n                    cv=TimeSeriesSplit(n_splits=5),\n                    scoring="neg_root_mean_squared_error")\n(-s).round(3)',
   since="S5")
 
+
+section("Penalised regression",
+        "Session 6: linear regression with a charge on the size of the coefficients, "
+        "the scaling that charge needs, and a search over how strong it should be.")
+e("Ridge(alpha=1000)", "Linear regression plus alpha times the sum of squared slopes. alpha=0 is OLS; larger alpha pulls every slope towards zero.",
+  'from sklearn.linear_model import Ridge\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nm = Ridge(alpha=1000).fit(t[["v5", "v20", "v60"]], t["target"])\nm.coef_.round(4)',
+  since="S6")
+e("Lasso(alpha=0.1)", "The same with a charge on the sum of absolute slopes. Sets some coefficients to exactly zero.",
+  'from sklearn.linear_model import Lasso\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nm = Lasso(alpha=0.1).fit(t[["v5", "v20", "v60"]], t["target"])\nm.coef_.round(4)',
+  since="S6")
+e("ElasticNet(alpha=0.1, l1_ratio=0.5)", "Both penalties at once. l1_ratio=1 is the lasso, l1_ratio=0 is ridge.",
+  'from sklearn.linear_model import ElasticNet\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nm = ElasticNet(alpha=0.1, l1_ratio=0.5).fit(t[["v5", "v20", "v60"]], t["target"])\nm.coef_.round(4)',
+  since="S6")
+e("StandardScaler().fit(X_train)", "Learn each column\'s mean and standard deviation from the TRAINING rows. The penalty charges by coefficient size, and size depends on units.",
+  'from sklearn.preprocessing import StandardScaler\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nsc = StandardScaler().fit(t[["v5", "v20", "v60"]])\nprint(sc.mean_.round(3), sc.scale_.round(3))',
+  since="S6")
+e("scaler.transform(X)", "Subtract the learned mean and divide by the learned standard deviation. Returns a NumPy array; use it on the test rows too, with the training numbers.",
+  'from sklearn.preprocessing import StandardScaler\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nsc = StandardScaler().fit(t[["v5", "v20", "v60"]])\nX = sc.transform(t[["v5", "v20", "v60"]])\nprint(X[:, 1].mean().round(6), X[:, 1].std().round(6))',
+  since="S6")
+e("Pipeline([('scale', StandardScaler()), ('ridge', Ridge(alpha=1000))])", "Two steps as one model: .fit scales then fits, .predict scales with the fitted scaler then predicts. Cross-validation refits the scaler inside every fold.",
+  'from sklearn.linear_model import Ridge\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\npipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge(alpha=1000))])\npipe.fit(t[["v5", "v20", "v60"]], t["target"])\npipe.predict(t[["v5", "v20", "v60"]])[:3].round(3)',
+  since="S6")
+e("pipe.named_steps['ridge'].coef_", "Reach the fitted object inside a step. The pipeline itself has no coef_.",
+  'from sklearn.linear_model import Ridge\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\npipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge(alpha=1000))])\npipe.fit(t[["v5", "v20", "v60"]], t["target"])\npipe.named_steps["ridge"].coef_.round(4)',
+  since="S6")
+e("{'ridge__alpha': [1, 10, 100, 1000, 10000]}", "A grid: the setting to search and the values to try. Step name, two underscores, argument name. Several keys multiply.",
+  'grid = {"ridge__alpha": [1, 10, 100, 1000, 10000]}\nlen(grid["ridge__alpha"])', since="S6")
+e("GridSearchCV(pipe, grid, cv=folds, scoring=...)", "Fit every value on every fold, keep the best mean score, and refit it on all the training rows. Always pass cv; the default ignores time order.",
+  'from sklearn.linear_model import Ridge\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.model_selection import GridSearchCV, TimeSeriesSplit\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\npipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge())])\ns = GridSearchCV(pipe, {"ridge__alpha": [1, 100, 10000]}, cv=TimeSeriesSplit(n_splits=3),\n                 scoring="neg_root_mean_squared_error")\ns.fit(t[["v5", "v20", "v60"]], t["target"])\nprint(s.best_params_, round(-s.best_score_, 4))',
+  since="S6")
+e("search.best_estimator_  ·  search.predict(X)", "The winning pipeline, refitted on every training row, and predictions from it. Open the test rows once, here.",
+  'from sklearn.linear_model import Ridge\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.model_selection import GridSearchCV, TimeSeriesSplit\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\npipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge())])\ns = GridSearchCV(pipe, {"ridge__alpha": [1, 100, 10000]}, cv=TimeSeriesSplit(n_splits=3),\n                 scoring="neg_root_mean_squared_error").fit(t[["v5", "v20", "v60"]], t["target"])\nprint(s.best_estimator_.named_steps["ridge"].alpha, s.predict(t[["v5", "v20", "v60"]])[:2].round(3))',
+  since="S6")
+e("pd.DataFrame(search.cv_results_)", "The whole grid as a table: every value tried, its mean score over the folds, the spread, and its rank.",
+  'from sklearn.linear_model import Ridge\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.model_selection import GridSearchCV, TimeSeriesSplit\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\npipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge())])\ns = GridSearchCV(pipe, {"ridge__alpha": [1, 100, 10000]}, cv=TimeSeriesSplit(n_splits=3),\n                 scoring="neg_root_mean_squared_error").fit(t[["v5", "v20", "v60"]], t["target"])\npd.DataFrame(s.cv_results_)[["param_ridge__alpha", "mean_test_score", "rank_test_score"]]',
+  since="S6")
+e("model.get_params()", "Every argument of an object and its current value. help(Ridge) prints the documentation.",
+  'from sklearn.linear_model import Ridge\nRidge(alpha=1000).get_params()["alpha"]', since="S6")
+e("Lasso(alpha=0.001, max_iter=10000)", "More passes for the lasso solver. Raise it when the ConvergenceWarning appears; standardise first, which is the usual cause.",
+  'from sklearn.linear_model import Lasso\nLasso(alpha=0.001, max_iter=10000).get_params()["max_iter"]', since="S6")
+e("np.logspace(0, 4, 5)", "Values spaced by a constant factor: 1, 10, 100, 1000, 10000. The right shape for a grid of alphas.",
+  'np.logspace(0, 4, 5)', since="S6")
+e("ax.set_xscale('log')", "A logarithmic axis, so factors of ten are evenly spaced. For a validation curve over alpha.",
+  'fig, ax = plt.subplots()\nax.plot([1, 10, 100, 1000], [0.72, 0.69, 0.62, 0.56])\nax.set_xscale("log")\nax.get_xscale()', since="S6")
+
 section("Reading error messages",
         "The last line names the problem. Read it before you change anything: it is "
         "almost always telling you the truth.")
@@ -609,7 +654,7 @@ def slug(title):
 
 
 SINCE_LABEL = {"S1": "Session 1", "S2": "Session 2", "S3": "Session 3",
-               "S4": "Session 4", "S5": "Session 5"}
+               "S4": "Session 4", "S5": "Session 5", "S6": "Session 6"}
 
 # The sidebar comes from the same template every other page uses, so this page
 # cannot drift away from them.

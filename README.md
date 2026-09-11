@@ -5,7 +5,7 @@ to finance and economics students. The course assumes econometrics (OLS) but
 **no prior Python or machine-learning experience**, and begins in Google
 Colab.
 
-Each session is a single self-contained folder. All five sessions are complete.
+Each session is a single self-contained folder. All six sessions are complete.
 
 ## Live site
 
@@ -23,6 +23,8 @@ This repository is published:
   <https://theill95.github.io/mlfin-2026/session_04/session_04.html>
 - Interactive lecture, Session 5:
   <https://theill95.github.io/mlfin-2026/session_05/session_05.html>
+- Interactive lecture, Session 6:
+  <https://theill95.github.io/mlfin-2026/session_06/session_06.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
 The site has six pages, linked from the sidebar:
@@ -90,7 +92,7 @@ session_01/
 └── data/                     # the small CSV files this session uses
 ```
 
-Sessions 2 to 5 have the same shape. Current contents:
+Sessions 2 to 6 have the same shape. Current contents:
 
 | session | lecture | exercises | case |
 |:--|:--|:--|:--|
@@ -99,13 +101,14 @@ Sessions 2 to 5 have the same shape. Current contents:
 | 3 · Packages: NumPy, pandas, matplotlib | `session_03.qmd` | 76 | Part 3, 15 questions |
 | 4 · Foundations of Machine Learning | `session_04.qmd` | 73 | Part 4, 17 questions |
 | 5 · Model Selection and Cross-Validation | `session_05.qmd` | 63 | Part 5, 18 questions |
+| 6 · Penalised Regression | `session_06.qmd` | 58 | Part 6, 16 questions |
 
-Sessions 3 to 5 load numpy, pandas and matplotlib into the browser runtime
-(about 20 MB, once per page load). Session 5 adds scikit-learn, which brings
-scipy and a BLAS with it, so its cold load is nearer 45 MB. Open the deck and
+Sessions 3 to 6 load numpy, pandas and matplotlib into the browser runtime
+(about 20 MB, once per page load). Sessions 5 and 6 add scikit-learn, which
+brings scipy and a BLAS with it, so their cold load is nearer 45 MB. Open the deck and
 run one cell several minutes before class so it is warm.
 
-Sessions 4 and 5 are the decks with mathematics on the slides; it renders
+Sessions 4 to 6 are the decks with mathematics on the slides; it renders
 through KaTeX, set in the `.qmd` front matter.
 
 The `.qmd` file **is** the lecture: it is at once the slide deck, the lecture
@@ -201,8 +204,10 @@ pip install -r requirements.txt
 ```
 
 Built and tested with Python 3.12, pandas 2.2, numpy 1.26, matplotlib 3.9,
-scikit-learn 1.5. Session 5 is the first to use scikit-learn in the materials
-themselves, in the deck, the exercises and the case. All core materials run **offline** once this environment is
+scikit-learn 1.5. Sessions 5 and 6 use scikit-learn in the materials
+themselves, in the deck, the exercises and the case. Session 6 also reads
+`data/market_features.csv`, a nineteen-column table built from the prices by
+`tools/build_session06_table.py`. All core materials run **offline** once this environment is
 installed and the repository is cloned.
 
 ## Working the notebooks (students)
@@ -246,9 +251,10 @@ python tools/build_dataset.py
 ## Course case
 
 A single financial investigation, a **risk report** on this stock universe,
-runs across Sessions 1–4. It starts (Session 1) with two stocks analysed as
+runs across every session. It starts (Session 1) with two stocks analysed as
 plain Python lists; uses functions and loops to measure volatility properly
 (Session 2); scales up to all eleven stocks with pandas tables and plots
-(Session 3); and is reframed as a machine-learning prediction problem, with
-features and a target, in Session 4. Building the models themselves comes later
-in the course.
+(Session 3); is reframed as a machine-learning prediction problem, with
+features and a target, in Session 4; gets its first model, chosen by
+cross-validation, in Session 5; and in Session 6 is given every column the
+desk can offer, with a penalty chosen on the folds to keep it honest.

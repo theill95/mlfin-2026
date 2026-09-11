@@ -1,0 +1,1472 @@
+---
+title: "Penalised regression"
+subtitle: "Machine Learning in Finance · Session 6"
+# Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
+# from a data: URI, so embed-resources is off. Ship session_06.html together
+# with session_06_files/ and data/, and SERVE OVER HTTP (double-click
+# serve.cmd, or publish to a URL). Opened from a file:// path the live code
+# cells do not merely fail to run, they do not appear at all.
+#
+# This deck loads numpy, pandas, matplotlib and scikit-learn into the browser
+# runtime (about 45 MB on a cold load). Open the deck and run one cell several
+# minutes before class so it is warm.
+#
+# The table the deck works on is data/market_features.csv, built by
+# tools/build_session06_table.py from data/prices.csv. Rebuild it there if the
+# prices change; every number on these slides was measured from it.
+format:
+  live-revealjs:
+    theme: [default, ../theme/mlfin.scss]
+    width: 1280
+    height: 720
+    margin: 0.06
+    center: false
+    transition: fade
+    transition-speed: fast
+    background-transition: none
+    slide-number: c/t
+    controls: false
+    progress: true
+    hash: true
+    history: false
+    code-line-numbers: false
+    highlight-style: github
+    auto-stretch: false
+html-math-method: katex
+engine: jupyter
+pyodide:
+  packages:
+    - numpy
+    - pandas
+    - matplotlib
+    - scikit-learn
+  resources:
+    - data/market_features.csv
+  cell-options:
+    autorun: true
+    startover: true
+execute:
+  echo: true
+  warning: false
+---
+
+# Last time: choosing between candidates
+
+```{python}
+#| include: false
+# House style for every precomputed figure in this deck, plus the table the
+# whole session works on.
+import warnings
+warnings.filterwarnings("ignore")
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+MLFIN_STYLE = {
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "savefig.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"],
+    "font.size": 12, "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+}
+plt.rcParams.update(MLFIN_STYLE)
+
+from pathlib import Path
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import TimeSeriesSplit, cross_val_score
+from sklearn.metrics import mean_squared_error
+
+_data = Path("data/market_features.csv")
+if not _data.exists():
+    raise FileNotFoundError(
+        "Missing data/market_features.csv - run tools/build_session06_table.py "
+        "from the repository root."
+    )
+TBL = pd.read_csv(_data, parse_dates=["date"]).set_index("date")
+TRAIN = TBL.loc[:"2022-12-31"]
+TEST = TBL.loc["2023-01-01":]
+COLS = list(TBL.columns[:-1])
+FOLDS = TimeSeriesSplit(n_splits=5)
+
+BLUE = "#1c5cab"
+BLUE_LIGHT = "#86b6ef"
+AMBER = "#b8860b"
+BRICK = "#b3402f"
+GREY = "#c3c2b7"
+GREY_LIGHT = "#d8d7d0"
+INK = "#141413"
+```
+
+```{pyodide}
+#| include: false
+# House style for the live figures, so they match the printed ones.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings("ignore")
+plt.rcParams.update({
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"], "font.size": 12,
+    "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+    "figure.dpi": 100,
+})
+```
+
+<div class="statband">
+<div class="stat"><span class="stat-big">0.740</span><div class="stat-label">one column</div></div>
+<div class="stat"><span class="stat-big">0.772</span><div class="stat-label">two columns</div></div>
+<div class="stat"><span class="stat-big">0.747</span><div class="stat-label">three columns</div></div>
+</div>
+
+Cross-validation compared three candidates and kept the one-column model. Each
+candidate either contained a column or did not.
+
+::: {.keypoint}
+Three columns give eight possible subsets. A real table has far more columns
+than three.
+:::
+
+
+# This session
+
+- a table with **nineteen** columns, and what plain regression does with it
+- a **penalty** on the size of the coefficients: ridge regression
+- why the penalty needs every column on the same **scale**, and a pipeline
+- choosing the penalty's strength with the folds: **hyperparameter tuning**
+- the **lasso**, which sets coefficients to exactly zero, and the elastic net
+- what the arguments of these scikit-learn objects do, and when to change them
+
+
+# 1 · Many columns {.divider}
+
+::: {.divider-kicker}
+Part 1
+:::
+
+::: {.divider-note}
+A wider table, and what ordinary least squares does with it.
+:::
+
+
+# The question
+
+**How volatile will the whole market be over the next twenty trading days?**
+
+::: {.why-grid}
+::: {.why-point}
+**Why it matters** <span>the risk of almost any portfolio moves with the index, so its volatility sets margins, limits and option prices</span>
+:::
+::: {.why-point}
+**What you know today** <span>the index's own history over several windows, and how volatile each stock in it has been lately</span>
+:::
+:::
+
+
+# The table
+
+```{pyodide}
+table = pd.read_csv("data/market_features.csv", parse_dates=["date"]).set_index("date")
+
+print(table.shape)
+print(list(table.columns))
+```
+
+One row per trading day, built from `prices.csv` with `rolling` and `shift` as
+last time. The index is SPY, the S&P 500 fund in the data.
+
+
+# Nineteen columns, one target
+
+::: {.diagram}
+<svg width="1000" height="150" viewBox="0 0 1000 150" role="img" aria-label="Nineteen feature columns looking back in time and one target column looking forward">
+  <rect x="30" y="44" width="250" height="46" rx="6" fill="#eef4fc" stroke="#86b6ef" stroke-width="1.5"/>
+  <rect x="290" y="44" width="150" height="46" rx="6" fill="#eef4fc" stroke="#86b6ef" stroke-width="1.5"/>
+  <rect x="450" y="44" width="270" height="46" rx="6" fill="#eef4fc" stroke="#86b6ef" stroke-width="1.5"/>
+  <rect x="800" y="44" width="160" height="46" rx="6" fill="#fbf3de" stroke="#d99a1c" stroke-width="1.5"/>
+  <g font-family="Cascadia Mono, monospace" font-size="14" fill="#0d366b" text-anchor="middle">
+    <text x="155" y="73">vol_5d … vol_120d</text>
+    <text x="365" y="73">ret_5d … ret_60d</text>
+    <text x="585" y="73">AAPL_vol … DIS_vol</text>
+  </g>
+  <text x="880" y="73" text-anchor="middle" font-size="14" font-family="Cascadia Mono, monospace" fill="#8a6508">vol_next</text>
+  <g font-family="Segoe UI, sans-serif" font-size="13" fill="#52514e" text-anchor="middle">
+    <text x="155" y="30">the index's volatility, six windows</text>
+    <text x="365" y="30">its return, three windows</text>
+    <text x="585" y="30">ten stocks, 20-day volatility</text>
+    <text x="880" y="30">the next twenty days</text>
+  </g>
+  <g stroke="#c3c2b7" stroke-width="1.6" fill="none"><path d="M 730 67 L 780 67"/></g>
+  <polygon points="780,62 780,72 790,67" fill="#c3c2b7"/>
+  <g font-family="Segoe UI, sans-serif" font-size="14" fill="#898781" text-anchor="middle">
+    <text x="375" y="128">2,376 rows, returns in percent, every column looking back from today</text>
+  </g>
+</svg>
+:::
+
+::: {.diagram-note}
+Building this table from the price file is one of the exercises.
+:::
+
+
+# Splitting by date
+
+```{pyodide}
+train = table.loc[:"2022-12-31"]
+test = table.loc["2023-01-01":]
+
+columns = list(table.columns[:-1])
+print(len(train), len(test), len(columns))
+```
+
+`table.columns[:-1]` is every column except the last, which is the target.
+
+
+# A helper for the error
+
+```{pyodide}
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+
+def rmse(actual, predicted):
+    return np.sqrt(mean_squared_error(actual, predicted))
+```
+
+The RMSE is computed many times this session. A two-line function keeps every
+later cell short.
+
+
+# One column, as before
+
+```{pyodide}
+one = LinearRegression()
+one.fit(train[["vol_20d"]], train["vol_next"])
+
+print("train:", rmse(train["vol_next"], one.predict(train[["vol_20d"]])))
+print("test :", rmse(test["vol_next"], one.predict(test[["vol_20d"]])))
+```
+
+This is the same model as last time, on the index. A test error of 0.237 is
+the number to beat.
+
+
+# All nineteen columns
+
+```{pyodide}
+ols = LinearRegression()
+ols.fit(train[columns], train["vol_next"])
+
+print("train:", rmse(train["vol_next"], ols.predict(train[columns])))
+print("test :", rmse(test["vol_next"], ols.predict(test[columns])))
+```
+
+The training error fell and the test error rose. Eighteen extra columns made
+the forecast worse.
+
+
+# The nineteen coefficients
+
+```{python}
+#| echo: false
+#| fig-align: center
+_ols = LinearRegression().fit(TRAIN[COLS], TRAIN["vol_next"])
+_b = pd.Series(_ols.coef_, index=COLS)
+fig, ax = plt.subplots(figsize=(10.6, 4.3))
+ax.barh(range(len(_b)), _b.values, color=[BLUE if v >= 0 else BRICK for v in _b.values],
+        height=0.62)
+ax.set_yticks(range(len(_b)))
+ax.set_yticklabels(_b.index, fontsize=9.5)
+ax.invert_yaxis()
+ax.axvline(0, color=GREY, linewidth=1)
+ax.set_xlabel("coefficient (ordinary least squares)")
+ax.grid(axis="y", visible=False)
+for i, v in enumerate(_b.values):
+    ax.text(v + (0.012 if v >= 0 else -0.012), i, "%.2f" % v, va="center",
+            ha="left" if v >= 0 else "right", fontsize=9, color="#52514e")
+fig.tight_layout()
+plt.show()
+```
+
+Higher volatility at J&J and JPMorgan **lowers** the forecast, and the index's
+own volatility raises it at 60 days and lowers it at 120. Those signs are not
+believable.
+
+
+# The columns are near-copies of each other
+
+```{python}
+#| echo: false
+#| fig-align: center
+_c = TRAIN[COLS].corr()
+fig, ax = plt.subplots(figsize=(6.4, 4.35))
+im = ax.imshow(_c.values, cmap="Blues", vmin=-0.2, vmax=1)
+ax.set_xticks(range(len(COLS)))
+ax.set_yticks(range(len(COLS)))
+ax.set_xticklabels(COLS, rotation=90, fontsize=8)
+ax.set_yticklabels(COLS, fontsize=8)
+ax.grid(False)
+cb = fig.colorbar(im, ax=ax, fraction=0.045, pad=0.03)
+cb.ax.tick_params(labelsize=8.5)
+cb.set_label("correlation", fontsize=9.5)
+fig.tight_layout()
+plt.show()
+```
+
+`vol_40d` and `vol_60d` correlate at 0.93. Two columns with the same
+information can take +5 and −4.8 and fit exactly as well as +0.1 and +0.1.
+The fit is fine; the coefficients are noise.
+
+
+# The coefficients depend on the rows
+
+```{python}
+#| echo: false
+#| fig-align: center
+_show = ["vol_60d", "vol_120d", "JNJ_vol", "XOM_vol"]
+_ols_f, _rdg_f = [], []
+for _fi, _sc in FOLDS.split(TRAIN):
+    _blk = TRAIN.iloc[_fi]
+    _ols_f.append(LinearRegression().fit(_blk[COLS], _blk["vol_next"]).coef_)
+    _rdg_f.append(Ridge(alpha=1000).fit(_blk[COLS], _blk["vol_next"]).coef_)
+_ols_f = np.array(_ols_f)
+_rdg_f = np.array(_rdg_f)
+_idx = [COLS.index(s) for s in _show]
+
+fig, ax = plt.subplots(figsize=(10.6, 3.0))
+for k in range(5):
+    ax.scatter(np.arange(4) + (k - 2) * 0.07, _ols_f[k, _idx], s=46, color=BLUE,
+               zorder=3)
+ax.axhline(0, color=GREY, linewidth=1)
+ax.set_xticks(range(4))
+ax.set_xticklabels(_show)
+ax.set_ylabel("coefficient")
+ax.set_title("Ordinary least squares, fitted on each of the five fold blocks", loc="left")
+ax.grid(axis="x", visible=False)
+fig.tight_layout()
+plt.show()
+```
+
+Each column has five dots, one per block of training rows. `vol_120d` is +1.02
+on one block and −0.94 on another. A coefficient that changes sign with the sample
+cannot be used for next year.
+
+
+# From half a million fits to one
+
+::: {.diagram}
+<svg width="1000" height="250" viewBox="0 0 1000 250" role="img" aria-label="Choosing a subset of nineteen columns means 524,288 candidates, each in or out; penalised regression is one fit with every column in and a charge on coefficient size">
+  <rect x="20" y="30" width="400" height="170" rx="10" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.8"/>
+  <text x="220" y="66" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#52514e">choose a subset of the 19 columns</text>
+  <text x="220" y="118" text-anchor="middle" font-size="36" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">524,288</text>
+  <text x="220" y="148" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">candidates to cross-validate</text>
+  <text x="220" y="180" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">and each column is all in or all out</text>
+  <g stroke="#c3c2b7" stroke-width="3" fill="none"><path d="M 440 115 L 540 115"/></g>
+  <polygon points="540,105 540,125 560,115" fill="#c3c2b7"/>
+  <rect x="580" y="30" width="400" height="170" rx="10" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.8"/>
+  <text x="780" y="66" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#52514e">keep every column, charge for size</text>
+  <text x="780" y="118" text-anchor="middle" font-size="36" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="700">1 fit</text>
+  <text x="780" y="148" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">every coefficient pulled towards zero</text>
+  <text x="780" y="180" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">a little for useful columns, a lot for noise</text>
+  <text x="500" y="238" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#898781">the right-hand side is penalised regression, also called regularised</text>
+</svg>
+:::
+
+::: {.keypoint}
+Subset selection asks, for each column, in or out. A penalty asks a softer
+question: **how large may its coefficient be?**
+:::
+
+
+# 2 · Ridge regression {.divider}
+
+::: {.divider-kicker}
+Part 2
+:::
+
+::: {.divider-note}
+A penalty on the squared coefficients, and one new argument.
+:::
+
+
+# What ordinary least squares minimises
+
+::: {.formula}
+$$
+\text{RSS} = \sum_{i=1}^{n}\left(y_i - \hat{y}_i\right)^2
+$$
+:::
+
+The residual sum of squares on the training rows, and nothing else. A
+coefficient of +5 is accepted if it lowers the RSS by a little, which is how
++5 and −4.8 on two near-copies come about.
+
+
+# The ridge objective
+
+::: {.formula}
+$$
+\text{RSS} + \alpha \sum_{j=1}^{p} \beta_j^2
+$$
+:::
+
+Ridge adds a charge for the size of the slopes. A coefficient of 5 now costs
+25 times `alpha`, and is kept only if it lowers the RSS by more than that.
+
+::: {.muted .small}
+The sum runs over the slopes and leaves the intercept alone.
+:::
+
+
+# What alpha does
+
+::: {.diagram}
+<svg width="1000" height="200" viewBox="0 0 1000 200" role="img" aria-label="A line from alpha equals zero, which is ordinary least squares, to alpha very large, where every coefficient is zero">
+  <line x1="130" y1="90" x2="870" y2="90" stroke="#c3c2b7" stroke-width="4"/>
+  <circle cx="130" cy="90" r="14" fill="#1c5cab"/>
+  <circle cx="500" cy="90" r="14" fill="#d99a1c"/>
+  <circle cx="870" cy="90" r="14" fill="#b3402f"/>
+  <g font-family="Segoe UI, sans-serif" text-anchor="middle">
+    <text x="130" y="46" font-size="22" fill="#0d366b" font-weight="600">alpha = 0</text>
+    <text x="500" y="46" font-size="22" fill="#8a6508" font-weight="600">alpha in between</text>
+    <text x="870" y="46" font-size="22" fill="#b3402f" font-weight="600">alpha very large</text>
+    <text x="130" y="136" font-size="16" fill="#52514e">no penalty at all</text>
+    <text x="130" y="160" font-size="16" fill="#52514e">ordinary least squares</text>
+    <text x="500" y="136" font-size="16" fill="#52514e">every slope pulled towards zero</text>
+    <text x="500" y="160" font-size="16" fill="#52514e">but none reaches it</text>
+    <text x="870" y="136" font-size="16" fill="#52514e">every slope is zero</text>
+    <text x="870" y="160" font-size="16" fill="#52514e">the forecast is the training average</text>
+  </g>
+</svg>
+:::
+
+::: {.keypoint}
+`alpha` is the price of coefficient size. It is set before `.fit()` runs, and
+the rows cannot choose it, because every value gives a fitted model.
+:::
+
+
+# Ridge in code
+
+```{pyodide}
+from sklearn.linear_model import Ridge
+
+ridge = Ridge(alpha=1000)
+ridge.fit(train[columns], train["vol_next"])
+
+print(rmse(test["vol_next"], ridge.predict(test[columns])))
+```
+
+Only the first line changed: `Ridge` fits and predicts exactly like
+`LinearRegression`. 0.228, against 0.248 unpenalised and 0.237 for one column.
+
+
+# Your turn [1]{.chip .chip-turn} {.your-turn}
+
+Fit the same nineteen columns with a much smaller penalty and a much larger
+one. Which of the earlier numbers does each land near?
+
+```{pyodide}
+#| autorun: false
+small = Ridge(alpha=...)
+small.fit(train[columns], train["vol_next"])
+print("alpha small:", rmse(test["vol_next"], small.predict(test[columns])))
+
+large = Ridge(alpha=...)
+large.fit(train[columns], train["vol_next"])
+print("alpha large:", rmse(test["vol_next"], large.predict(test[columns])))
+```
+
+::: {.muted .small}
+Try 1 for the small one and 100000 for the large one.
+:::
+
+
+# Your turn 1: answer
+
+```python
+small = Ridge(alpha=1)         # 0.247
+large = Ridge(alpha=100000)    # 0.282
+```
+
+`alpha=1` is ordinary least squares to three decimals: a penalty of 1 is
+nothing next to an RSS over 1,894 rows. `alpha=100000` is worse than repeating
+this month, and at ten million the error is 0.291, the same as guessing the
+average.
+
+::: {.keypoint}
+Too little penalty leaves the overfitting in. Too much removes the signal with
+the noise.
+:::
+
+
+# Why smaller coefficients forecast better
+
+```{python}
+#| echo: false
+#| fig-align: center
+fig, axes = plt.subplots(1, 2, figsize=(10.6, 3.0), sharey=True)
+for ax, arr, ttl, col in [(axes[0], _ols_f, "ordinary least squares", BLUE),
+                          (axes[1], _rdg_f, "ridge, alpha = 1000", AMBER)]:
+    for k in range(5):
+        ax.scatter(np.arange(4) + (k - 2) * 0.07, arr[k, _idx], s=46, color=col,
+                   zorder=3)
+    ax.axhline(0, color=GREY, linewidth=1)
+    ax.set_xticks(range(4))
+    ax.set_xticklabels(_show)
+    ax.set_title(ttl, loc="left")
+    ax.grid(axis="x", visible=False)
+axes[0].set_ylabel("coefficient, one dot per fold block")
+fig.tight_layout()
+plt.show()
+```
+
+These are the same four columns on the same five blocks. The ridge coefficients
+are small and they stay put, so a coefficient fitted on the past holds on the
+years to come. That is a little bias in exchange for far less variance.
+
+
+# 3 · The penalty and the units {.divider}
+
+::: {.divider-kicker}
+Part 3
+:::
+
+::: {.divider-note}
+The penalty charges by coefficient size, and size depends on units.
+:::
+
+
+# The same column, in two units
+
+::: {.diagram}
+<svg width="1000" height="230" viewBox="0 0 1000 230" role="img" aria-label="The vol_20d column in percent and in decimals: the values, the coefficient OLS gives it, and the penalty ridge would charge">
+  <g font-family="Segoe UI, sans-serif" font-size="14" fill="#898781" text-anchor="middle">
+    <text x="420" y="30">typical values</text>
+    <text x="660" y="30">the OLS coefficient</text>
+    <text x="870" y="30">its ridge penalty, β²</text>
+  </g>
+  <rect x="20" y="52" width="960" height="62" rx="8" fill="#eef4fc" stroke="#86b6ef" stroke-width="1.5"/>
+  <text x="40" y="90" font-size="16" font-family="Cascadia Mono, monospace" fill="#0d366b">vol_20d in percent</text>
+  <text x="420" y="90" text-anchor="middle" font-size="16" font-family="Cascadia Mono, monospace" fill="#26333f">0.98  1.21  0.90</text>
+  <text x="660" y="90" text-anchor="middle" font-size="19" font-family="Cascadia Mono, monospace" fill="#0d366b" font-weight="600">0.019</text>
+  <text x="870" y="90" text-anchor="middle" font-size="19" font-family="Cascadia Mono, monospace" fill="#0d366b" font-weight="600">0.0004</text>
+  <rect x="20" y="130" width="960" height="62" rx="8" fill="#fbf1f0" stroke="#e0b3ac" stroke-width="1.5"/>
+  <text x="40" y="168" font-size="16" font-family="Cascadia Mono, monospace" fill="#b3402f">vol_20d in decimals</text>
+  <text x="420" y="168" text-anchor="middle" font-size="16" font-family="Cascadia Mono, monospace" fill="#26333f">0.0098  0.0121  0.0090</text>
+  <text x="660" y="168" text-anchor="middle" font-size="19" font-family="Cascadia Mono, monospace" fill="#b3402f" font-weight="600">1.913</text>
+  <text x="870" y="168" text-anchor="middle" font-size="19" font-family="Cascadia Mono, monospace" fill="#b3402f" font-weight="600">3.66</text>
+  <text x="500" y="222" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">the same column, the same forecast, and a penalty ten thousand times larger</text>
+</svg>
+:::
+
+::: {.keypoint}
+Ridge shrinks the column in small units first, whatever it contains. The
+penalty is judging columns by their units, not by their usefulness.
+:::
+
+
+# Measured: OLS
+
+```{pyodide}
+train_dec = train.copy()
+test_dec = test.copy()
+train_dec["vol_20d"] = train_dec["vol_20d"] / 100
+test_dec["vol_20d"] = test_dec["vol_20d"] / 100
+
+spot = columns.index("vol_20d")
+
+ols_dec = LinearRegression()
+ols_dec.fit(train_dec[columns], train_dec["vol_next"])
+print(ols.coef_[spot], ols_dec.coef_[spot])
+print(rmse(test["vol_next"], ols.predict(test[columns])), rmse(test["vol_next"], ols_dec.predict(test_dec[columns])))
+```
+
+The coefficient is exactly one hundred times larger and the test error is
+exactly the same.
+
+
+# Measured: ridge
+
+```{pyodide}
+ridge_dec = Ridge(alpha=1000)
+ridge_dec.fit(train_dec[columns], train_dec["vol_next"])
+
+print(ridge.coef_[spot], ridge_dec.coef_[spot])
+```
+
+The coefficient on `vol_20d` falls from 0.031 to 0.0003. Ridge has dropped the
+column, and nothing about its information changed.
+
+
+# Put every column on the same scale
+
+::: {.formula}
+$$
+z = \frac{x - \bar{x}}{s}
+$$
+:::
+
+Subtract each column's mean and divide by its standard deviation. Every column
+then has mean 0 and standard deviation 1, whatever units it arrived in, and one
+coefficient is comparable with another.
+
+::: {.muted .small}
+The standardising formula from two sessions ago, where it was noted that
+penalised regression needs it.
+:::
+
+
+# StandardScaler
+
+```{pyodide}
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+scaler.fit(train[columns])
+X_train = scaler.transform(train[columns])
+X_test = scaler.transform(test[columns])
+
+print(scaler.mean_[spot], scaler.scale_[spot])
+print(round(X_train[:, spot].mean(), 6), round(X_train[:, spot].std(), 6))
+```
+
+`.fit()` learns each column's mean and standard deviation from the training
+rows. `.transform()` applies them, to the test rows as well: their own mean is
+information from the future.
+
+
+# Ridge on standardised columns
+
+```{pyodide}
+ridge = Ridge(alpha=1000)
+ridge.fit(X_train, train["vol_next"])
+
+print(rmse(test["vol_next"], ridge.predict(X_test)))
+```
+
+With every column in standard deviations, the same model and the same alpha
+score 0.218, down from 0.228.
+
+
+# Reading standardised coefficients
+
+```{python}
+#| echo: false
+#| fig-align: center
+_sc = StandardScaler().fit(TRAIN[COLS])
+_rs = Ridge(alpha=1000).fit(_sc.transform(TRAIN[COLS]), TRAIN["vol_next"])
+_bs = pd.Series(_rs.coef_, index=COLS).sort_values(ascending=False)
+fig, ax = plt.subplots(figsize=(10.6, 4.0))
+ax.bar(range(len(_bs)), _bs.values, color=[BLUE if v >= 0 else BRICK for v in _bs.values],
+       width=0.62)
+ax.set_xticks(range(len(_bs)))
+ax.set_xticklabels(_bs.index, rotation=60, ha="right", fontsize=9.5)
+ax.axhline(0, color=GREY, linewidth=1)
+ax.set_ylabel("coefficient per standard deviation")
+ax.grid(axis="x", visible=False)
+fig.tight_layout()
+plt.show()
+```
+
+The bars are comparable now. The last five and ten days matter most, a market
+that fell in the last week is more volatile in the month after, and the other
+stocks each add a little.
+
+
+# Two steps that belong together
+
+::: {.diagram}
+<svg width="1000" height="200" viewBox="0 0 1000 200" role="img" aria-label="Training rows flow through a scaler that is fitted and then a model that is fitted; test rows flow through the same scaler, already fitted, and the model predicts">
+  <rect x="20" y="24" width="170" height="60" rx="7" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.6"/>
+  <text x="105" y="60" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">training rows</text>
+  <rect x="20" y="116" width="170" height="60" rx="7" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.6"/>
+  <text x="105" y="152" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">test rows</text>
+  <rect x="290" y="24" width="300" height="60" rx="7" fill="#ffffff" stroke="#86b6ef" stroke-width="1.6"/>
+  <text x="440" y="49" text-anchor="middle" font-size="16" font-family="Cascadia Mono, monospace" fill="#0d366b">StandardScaler</text>
+  <text x="440" y="72" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">fit, then transform</text>
+  <rect x="290" y="116" width="300" height="60" rx="7" fill="#ffffff" stroke="#86b6ef" stroke-width="1.6"/>
+  <text x="440" y="141" text-anchor="middle" font-size="16" font-family="Cascadia Mono, monospace" fill="#0d366b">StandardScaler</text>
+  <text x="440" y="164" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">transform only, training mean and sd</text>
+  <rect x="690" y="24" width="290" height="60" rx="7" fill="#ffffff" stroke="#d99a1c" stroke-width="1.6"/>
+  <text x="835" y="49" text-anchor="middle" font-size="16" font-family="Cascadia Mono, monospace" fill="#8a6508">Ridge</text>
+  <text x="835" y="72" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">fit</text>
+  <rect x="690" y="116" width="290" height="60" rx="7" fill="#ffffff" stroke="#d99a1c" stroke-width="1.6"/>
+  <text x="835" y="141" text-anchor="middle" font-size="16" font-family="Cascadia Mono, monospace" fill="#8a6508">Ridge</text>
+  <text x="835" y="164" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">predict</text>
+  <g stroke="#c3c2b7" stroke-width="1.8">
+    <line x1="190" y1="54" x2="278" y2="54"/>
+    <line x1="590" y1="54" x2="678" y2="54"/>
+    <line x1="190" y1="146" x2="278" y2="146"/>
+    <line x1="590" y1="146" x2="678" y2="146"/>
+  </g>
+  <g fill="#c3c2b7">
+    <polygon points="278,48 278,60 290,54"/>
+    <polygon points="678,48 678,60 690,54"/>
+    <polygon points="278,140 278,152 290,146"/>
+    <polygon points="678,140 678,152 690,146"/>
+  </g>
+</svg>
+:::
+
+The training rows are scaled and then fitted; the test rows are scaled the same
+way and then predicted. Cross-validation repeats the pair on five fitting
+blocks, so the scaler has to be refitted inside every fold with the model.
+
+
+# Pipeline
+
+```{pyodide}
+from sklearn.pipeline import Pipeline
+
+pipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge(alpha=1000))])
+pipe.fit(train[columns], train["vol_next"])
+
+print(rmse(test["vol_next"], pipe.predict(test[columns])))
+```
+
+A pipeline is a list of named steps. `.fit()` fits the scaler, transforms,
+and fits the ridge; `.predict()` transforms with the fitted scaler and
+predicts. The names are yours to choose.
+
+
+# A pipeline is a model
+
+```{pyodide}
+from sklearn.model_selection import TimeSeriesSplit, cross_val_score
+
+folds = TimeSeriesSplit(n_splits=5)
+
+scores = cross_val_score(pipe, train[columns], train["vol_next"],
+                         cv=folds, scoring="neg_root_mean_squared_error")
+print(-scores.round(3))
+print(-scores.mean())
+```
+
+`cross_val_score` takes the pipeline where it took `LinearRegression()` last
+time, and refits the scaler inside each fold. The third fold still contains
+March 2020.
+
+
+# 4 · Choosing alpha {.divider}
+
+::: {.divider-kicker}
+Part 4
+:::
+
+::: {.divider-note}
+A setting the data cannot pick, and the tool that searches over it.
+:::
+
+
+# Parameters and hyperparameters
+
+<div class="compare">
+<div class="compare-col">
+<h3>Parameters</h3>
+<p>The intercept and the nineteen slopes. <code>.fit()</code> computes them from the training rows and stores them with a trailing underscore.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Hyperparameters</h3>
+<p><code>alpha</code>. Passed in before <code>.fit()</code> and never changed by it. Every value gives a fitted model, so the training rows cannot say which value is right.</p>
+</div>
+</div>
+
+::: {.keypoint}
+A hyperparameter is chosen the way candidates were chosen last time: fit with
+each value, score on held-out rows, keep the best.
+:::
+
+
+# Try several
+
+```{pyodide}
+for alpha in [1, 10, 100, 1000, 10000]:
+    pipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge(alpha=alpha))])
+    scores = cross_val_score(pipe, train[columns], train["vol_next"],
+                             cv=folds, scoring="neg_root_mean_squared_error")
+    print(alpha, round(-scores.mean(), 4))
+```
+
+The cross-validated error falls to 1000 and rises again. The folds locate the
+point between too little penalty and too much.
+
+
+# The validation curve
+
+```{python}
+#| echo: false
+#| fig-align: center
+_grid = np.logspace(0, 5, 26)
+_cv = []
+for _a in _grid:
+    _p = Pipeline([("scale", StandardScaler()), ("ridge", Ridge(alpha=_a))])
+    _cv.append(-cross_val_score(_p, TRAIN[COLS], TRAIN["vol_next"], cv=FOLDS,
+                                scoring="neg_root_mean_squared_error").mean())
+_cv = np.array(_cv)
+_best = int(np.argmin(_cv))
+_ticks = [1, 10, 100, 1000, 10000, 100000]
+_labels = ["1", "10", "100", "1,000", "10,000", "100,000"]
+fig, ax = plt.subplots(figsize=(10.0, 3.1))
+ax.plot(_grid, _cv, color=BLUE, linewidth=2.2)
+ax.scatter([_grid[_best]], [_cv[_best]], s=90, color=AMBER, zorder=3)
+ax.text(_grid[_best], _cv[_best] + 0.018, "lowest at alpha ≈ 1,600", ha="center",
+        fontsize=11, color="#8a6508", fontweight="600")
+ax.set_xscale("log")
+ax.set_xticks(_ticks)
+ax.set_xticklabels(_labels)
+ax.set_ylim(0.53, 0.74)
+ax.set_xlabel("alpha")
+ax.set_ylabel("cross-validated RMSE")
+ax.text(2.2, 0.66, "too little penalty:\noverfitting", fontsize=11, color="#52514e")
+ax.text(1.4e4, 0.565, "too much penalty:\nunderfitting", fontsize=11, color="#52514e")
+fig.tight_layout()
+plt.show()
+```
+
+This is the same loop over a finer grid. High on the left where the penalty is too
+weak, high on the right where it is too strong, lowest at a few thousand.
+
+
+# Why the grid goes in factors of ten
+
+```{python}
+#| echo: false
+#| fig-align: center
+_alphas = np.logspace(-1, 6, 60)
+_Xs = _sc.transform(TRAIN[COLS])
+_paths = np.array([Ridge(alpha=a).fit(_Xs, TRAIN["vol_next"]).coef_ for a in _alphas])
+_hl = {"vol_5d": BLUE, "vol_10d": BLUE_LIGHT, "ret_5d": BRICK, "AAPL_vol": AMBER}
+_rticks = [0.1, 1, 10, 100, 1000, 10000, 100000, 1000000]
+_rlabels = ["0.1", "1", "10", "100", "1,000", "10,000", "100,000", "1,000,000"]
+fig, ax = plt.subplots(figsize=(10.0, 3.1))
+for j, name in enumerate(COLS):
+    if name in _hl:
+        ax.plot(_alphas, _paths[:, j], color=_hl[name], linewidth=2.0, label=name)
+    else:
+        ax.plot(_alphas, _paths[:, j], color=GREY_LIGHT, linewidth=1.0)
+ax.axhline(0, color=GREY, linewidth=1)
+ax.set_xscale("log")
+ax.set_xlim(0.08, 1.5e6)
+ax.set_xticks(_rticks)
+ax.set_xticklabels(_rlabels)
+ax.set_xlabel("alpha")
+ax.set_ylabel("coefficient")
+ax.legend(loc="upper right", ncol=2)
+fig.tight_layout()
+plt.show()
+```
+
+Each line is one coefficient as alpha grows. Between 1 and 10 almost nothing
+happens; between 1,000 and 10,000 everything does. The grid steps by a factor,
+not by a fixed amount.
+
+
+# GridSearchCV
+
+<div class="foldgrid">
+<div class="fg-head"><span class="fg-lab"></span><span class="fg-cell fg-ghost">fold 1</span><span class="fg-cell fg-ghost">fold 2</span><span class="fg-cell fg-ghost">fold 3</span><span class="fg-cell fg-ghost">fold 4</span><span class="fg-cell fg-ghost">fold 5</span><span class="fg-score">mean</span></div>
+<div class="fg-row fragment" data-fragment-index="1"><span class="fg-lab">alpha 1</span><span class="fg-cell">0.554</span><span class="fg-cell">0.653</span><span class="fg-cell">1.078</span><span class="fg-cell">0.890</span><span class="fg-cell">0.414</span><span class="fg-score">0.718</span></div>
+<div class="fg-row fragment" data-fragment-index="2"><span class="fg-lab">alpha 10</span><span class="fg-cell">0.537</span><span class="fg-cell">0.628</span><span class="fg-cell">1.077</span><span class="fg-cell">0.823</span><span class="fg-cell">0.408</span><span class="fg-score">0.694</span></div>
+<div class="fg-row fragment" data-fragment-index="3"><span class="fg-lab">alpha 100</span><span class="fg-cell">0.540</span><span class="fg-cell">0.534</span><span class="fg-cell">1.082</span><span class="fg-cell">0.547</span><span class="fg-cell">0.392</span><span class="fg-score">0.619</span></div>
+<div class="fg-row fragment" data-fragment-index="4"><span class="fg-lab">alpha 1000</span><span class="fg-cell fg-val">0.476</span><span class="fg-cell fg-val">0.472</span><span class="fg-cell fg-val">1.127</span><span class="fg-cell fg-val">0.327</span><span class="fg-cell fg-val">0.397</span><span class="fg-score">0.560</span></div>
+<div class="fg-row fragment" data-fragment-index="5"><span class="fg-lab">alpha 10000</span><span class="fg-cell">0.472</span><span class="fg-cell">0.481</span><span class="fg-cell">1.236</span><span class="fg-cell">0.283</span><span class="fg-cell">0.463</span><span class="fg-score">0.587</span></div>
+<div class="fg-total fragment" data-fragment-index="6"><span class="fg-lab">best</span><span class="fg-avg"><strong>alpha = 1000</strong> has the lowest mean. It is refitted on all 1,894 training rows, and that model is the result.</span></div>
+</div>
+
+::: {.muted .small}
+Five values times five folds is twenty-five fits, run by one call.
+:::
+
+
+# GridSearchCV in code
+
+```{pyodide}
+from sklearn.model_selection import GridSearchCV
+
+pipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge())])
+grid = {"ridge__alpha": [1, 10, 100, 1000, 10000]}
+
+search = GridSearchCV(pipe, grid, cv=folds, scoring="neg_root_mean_squared_error")
+search.fit(train[columns], train["vol_next"])
+
+print(search.best_params_)
+print(-search.best_score_)
+```
+
+The grid is a dictionary of settings and the values to try. `"ridge__alpha"`
+is the step name, two underscores, then the argument: that is how a setting
+inside a pipeline is addressed.
+
+
+# What the search holds afterwards
+
+```{pyodide}
+results = pd.DataFrame(search.cv_results_)
+results[["param_ridge__alpha", "mean_test_score", "std_test_score", "rank_test_score"]]
+```
+
+`cv_results_` is the whole grid as a table: every value tried, its mean score
+over the folds, the spread, and its rank.
+
+
+# Predicting with the search
+
+```{pyodide}
+print(search.best_estimator_)
+print(rmse(test["vol_next"], search.predict(test[columns])))
+```
+
+`best_estimator_` is the winning pipeline refitted on every training row, and
+`search.predict()` uses it. The test rows are opened once, here, and played no
+part in choosing alpha.
+
+
+# The arguments of GridSearchCV
+
+| argument | what it changes | when to change it |
+|---|---|---|
+| `estimator` | the model or pipeline being tuned | always a pipeline when scaling is involved |
+| `param_grid` | the settings and the values to try | keep each list short; several keys multiply |
+| `cv` | how the folds are made | always set it: the default ignores time order |
+| `scoring` | the score, larger is better | match it to the error you will report |
+| `refit` | refit the best on all training rows | leave `True`, so `.predict()` works |
+| `n_jobs` | how many folds run at once | `-1` on your own machine, to use every core |
+| `return_train_score` | also record the training score | to see how large the overfitting gap is |
+
+: {.vocab}
+
+
+# Your turn [2]{.chip .chip-turn} {.your-turn}
+
+The best alpha was 1000, with 100 and 10000 on either side. Search a finer grid
+around it and see whether the score improves.
+
+```{pyodide}
+#| autorun: false
+fine = {"ridge__alpha": [...]}
+
+fine_search = GridSearchCV(pipe, fine, cv=folds, scoring="neg_root_mean_squared_error")
+fine_search.fit(train[columns], train["vol_next"])
+
+print(fine_search.best_params_)
+print(-fine_search.best_score_)
+```
+
+::: {.muted .small}
+Five values between 300 and 4000, stepping by roughly a factor of two.
+:::
+
+
+# Your turn 2: answer
+
+```python
+fine = {"ridge__alpha": [300, 600, 1000, 2000, 4000]}
+```
+
+The best is **2000**, at 0.5583 against 0.5599 for 1000. On the test rows the
+two give 0.217 and 0.218.
+
+::: {.keypoint}
+The gain is in the third decimal, and the fold scores range from 0.33 to 1.13.
+One significant figure of alpha is enough.
+:::
+
+
+# 5 · Lasso {.divider}
+
+::: {.divider-kicker}
+Part 5
+:::
+
+::: {.divider-note}
+A different penalty, which sets coefficients to exactly zero.
+:::
+
+
+# One change to the penalty
+
+::: {.formula}
+$$
+\text{ridge:}\quad \text{RSS} + \alpha \sum_{j=1}^{p} \beta_j^2
+$$
+:::
+
+::: {.fragment}
+::: {.formula}
+$$
+\text{lasso:}\quad \text{RSS} + \alpha \sum_{j=1}^{p} |\beta_j|
+$$
+:::
+
+The squares become absolute values. Everything else is the same: a price on
+size, set by alpha, chosen by cross-validation.
+:::
+
+
+# Why absolute values give exact zeros
+
+```{python}
+#| echo: false
+#| fig-align: center
+_two = ["vol_10d", "vol_60d"]
+_s2 = StandardScaler().fit(TRAIN[_two])
+_X2 = _s2.transform(TRAIN[_two])
+_y2 = TRAIN["vol_next"].values - TRAIN["vol_next"].mean()
+_b_ols = LinearRegression(fit_intercept=False).fit(_X2, _y2).coef_
+_b_rdg = Ridge(alpha=1000, fit_intercept=False).fit(_X2, _y2).coef_
+_b_las = Lasso(alpha=0.1, fit_intercept=False).fit(_X2, _y2).coef_
+_g1, _g2 = np.meshgrid(np.linspace(-0.35, 0.55, 160), np.linspace(-0.35, 0.4, 160))
+_rss = np.zeros_like(_g1)
+for _i in range(_g1.shape[0]):
+    for _j in range(_g1.shape[1]):
+        _res = _y2 - _X2 @ np.array([_g1[_i, _j], _g2[_i, _j]])
+        _rss[_i, _j] = (_res ** 2).sum()
+_rss0 = ((_y2 - _X2 @ _b_ols) ** 2).sum()
+_levels = _rss0 * np.array([1.002, 1.01, 1.03, 1.07, 1.13, 1.22])
+
+fig, axes = plt.subplots(1, 2, figsize=(10.0, 3.7))
+for ax, ttl, bpen, shape in [(axes[0], "ridge: the penalty region is a circle", _b_rdg, "circle"),
+                             (axes[1], "lasso: the penalty region is a diamond", _b_las, "diamond")]:
+    ax.contour(_g1, _g2, _rss, levels=_levels, colors=[GREY], linewidths=1.0)
+    ax.axhline(0, color=GREY_LIGHT, linewidth=1)
+    ax.axvline(0, color=GREY_LIGHT, linewidth=1)
+    if shape == "circle":
+        _rad = np.sqrt((bpen ** 2).sum())
+        _th = np.linspace(0, 2 * np.pi, 200)
+        ax.fill(_rad * np.cos(_th), _rad * np.sin(_th), color=BLUE_LIGHT, alpha=0.35)
+        ax.plot(_rad * np.cos(_th), _rad * np.sin(_th), color=BLUE, linewidth=1.6)
+    else:
+        _t = np.abs(bpen).sum()
+        ax.fill([_t, 0, -_t, 0], [0, _t, 0, -_t], color=BLUE_LIGHT, alpha=0.35)
+        ax.plot([_t, 0, -_t, 0, _t], [0, _t, 0, -_t, 0], color=BLUE, linewidth=1.6)
+    ax.scatter([_b_ols[0]], [_b_ols[1]], s=60, color=INK, zorder=4)
+    ax.text(_b_ols[0] + 0.02, _b_ols[1] + 0.02, "OLS", fontsize=10.5, color=INK)
+    ax.scatter([bpen[0]], [bpen[1]], s=80, color=AMBER, zorder=5)
+    ax.text(bpen[0] - 0.03, bpen[1] - 0.07, "penalised", fontsize=10.5,
+            color="#8a6508", fontweight="600", ha="right")
+    ax.set_xlim(-0.35, 0.55)
+    ax.set_ylim(-0.35, 0.4)
+    ax.set_aspect("equal")
+    ax.set_xlabel("coefficient on vol_10d")
+    ax.set_title(ttl, loc="left", fontsize=12)
+    ax.grid(False)
+axes[0].set_ylabel("coefficient on vol_60d")
+fig.tight_layout()
+plt.show()
+```
+
+With two columns the fit can be drawn. The grey rings are equal RSS around the OLS
+point, and the penalised fit is the point of the shaded region on the smallest
+ring it reaches. A diamond has corners on the axes, so the ring usually meets it
+where one coefficient is exactly zero.
+
+
+# The two paths
+
+```{python}
+#| echo: false
+#| fig-align: center
+_la = np.logspace(-3.5, -0.3, 60)
+_lpaths = np.array([Lasso(alpha=a, max_iter=20000).fit(_Xs, TRAIN["vol_next"]).coef_ for a in _la])
+fig, axes = plt.subplots(1, 2, figsize=(10.6, 3.1))
+for ax, xs, ps, ttl in [(axes[0], _alphas, _paths, "ridge"),
+                        (axes[1], _la, _lpaths, "lasso")]:
+    for j, name in enumerate(COLS):
+        if name in _hl:
+            ax.plot(xs, ps[:, j], color=_hl[name], linewidth=2.0, label=name)
+        else:
+            ax.plot(xs, ps[:, j], color=GREY_LIGHT, linewidth=1.0)
+    ax.axhline(0, color=GREY, linewidth=1)
+    ax.set_xscale("log")
+    ax.set_xlabel("alpha")
+    ax.set_title(ttl, loc="left")
+axes[0].set_xlim(0.08, 1.5e6)
+axes[0].set_xticks([0.1, 10, 1000, 100000])
+axes[0].set_xticklabels(["0.1", "10", "1,000", "100,000"])
+axes[1].set_xlim(0.0003, 0.6)
+axes[1].set_xticks([0.001, 0.01, 0.1])
+axes[1].set_xticklabels(["0.001", "0.01", "0.1"])
+axes[0].set_ylabel("coefficient")
+axes[0].legend(loc="upper right", ncol=2, fontsize=9.5)
+fig.tight_layout()
+plt.show()
+```
+
+Ridge shrinks every coefficient smoothly and none reaches zero. Lasso drives
+them to zero one at a time. The alpha scales differ too: ridge's useful range is
+in the thousands here, lasso's is between 0.01 and 1.
+
+
+# Lasso in code
+
+```{pyodide}
+from sklearn.linear_model import Lasso
+
+lasso = Pipeline([("scale", StandardScaler()), ("lasso", Lasso(alpha=0.1))])
+lasso.fit(train[columns], train["vol_next"])
+
+print(rmse(test["vol_next"], lasso.predict(test[columns])))
+```
+
+The same pipeline with `Lasso` in the second step scores 0.217, level with
+ridge.
+
+
+# Which columns survived
+
+```{pyodide}
+coefs = lasso.named_steps["lasso"].coef_
+
+for name, b in zip(columns, coefs):
+    if b != 0:
+        print(name, round(b, 3))
+```
+
+Fourteen of the nineteen coefficients are exactly zero. `named_steps["lasso"]`
+reaches the fitted `Lasso` inside the pipeline, which has no `coef_` of its own.
+
+
+# Choosing lasso's alpha
+
+```{pyodide}
+lasso_grid = {"lasso__alpha": [0.001, 0.01, 0.1, 1]}
+
+lasso_search = GridSearchCV(lasso, lasso_grid, cv=folds, scoring="neg_root_mean_squared_error")
+lasso_search.fit(train[columns], train["vol_next"])
+
+print(lasso_search.best_params_)
+print(-lasso_search.best_score_)
+```
+
+This is the same search with a grid on lasso's scale. Alpha 0.1 has the lowest
+cross-validated error, 0.580 against 0.560 for ridge.
+
+
+# The zeros are not a verdict
+
+```{python}
+#| echo: false
+#| fig-align: center
+_keep = np.zeros((5, len(COLS)), dtype=bool)
+for _k, (_fi, _sc_) in enumerate(FOLDS.split(TRAIN)):
+    _blk = TRAIN.iloc[_fi]
+    _m = Pipeline([("scale", StandardScaler()), ("lasso", Lasso(alpha=0.1, max_iter=20000))])
+    _m.fit(_blk[COLS], _blk["vol_next"])
+    _keep[_k] = _m.named_steps["lasso"].coef_ != 0
+fig, ax = plt.subplots(figsize=(10.6, 2.7))
+for _k in range(5):
+    for j in range(len(COLS)):
+        ax.scatter([j], [4 - _k], s=110, marker="s",
+                   color=BLUE if _keep[_k, j] else "#eeede7", zorder=3)
+ax.set_xticks(range(len(COLS)))
+ax.set_xticklabels(COLS, rotation=60, ha="right", fontsize=9)
+ax.set_yticks(range(5))
+ax.set_yticklabels(["fold 5", "fold 4", "fold 3", "fold 2", "fold 1"], fontsize=9.5)
+ax.set_xlim(-0.7, len(COLS) - 0.3)
+ax.set_ylim(-0.6, 4.6)
+ax.grid(False)
+ax.set_title("columns kept by the lasso, alpha = 0.1, fitted on each fold block", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+On the early blocks the lasso keeps `XOM_vol` and `DIS_vol`; on the later ones,
+`vol_5d` and `AAPL_vol`. Among near-copies it keeps one, and which one depends
+on the rows.
+
+::: {.keypoint}
+A zero means the column was not needed **given the others**, on these rows. It
+does not mean the column carries no information.
+:::
+
+
+# Ridge or lasso
+
+<div class="compare">
+<div class="compare-col">
+<h3>Ridge</h3>
+<p>Every column stays in with a small coefficient. Suits a table where many columns each carry a little and are correlated: the weight is spread across near-copies instead of landing on one.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Lasso</h3>
+<p>A short list of columns and zeros elsewhere. Suits a table where a few columns matter, or where a compact forecast is wanted. Among near-copies it keeps one, chosen by the rows.</p>
+</div>
+</div>
+
+::: {.keypoint}
+Cross-validate both and compare. Here ridge is slightly ahead, and the two are
+within the fold spread of each other.
+:::
+
+
+# Elastic net
+
+::: {.formula}
+$$
+\text{RSS} + \alpha\left[\, \rho \sum_{j} |\beta_j| + \tfrac{1 - \rho}{2} \sum_{j} \beta_j^2 \right]
+$$
+:::
+
+The elastic net uses both penalties at once. `alpha` sets the total and
+`l1_ratio`, the $\rho$ above, sets the mix: 1 is the lasso, 0 is ridge. It is
+used when the columns are correlated and a compact model is still wanted.
+
+
+# Searching two settings at once
+
+```{pyodide}
+from sklearn.linear_model import ElasticNet
+
+enet = Pipeline([("scale", StandardScaler()), ("enet", ElasticNet())])
+enet_grid = {"enet__alpha": [0.01, 0.1, 1], "enet__l1_ratio": [0.1, 0.5, 0.9]}
+
+enet_search = GridSearchCV(enet, enet_grid, cv=folds, scoring="neg_root_mean_squared_error")
+enet_search.fit(train[columns], train["vol_next"])
+print(enet_search.best_params_, -enet_search.best_score_)
+```
+
+Two keys in the grid give three times three combinations, and five folds make
+forty-five fits. The best mix keeps seven columns.
+
+
+# 6 · Reading the arguments {.divider}
+
+::: {.divider-kicker}
+Part 6
+:::
+
+::: {.divider-note}
+Which settings matter, which do not, and how to find out.
+:::
+
+
+# Every setting has a default
+
+```{pyodide}
+Ridge().get_params()
+```
+
+`get_params()` lists every argument of an object and its current value.
+`Ridge(alpha=1000)` changes one and leaves the rest. `help(Ridge)` prints the
+documentation for all of them.
+
+
+# When to change what
+
+::: {.why-grid}
+::: {.why-point}
+**Always** <span>`alpha`, the penalty's strength: by cross-validation on a grid in factors of ten. `cv`: `TimeSeriesSplit` for any time series. `scoring`: the error you will report.</span>
+:::
+::: {.why-point}
+**Sometimes** <span>`max_iter`, the passes the lasso solver may take: raise it when the warning appears. `l1_ratio`, the mix: for the elastic net. `n_jobs=-1`, folds in parallel: on your own machine.</span>
+:::
+::: {.why-point}
+**Rarely** <span>`fit_intercept`, an unpenalised intercept: leave it on. `positive`, coefficients of zero or above: when the sign is known. `tol`, when the solver counts as finished: leave it.</span>
+:::
+::: {.why-point}
+**Why only lasso has `max_iter`** <span>`Ridge` has a closed-form solution. `Lasso` and `ElasticNet` are solved by repeated passes over the columns, and the passes can run out.</span>
+:::
+:::
+
+
+# The convergence warning
+
+```
+ConvergenceWarning: Objective did not converge. You might want to increase
+the number of iterations, check the scale of the features or consider
+increasing regularisation.
+```
+
+The lasso solver ran out of passes before settling. The result is returned
+anyway, and it is slightly wrong.
+
+::: {.why-grid}
+::: {.why-point}
+**Standardise first** <span>columns on wildly different scales are the usual cause, and the pipeline already handles it</span>
+:::
+::: {.why-point}
+**Raise `max_iter`** <span>`Lasso(alpha=0.001, max_iter=10000)`. A very small alpha needs more passes than the default 1,000</span>
+:::
+:::
+
+
+# 7 · What the coefficients mean now {.divider}
+
+::: {.divider-kicker}
+Part 7
+:::
+
+::: {.divider-note}
+Penalised coefficients are for forecasting, and what that rules out.
+:::
+
+
+# Prediction, not inference
+
+<div class="compare">
+<div class="compare-col">
+<h3>Ordinary least squares</h3>
+<p>Unbiased coefficients with standard errors, so a t-test can ask whether a column has an effect. The econometrics toolkit applies.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Ridge and lasso</h3>
+<p>Coefficients shrunk towards zero on purpose. They are biased, they have no standard errors, and there is no <code>summary()</code>. They answer one question: what forecast.</p>
+</div>
+</div>
+
+::: {.keypoint}
+To test whether a column matters, fit OLS on a few columns chosen for a reason
+and read the standard errors. To forecast, penalise.
+:::
+
+
+# What can still be said
+
+A standardised ridge coefficient of 0.079 on `vol_5d` means: **one standard
+deviation more volatility over the last five days raises the forecast by 0.079
+percentage points**, with the other eighteen columns held where they are.
+
+::: {.muted .small}
+Among near-copies the split is arbitrary: 0.079 on `vol_5d` and 0.061 on
+`vol_10d` could as well be the other way round. Read related columns together.
+:::
+
+
+# Six forecasts of the same thing
+
+<div class="statband">
+<div class="stat"><span class="stat-big">0.291</span><div class="stat-label">guess the average</div></div>
+<div class="stat"><span class="stat-big">0.260</span><div class="stat-label">repeat this month</div></div>
+<div class="stat"><span class="stat-big">0.237</span><div class="stat-label">one column</div></div>
+<div class="stat stat-warn"><span class="stat-big">0.248</span><div class="stat-label">nineteen columns, OLS</div></div>
+<div class="stat"><span class="stat-big">0.218</span><div class="stat-label">nineteen columns, ridge</div></div>
+<div class="stat"><span class="stat-big">0.217</span><div class="stat-label">nineteen columns, lasso</div></div>
+</div>
+
+All six are test RMSEs in percentage points. Nineteen columns were worse than
+one until the coefficients were held small; then they were the first to beat
+it, with alpha chosen without the test rows.
+
+
+# The workflow now
+
+::: {.diagram}
+<svg width="1000" height="235" viewBox="0 0 1000 235" role="img" aria-label="The workflow: seal the test rows, build a pipeline, search a grid of alpha values over the folds, keep the best, refit on all training rows, then score once on the test rows">
+  <rect x="8" y="38" width="148" height="66" rx="8" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.6"/>
+  <text x="82" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">1. seal the</text>
+  <text x="82" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">test rows</text>
+  <rect x="176" y="38" width="148" height="66" rx="8" fill="#ffffff" stroke="#86b6ef" stroke-width="1.6"/>
+  <text x="250" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">2. scaler and</text>
+  <text x="250" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">model in a pipeline</text>
+  <rect x="344" y="38" width="186" height="66" rx="8" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.8"/>
+  <text x="437" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">3. grid of alphas</text>
+  <text x="437" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">times the folds</text>
+  <rect x="550" y="38" width="148" height="66" rx="8" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.8"/>
+  <text x="624" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">4. keep the</text>
+  <text x="624" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">best alpha</text>
+  <rect x="718" y="38" width="148" height="66" rx="8" fill="#fdf8ed" stroke="#d99a1c" stroke-width="1.6"/>
+  <text x="792" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#8a6508" font-weight="600">5. refit on all</text>
+  <text x="792" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#8a6508" font-weight="600">training rows</text>
+  <rect x="886" y="38" width="106" height="66" rx="8" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.8"/>
+  <text x="939" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">6. score,</text>
+  <text x="939" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">once</text>
+  <g fill="#c3c2b7">
+    <polygon points="160,66 160,76 172,71"/>
+    <polygon points="328,66 328,76 340,71"/>
+    <polygon points="534,66 534,76 546,71"/>
+    <polygon points="702,66 702,76 714,71"/>
+    <polygon points="870,66 870,76 882,71"/>
+  </g>
+  <rect x="176" y="126" width="690" height="42" rx="7" fill="#f4f7fb" stroke="#dde6f2" stroke-width="1.3"/>
+  <text x="521" y="153" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b">steps 2 to 5 are one call: GridSearchCV(pipeline, grid, cv=folds, scoring=...).fit(train)</text>
+  <rect x="8" y="182" width="858" height="42" rx="7" fill="#f4f7fb" stroke="#dde6f2" stroke-width="1.3"/>
+  <text x="437" y="209" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b">choosing happens in here</text>
+  <rect x="886" y="182" width="106" height="42" rx="7" fill="#fbf1f0" stroke="#e0b3ac" stroke-width="1.3"/>
+  <text x="939" y="209" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">reporting</text>
+</svg>
+:::
+
+::: {.diagram-note}
+The workflow from last time, with the candidates replaced by a grid of alpha
+values and the model replaced by a pipeline.
+:::
+
+
+# What stays with you {.smaller}
+
+::: {.recap-grid}
+::: {.recap-item}
+**Many columns overfit**
+Nineteen columns fitted the training rows better than one and forecast worse. Near-copies get large, opposite coefficients that are noise.
+:::
+::: {.recap-item}
+**A penalty holds coefficients small**
+Ridge adds $\alpha \sum \beta_j^2$, lasso adds $\alpha \sum |\beta_j|$. `Ridge(alpha=...)` fits and predicts like `LinearRegression`.
+:::
+::: {.recap-item}
+**The penalty needs standardised columns**
+It charges by coefficient size, and size depends on units. `StandardScaler` fitted on the training rows, then a `Pipeline`.
+:::
+::: {.recap-item}
+**Alpha is a hyperparameter**
+Set before `.fit()`, never changed by it. Chosen by cross-validation on the training rows, on a grid in factors of ten.
+:::
+::: {.recap-item}
+**`GridSearchCV` runs the whole search**
+Every value times every fold, the best mean kept, refitted on all training rows. `best_params_`, `best_score_`, `cv_results_`, `.predict()`.
+:::
+::: {.recap-item}
+**Lasso gives exact zeros**
+A compact model, and the kept set changes with the rows. Ridge spreads weight across correlated columns.
+:::
+::: {.recap-item}
+**The scales are not the same**
+Ridge's useful alpha was in the thousands, lasso's near 0.1. Read the validation curve rather than reusing a grid.
+:::
+::: {.recap-item}
+**Forecasting, not inference**
+Penalised coefficients are biased on purpose and have no standard errors. Fit OLS on a few chosen columns to test an effect.
+:::
+:::
+
+
+# Where this goes next
+
+<div class="timeline">
+<div class="tl-row"><span class="tl-week">before</span><span class="tl-topic">fitting a model, and choosing between candidates with cross-validation</span><span class="tl-who">linear regression</span></div>
+<div class="tl-row tl-now"><span class="tl-week">now</span><span class="tl-topic">holding coefficients small, and choosing how small with a grid search</span><span class="tl-who">ridge, lasso, elastic net</span></div>
+<div class="tl-row tl-future"><span class="tl-week">next</span><span class="tl-topic">classification, where the same penalty appears under the name C</span><span class="tl-who">logistic regression</span></div>
+<div class="tl-row tl-future"><span class="tl-week">then</span><span class="tl-topic">trees and ensembles, with more hyperparameters and the same search</span><span class="tl-who">the same workflow</span></div>
+</div>
+
+::: {.keypoint}
+Every later model has settings chosen the way alpha was chosen today: a
+pipeline, a grid, the folds, and the test rows opened once at the end.
+:::
+
+
+# Before next time [case]{.chip .chip-case}
+
+- **Exercises**: building the wide table from the price file, ridge and lasso, standardising inside a pipeline, and reading a grid search.
+- **Case Part 6**: the risk report's model gets every column the desk can offer, and a penalty chosen by cross-validation.
+
+::: {.muted .small}
+Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email
+**jobo@econ.au.dk**.
+:::
