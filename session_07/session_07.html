@@ -259,7 +259,7 @@ from the cathedral
 
 <section id="where-it-stands" class="title-slide slide level1 center">
 <h1>Where it stands</h1>
-<div id="7c5a1bbd" class="cell" data-execution_count="2">
+<div id="fd2b52d0" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -320,10 +320,72 @@ from the cathedral
 </div>
 </div>
 </div>
-<p>You now have what a buyer has before the viewing: the size, the age, the rooms, the town, the distance to the centre, and the street.</p>
-<div class="keypoint">
-<p>Write down what you think the house sold for in January 2024, in kroner. Your number meets the sale, and a model’s valuation, in Part 6.</p>
+<p>You now have what a buyer has before the viewing: the size, the age, the rooms, the town, the distance to the centre, and the street. What did it sell for in January 2024?</p>
+<style>
+.guess-box { display: flex; align-items: center; gap: 0.6em; margin: 0.6em 0 0.3em; flex-wrap: wrap; }
+.guess-box label { font-size: 0.85em; color: #0d366b; font-weight: 600; }
+.guess-box input { font: 600 0.85em "Cascadia Mono", Consolas, monospace; color: #0d366b; width: 8.5em; padding: 0.25em 0.5em; border: 2px solid #86b6ef; border-radius: 8px; background: #ffffff; }
+.guess-box input:focus { outline: none; border-color: #1c5cab; }
+.guess-box .guess-unit { font-size: 0.85em; color: #52514e; }
+.guess-note { font-size: 0.62em; color: #898781; margin-top: 0.2em; }
+.cmp { margin: 0.5em 0 0.2em; }
+.cmp-row { display: flex; align-items: center; gap: 14px; margin: 10px 0; }
+.cmp-lab { flex: 0 0 6.2em; text-align: right; font-size: 0.72em; color: #52514e; font-weight: 600; }
+.cmp-track { flex: 1 1 0; height: 40px; background: #f4f4f1; border-radius: 6px; overflow: hidden; }
+.cmp-bar { height: 100%; width: 0; border-radius: 6px; transition: width 0.5s ease; }
+.cmp-guess { background: #d99a1c; }
+.cmp-model { background: #86b6ef; }
+.cmp-price { background: #1c5cab; }
+.cmp-val { flex: 0 0 7.2em; font-family: "Cascadia Mono", Consolas, monospace; font-size: 0.78em; color: #0d366b; font-weight: 600; }
+.cmp-text { margin-top: 0.4em; }
+.cmp-text p { font-size: 0.85em; margin: 0.25em 0; }
+</style>
+<div class="guess-box">
+<p><label for="guess">Your price</label> <input id="guess" type="number" min="0" step="10000" placeholder="4000000" autocomplete="off"> <span class="guess-unit">kroner</span></p>
 </div>
+<div class="guess-note">
+The number stays in this browser and comes back in Part 6, next to the model’s valuation and the sale price.
+</div>
+<script>
+(function () {
+  var KEY = "mlfin7-guess", MODEL = 4341389, PRICE = 3800000;
+  function fmt(n) { return Math.round(n).toLocaleString("en-GB"); }
+  function pct(a, b) { return Math.round(Math.abs(a - b) / b * 100); }
+  function saved() { var v = parseFloat(localStorage.getItem(KEY)); return isFinite(v) && v > 0 ? v : null; }
+  function render() {
+    var g = saved();
+    var top = Math.max(MODEL, PRICE, g || 0);
+    var set = function (id, w) { var el = document.getElementById(id); if (el) el.style.width = (100 * w / top) + "%"; };
+    set("bar-guess", g || 0); set("bar-model", MODEL); set("bar-price", PRICE);
+    var val = document.getElementById("val-guess");
+    if (val) val.textContent = g ? fmt(g) + " kr" : "no guess entered";
+    var you = document.getElementById("cmp-you"), who = document.getElementById("cmp-who");
+    if (!you) return;
+    if (!g) {
+      you.textContent = "No guess was entered on the Write down a price slide.";
+      who.textContent = "";
+      return;
+    }
+    var side = g > PRICE ? "above" : (g < PRICE ? "below" : "exactly at");
+    you.textContent = "Your guess was " + fmt(Math.abs(g - PRICE)) + " kroner " + side + " the price, " + pct(g, PRICE) + " percent.";
+    var dy = Math.abs(g - PRICE), dm = Math.abs(MODEL - PRICE);
+    if (dy < dm) who.textContent = "You were closer than the model, by " + fmt(dm - dy) + " kroner.";
+    else if (dy > dm) who.textContent = "The model was closer than you, by " + fmt(dy - dm) + " kroner.";
+    else who.textContent = "You and the model were equally close.";
+  }
+  function wire() {
+    var input = document.getElementById("guess");
+    if (input) {
+      var v = localStorage.getItem(KEY);
+      if (v) input.value = v;
+      input.addEventListener("input", function () { localStorage.setItem(KEY, input.value); render(); });
+    }
+    render();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire); else wire();
+  window.addEventListener("load", render);
+})();
+</script>
 </section>
 
 <section id="what-the-bank-may-lend" class="title-slide slide level1 center">
@@ -585,7 +647,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="where-aarhus-is-expensive" class="title-slide slide level1 center">
 <h1>Where Aarhus is expensive</h1>
-<div id="7cb0ef54" class="cell" data-execution_count="3">
+<div id="ed5dfa12" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -850,7 +912,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="the-line-drawn" class="title-slide slide level1 center">
 <h1>The line, drawn</h1>
-<div id="0c77fb77" class="cell" data-execution_count="4">
+<div id="3bb0e7e3" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -962,7 +1024,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="what-the-three-columns-cannot-see" class="title-slide slide level1 center">
 <h1>What the three columns cannot see</h1>
-<div id="b7be76c1" class="cell" data-execution_count="5">
+<div id="e1db77cd" class="cell" data-execution_count="5">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1041,7 +1103,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="the-error-rule-by-rule" class="title-slide slide level1 center">
 <h1>The error, rule by rule</h1>
-<div id="371a16d5" class="cell" data-execution_count="6">
+<div id="9a118c0e" class="cell" data-execution_count="6">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1074,7 +1136,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <p>Part 6</p>
 </div>
 <div class="divider-note">
-<p>The house from the first slide, valued, renovated, moved across town, and the sales the model gets most wrong.</p>
+<p>The house from the first slide, valued against your guess and its sale price, renovated, moved across town, and the sales the model gets most wrong.</p>
 </div>
 </section>
 
@@ -1091,8 +1153,54 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <p>The mask keeps the 2024 sales in Aarhus V and <code>.head(1)</code> the first of them, as a table with one row, which is what <code>.predict()</code> needs. That is the house from the first slide: the model values it at 4,341,389 kroner, and a bank lending 80 percent would offer 3,473,112.</p>
 </section>
 
-<section id="what-it-sold-for" class="title-slide slide level1 center">
-<h1>What it sold for</h1>
+<section id="the-price" class="title-slide slide level1 center">
+<h1>The price</h1>
+<div class="cmp">
+<div class="cmp-row">
+<span class="cmp-lab">your guess</span>
+<div class="cmp-track">
+<div id="bar-guess" class="cmp-bar cmp-guess">
+
+</div>
+</div>
+<span id="val-guess" class="cmp-val">no guess entered</span>
+</div>
+<div class="cmp-row">
+<span class="cmp-lab">the model</span>
+<div class="cmp-track">
+<div id="bar-model" class="cmp-bar cmp-model">
+
+</div>
+</div>
+<span class="cmp-val">4,341,389 kr</span>
+</div>
+<div class="cmp-row fragment" data-fragment-index="1">
+<span class="cmp-lab">sold for</span>
+<div class="cmp-track">
+<div id="bar-price" class="cmp-bar cmp-price">
+
+</div>
+</div>
+<span class="cmp-val">3,800,000 kr</span>
+</div>
+</div>
+<div class="cmp-text fragment" data-fragment-index="2">
+<p id="cmp-you">
+No guess was entered on the Write down a price slide.
+</p>
+<p>
+The model was 541,389 kroner above the price, 14 percent.
+</p>
+<p id="cmp-who">
+</p>
+</div>
+<p class="muted small fragment" data-fragment-index="1">
+The house sold on 20 January 2024 for 3,800,000 kroner.
+</p>
+</section>
+
+<section id="a-typical-miss" class="title-slide slide level1 center">
+<h1>A typical miss</h1>
 <div>
 <div id="pyodide-35" class="exercise-cell">
 
@@ -1101,7 +1209,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJwcmludChkZXNjcmliZShob3VzZXMubG9jWzYyODNdKSkifQ==
 </script>
 </div>
-<p>It sold for 3,800,000 kroner. The model is 14 percent high, a typical miss: the rule is within 10 percent of the price on a third of the 2024 sales and within 20 percent on two thirds. The loan, 3,473,112, was still below the price. Compare it with the number you wrote down.</p>
+<p>The model is 14 percent high, and that is a typical miss: the rule is within 10 percent of the price on a third of the 2024 sales and within 20 percent on two thirds. The loan, 3,473,112, was still below the price.</p>
 </section>
 
 <section id="renovate-it-play" class="title-slide slide level1 center">
@@ -1132,7 +1240,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="the-location-premium-drawn" class="title-slide slide level1 center">
 <h1>The location premium, drawn</h1>
-<div id="c34d9cf8" class="cell" data-execution_count="7">
+<div id="4da6bd98" class="cell" data-execution_count="7">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1159,7 +1267,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="valued-against-sold" class="title-slide slide level1 center">
 <h1>Valued against sold</h1>
-<div id="745613d1" class="cell" data-execution_count="8">
+<div id="d5bb5a4f" class="cell" data-execution_count="8">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
