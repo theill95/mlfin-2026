@@ -1,0 +1,1326 @@
+---
+title: "Pricing a house in Aarhus"
+subtitle: "Machine Learning in Finance · Session 7"
+# Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
+# from a data: URI, so embed-resources is off. Ship session_07.html together
+# with session_07_files/ and data/, and SERVE OVER HTTP (double-click
+# serve.cmd, or publish to a URL). Opened from a file:// path the live code
+# cells do not merely fail to run, they do not appear at all.
+#
+# This deck loads numpy, pandas, matplotlib and scikit-learn into the browser
+# runtime (about 45 MB on a cold load). Open the deck and run one cell several
+# minutes before class so it is warm.
+#
+# The table the deck works on is data/aarhus_houses.csv, built once by
+# tools/build_session07_table.py (Aarhus house sales 2021-2024 from the
+# Kaggle "Danish Residential Housing Prices" compilation of boliga.dk, geocoded
+# with DAWA). Every number on these slides was measured from it; re-measure
+# with the deck verifier (tools/verify/session_07_deck.py) if the table changes.
+#
+# This session is a recap: no new tool, no exercises and no case. Slides marked
+# PLAY hold a working cell to be changed freely; the two marked YOUR TURN have
+# an answer on the slide after.
+format:
+  live-revealjs:
+    theme: [default, ../theme/mlfin.scss]
+    width: 1280
+    height: 720
+    margin: 0.06
+    center: false
+    transition: fade
+    transition-speed: fast
+    background-transition: none
+    slide-number: c/t
+    controls: false
+    progress: true
+    hash: true
+    history: false
+    code-line-numbers: false
+    highlight-style: github
+    auto-stretch: false
+html-math-method: katex
+engine: jupyter
+pyodide:
+  packages:
+    - numpy
+    - pandas
+    - matplotlib
+    - scikit-learn
+  resources:
+    - data/aarhus_houses.csv
+  cell-options:
+    autorun: true
+    startover: true
+execute:
+  echo: true
+  warning: false
+---
+
+# The house
+
+```{python}
+#| include: false
+# House style for every precomputed figure in this deck, plus the whole chain
+# of models the figures draw, computed with the same code the live cells run.
+import json
+import warnings
+warnings.filterwarnings("ignore")
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
+MLFIN_STYLE = {
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "savefig.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"],
+    "font.size": 12, "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+}
+plt.rcParams.update(MLFIN_STYLE)
+
+from pathlib import Path
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import KFold, GridSearchCV
+
+_data = Path("data/aarhus_houses.csv")
+if not _data.exists():
+    raise FileNotFoundError(
+        "Missing data/aarhus_houses.csv - run tools/build_session07_table.py "
+        "from the repository root."
+    )
+HOUSES = pd.read_csv(_data)
+TRAIN = HOUSES[HOUSES["sold"] <= 2023]
+TEST = HOUSES[HOUSES["sold"] == 2024]
+THREE = ["area", "built", "centre_km"]
+FOLDS = KFold(n_splits=5, shuffle=True, random_state=0)
+
+def _rmse(actual, predicted):
+    return float(np.sqrt(((actual - predicted) ** 2).mean()))
+
+def _underwater(actual, predicted):
+    return float((0.8 * predicted > actual).mean())
+
+WIDE = pd.get_dummies(HOUSES, columns=["town", "type"], dtype=int)
+WTRAIN = WIDE[WIDE["sold"] <= 2023]
+WTEST = WIDE[WIDE["sold"] == 2024]
+COLUMNS = [c for c in WIDE.columns if c not in ["price", "sold", "quarter", "date", "zip", "lat", "lon"]]
+TOWNS = [c for c in COLUMNS if c.startswith("town_")]
+
+_pipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge())])
+_grid = {"ridge__alpha": [0.01, 0.1, 1, 10, 100, 1000]}
+RIDGE = GridSearchCV(_pipe, _grid, cv=FOLDS, scoring="neg_root_mean_squared_error")
+RIDGE.fit(WTRAIN[COLUMNS], WTRAIN["price"])
+VALUATION = GridSearchCV(_pipe, _grid, cv=FOLDS, scoring="neg_root_mean_squared_error")
+VALUATION.fit(WTRAIN[COLUMNS], np.log(WTRAIN["price"]))
+VALUED = np.exp(VALUATION.predict(WTEST[COLUMNS]))
+HOUSE = WTEST[WTEST["town_Aarhus V"] == 1].head(1)
+HOUSE_ROW = HOUSES.loc[HOUSE.index[0]]
+
+def _value(row):
+    return float(np.exp(VALUATION.predict(row[COLUMNS]))[0])
+
+import matplotlib.patheffects as _pe
+
+def _mercator_y(lat):
+    return np.log(np.tan(np.radians(lat) / 2 + np.pi / 4))
+
+TOWN_SPOT = HOUSES.groupby("town")[["lat", "lon"]].median()
+
+def label_towns(ax, south, west, north, east, size=9.5):
+    """Write each town's name at the median location of its sales."""
+    for name, row in TOWN_SPOT.iterrows():
+        if south < row["lat"] < north and west < row["lon"] < east:
+            ax.text(row["lon"], _mercator_y(row["lat"]), name, fontsize=size, color="#3d3c39",
+                    ha="center", va="center", zorder=6,
+                    path_effects=[_pe.withStroke(linewidth=2.5, foreground="#fcfcfb")])
+
+def draw_basemap(ax, name, south, west, north, east):
+    """Show the part of a stitched basemap inside the given bounds, with the
+    axes in degrees of longitude and Mercator-projected latitude so points
+    land where the tiles put them."""
+    img = mpimg.imread(f"data/{name}.png")
+    bounds = json.loads(Path(f"data/{name}.json").read_text())
+    h, w = img.shape[:2]
+    y_top, y_bot = _mercator_y(bounds["north"]), _mercator_y(bounds["south"])
+    col0 = int((west - bounds["west"]) / (bounds["east"] - bounds["west"]) * w)
+    col1 = int((east - bounds["west"]) / (bounds["east"] - bounds["west"]) * w)
+    row0 = int((y_top - _mercator_y(north)) / (y_top - y_bot) * h)
+    row1 = int((y_top - _mercator_y(south)) / (y_top - y_bot) * h)
+    ax.imshow(img[row0:row1, col0:col1], extent=[west, east, _mercator_y(south), _mercator_y(north)],
+              aspect="auto", interpolation="bilinear")
+    ax.set_xlim(west, east)
+    ax.set_ylim(_mercator_y(south), _mercator_y(north))
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.grid(False)
+    for side in ("left", "bottom"):
+        ax.spines[side].set_visible(False)
+
+BLUE = "#1c5cab"
+BLUE_LIGHT = "#86b6ef"
+AMBER = "#b8860b"
+AMBER_LIGHT = "#d99a1c"
+BRICK = "#b3402f"
+GREY = "#c3c2b7"
+GREY_LIGHT = "#d8d7d0"
+INK = "#141413"
+```
+
+```{pyodide}
+#| include: false
+# House style for the live figures, so they match the printed ones.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings("ignore")
+plt.rcParams.update({
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"], "font.size": 12,
+    "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+    "figure.dpi": 100,
+})
+```
+
+<div class="statband">
+<div class="stat"><span class="stat-big">150 m²</span><div class="stat-label">living area</div></div>
+<div class="stat"><span class="stat-big">1973</span><div class="stat-label">year built</div></div>
+<div class="stat"><span class="stat-big">5</span><div class="stat-label">rooms</div></div>
+<div class="stat"><span class="stat-big">villa</span><div class="stat-label">type</div></div>
+<div class="stat"><span class="stat-big">Aarhus&nbsp;V</span><div class="stat-label">postal town</div></div>
+<div class="stat"><span class="stat-big">3.6 km</span><div class="stat-label">from the cathedral</div></div>
+</div>
+
+A buyer has found this house and asks a bank for a mortgage. Before the bank
+lends, it needs one number: what the house is worth. It sold in January 2024.
+
+
+# Where it stands
+
+```{python}
+#| echo: false
+#| fig-align: center
+fig, ax = plt.subplots(figsize=(10.6, 4.6))
+draw_basemap(ax, "aarhus_inner", 56.115, 10.09, 56.215, 10.265)
+_near = HOUSES[(HOUSES["lat"].between(56.115, 56.215)) & (HOUSES["lon"].between(10.09, 10.265))]
+ax.scatter(_near["lon"], _mercator_y(_near["lat"]), s=9, color=BLUE, alpha=0.4, linewidths=0)
+ax.scatter([HOUSE_ROW["lon"]], [_mercator_y(HOUSE_ROW["lat"])], s=170, color=AMBER_LIGHT, edgecolor="#fcfcfb", linewidths=2, zorder=5)
+ax.annotate("the house", xy=(HOUSE_ROW["lon"], _mercator_y(HOUSE_ROW["lat"])), xytext=(HOUSE_ROW["lon"] - 0.032, _mercator_y(HOUSE_ROW["lat"]) + 0.00045),
+            fontsize=12, color="#8a6508", fontweight="bold",
+            arrowprops=dict(arrowstyle="-", color="#8a6508", linewidth=1.2))
+label_towns(ax, 56.115, 10.09, 56.215, 10.265, size=10.5)
+ax.text(10.263, _mercator_y(56.1165), "map: © Esri, HERE, Garmin, OpenStreetMap contributors", fontsize=8, color="#898781", ha="right")
+ax.set_title("Every house sold in the inner Aarhus postcodes, 2021 to 2024", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+Each blue dot is a sale in the table, placed to within about a hundred
+metres. The <a href="map.html" target="_blank" rel="noopener">live map</a> zooms to any street in the table.
+
+
+# The street
+
+<div class="diagram">
+<iframe data-src="https://www.google.com/maps/embed?pb=!4v1757671200000!6m8!1m7!1sdIwcTTEDv55yZi_FPzZpYQ!2m2!1d56.1767828!2d10.1642377!3f202!4f0!5f0.7820865974627469" width="1000" height="430" style="border:0; border-radius:8px" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Street View of the house"></iframe>
+</div>
+
+Drag to look around, and use the arrows to walk down the street. If the frame
+stays blank, open it in <a href="https://www.google.com/maps/@?api=1&amp;map_action=pano&amp;viewpoint=56.17663641,10.16413222" target="_blank" rel="noopener">Street View</a>.
+
+
+# Write down a price
+
+<div class="statband">
+<div class="stat"><span class="stat-big">150 m²</span><div class="stat-label">living area</div></div>
+<div class="stat"><span class="stat-big">1973</span><div class="stat-label">year built</div></div>
+<div class="stat"><span class="stat-big">5</span><div class="stat-label">rooms</div></div>
+<div class="stat"><span class="stat-big">villa</span><div class="stat-label">type</div></div>
+<div class="stat"><span class="stat-big">Aarhus&nbsp;V</span><div class="stat-label">postal town</div></div>
+<div class="stat"><span class="stat-big">3.6 km</span><div class="stat-label">from the cathedral</div></div>
+</div>
+
+You now have what a buyer has before the viewing: the size, the age, the
+rooms, the town, the distance to the centre, and the street.
+
+::: {.keypoint}
+Write down what you think the house sold for in January 2024, in kroner.
+Your number meets the sale, and a model's valuation, in Part 6.
+:::
+
+
+# What the bank may lend
+
+::: {.why-grid}
+::: {.why-point}
+**§ 5 · the limit** <span>"Inden for en lånegrænse på 80 pct. af ejendommens værdi kan der ydes lån til følgende ejendomskategorier: 1) Ejerboliger til helårsbrug."</span>
+:::
+::: {.why-point}
+**§ 10 · the value** <span>"Realkreditinstituttet skal ansætte en kontantværdi af ejendommen til brug for låneudmålingen. Værdien skal ligge inden for det skønnede beløb, som ejendommen kan handles til ... (markedsværdi)."</span>
+:::
+:::
+
+The bank may lend 80 percent of the value, and must set that value itself,
+as the price the house would fetch in an ordinary sale.
+
+::: {.faint .small}
+Lov om realkreditlån og realkreditobligationer m.v., lovbekendtgørelse nr. 1541 (2025), §§ 5 and 10.
+:::
+
+
+# What the lender risks
+
+::: {.diagram}
+<svg width="1000" height="200" viewBox="0 0 1000 200" role="img" aria-label="A valuation bar split into a loan of 80 percent and a cushion of 20 percent; below it a sale price shorter than the loan, marked underwater">
+  <text x="130" y="52" text-anchor="end" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">valuation</text>
+  <rect x="150" y="30" width="480" height="34" fill="#1c5cab"/>
+  <rect x="632" y="30" width="118" height="34" fill="#86b6ef"/>
+  <text x="390" y="53" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#ffffff" font-weight="600">the loan: 80 percent of the valuation</text>
+  <text x="691" y="53" text-anchor="middle" font-size="13" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">cushion</text>
+  <text x="130" y="122" text-anchor="end" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">sale price</text>
+  <rect x="150" y="100" width="420" height="34" fill="#d99a1c"/>
+  <line x1="630" y1="20" x2="630" y2="152" stroke="#b3402f" stroke-width="1.6" stroke-dasharray="5 4"/>
+  <text x="640" y="123" font-size="14" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">the sale price is below the loan: underwater</text>
+  <text x="500" y="186" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">a valuation more than a fifth above the sale price puts the loan underwater on the day it is written</text>
+</svg>
+:::
+
+::: {.keypoint}
+Two numbers score every rule today: the error in kroner, and the share of
+sales on which a loan of 80 percent of the rule's value would have exceeded
+the price.
+:::
+
+
+# Who values with a model
+
+::: {.why-grid}
+::: {.why-point}
+**The mortgage banks** <span>may replace the visit to an owner-occupied home with "en dokumenteret værdiansættelsesmodel", and may monitor the value of every home they have lent against with one.</span>
+:::
+::: {.why-point}
+**The tax authority** <span>"bruger et system, der bygger på en matematisk model, til at vurdere landets 2,4 mio. ejendomme". Its inputs are the living area, the year built, the surroundings and "salgspriser for ejendomme i området".</span>
+:::
+::: {.why-point}
+**A coefficient, in its words** <span>"Fra data om salg af ejendomme i hele landet ved vi, hvor meget forskellige forhold gennemsnitligt påvirker salgsprisen på en ejendom."</span>
+:::
+::: {.why-point}
+**When it goes wrong** <span>Zillow wound down its house-buying business in 2021 after its model overpaid: a 304 million dollar write-down in one quarter. "The unpredictability in forecasting home prices far exceeds what we anticipated."</span>
+:::
+:::
+
+::: {.faint .small}
+Bekendtgørelse nr. 807 (2022) om værdiansættelse af pant og lån i fast ejendom, §§ 5 and 33 · vurdst.dk and vurderingsportalen.dk · Zillow Group, Form 8-K, 2 November 2021.
+:::
+
+
+# Today, in six steps
+
+<div class="timeline">
+<div class="tl-row"><span class="tl-week">Part 1</span><span class="tl-topic">Look at the market: the file, one column, a mask, a number per town, a map and a scatter</span><span class="tl-who">pandas · matplotlib</span></div>
+<div class="tl-row"><span class="tl-week">Part 2</span><span class="tl-topic">Rules by hand: a price per square metre as a loop, as one line, as a function, and over time</span><span class="tl-who">loops · dicts · def · a line</span></div>
+<div class="tl-row"><span class="tl-week">Part 3</span><span class="tl-topic">A first model: the sealed 2024 sales, two rules that need no model, a fitted line</span><span class="tl-who">fit · predict · RMSE</span></div>
+<div class="tl-row"><span class="tl-week">Part 4</span><span class="tl-topic">Choose columns without touching the 2024 sales</span><span class="tl-who">KFold · cross_val_score</span></div>
+<div class="tl-row"><span class="tl-week">Part 5</span><span class="tl-topic">Location as text turned into numbers, a penalty chosen by grid search, the log</span><span class="tl-who">get_dummies · GridSearchCV</span></div>
+<div class="tl-row tl-now"><span class="tl-week">Part 6</span><span class="tl-topic">Value the house, renovate it, move it across town, and find where the model fails</span><span class="tl-who">predict · copy · a loop</span></div>
+</div>
+
+::: {.muted .small}
+Nothing here is new. Open the deck on your own laptop: every cell runs and
+can be edited. A slide marked [play]{.chip .chip-predict} holds a working
+cell to change as you like; a slide marked [your turn]{.chip .chip-turn} has
+its answer on the slide after.
+:::
+
+
+# The data
+
+<div class="statband">
+<div class="stat"><span class="stat-big">7,621</span><div class="stat-label">house sales</div></div>
+<div class="stat"><span class="stat-big">22</span><div class="stat-label">postal towns</div></div>
+<div class="stat"><span class="stat-big">15 quarters</span><div class="stat-label">Jan 2021 to Sep 2024</div></div>
+<div class="stat"><span class="stat-big">13</span><div class="stat-label">columns</div></div>
+</div>
+
+These are ordinary sales of villas and townhouses in the Aarhus postcodes,
+with family transfers and auctions left out, from the public sale records as
+collected by boliga.dk. Each house is placed by the national address register;
+addresses are dropped and locations rounded to about a hundred metres.
+
+
+# 1 · Looking at the market {.divider}
+
+::: {.divider-kicker}
+Part 1
+:::
+
+::: {.divider-note}
+The file, one column, a question asked of every row, a number per town, a
+map and a scatter.
+:::
+
+
+# Reading the file
+
+```{pyodide}
+houses = pd.read_csv("data/aarhus_houses.csv")
+
+print(houses.shape)
+houses.head()
+```
+
+The table has one row per sale and thirteen columns. The rows are in date
+order, so the 2024 sales sit at the bottom.
+
+
+# The columns
+
+<table class="vocab">
+<tr><td>price</td><td>the sale price, in kroner</td><td><strong>zip</strong></td><td>the postcode</td></tr>
+<tr><td>area</td><td>living area, m²</td><td><strong>centre_km</strong></td><td>kilometres from the cathedral</td></tr>
+<tr><td>rooms</td><td>number of rooms</td><td><strong>sold · quarter · date</strong></td><td>when the sale happened</td></tr>
+<tr><td>built</td><td>the year the house was built</td><td><strong>lat · lon</strong></td><td>the location, to about 100 metres</td></tr>
+<tr><td>type · town</td><td>villa or townhouse; one of 22 postal towns</td><td></td><td></td></tr>
+</table>
+
+Six of the columns describe the house. `price` is what the model has to
+produce, `sold` decides which rows it may learn from, and `lat` and `lon` are
+for the map.
+
+
+# One column
+
+```{pyodide}
+prices = houses['price']
+
+print(round(prices.mean()))
+print(prices.median())
+print(prices.max())
+```
+
+A column on its own is a Series with its own methods. The mean sale is
+450,000 kroner above the median: a few very expensive houses pull it up, and
+the most expensive of all sold for 43.3 million.
+
+
+# The most expensive sales [play]{.chip .chip-predict}
+
+```{pyodide}
+houses.sort_values('price', ascending=False).head(3)
+```
+
+Sort by a column, then take the top of the table. Change the cell: the
+cheapest three, the oldest, the largest, the newest, or the most expensive in
+your own town.
+
+
+# A question asked of every row
+
+```{pyodide}
+chosen = houses[houses['town'] == 'Risskov']
+
+print(len(chosen))
+print(chosen['price'].median())
+```
+
+The comparison inside the brackets is asked of every row, and only the rows
+that answer `True` are kept: 820 sales in Risskov, with a median of 5.05
+million kroner.
+
+
+# A number per town
+
+```{pyodide}
+by_town = houses.groupby('town')['price'].median().sort_values()
+
+print(by_town.head(3))
+print(by_town.tail(3))
+```
+
+Split by town, take the median of each part, and put the answers back in
+order. The median in Aarhus C is two and a half times the median in Trige.
+
+
+# Where Aarhus is expensive
+
+```{python}
+#| echo: false
+#| fig-align: center
+_pm2 = HOUSES["price"] / HOUSES["area"]
+fig, ax = plt.subplots(figsize=(10.6, 4.7))
+draw_basemap(ax, "aarhus_basemap", 56.025, 9.985, 56.31, 10.35)
+_order = np.argsort(_pm2.values)
+_sc = ax.scatter(HOUSES["lon"].values[_order], _mercator_y(HOUSES["lat"].values[_order]), c=_pm2.values[_order] / 1000,
+                 s=7, cmap="Blues", vmin=12, vmax=50, alpha=0.9, linewidths=0)
+_cb = fig.colorbar(_sc, ax=ax, fraction=0.03, pad=0.02)
+_cb.set_label("sale price per m², thousand kroner", fontsize=10)
+_cb.ax.tick_params(labelsize=9)
+ax.scatter([HOUSE_ROW["lon"]], [_mercator_y(HOUSE_ROW["lat"])], s=120, color=AMBER_LIGHT, edgecolor="#fcfcfb", linewidths=1.5, zorder=5)
+label_towns(ax, 56.025, 9.985, 56.31, 10.35)
+ax.text(10.345, _mercator_y(56.029), "map: © Esri, HERE, Garmin, OpenStreetMap contributors", fontsize=8, color="#898781", ha="right")
+ax.set_title("7,621 sales, coloured by the price per square metre; the house in amber", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+The price per square metre runs from 18,900 kroner in Sabro to 52,400 in
+Aarhus C, and it falls with the distance from the centre and rises towards
+the bay.
+
+
+# Drawing the market [play]{.chip .chip-predict}
+
+```{pyodide}
+fig, ax = plt.subplots(figsize=(8, 2.4))
+ax.scatter(houses['area'], houses['price'] / 1000000, s=4, alpha=0.4)
+ax.set_xlabel("living area, m²")
+ax.set_ylabel("price, million kr")
+fig.tight_layout()
+plt.show()
+```
+
+Every dot is a sale. Swap in `built` or `centre_km`, or keep one town only.
+
+
+# The shape of the prices
+
+```{pyodide}
+fig, ax = plt.subplots(figsize=(8, 2.4))
+ax.hist(houses['price'] / 1000000, bins=60)
+ax.set_xlabel("price, million kr")
+fig.tight_layout()
+plt.show()
+```
+
+The prices have a long tail to the right, as market values and trading
+volumes have. In logs the tail is gone, which matters once a model is fitted
+to them.
+
+
+# 2 · Rules by hand {.divider}
+
+::: {.divider-kicker}
+Part 2
+:::
+
+::: {.divider-note}
+The price per square metre, the number every Danish listing quotes: as a
+loop, as one line, as a function, and quarter by quarter.
+:::
+
+
+# One house, by hand
+
+```{pyodide}
+first = houses.iloc[0]
+
+print(first['price'] / first['area'])
+```
+
+`.iloc[0]` picks the first row: a 222 square metre villa in Højbjerg that
+sold for 7,995,000 kroner, which is 36,014 kroner per square metre.
+
+
+# Every house, with a loop
+
+```{pyodide}
+per_m2 = []
+for i in range(len(houses)):
+    row = houses.iloc[i]
+    per_m2.append(row['price'] / row['area'])
+
+print(len(per_m2))
+print(per_m2[:3])
+```
+
+This is the accumulator pattern: an empty list, then one row per turn of the
+loop and one `append`. The loop runs 7,621 times.
+
+
+# Every house, in one line
+
+```{pyodide}
+houses['per_m2'] = houses['price'] / houses['area']
+
+print(houses['per_m2'].head(3))
+print(houses['per_m2'].median())
+```
+
+Dividing one column by another divides row by row, and the result is a new
+column. The loop and the one line give the same numbers; the one line runs
+the loop in compiled code. The median is 27,321 kroner per square metre.
+
+
+# A dictionary, one entry per year
+
+```{pyodide}
+sales = {}
+for year in [2021, 2022, 2023, 2024]:
+    sales[year] = len(houses[houses['sold'] == year])
+
+print(sales)
+```
+
+A mask runs inside the loop, and a dictionary collects the answers by name.
+The same shape of loop can collect anything: a count, a median, a share.
+
+
+# Your turn [1]{.chip .chip-turn} {.your-turn}
+
+In 2022 the yield on Danish mortgage bonds went from 1.5 to 3.7 percent, and
+on to 4.8 in 2023. Fill a dictionary with the median price per square metre
+in each year, then get the same numbers in one line with `groupby`.
+
+```{pyodide}
+#| autorun: false
+medians = {}
+for year in [2021, 2022, 2023, 2024]:
+    medians[year] = ...
+print(medians)
+
+print(houses.groupby(...)[...].median())
+```
+
+
+# Your turn 1: answer
+
+```python
+medians = {}
+for year in [2021, 2022, 2023, 2024]:
+    medians[year] = houses[houses['sold'] == year]['per_m2'].median()
+print(medians)
+# {2021: 27034.0, 2022: 27544.0, 2023: 27577.0, 2024: 27083.0}
+
+print(houses.groupby('sold')['per_m2'].median())
+```
+
+Mortgage rates tripled, and the median price per square metre in Aarhus
+moved by 500 kroner. Fewer houses changed hands: 2,532 sales in 2021 and
+1,834 in 2022.
+
+
+# The market over time [play]{.chip .chip-predict}
+
+```{pyodide}
+by_quarter = houses.groupby('quarter')['per_m2'].median()
+fig, ax = plt.subplots(figsize=(8, 2.4))
+ax.plot(by_quarter.index, by_quarter.values)
+ax.tick_params(axis='x', labelsize=8)
+plt.show()
+```
+
+One median per quarter, joined by a line. Put `.size()` in place of
+`['per_m2'].median()` and the number of sales per quarter appears instead.
+
+
+# A function that describes a house
+
+```{pyodide}
+def describe(row):
+    return f"{row['area']} m² {row['type']}, built {row['built']}, {row['town']}: {row['price']:,.0f} kr"
+
+print(describe(houses.iloc[0]))
+```
+
+The function takes one parameter, builds one f-string and returns it. The
+comma in `:,.0f` groups the thousands.
+
+
+# Your turn [2]{.chip .chip-turn} {.your-turn}
+
+Describe the three most expensive sales, one line each, using `describe`
+inside a loop.
+
+```{pyodide}
+#| autorun: false
+top = houses.sort_values('price', ascending=False)
+for i in range(3):
+    ...
+```
+
+
+# Your turn 2: answer
+
+```python
+top = houses.sort_values('price', ascending=False)
+for i in range(3):
+    print(describe(top.iloc[i]))
+```
+
+```
+594 m² villa, built 2006, Risskov: 43,300,000 kr
+433 m² villa, built 1907, Aarhus C: 30,100,000 kr
+325 m² villa, built 1915, Højbjerg: 19,200,000 kr
+```
+
+A function written once is called three times by the loop. Calling it for
+all 7,621 houses would change only the number in `range`.
+
+
+# 3 · A first model {.divider}
+
+::: {.divider-kicker}
+Part 3
+:::
+
+::: {.divider-note}
+The rows to learn from, two rules that need no model, and a fitted line: a
+split, an error in kroner, `fit` and `predict`.
+:::
+
+
+# Two functions for scoring a rule
+
+```{pyodide}
+def rmse(actual, predicted):
+    return np.sqrt(((actual - predicted) ** 2).mean())
+
+def underwater(actual, predicted):
+    return (0.8 * predicted > actual).mean()
+```
+
+The first is the root mean squared error, in kroner. The second compares 80
+percent of every valuation with the price the house sold for; the comparison
+is a mask, and the mean of a mask is a share.
+
+
+# The rows to learn from, and the rows to check on
+
+```{pyodide}
+train = houses[houses['sold'] <= 2023]
+test = houses[houses['sold'] == 2024]
+
+print(len(train), len(test))
+```
+
+A bank valuing a house in 2024 has the sales up to 2023. The 1,409 sales of
+2024 stay sealed until a rule has been chosen, and then score it once.
+
+
+# Rule one: every house is worth the average
+
+```{pyodide}
+guess = train['price'].mean()
+
+print(round(guess))
+print(rmse(test['price'], guess))
+print(underwater(test['price'], guess))
+```
+
+The rule is off by 1.9 million kroner on a typical house and underwater on
+40 percent of the 2024 sales. Every other rule has to beat these two numbers.
+
+
+# Rule two: a price per square metre
+
+```{pyodide}
+rate = (train['price'] / train['area']).mean()
+
+print(rate)
+print(rmse(test['price'], rate * test['area']))
+print(underwater(test['price'], rate * test['area']))
+```
+
+This is the rule of thumb from Part 2, computed on the training rows only.
+It cuts the error to 1.63 million and the underwater share to 30 percent.
+
+
+# Fitting a line
+
+```{pyodide}
+from sklearn.linear_model import LinearRegression
+
+model = LinearRegression()
+model.fit(train[['area']], train['price'])
+
+print(model.intercept_, model.coef_)
+```
+
+The three steps are import, create and fit. The line starts at 234,000
+kroner and adds 27,326 for every square metre.
+
+
+# Predicting
+
+```{pyodide}
+predicted = model.predict(test[['area']])
+
+print(rmse(test['price'], predicted))
+print(underwater(test['price'], predicted))
+```
+
+The error is 1,629,763 kroner, 5,000 better than the rule of thumb. Area on
+its own explains part of the spread in prices, and a straight line through it
+cannot do more.
+
+
+# The line, drawn
+
+```{python}
+#| echo: false
+#| fig-align: center
+_m = LinearRegression().fit(TRAIN[["area"]], TRAIN["price"])
+_xs = np.array([20, 620])
+fig, ax = plt.subplots(figsize=(10.6, 4.0))
+ax.scatter(TRAIN["area"], TRAIN["price"] / 1e6, s=7, color=BLUE_LIGHT, alpha=0.45, linewidths=0)
+ax.plot(_xs, _m.predict(pd.DataFrame({"area": _xs})) / 1e6, color=BLUE, linewidth=2)
+_h = float(HOUSE_ROW["area"])
+_v = float(_m.predict(pd.DataFrame({"area": [_h]}))[0])
+ax.scatter([_h], [_v / 1e6], s=70, color=AMBER_LIGHT, zorder=4, edgecolor="#fcfcfb", linewidths=1.5)
+ax.annotate("the house: 150 m², valued at %s kr" % format(round(_v), ","), xy=(_h, _v / 1e6),
+            xytext=(_h - 135, _v / 1e6 + 11), fontsize=10.5, color="#8a6508",
+            arrowprops=dict(arrowstyle="-", color="#8a6508", linewidth=0.9))
+ax.set_xlabel("living area, m²")
+ax.set_ylabel("price, million kr")
+ax.set_ylim(0, 25)
+ax.set_title("6,212 sales from 2021 to 2023, and the fitted line", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+Every dot is a sale in the training rows. The line values the house from the
+first slide at 4,332,938 kroner; the dots at 150 square metres run from 1.5
+to 8 million.
+
+
+# One column at a time [play]{.chip .chip-predict}
+
+```{pyodide}
+other = LinearRegression()
+other.fit(train[['centre_km']], train['price'])
+
+print(other.coef_)
+print(rmse(test['price'], other.predict(test[['centre_km']])))
+print(underwater(test['price'], other.predict(test[['centre_km']])))
+```
+
+On its own, every kilometre from the cathedral takes 215,520 kroner off.
+Swap the column for `built` or `rooms`, then put two columns in the list at
+once. Which pair gets the error below 1.4 million?
+
+
+# Area, and the distance to the centre
+
+```{pyodide}
+pair = LinearRegression()
+pair.fit(train[['area', 'centre_km']], train['price'])
+
+print(pair.coef_)
+print(rmse(test['price'], pair.predict(test[['area', 'centre_km']])))
+print(underwater(test['price'], pair.predict(test[['area', 'centre_km']])))
+```
+
+Together the two columns bring the error to 1.39 million and the underwater
+share to 25 percent. Every kilometre from the cathedral now takes 249,000
+kroner off with the area held fixed, which is the bid-rent curve of urban
+economics, measured on 6,212 sales.
+
+
+# 4 · Choosing columns {.divider}
+
+::: {.divider-kicker}
+Part 4
+:::
+
+::: {.divider-note}
+Which of the numeric columns belong in the rule, decided without touching
+the 2024 sales: `KFold`, `cross_val_score`, and a loop over candidates.
+:::
+
+
+# The folds
+
+```{pyodide}
+from sklearn.model_selection import KFold, cross_val_score
+
+folds = KFold(n_splits=5, shuffle=True, random_state=0)
+```
+
+Trying each set of columns on the 2024 sales and keeping the best would use
+the test rows up. Instead the training rows are cut into five blocks, each
+block takes a turn as the validation block, and the five errors are averaged.
+Houses are interchangeable rows, so a shuffled `KFold` is right here; a time
+series needed `TimeSeriesSplit`.
+
+
+# Candidates, in a loop [play]{.chip .chip-predict}
+
+```{pyodide}
+candidates = {
+    'area': ['area'],
+    'area, built': ['area', 'built'],
+    'area, built, centre_km': ['area', 'built', 'centre_km'],
+}
+
+cv_error = {}
+for name in candidates:
+    scores = cross_val_score(LinearRegression(), train[candidates[name]], train['price'],
+                             cv=folds, scoring='neg_root_mean_squared_error')
+    cv_error[name] = round(-scores.mean())
+print(cv_error)
+```
+
+Candidates go in and errors come out: `built` takes 6,000 kroner off and the
+distance to the centre 270,000. Add your own. Does `rooms` help?
+
+
+# The chosen rule, on the 2024 sales
+
+```{pyodide}
+three = ['area', 'built', 'centre_km']
+
+chosen = LinearRegression()
+chosen.fit(train[three], train['price'])
+
+print(rmse(test['price'], chosen.predict(test[three])))
+print(underwater(test['price'], chosen.predict(test[three])))
+```
+
+The rule scores 1.39 million kroner and 24 percent underwater. The 2024
+sales were opened once, after the choosing was done, so these two numbers
+are a fair report.
+
+
+# Three coefficients
+
+```{pyodide}
+for name, b in zip(three, chosen.coef_):
+    print(name, round(b))
+```
+
+A square metre is worth 29,624 kroner and a year of age costs 2,138, each
+with the other columns held fixed. Every kilometre from the cathedral takes
+253,683 kroner off.
+
+
+# 5 · Location, and a penalty {.divider}
+
+::: {.divider-kicker}
+Part 5
+:::
+
+::: {.divider-note}
+What the three columns cannot see, two columns of text turned into numbers,
+a penalty chosen by grid search, and the log.
+:::
+
+
+# What the three columns cannot see
+
+```{python}
+#| echo: false
+#| fig-align: center
+_three = LinearRegression().fit(TRAIN[THREE], TRAIN["price"])
+_res = (TRAIN["price"] - _three.predict(TRAIN[THREE])).groupby(TRAIN["town"]).mean().sort_values()
+fig, ax = plt.subplots(figsize=(10.6, 4.2))
+ax.barh(range(len(_res)), _res.values / 1e6, color=[BLUE_LIGHT if v >= 0 else BRICK for v in _res.values], height=0.7)
+ax.axvline(0, color=GREY, linewidth=1)
+ax.set_yticks(range(len(_res)))
+ax.set_yticklabels(_res.index, fontsize=10)
+ax.set_xlabel("sale price minus the rule's value, average per town, million kroner")
+ax.set_title("The three-column rule on its own training rows", loc="left")
+ax.grid(axis="y", visible=False)
+fig.tight_layout()
+plt.show()
+```
+
+On its own training rows the rule undervalues Aarhus C by 1.4 million kroner
+on average and overvalues Tilst by 1.1 million. The distance to the cathedral
+is not the whole of location.
+
+
+# Text into numbers
+
+```{pyodide}
+wide = pd.get_dummies(houses, columns=['town', 'type'], dtype=int)
+
+wtrain = wide[wide['sold'] <= 2023]
+wtest = wide[wide['sold'] == 2024]
+
+columns = []
+for c in wide.columns:
+    if c not in ['price', 'sold', 'quarter', 'date', 'zip', 'lat', 'lon', 'per_m2']:
+        columns.append(c)
+print(len(columns))
+```
+
+Two columns of text became twenty-four columns of zeros and ones, one per
+town and one per type. The loop collects every column except the target and
+the ones that only identify the sale.
+
+
+# All twenty-eight, unpenalised
+
+```{pyodide}
+everything = LinearRegression()
+everything.fit(wtrain[columns], wtrain['price'])
+
+print(rmse(wtrain['price'], everything.predict(wtrain[columns])))
+print(rmse(wtest['price'], everything.predict(wtest[columns])))
+print(underwater(wtest['price'], everything.predict(wtest[columns])))
+```
+
+The error on the 2024 sales is 1.25 million kroner, 140,000 better than the
+three columns, with 19 percent underwater. Training and test errors are
+close: 6,212 rows against 28 columns leave little room to overfit.
+
+
+# A penalty, chosen by grid search
+
+```{pyodide}
+from sklearn.linear_model import Ridge, Lasso
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV
+pipe = Pipeline([('scale', StandardScaler()), ('ridge', Ridge())])
+grid = {'ridge__alpha': [0.01, 0.1, 1, 10, 100, 1000]}
+search = GridSearchCV(pipe, grid, cv=folds, scoring='neg_root_mean_squared_error')
+search.fit(wtrain[columns], wtrain['price'])
+print(search.best_params_, -search.best_score_)
+print(rmse(wtest['price'], search.predict(wtest[columns])))
+```
+
+The grid picks alpha 10, and the test error moves by 400 kroner. With two
+hundred rows per column the penalty has little to do; with nineteen
+near-copies of one volatility it had a lot.
+
+
+# What the lasso keeps [play]{.chip .chip-predict}
+
+```{pyodide}
+lasso = Pipeline([('scale', StandardScaler()), ('lasso', Lasso(alpha=100000, max_iter=50000))])
+lasso.fit(wtrain[columns], wtrain['price'])
+
+kept = []
+for name, b in zip(columns, lasso.named_steps['lasso'].coef_):
+    if b != 0:
+        kept.append(name)
+print(len(kept))
+print(rmse(wtest['price'], lasso.predict(wtest[columns])))
+```
+
+At alpha 100,000 the lasso keeps twelve of the twenty-eight columns: `area`,
+`centre_km`, the type and eight of the towns, with `built` set to exactly
+zero. Raise alpha until five remain, then print `kept` to see which.
+
+
+# The log of the price
+
+```{pyodide}
+valuation = GridSearchCV(pipe, grid, cv=folds, scoring='neg_root_mean_squared_error')
+valuation.fit(wtrain[columns], np.log(wtrain['price']))
+
+valued = np.exp(valuation.predict(wtest[columns]))
+print(rmse(wtest['price'], valued))
+print(underwater(wtest['price'], valued))
+```
+
+This is the same grid search on `np.log(price)`, with the predictions
+brought back by `np.exp`. In logs the model fits percentages rather than
+kroner: the error in kroner is 11,000 worse and the underwater share falls
+from 19 to 15 percent. This is the rule a lender would keep.
+
+
+# The error, rule by rule
+
+```{python}
+#| echo: false
+#| fig-align: center
+_ladder = []
+_g = TRAIN["price"].mean()
+_ladder.append(("every house is worth the average", _g))
+_r = (TRAIN["price"] / TRAIN["area"]).mean()
+_ladder.append(("a price per square metre", _r * TEST["area"]))
+_ladder.append(("a line through area", LinearRegression().fit(TRAIN[["area"]], TRAIN["price"]).predict(TEST[["area"]])))
+_ladder.append(("area, built and the distance to the centre", LinearRegression().fit(TRAIN[THREE], TRAIN["price"]).predict(TEST[THREE])))
+_ladder.append(("with the town and the type, ridge", RIDGE.predict(WTEST[COLUMNS])))
+_ladder.append(("the same, in logs", VALUED))
+_names = [n for n, _ in _ladder]
+_errs = [_rmse(TEST["price"], p) for _, p in _ladder]
+_uw = [_underwater(TEST["price"], p) for _, p in _ladder]
+fig, ax = plt.subplots(figsize=(10.6, 3.9))
+_cols = [AMBER_LIGHT if i == len(_ladder) - 1 else BLUE_LIGHT for i in range(len(_ladder))]
+ax.barh(range(len(_ladder)), [e / 1e6 for e in _errs], color=_cols, height=0.66)
+ax.set_yticks(range(len(_ladder)))
+ax.set_yticklabels(_names, fontsize=10)
+ax.invert_yaxis()
+ax.set_xlabel("RMSE on the 2024 sales, million kroner")
+ax.set_xlim(0, 2.45)
+ax.grid(axis="y", visible=False)
+for i, (e, u) in enumerate(zip(_errs, _uw)):
+    ax.text(e / 1e6 + 0.03, i, "%.2f million   underwater on %.0f%%" % (e / 1e6, u * 100), va="center", fontsize=9.5, color="#52514e")
+fig.tight_layout()
+plt.show()
+```
+
+Six rules were scored on the same 2024 sales. The share of loans underwater
+fell from 40 percent to 15, and no tool used on the way was new today.
+
+
+# What is missing
+
+::: {.why-grid}
+::: {.why-point}
+**The house itself** <span>bathrooms, the plot, the basement, the roof, the heating, the year of the last renovation. All of it is in the building register, BBR, which the tax authority's model reads and this table does not.</span>
+:::
+::: {.why-point}
+**The condition** <span>two houses of the same size and age on one street sell far apart when one has a new kitchen and the other a leaking roof. No register holds that.</span>
+:::
+:::
+
+::: {.keypoint}
+Six columns are off by 15 percent on a typical house. The tax authority's
+model has dozens of columns, and a bank still sends someone to look.
+:::
+
+
+# 6 · One house {.divider}
+
+::: {.divider-kicker}
+Part 6
+:::
+
+::: {.divider-note}
+The house from the first slide, valued, renovated, moved across town, and
+the sales the model gets most wrong.
+:::
+
+
+# A valuation function
+
+```{pyodide}
+def value(row):
+    return np.exp(valuation.predict(row[columns]))[0]
+
+house = wtest[wtest['town_Aarhus V'] == 1].head(1)
+print(value(house))
+```
+
+The mask keeps the 2024 sales in Aarhus V and `.head(1)` the first of them,
+as a table with one row, which is what `.predict()` needs. That is the house
+from the first slide: the model values it at 4,341,389 kroner, and a bank
+lending 80 percent would offer 3,473,112.
+
+
+# What it sold for
+
+```{pyodide}
+print(describe(houses.loc[6283]))
+```
+
+It sold for 3,800,000 kroner. The model is 14 percent high, a typical miss:
+the rule is within 10 percent of the price on a third of the 2024 sales and
+within 20 percent on two thirds. The loan, 3,473,112, was still below the
+price. Compare it with the number you wrote down.
+
+
+# Renovate it [play]{.chip .chip-predict}
+
+```{pyodide}
+bigger = house.copy()
+bigger['area'] = 180
+
+print(value(bigger) - value(house))
+```
+
+Thirty square metres more are worth 639,336 kroner to the model; `.copy()`
+first, so the original row stays as it is. Try a sixth room, a build year of
+2000, two kilometres closer to the cathedral, or a townhouse (`type_villa` 0,
+`type_townhouse` 1).
+
+
+# The same house, in every town
+
+```{pyodide}
+typical_km = train.groupby('town')['centre_km'].median()
+
+moved_value = {}
+for name in houses['town'].unique():
+    moved = house.copy()
+    for c in columns:
+        if 'town_' in c:
+            moved[c] = 0
+    moved['town_' + name] = 1
+    moved['centre_km'] = typical_km[name]
+    moved_value[name] = round(value(moved))
+print(min(moved_value.values()), max(moved_value.values()))
+```
+
+The inner loop clears every town column, the next line switches one on, and
+the house moves to that town's typical distance. It is worth 2.6 million
+kroner in Sabro and 7.6 million in Aarhus C.
+
+
+# The location premium, drawn
+
+```{python}
+#| echo: false
+#| fig-align: center
+_typical = TRAIN.groupby("town")["centre_km"].median()
+_mv = {}
+for _n in HOUSES["town"].unique():
+    _moved = HOUSE.copy()
+    _moved[TOWNS] = 0
+    _moved["town_" + _n] = 1
+    _moved["centre_km"] = _typical[_n]
+    _mv[_n] = _value(_moved)
+_mv = pd.Series(_mv).sort_values()
+_rel = (_mv - _mv["Aarhus V"]) / 1e6
+fig, ax = plt.subplots(figsize=(10.6, 4.4))
+ax.barh(range(len(_rel)), _rel.values, color=[BLUE_LIGHT if v >= 0 else BRICK for v in _rel.values], height=0.7)
+ax.axvline(0, color=GREY, linewidth=1)
+ax.set_yticks(range(len(_rel)))
+ax.set_yticklabels(_rel.index, fontsize=10)
+ax.set_xlabel("the same house moved there: change in the model's value, million kroner")
+ax.grid(axis="y", visible=False)
+_i = list(_rel.index).index("Aarhus V")
+ax.text(0.05, _i, "where it stands", va="center", fontsize=10, color="#52514e")
+ax.text(_rel.iloc[-1] + 0.05, len(_rel) - 1, "+%.1f million" % ((_mv.iloc[-1] - _mv["Aarhus V"]) / 1e6), va="center", fontsize=10, color="#52514e")
+ax.text(0.05, 0, "%.1f million" % ((_mv.iloc[0] - _mv["Aarhus V"]) / 1e6), va="center", fontsize=10, color="#52514e")
+ax.set_xlim(-2.2, 3.9)
+fig.tight_layout()
+plt.show()
+```
+
+Size, age and type are held fixed, so the bars differ only by the town and
+its distance from the centre. Between Sabro and Aarhus C the gap is 5.0
+million kroner.
+
+
+# Where the model is most wrong [play]{.chip .chip-predict}
+
+```{pyodide}
+errors = wtest['price'] - np.exp(valuation.predict(wtest[columns]))
+worst = errors.sort_values().head(3)
+
+houses.loc[worst.index][['price', 'area', 'rooms', 'built', 'town']]
+```
+
+The three largest misses are houses of 330 to 380 square metres, valued at
+12 to 14 million and sold for 6 to 8. Look at the other end with `.tail(3)`:
+which houses sold for far more than the model's value?
+
+
+# Valued against sold
+
+```{python}
+#| echo: false
+#| fig-align: center
+fig, ax = plt.subplots(figsize=(10.6, 4.2))
+_p = TEST["price"].values / 1e6
+_v = VALUED / 1e6
+ax.scatter(_v, _p, s=12, color=BLUE_LIGHT, alpha=0.7, linewidths=0)
+ax.plot([0, 20], [0, 20], color=GREY, linewidth=1.2)
+_err = TEST["price"].values - VALUED
+_w = np.argsort(_err)[:3]
+ax.scatter(_v[_w], _p[_w], s=40, color=BRICK, zorder=4)
+ax.text(_v[_w[0]] + 0.3, _p[_w[0]] - 0.3, "the three largest misses", fontsize=10, color=BRICK)
+ax.set_xlim(0, 20)
+ax.set_ylim(0, 20)
+ax.set_xlabel("the model's value, million kroner")
+ax.set_ylabel("sale price, million")
+ax.set_title("The 1,409 sales of 2024", loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+A dot on the grey line is a house valued at exactly its price. The cloud
+widens as prices rise: above 8 million the six columns say less and less
+about what a buyer paid.
+
+
+# A letter from the bank
+
+```{pyodide}
+def offer(row):
+    v = value(row)
+    print(f"valued at {v:,.0f} kr; the bank offers {0.8 * v:,.0f} kr")
+
+offer(house)
+```
+
+One function wraps the model, the lender's rule and the formatting. A loop
+over `worst.index` would write the letter for the three houses the model got
+most wrong.
+
+
+# Everything used today {.smaller}
+
+::: {.recap-grid}
+::: {.recap-item}
+**Looking at a table**
+`read_csv`, a column's `mean` and `median`, a mask asked of every row, `groupby` for a number per town, `sort_values` and `head`, a scatter, a histogram and a line.
+:::
+::: {.recap-item}
+**Loops, dictionaries, functions**
+The accumulator pattern over 7,621 rows, a dictionary filled by a loop, `def` with an f-string, and the vectorised line that replaces the loop.
+:::
+::: {.recap-item}
+**A split and two scores**
+The 2024 sales sealed until the end; RMSE in kroner, and the share of loans underwater, which is the mean of a mask.
+:::
+::: {.recap-item}
+**Two rules that need no model**
+The average price, and a price per square metre. Every model has to beat them.
+:::
+::: {.recap-item}
+**fit and predict**
+`LinearRegression` on one column, two and three. Coefficients in kroner per unit, with the other columns held fixed.
+:::
+::: {.recap-item}
+**Choosing without the test rows**
+`KFold` for interchangeable rows, `cross_val_score`, a loop over a dictionary of candidates.
+:::
+::: {.recap-item}
+**Text, penalties and logs**
+`get_dummies` for the town and the type, a `Pipeline` with `StandardScaler`, `GridSearchCV` over alpha, the lasso's zeros, and `np.log` on a skewed target.
+:::
+::: {.recap-item}
+**Using the model**
+A one-row table into `.predict()`, `.copy()` and change one column, a loop that moves the house, the largest errors by `sort_values`.
+:::
+:::
+
+
+# Where this goes next
+
+<div class="timeline">
+<div class="tl-row"><span class="tl-week">before</span><span class="tl-topic">fitting, choosing by cross-validation, and holding coefficients small</span><span class="tl-who">regression</span></div>
+<div class="tl-row tl-now"><span class="tl-week">now</span><span class="tl-topic">one investigation from the raw file to a valued house, with every tool so far</span><span class="tl-who">a recap</span></div>
+<div class="tl-row tl-future"><span class="tl-week">next</span><span class="tl-topic">classification, where the target is a label: will this borrower repay?</span><span class="tl-who">logistic regression</span></div>
+<div class="tl-row tl-future"><span class="tl-week">then</span><span class="tl-topic">trees and ensembles, with more settings and the same grid search</span><span class="tl-who">the same workflow</span></div>
+</div>
+
+::: {.keypoint}
+The split, the baselines, the folds, the grid and the sealed test rows stay
+exactly as they were today. Only the model inside them changes.
+:::
+
+
+# Before next time
+
+- There are no exercises and no case this time. Open this deck again at home and keep changing things: value a house in your own town, make 2023 the test year, add a candidate, move the grid.
+- Finish any earlier exercise set you skipped. The loops, functions and masks in the early sets are what carried every step today.
+- Read the case notebooks from Part 1 to Part 6 in one sitting, as one investigation.
+
+::: {.muted .small}
+Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email
+**jobo@econ.au.dk**.
+:::

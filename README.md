@@ -25,6 +25,8 @@ This repository is published:
   <https://theill95.github.io/mlfin-2026/session_05/session_05.html>
 - Interactive lecture, Session 6:
   <https://theill95.github.io/mlfin-2026/session_06/session_06.html>
+- Interactive lecture, Session 7:
+  <https://theill95.github.io/mlfin-2026/session_07/session_07.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
 The site has six pages, linked from the sidebar:
@@ -102,9 +104,10 @@ Sessions 2 to 6 have the same shape. Current contents:
 | 4 · Foundations of Machine Learning | `session_04.qmd` | 73 | Part 4, 17 questions |
 | 5 · Model Selection and Cross-Validation | `session_05.qmd` | 63 | Part 5, 18 questions |
 | 6 · Penalised Regression | `session_06.qmd` | 58 | Part 6, 16 questions |
+| 7 · Pricing a house in Aarhus (recap) | `session_07.qmd` | none | none |
 
-Sessions 3 to 6 load numpy, pandas and matplotlib into the browser runtime
-(about 20 MB, once per page load). Sessions 5 and 6 add scikit-learn, which
+Sessions 3 to 7 load numpy, pandas and matplotlib into the browser runtime
+(about 20 MB, once per page load). Sessions 5 to 7 add scikit-learn, which
 brings scipy and a BLAS with it, so their cold load is nearer 45 MB. Open the deck and
 run one cell several minutes before class so it is warm.
 
@@ -204,11 +207,15 @@ pip install -r requirements.txt
 ```
 
 Built and tested with Python 3.12, pandas 2.2, numpy 1.26, matplotlib 3.9,
-scikit-learn 1.5. Sessions 5 and 6 use scikit-learn in the materials
+scikit-learn 1.5. Sessions 5 to 7 use scikit-learn in the materials
 themselves, in the deck, the exercises and the case. Session 6 also reads
 `data/market_features.csv`, a nineteen-column table built from the prices by
-`tools/build_session06_table.py`. All core materials run **offline** once this environment is
-installed and the repository is cloned.
+`tools/build_session06_table.py`, and Session 7 reads `data/aarhus_houses.csv`,
+7,621 Aarhus house sales from January 2021 to September 2024, built once by
+`tools/build_session07_table.py` from a public compilation of boliga.dk sale
+records and geocoded with the national address register (no addresses are
+kept). All core materials run **offline** once this environment is installed
+and the repository is cloned.
 
 ## Working the notebooks (students)
 

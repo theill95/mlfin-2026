@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aarhus house sales 2021 to 2024 · Machine Learning in Finance</title>
+<!--
+  The live map behind Session 7. It reads data/aarhus_houses.csv (the table
+  the deck works on: no addresses, locations rounded to about 100 metres) and
+  draws one dot per sale, coloured by the price per square metre. Leaflet and
+  the Esri light grey tiles come from the network, like the deck's own runtime.
+-->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+  html, body { height: 100%; margin: 0; font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif; color: #141413; }
+  #map { position: absolute; inset: 0; }
+  .panel {
+    position: absolute; top: 14px; left: 14px; z-index: 1000; background: rgba(252, 252, 251, 0.95);
+    border: 1px solid #e6e5df; border-radius: 8px; padding: 10px 14px; max-width: 320px; font-size: 13px; line-height: 1.45;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .panel h1 { font-size: 15px; margin: 0 0 4px; color: #0d366b; }
+  .panel p { margin: 4px 0; color: #52514e; }
+  .panel label { display: block; margin-top: 6px; color: #52514e; }
+  .panel select { font: inherit; margin-left: 4px; }
+  .legend { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: #52514e; }
+  .legend .bar { flex: 1; height: 10px; border-radius: 3px; background: linear-gradient(90deg, #deebf7, #9ecae1, #4292c6, #08519c); }
+  .leaflet-popup-content { font-size: 13px; line-height: 1.4; }
+  .leaflet-popup-content b { color: #0d366b; }
+  .house { font-weight: 600; color: #8a6508; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="panel">
+  <h1>Aarhus house sales, 2021 to 2024</h1>
+  <p>One dot per ordinary sale of a villa or townhouse in the table used in Session 7, placed to within about 100 metres. Click a dot for the details.</p>
+  <label>Show <select id="year">
+    <option value="all">all years</option>
+    <option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option>
+  </select></label>
+  <div class="legend"><span>15,000 kr/m²</span><span class="bar"></span><span>50,000</span></div>
+  <p class="house">The amber dot is the house from the first slide.</p>
+  <p id="status">Loading the table ...</p>
+</div>
+<script>
+  const map = L.map("map", { zoomControl: true }).setView([56.16, 10.18], 12);
+  const esri = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_{layer}/MapServer/tile/{z}/{y}/{x}";
+  const credit = "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors, and the GIS User Community";
+  L.tileLayer(esri.replace("{layer}", "Base"), { attribution: credit, maxZoom: 16 }).addTo(map);
+  L.tileLayer(esri.replace("{layer}", "Reference"), { maxZoom: 16, pane: "shadowPane" }).addTo(map);
+
+  // sequential single hue for the price per square metre (thousand kr)
+  function colour(k) {
+    const t = Math.max(0, Math.min(1, (k - 15) / 35));
+    const stops = [[222, 235, 247], [158, 202, 225], [66, 146, 198], [8, 81, 156]];
+    const i = Math.min(2, Math.floor(t * 3)), f = t * 3 - i;
+    const c = stops[i].map((v, j) => Math.round(v + (stops[i + 1][j] - v) * f));
+    return `rgb(${c[0]},${c[1]},${c[2]})`;
+  }
+  const fmt = n => Math.round(n).toLocaleString("da-DK");
+  // Google Maps URLs need no key; the table's locations are rounded, so the
+  // view opens on the street rather than on the house itself
+  const streetview = (lat, lon) => `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lon}`;
+  const layer = L.layerGroup().addTo(map);
+  let rows = [];
+
+  function draw(year) {
+    layer.clearLayers();
+    let n = 0;
+    for (const r of rows) {
+      if (year !== "all" && r.sold !== year) continue;
+      const perm2 = r.price / r.area;
+      const dot = L.circleMarker([r.lat, r.lon], {
+        radius: 4, weight: 0.5, color: "#ffffff", fillColor: colour(perm2 / 1000), fillOpacity: 0.85
+      }).bindPopup(`<b>${fmt(r.price)} kr</b> in ${r.town}, ${r.date}<br>${r.area} m² ${r.type}, ${r.rooms} rooms, built ${r.built}<br>${fmt(perm2)} kr per m² · ${r.centre_km} km from the cathedral<br><a href="${streetview(r.lat, r.lon)}" target="_blank" rel="noopener">Street View near here</a>`);
+      dot.addTo(layer);
+      n += 1;
+    }
+    document.getElementById("status").textContent = n.toLocaleString("en") + " sales shown.";
+  }
+
+  fetch("data/aarhus_houses.csv").then(r => r.text()).then(text => {
+    const lines = text.trim().split("\n");
+    const head = lines[0].trim().split(",");
+    rows = lines.slice(1).map(line => {
+      const parts = line.trim().split(",");
+      const o = {};
+      head.forEach((h, i) => o[h] = parts[i]);
+      o.price = +o.price; o.area = +o.area; o.lat = +o.lat; o.lon = +o.lon;
+      return o;
+    });
+    draw("all");
+    // the house from the first slide: the first 2024 sale in Aarhus V
+    const house = rows.find(r => r.sold === "2024" && r.town === "Aarhus V");
+    if (house) {
+      L.circleMarker([house.lat, house.lon], { radius: 9, weight: 2, color: "#fcfcfb", fillColor: "#d99a1c", fillOpacity: 1 })
+        .bindPopup(`<span class="house">The house from the first slide</span><br>${house.area} m² ${house.type}, ${house.rooms} rooms, built ${house.built}, ${house.town}<br><a href="${streetview(56.17663641, 10.16413222)}" target="_blank" rel="noopener">Street View of the house</a>`)
+        .addTo(map);
+    }
+  }).catch(() => { document.getElementById("status").textContent = "The table could not be loaded. Open this page over HTTP, not from a file:// path."; });
+
+  document.getElementById("year").addEventListener("change", e => draw(e.target.value));
+</script>
+</body>
+</html>
