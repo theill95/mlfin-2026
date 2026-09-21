@@ -1,0 +1,1597 @@
+---
+title: "Classification with logistic regression"
+subtitle: "Machine Learning in Finance · Session 8"
+# Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
+# from a data: URI, so embed-resources is off. Ship session_08.html together
+# with session_08_files/ and data/, and SERVE OVER HTTP (double-click
+# serve.cmd, or publish to a URL). Opened from a file:// path the live code
+# cells do not merely fail to run, they do not appear at all.
+#
+# This deck loads numpy, pandas, matplotlib and scikit-learn into the browser
+# runtime (about 45 MB on a cold load). Open the deck and run one cell several
+# minutes before class so it is warm.
+#
+# The table is the one from Session 6, data/market_features.csv, built by
+# tools/build_session06_table.py from data/prices.csv. The label the deck
+# predicts is made from it in one line on the "Making the label" slide.
+# Every number on these slides was measured from that table.
+format:
+  live-revealjs:
+    theme: [default, ../theme/mlfin.scss]
+    width: 1280
+    height: 720
+    margin: 0.06
+    center: false
+    transition: fade
+    transition-speed: fast
+    background-transition: none
+    slide-number: c/t
+    controls: false
+    progress: true
+    hash: true
+    history: false
+    code-line-numbers: false
+    highlight-style: github
+    auto-stretch: false
+html-math-method: katex
+engine: jupyter
+pyodide:
+  packages:
+    - numpy
+    - pandas
+    - matplotlib
+    - scikit-learn
+  resources:
+    - data/market_features.csv
+  cell-options:
+    autorun: true
+    startover: true
+execute:
+  echo: true
+  warning: false
+---
+
+# The volatility forecast so far
+
+```{python}
+#| include: false
+# House style for every precomputed figure in this deck, plus the table the
+# whole session works on and the two models the figures draw.
+import warnings
+warnings.filterwarnings("ignore")
+import json
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+MLFIN_STYLE = {
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "savefig.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"],
+    "font.size": 12, "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+}
+plt.rcParams.update(MLFIN_STYLE)
+
+from pathlib import Path
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import TimeSeriesSplit, cross_val_score
+from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix, log_loss
+
+_data = Path("data/market_features.csv")
+if not _data.exists():
+    raise FileNotFoundError(
+        "Missing data/market_features.csv - copy it from data/ at the "
+        "repository root (built by tools/build_session06_table.py)."
+    )
+TBL = pd.read_csv(_data, parse_dates=["date"]).set_index("date")
+COLS = list(TBL.columns[:-1])
+TBL["rising"] = (TBL["vol_next"] > TBL["vol_20d"]).astype(int)
+TRAIN = TBL.loc[:"2022-12-31"]
+TEST = TBL.loc["2023-01-01":]
+FOLDS = TimeSeriesSplit(n_splits=5)
+
+LINE = LinearRegression().fit(TRAIN[["vol_20d"]], TRAIN["rising"])
+MODEL = LogisticRegression().fit(TRAIN[["vol_20d"]], TRAIN["rising"])
+P_TEST = MODEL.predict_proba(TEST[["vol_20d"]])[:, 1]
+ROSE = TEST["rising"].values == 1
+CROSS = -MODEL.intercept_[0] / MODEL.coef_[0, 0]
+
+_bins = [0, 0.4, 0.6, 0.8, 1.0, 1.3, 1.7, 2.5, 6]
+_cut = pd.cut(TRAIN["vol_20d"], _bins)
+BIN_X = TRAIN.groupby(_cut, observed=True)["vol_20d"].mean().values
+BIN_Y = TRAIN.groupby(_cut, observed=True)["rising"].mean().values
+BIN_N = TRAIN.groupby(_cut, observed=True)["rising"].size().values
+
+BLUE = "#1c5cab"
+BLUE_LIGHT = "#86b6ef"
+AMBER = "#b8860b"
+BRICK = "#b3402f"
+GREY = "#c3c2b7"
+GREY_LIGHT = "#d8d7d0"
+INK = "#141413"
+
+
+def roc_point(threshold):
+    pred = P_TEST >= threshold
+    return (pred & ~ROSE).sum() / (~ROSE).sum(), (pred & ROSE).sum() / ROSE.sum()
+```
+
+```{pyodide}
+#| include: false
+# House style for the live figures, so they match the printed ones.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings("ignore")
+plt.rcParams.update({
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"], "font.size": 12,
+    "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+    "figure.dpi": 100,
+})
+```
+
+<div class="statband">
+<div class="stat"><span class="stat-big">0.237</span><div class="stat-label">one column</div></div>
+<div class="stat stat-warn"><span class="stat-big">0.248</span><div class="stat-label">19 columns, OLS</div></div>
+<div class="stat"><span class="stat-big">0.218</span><div class="stat-label">19 columns, ridge</div></div>
+</div>
+
+Three test RMSEs for the index's volatility over the next 20 days, from a
+table of 19 columns. The 19 columns forecast worse than one until ridge shrank
+the coefficients, with alpha chosen by cross-validation.
+
+::: {.keypoint}
+The target was a number. This session gives the same table a target that is a
+label.
+:::
+
+
+# The question
+
+**Will the market be more volatile next month than it was this month?**
+
+::: {.why-grid}
+::: {.why-point}
+**Why it matters** <span>options and hedges cost more once volatility has risen, so the decision to buy protection is made before the month starts</span>
+:::
+::: {.why-point}
+**What you know today** <span>the 19 columns of the table: the index's own volatility over six windows, its return over three, and the 20-day volatility of 10 stocks</span>
+:::
+:::
+
+::: {.muted .small}
+One way to answer is to forecast the number, as before, and compare the
+forecast with this month's volatility. This session makes the comparison
+itself the target.
+:::
+
+
+# The table
+
+```{pyodide}
+table = pd.read_csv("data/market_features.csv", parse_dates=["date"]).set_index("date")
+columns = list(table.columns[:-1])
+
+print(table.shape)
+print(columns)
+```
+
+One row per trading day, 19 columns that look back from that day, and
+`vol_next`, the volatility over the 20 days after it. The index is SPY, in
+percent.
+
+
+# Making the label
+
+```{pyodide}
+table["rising"] = (table["vol_next"] > table["vol_20d"]).astype(int)
+
+table[["vol_20d", "vol_next", "rising"]].tail(4)
+```
+
+The comparison is asked of every row and answers `True` or `False`;
+`.astype(int)` turns the answers into 1 and 0. The label is 1 when the 20 days
+after the row were more volatile than the 20 days before it. In what follows,
+a day whose label is 1 is called a day with a rise.
+
+
+# Splitting by date
+
+```{pyodide}
+train = table.loc[:"2022-12-31"]
+test = table.loc["2023-01-01":]
+
+print(len(train), len(test))
+```
+
+Training rows to the end of 2022 and test rows from 2023: 1,894 days to fit
+on and 482 to check on.
+
+
+# The majority rule
+
+```{pyodide}
+print(train["rising"].mean())
+print(test["rising"].mean())
+```
+
+The label is 1 on 48 percent of the training days and 47 percent of the test
+days. Predicting 0 for every day is right on 53 percent of the test days, with
+no model at all. Every model has to beat that share.
+
+
+# Today
+
+- a **label** as the target, and the share of test days that a model has to beat
+- why a straight line cannot fit a label, and the curve that can: **logistic regression**
+- the **probability** the curve gives each day, and the threshold that turns it into a 0 or a 1
+- scoring a classifier: the **confusion matrix**, precision, recall and **AUC**
+- all 19 columns, with the strength of the penalty, called **C**, chosen by cross-validation
+
+The lecture introduces each of these. The exercises and the case are where you
+practise them.
+
+
+# 1 · A straight line on a label {.divider}
+
+::: {.divider-kicker}
+Part 1
+:::
+
+::: {.divider-note}
+The regression fitted to the 0/1 label, and what goes wrong.
+:::
+
+
+# The regression on the label
+
+```{pyodide}
+from sklearn.linear_model import LinearRegression
+
+line = LinearRegression()
+line.fit(train[["vol_20d"]], train["rising"])
+
+print(line.intercept_, line.coef_)
+```
+
+The target column holds ones and zeros, and `.fit()` treats them as numbers.
+The slope is negative: the higher this month's volatility, the lower the
+fitted value.
+
+
+# What the line predicts [predict]{.chip .chip-predict}
+
+Read the fitted value as the probability of a rise. Before running the cell,
+decide what it should give for a volatility of 4 percent, and whether a
+straight line can give that.
+
+```{pyodide}
+#| autorun: false
+line.predict(pd.DataFrame({"vol_20d": [0.5, 2.0, 4.0]}))
+```
+
+::: {.muted .small}
+The index's 20-day volatility was above 4 percent in March 2020.
+:::
+
+
+# A probability below zero
+
+```{pyodide}
+fitted = line.predict(train[["vol_20d"]])
+
+print(fitted.min(), fitted.max())
+print((fitted < 0).sum())
+```
+
+The line reaches zero at a volatility of 3.3 percent and keeps falling. 28
+training days get a negative fitted value, and no straight line stays between
+0 and 1 for every value of the column.
+
+
+# The share of rises, by this month's volatility
+
+```{python}
+#| echo: false
+#| fig-align: center
+_xx = np.linspace(0.05, 4.8, 200)
+fig, ax = plt.subplots(figsize=(10.4, 3.4))
+ax.axhline(0, color=GREY, linewidth=1)
+ax.axhline(1, color=GREY, linewidth=1)
+ax.plot(_xx, LINE.predict(pd.DataFrame({"vol_20d": _xx})), color=BRICK, linewidth=2.2,
+        label="the straight line")
+ax.scatter(BIN_X, BIN_Y, s=np.clip(BIN_N * 0.55, 30, 260), color=BLUE, zorder=4,
+           edgecolor="#fcfcfb", linewidth=1.2, label="share of days with a rise")
+ax.set_ylim(-0.4, 1.08)
+ax.set_xlim(0, 4.9)
+ax.set_xlabel("volatility over the last 20 days (%)")
+ax.set_ylabel("share with a rise")
+ax.text(3.4, -0.33, "below zero from 3.3% on", fontsize=10.5, color=BRICK)
+ax.legend(loc="upper right")
+fig.tight_layout()
+plt.show()
+```
+
+Each dot is a band of training days, sized by how many days it holds, and its
+height is the share of those days with a rise. Below 0.4 percent the share is
+0.89; above 1.7 percent it is 0.11. The dots flatten out at both ends, and the
+line cannot.
+
+
+# The sigmoid
+
+```{python}
+#| echo: false
+#| fig-align: center
+_z = np.linspace(-6, 6, 300)
+_s = 1 / (1 + np.exp(-_z))
+fig, ax = plt.subplots(figsize=(10.4, 2.75))
+ax.axhline(0, color=GREY, linewidth=1)
+ax.axhline(1, color=GREY, linewidth=1)
+ax.plot(_z, _s, color=BLUE, linewidth=2.4)
+for _zz, _lab, _dx, _dy in [(-2, "σ(−2) = 0.12", -0.25, 0.10), (0, "σ(0) = 0.50", 0.25, -0.06),
+                            (2, "σ(2) = 0.88", 0.25, -0.10)]:
+    _v = 1 / (1 + np.exp(-_zz))
+    ax.scatter([_zz], [_v], s=70, color=AMBER, zorder=4)
+    ax.text(_zz + _dx, _v + _dy, _lab, fontsize=11, color="#8a6508",
+            ha="right" if _dx < 0 else "left")
+ax.set_ylim(-0.08, 1.08)
+ax.set_xlabel("z, the linear score")
+ax.set_ylabel("σ(z)")
+fig.tight_layout()
+plt.show()
+```
+
+::: {.formula}
+$$
+\sigma(z) = \frac{1}{1 + e^{-z}}
+$$
+:::
+
+The sigmoid takes any number and returns a number between 0 and 1. Far to the
+left it is close to 0, far to the right close to 1, and at $z = 0$ it is one
+half.
+
+
+# Logistic regression
+
+::: {.formula}
+$$
+P(\text{rising} \mid \text{vol\_20d}) = \sigma\!\left(\beta_0 + \beta_1 \cdot \text{vol\_20d}\right)
+$$
+:::
+
+The linear score is the same as in regression, an intercept plus a slope times
+the column. Passing it through the sigmoid turns any value of the score into a
+probability.
+
+::: {.formula}
+$$
+\log\frac{P}{1 - P} = \beta_0 + \beta_1 \cdot \text{vol\_20d}
+$$
+:::
+
+Rearranged, the **log-odds** of a rise are a straight line in the column. The
+coefficients are on that scale.
+
+
+# 2 · Logistic regression in code {.divider}
+
+::: {.divider-kicker}
+Part 2
+:::
+
+::: {.divider-note}
+Fitting the curve, reading its two numbers, and turning probabilities into
+predicted labels.
+:::
+
+
+# Import, create, fit
+
+```{pyodide}
+from sklearn.linear_model import LogisticRegression
+
+model = LogisticRegression()
+model.fit(train[["vol_20d"]], train["rising"])
+
+print(model)
+```
+
+`LogisticRegression` lives in the same module as `LinearRegression` and is
+used the same way: create it, then `.fit()` with the feature table and the
+label column. `X` is a table with two brackets and `y` is one column with one.
+
+
+# What it learned
+
+```{pyodide}
+print(model.intercept_)
+print(model.coef_)
+```
+
+The intercept is 1.16 and the slope −1.34, on the log-odds scale. `coef_` is
+printed with two pairs of brackets: `LogisticRegression` keeps one row of
+coefficients per boundary between classes, and two classes have one boundary,
+so the array has one row.
+
+
+# The fitted curve
+
+```{python}
+#| echo: false
+#| fig-align: center
+_xx = np.linspace(0.05, 4.8, 300)
+fig, ax = plt.subplots(figsize=(10.4, 3.4))
+ax.axhline(0, color=GREY, linewidth=1)
+ax.axhline(1, color=GREY, linewidth=1)
+ax.plot(_xx, LINE.predict(pd.DataFrame({"vol_20d": _xx})), color=BRICK, linewidth=1.4,
+        linestyle="--", label="the straight line")
+ax.plot(_xx, MODEL.predict_proba(pd.DataFrame({"vol_20d": _xx}))[:, 1], color=BLUE,
+        linewidth=2.4, label="logistic regression")
+ax.scatter(BIN_X, BIN_Y, s=np.clip(BIN_N * 0.55, 30, 260), color=BLUE_LIGHT, zorder=4,
+           edgecolor="#fcfcfb", linewidth=1.2, label="share of days with a rise")
+ax.axvline(CROSS, color=AMBER, linewidth=1.4, linestyle=":")
+ax.text(CROSS + 0.06, 0.93, "one half at 0.87%", fontsize=10.5, color="#8a6508")
+ax.set_ylim(-0.4, 1.08)
+ax.set_xlim(0, 4.9)
+ax.set_xlabel("volatility over the last 20 days (%)")
+ax.set_ylabel("probability of a rise")
+ax.legend(loc="upper right")
+fig.tight_layout()
+plt.show()
+```
+
+The curve passes through the dots where the line could not. It flattens
+towards 1 on the left and towards 0 on the right, and stays between them
+everywhere.
+
+
+# Two probabilities per day
+
+::: {.diagram}
+<svg width="1000" height="262" viewBox="0 0 1000 262" role="img" aria-label="predict_proba takes the feature table with 482 rows and one column and returns an array with 482 rows and two columns, one per class in the order of classes_, each row adding up to one">
+  <text x="130" y="24" text-anchor="middle" font-size="14" font-family="Cascadia Mono, monospace" fill="#0d366b">test[["vol_20d"]]</text>
+  <rect x="60" y="36" width="140" height="180" rx="8" fill="#eef4fc" stroke="#86b6ef" stroke-width="1.5"/>
+  <g font-family="Cascadia Mono, monospace" font-size="15" fill="#26333f" text-anchor="middle">
+    <text x="130" y="72">1.162</text>
+    <text x="130" y="104">1.130</text>
+    <text x="130" y="136">1.114</text>
+    <text x="130" y="170">⋮</text>
+  </g>
+  <text x="130" y="242" text-anchor="middle" font-size="13" font-family="Segoe UI, sans-serif" fill="#898781">482 rows, 1 column</text>
+  <g stroke="#c3c2b7" stroke-width="2.4" fill="none"><path d="M 215 126 L 330 126"/></g>
+  <polygon points="330,119 330,133 344,126" fill="#c3c2b7"/>
+  <text x="280" y="112" text-anchor="middle" font-size="14" font-family="Cascadia Mono, monospace" fill="#0d366b">.predict_proba()</text>
+  <text x="510" y="24" text-anchor="middle" font-size="14" font-family="Cascadia Mono, monospace" fill="#0d366b">probs</text>
+  <rect x="370" y="36" width="280" height="180" rx="8" fill="#fbf3de" stroke="#d99a1c" stroke-width="1.5"/>
+  <line x1="510" y1="36" x2="510" y2="216" stroke="#e8d9b0" stroke-width="1.2"/>
+  <g font-family="Cascadia Mono, monospace" font-size="15" fill="#26333f" text-anchor="middle">
+    <text x="440" y="72">0.597</text><text x="580" y="72">0.403</text>
+    <text x="440" y="104">0.587</text><text x="580" y="104">0.413</text>
+    <text x="440" y="136">0.582</text><text x="580" y="136">0.418</text>
+    <text x="440" y="170">⋮</text><text x="580" y="170">⋮</text>
+  </g>
+  <g font-family="Segoe UI, sans-serif" font-size="13" fill="#8a6508" text-anchor="middle">
+    <text x="440" y="203">class 0: no rise</text>
+    <text x="580" y="203">class 1: a rise</text>
+  </g>
+  <text x="510" y="242" text-anchor="middle" font-size="13" font-family="Segoe UI, sans-serif" fill="#898781">482 rows, 2 columns, in the order of classes_</text>
+  <g font-family="Segoe UI, sans-serif" font-size="15" fill="#52514e">
+    <text x="690" y="72">0.597 + 0.403 = 1: each row</text>
+    <text x="690" y="94">adds up to one</text>
+    <text x="690" y="136">column 1 is the probability</text>
+    <text x="690" y="158">of a rise, the fitted curve</text>
+    <text x="690" y="200">.predict() compares column 1</text>
+    <text x="690" y="222">with one half</text>
+  </g>
+</svg>
+:::
+
+::: {.diagram-note}
+The feature table goes in with one column; an array comes out with one column
+per class. The first three test days had a volatility above 0.87 percent, so
+their probability of a rise is below one half.
+:::
+
+
+# predict_proba
+
+```{pyodide}
+probs = model.predict_proba(test[["vol_20d"]])
+
+print(model.classes_)
+print(probs[:3].round(3))
+```
+
+`classes_` lists the classes in the order of the columns, 0 then 1, and the
+first three rows are the three days in the diagram. Column 0 is the
+probability of no rise, column 1 the probability of a rise.
+
+
+# predict, and the threshold inside it
+
+```{pyodide}
+p = probs[:, 1]
+predicted = model.predict(test[["vol_20d"]])
+
+print(predicted[:10])
+print((p >= 0.5).astype(int)[:10])
+```
+
+`probs[:, 1]` is the second column, every row of it: the probability of a
+rise. `.predict()` returns a 0 or a 1 for each day, by comparing that
+probability with one half. The second line makes the same comparison by hand
+and gives the same ten values.
+
+
+# Where the score is zero
+
+::: {.formula}
+$$
+\beta_0 + \beta_1 \cdot \text{vol\_20d} = 0
+\qquad\Longrightarrow\qquad
+\text{vol\_20d} = -\,\frac{\beta_0}{\beta_1}
+$$
+:::
+
+```{pyodide}
+print(-model.intercept_[0] / model.coef_[0, 0])
+```
+
+The sigmoid is one half exactly when the score is zero, which solves to a
+volatility of 0.87 percent; below it the prediction is 1. `intercept_` is an
+array holding one number, and `[0]` takes it out; `coef_` has one row, and
+`[0, 0]` is the first entry of that row.
+
+
+# From the score to the odds
+
+::: {.formula}
+$$
+\text{odds} = \frac{P}{1 - P} = e^{\,\beta_0 + \beta_1 \cdot \text{vol\_20d}}
+$$
+:::
+
+| `vol_20d` | score | odds of a rise | probability |
+|---|---|---|---|
+| 0.5 | 0.49 | 1.64 to 1 | 0.62 |
+| 0.87 | 0.00 | 1 to 1 | 0.50 |
+| 1.5 | −0.85 | 0.43 to 1 | 0.30 |
+
+: {.vocab}
+
+The model is a straight line on the log-odds scale, and `exp` undoes the log,
+so the odds of a rise are `exp` of the score. Going from 0.5 to 1.5 subtracts
+1.34 from the score, and divides the odds by 3.8: from 1.64 to 0.43.
+
+
+# Reading the coefficient
+
+```{pyodide}
+print(np.exp(model.coef_))
+```
+
+One percentage point more volatility adds −1.34 to the score, which
+multiplies the odds of a rise by $e^{-1.34} = 0.26$. `np.exp` turns a
+coefficient on the log-odds scale into a factor on the odds scale, which is
+the number to quote.
+
+::: {.keypoint}
+The sign is what to read: **the more volatile this month, the less likely
+volatility is to rise further.** The regression's slope on this column was
+below one, which says the same thing about the number.
+:::
+
+
+# Two columns, in percentage points
+
+```{pyodide}
+raw = LogisticRegression()
+raw.fit(train[["vol_20d", "ret_20d"]], train["rising"])
+
+print(raw.coef_)
+print(train[["vol_20d", "ret_20d"]].std().round(3))
+```
+
+More columns go in as they do for regression, and each coefficient is per
+percentage point of its own column. A percentage point is a large move for the
+20-day return, whose standard deviation is 0.24, and an ordinary one for
+volatility, so −1.18 and −1.53 cannot be compared.
+
+
+# StandardScaler, again
+
+::: {.formula}
+$$
+z = \frac{x - \bar{x}}{s}
+$$
+:::
+
+`StandardScaler` subtracts each column's mean and divides by its standard
+deviation, both computed on the training rows, so every column is measured in
+standard deviations. It matters twice in this session: coefficients per
+standard deviation can be compared across columns, and the penalty in Part 5
+charges by the size of a coefficient, which must not depend on the column's
+units.
+
+
+# Two columns, standardised
+
+```{pyodide}
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+
+two = Pipeline([("scale", StandardScaler()), ("logit", LogisticRegression())])
+two.fit(train[["vol_20d", "ret_20d"]], train["rising"])
+
+print(two.named_steps["logit"].coef_)
+```
+
+The pipeline fits the scaler on the training rows and then the classifier on
+the scaled columns, as it did for ridge. One standard deviation of volatility
+moves the log-odds by −1.08 and one standard deviation of return by −0.30, so
+volatility carries most of the information.
+
+
+# Your turn [1]{.chip .chip-turn} {.your-turn}
+
+Fit the same model on `vol_60d` instead of `vol_20d`. Where does its curve
+cross one half, and is the slope steeper or flatter than −1.34?
+
+```{pyodide}
+#| autorun: false
+long_model = LogisticRegression()
+long_model.fit(...)
+
+print(long_model.intercept_, long_model.coef_)
+print(-long_model.intercept_[0] / long_model.coef_[0, 0])
+```
+
+::: {.muted .small}
+`.fit()` takes the feature table first and the label column second.
+:::
+
+
+# Your turn 1: answer
+
+```python
+long_model.fit(train[["vol_60d"]], train["rising"])
+```
+
+The intercept is 0.57 and the slope **−0.65**, half the 20-day slope, and the
+curve crosses one half at 0.88 percent. A 60-day average moves less from month
+to month, so it separates the days with a rise from the others less sharply.
+On the test days it predicts 58.9 percent correctly, against 69.3 percent for
+`vol_20d`.
+
+
+# 3 · How the curve is fitted {.divider}
+
+::: {.divider-kicker}
+Part 3
+:::
+
+::: {.divider-note}
+What takes the place of least squares when the target is a label, and what
+that means for `.fit()`.
+:::
+
+
+# Least squares, and maximum likelihood
+
+<div class="compare">
+<div class="compare-col">
+<h3>A number</h3>
+<p>The residual is the prediction minus what happened, in the units of the target. Least squares chooses the line with the smallest sum of squared residuals.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>A label</h3>
+<p>What happened is 0 or 1 and the prediction is a probability. Maximum likelihood chooses the curve that gives <strong>what happened the highest probability</strong>, taken over all the rows.</p>
+</div>
+</div>
+
+::: {.keypoint}
+For a day with a rise, the likelihood uses the probability the curve gave to
+a rise. For a day without one, it uses the probability the curve gave to no
+rise.
+:::
+
+
+# Log-loss
+
+```{python}
+#| echo: false
+#| fig-align: center
+_pp = np.linspace(0.01, 1, 300)
+fig, ax = plt.subplots(figsize=(10.4, 2.1))
+ax.plot(_pp, -np.log(_pp), color=BLUE, linewidth=2.4)
+for _q, _lab, _dy in [(0.9, "0.9 costs 0.11", 0.28), (0.5, "0.5 costs 0.69", 0.28), (0.1, "0.1 costs 2.30", 0.28)]:
+    ax.scatter([_q], [-np.log(_q)], s=70, color=AMBER, zorder=4)
+    ax.text(_q + 0.02, -np.log(_q) + _dy, _lab, fontsize=11, color="#8a6508")
+ax.set_ylim(0, 4.9)
+ax.set_xlim(0, 1.02)
+ax.set_xlabel("probability the curve gave to what happened")
+ax.set_ylabel("cost of that row")
+fig.tight_layout()
+plt.show()
+```
+
+::: {.formula}
+$$
+\text{log-loss} = -\sum_{i=1}^{n}\Big[\, y_i \log \hat{p}_i + (1 - y_i)\log(1 - \hat{p}_i) \,\Big]
+$$
+:::
+
+The bracket is a switch: when $y_i = 1$ only $\log \hat{p}_i$ remains, when
+$y_i = 0$ only the other term. Each row adds minus the log of the probability
+given to what happened, so a confident wrong probability adds the most.
+
+
+# Walking downhill
+
+```{python}
+#| echo: false
+#| fig-align: center
+_x1 = TRAIN["vol_20d"].values
+_y1 = TRAIN["rising"].values
+_b0 = np.linspace(-0.7, 2.3, 130)
+_b1 = np.linspace(-2.4, 0.5, 130)
+_B0, _B1 = np.meshgrid(_b0, _b1)
+_LL = np.zeros_like(_B0)
+for _i in range(_B0.shape[0]):
+    _pr = 1 / (1 + np.exp(-(_B0[_i][:, None] + _B1[_i][:, None] * _x1[None, :])))
+    _pr = np.clip(_pr, 1e-9, 1 - 1e-9)
+    _LL[_i] = -(_y1[None, :] * np.log(_pr) + (1 - _y1[None, :]) * np.log(1 - _pr)).mean(axis=1)
+_path = [(0.0, 0.0)]
+for _n in range(1, 8):
+    _m = LogisticRegression(max_iter=_n).fit(TRAIN[["vol_20d"]], TRAIN["rising"])
+    _path.append((_m.intercept_[0], _m.coef_[0, 0]))
+_path = np.array(_path)
+
+fig, ax = plt.subplots(figsize=(9.6, 3.5))
+_lv = [0.639, 0.641, 0.645, 0.652, 0.665, 0.685, 0.72, 0.78, 0.86]
+ax.contour(_B0, _B1, _LL, levels=_lv, colors=[GREY], linewidths=1.0)
+ax.plot(_path[:, 0], _path[:, 1], color=BLUE, linewidth=1.8, zorder=3)
+ax.scatter(_path[1:-1, 0], _path[1:-1, 1], s=42, color=BLUE, zorder=4)
+ax.scatter([0], [0], s=80, color=INK, zorder=5)
+ax.scatter([_path[-1, 0]], [_path[-1, 1]], s=90, color=AMBER, zorder=5)
+ax.text(0.06, 0.12, "start: (0, 0), log-loss 0.693", fontsize=10.5, color=INK)
+ax.text(_path[-1, 0] + 0.08, _path[-1, 1] - 0.22, "after 7 steps: (1.16, −1.34), log-loss 0.638",
+        fontsize=10.5, color="#8a6508")
+ax.set_xlabel("intercept")
+ax.set_ylabel("slope")
+ax.set_xlim(-0.7, 2.3)
+ax.set_ylim(-2.4, 0.5)
+ax.grid(False)
+fig.tight_layout()
+plt.show()
+```
+
+Every pair of intercept and slope has a log-loss, drawn here as contour lines,
+and the fitted pair is the lowest point. `.fit()` starts at (0, 0), where every
+day gets a probability of one half, and moves to a lower point at each step.
+The solver picks the direction and the length of each step itself.
+
+
+# The steps, printed
+
+```{pyodide}
+from sklearn.metrics import log_loss
+for n in [1, 2, 3, 10]:
+    steps = LogisticRegression(max_iter=n)
+    steps.fit(train[["vol_20d"]], train["rising"])
+    p_train = steps.predict_proba(train[["vol_20d"]])[:, 1]
+    print(n, steps.n_iter_, steps.coef_.round(3), round(log_loss(train["rising"], p_train), 5))
+```
+
+`max_iter=n` stops after n steps, `n_iter_` records how many were taken, and
+`log_loss` is the objective divided by the number of rows. The log-loss falls
+at every step; after 7 the coefficients stop changing, so the run allowed 10
+stops at 7.
+
+
+# max_iter, and the warning
+
+```
+ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT.
+```
+
+The default `max_iter` is 100 steps. When the coefficients are still changing
+at the limit, `.fit()` returns them anyway and prints this warning.
+
+::: {.why-grid}
+::: {.why-point}
+**Standardise first** <span>columns on very different scales need many more steps; on this column the standardised fit settles in 4 steps instead of 7</span>
+:::
+::: {.why-point}
+**Raise `max_iter`** <span>`LogisticRegression(max_iter=1000)` when the warning appears; the coefficients returned with the warning have not settled</span>
+:::
+:::
+
+
+# 4 · Scoring a classifier {.divider}
+
+::: {.divider-kicker}
+Part 4
+:::
+
+::: {.divider-note}
+Four kinds of day, three shares built from them, and one score that needs no
+threshold.
+:::
+
+
+# Accuracy
+
+```{pyodide}
+from sklearn.metrics import accuracy_score
+
+print((predicted == test["rising"]).mean())
+print(accuracy_score(test["rising"], predicted))
+```
+
+The majority rule was right on 53.3 percent of the test days. The model's
+predictions match the label on 69.3 percent of them, by hand in the first
+line and with `accuracy_score` in the second. Every scikit-learn metric takes
+the true labels first and the predictions second.
+
+
+# The four kinds of day
+
+```{python}
+#| echo: false
+#| fig-align: center
+_pred = P_TEST >= 0.5
+_kinds = [("predicted rise, and it rose", _pred & ROSE, BLUE, 16),
+          ("predicted rise, no rise", _pred & ~ROSE, BRICK, 16),
+          ("predicted no rise, but it rose", ~_pred & ROSE, AMBER, 22),
+          ("predicted no rise, and none came", ~_pred & ~ROSE, GREY, 16)]
+fig, ax = plt.subplots(figsize=(10.6, 3.3))
+ax.plot(TEST.index, TEST["vol_20d"], color=GREY_LIGHT, linewidth=1.0, zorder=1)
+for _lab, _mask, _col, _sz in _kinds:
+    ax.scatter(TEST.index[_mask], TEST["vol_20d"].values[_mask], s=_sz, color=_col,
+               linewidths=0, zorder=3, label="%s (%d)" % (_lab, _mask.sum()))
+ax.axhline(CROSS, color=INK, linewidth=1.2, linestyle=":")
+ax.annotate("predicted rise below this line, 0.87%", xy=(TEST.index[215], CROSS), xytext=(TEST.index[150], 1.62),
+            fontsize=10.5, color=INK, arrowprops=dict(arrowstyle="-", color=INK, linewidth=0.9))
+ax.set_ylabel("volatility, last 20 days (%)")
+ax.set_ylim(0.15, 2.05)
+ax.legend(loc="upper right", ncol=2, fontsize=9.5)
+fig.tight_layout()
+plt.show()
+```
+
+Every test day, placed by its volatility and coloured by what the model
+predicted and what happened. The prediction is a rise on every day below the
+dotted line. The days in brick are predicted rises that did not come, calm days
+that stayed calm; the days in amber are rises the model missed.
+
+
+# Counting the four kinds
+
+```{pyodide}
+rose = test["rising"].values == 1
+pred_rise = predicted == 1
+
+print((pred_rise & rose).sum(), (pred_rise & ~rose).sum())
+print((~pred_rise & rose).sum(), (~pred_rise & ~rose).sum())
+```
+
+Two masks and the four ways of combining them count the four colours: 198
+predicted rises that came and 121 that did not, then 27 rises missed and 136
+calm days predicted as calm.
+
+
+# confusion_matrix
+
+```{pyodide}
+from sklearn.metrics import confusion_matrix
+
+print(confusion_matrix(test["rising"], predicted))
+```
+
+`confusion_matrix(y, predicted)` returns the same four counts as a 2 by 2
+array, with the true label down the rows and the prediction across the
+columns, both in the order of `classes_`, so 0 comes first: the 136 calm days
+predicted as calm sit top left, and the 198 rises predicted as rises bottom
+right.
+
+
+# Precision and recall
+
+```{pyodide}
+from sklearn.metrics import precision_score, recall_score
+
+print(precision_score(test["rising"], predicted))
+print(recall_score(test["rising"], predicted))
+```
+
+Two questions about this model. Of the 319 days on which it predicted a rise,
+how many rose? 198, a precision of 62 percent. Of the 225 days that rose, how
+many had it predicted? 198, a recall of 88 percent. A hedge bought on every
+predicted rise would have been needed 62 percent of the time, and would have
+been in place for 88 percent of the rises.
+
+
+# The threshold is a setting
+
+```{pyodide}
+predicted_60 = (p >= 0.6).astype(int)
+
+print(confusion_matrix(test["rising"], predicted_60))
+print(precision_score(test["rising"], predicted_60), recall_score(test["rising"], predicted_60))
+```
+
+With a threshold of 0.6 instead of 0.5, the rises predicted in error fall
+from 121 to 9, precision rises to 82 percent, and recall falls to 19 percent.
+The fitted curve is the same; only the threshold moved.
+
+
+# The trade-off across thresholds
+
+```{python}
+#| echo: false
+#| fig-align: center
+_ths = np.linspace(0.30, 0.66, 145)
+_prec, _rec = [], []
+for _t in _ths:
+    _pred = P_TEST >= _t
+    _tp = (_pred & ROSE).sum()
+    _fp = (_pred & ~ROSE).sum()
+    _fn = (~_pred & ROSE).sum()
+    _prec.append(_tp / max(_tp + _fp, 1))
+    _rec.append(_tp / max(_tp + _fn, 1))
+
+fig, axes = plt.subplots(1, 2, figsize=(10.6, 3.1))
+ax = axes[0]
+_edges = np.linspace(0.30, 0.70, 33)
+ax.hist(P_TEST[ROSE], bins=_edges, color=BLUE, alpha=0.7, label="it rose")
+ax.hist(P_TEST[~ROSE], bins=_edges, color=BRICK, alpha=0.55, label="it did not")
+ax.axvline(0.5, color=INK, linewidth=1.6)
+ax.axvline(0.6, color=INK, linewidth=1.6, linestyle="--")
+ax.text(0.505, ax.get_ylim()[1] * 0.9, "0.5", fontsize=10.5, color=INK)
+ax.text(0.605, ax.get_ylim()[1] * 0.9, "0.6", fontsize=10.5, color=INK)
+ax.set_xlabel("probability of a rise, test days")
+ax.set_ylabel("days")
+ax.set_title("Where the test days sit", loc="left")
+ax.legend(loc="upper left")
+
+ax = axes[1]
+ax.plot(_ths, _prec, color=BLUE, linewidth=2.2, label="precision")
+ax.plot(_ths, _rec, color=AMBER, linewidth=2.2, label="recall")
+ax.set_xlabel("threshold")
+ax.set_ylabel("rate")
+ax.set_ylim(0, 1.05)
+ax.set_xlim(0.30, 0.70)
+ax.set_title("Move the threshold, trade one for the other", loc="left")
+ax.legend(loc="lower left")
+fig.tight_layout()
+plt.show()
+```
+
+No test day gets a probability below 0.33 or above 0.67, so the two groups
+overlap, and moving the threshold trades one kind of error for the other.
+Where to put it depends on what each error costs, which is the subject of the
+next session.
+
+
+# Three thresholds
+
+```{pyodide}
+for threshold in [0.4, 0.5, 0.6]:
+    pred_t = (p >= threshold).astype(int)
+    caught = ((pred_t == 1) & rose).sum() / rose.sum()
+    false_alarms = ((pred_t == 1) & ~rose).sum() / (~rose).sum()
+    print(threshold, round(caught, 3), round(false_alarms, 3))
+```
+
+For each threshold, two shares: the rises that were predicted, which is the
+recall, and the calm days on which a rise was wrongly predicted, the false
+positive rate. At 0.4 every rise is predicted and 90 percent of the calm days
+are false alarms. At 0.6 the false alarms are down to 3.5 percent, and only 19
+percent of the rises are predicted.
+
+
+# Three thresholds, as points
+
+```{python}
+#| echo: false
+#| fig-align: center
+fig, ax = plt.subplots(figsize=(6.6, 3.3))
+ax.plot([0, 1], [0, 1], color=GREY, linewidth=1.4, linestyle="--", label="a random ranking")
+for _t, _dx, _dy in [(0.4, -0.02, -0.11), (0.5, 0.03, -0.07), (0.6, 0.03, -0.02)]:
+    _x, _y = roc_point(_t)
+    ax.scatter([_x], [_y], s=80, color=AMBER, zorder=4)
+    ax.text(_x + _dx, _y + _dy, "threshold %.1f" % _t, fontsize=10.5, color="#8a6508",
+            ha="right" if _dx < 0 else "left")
+ax.set_xlim(-0.02, 1.02)
+ax.set_ylim(-0.02, 1.05)
+ax.set_xlabel("false positive rate")
+ax.set_ylabel("recall")
+ax.legend(loc="lower right")
+fig.tight_layout()
+plt.show()
+```
+
+Each threshold is one point, with the false positive rate across and the
+recall up. A better threshold sits further up and further left. The dashed
+line is where a random ranking would put every threshold.
+
+
+# Every threshold: the ROC curve
+
+```{python}
+#| echo: false
+#| fig-align: center
+_fpr, _tpr, _thr = roc_curve(TEST["rising"], P_TEST)
+_auc = roc_auc_score(TEST["rising"], P_TEST)
+fig, ax = plt.subplots(figsize=(6.6, 3.3))
+ax.plot([0, 1], [0, 1], color=GREY, linewidth=1.4, linestyle="--", label="a random ranking")
+ax.plot(_fpr, _tpr, color=BLUE, linewidth=2.4, label="every threshold (AUC %.2f)" % _auc)
+for _t, _dx, _dy in [(0.4, -0.02, -0.11), (0.5, 0.03, -0.07), (0.6, 0.03, -0.02)]:
+    _x, _y = roc_point(_t)
+    ax.scatter([_x], [_y], s=70, color=AMBER, zorder=4)
+    ax.text(_x + _dx, _y + _dy, "%.1f" % _t, fontsize=10.5, color="#8a6508",
+            ha="right" if _dx < 0 else "left")
+ax.set_xlim(-0.02, 1.02)
+ax.set_ylim(-0.02, 1.05)
+ax.set_xlabel("false positive rate")
+ax.set_ylabel("recall")
+ax.legend(loc="lower right")
+fig.tight_layout()
+plt.show()
+```
+
+`roc_curve(y, p)` repeats the calculation at every threshold where a point
+moves, 158 of them here, and returns the two shares for each. Joined up, the
+points are the ROC curve, and the three thresholds are three of them.
+
+
+# roc_auc_score
+
+```{pyodide}
+from sklearn.metrics import roc_auc_score
+
+print(roc_auc_score(test["rising"], p))
+```
+
+`roc_auc_score(y, p)` is the area under that curve: 0.5 for a random ranking,
+1 for a perfect one, and no threshold involved. Here it is 0.81: take one day
+with a rise and one without, at random, and the model gives the first the
+higher probability 81 percent of the time. The second argument is the
+probability column, not the predicted labels.
+
+
+# AUC on the predicted labels [predict]{.chip .chip-predict}
+
+`predicted` holds the 0/1 labels at a threshold of one half. What does the
+function return when it is given those in place of `p`, and why?
+
+```{pyodide}
+#| autorun: false
+print(roc_auc_score(test["rising"], predicted))
+```
+
+::: {.muted .small}
+This is a common mistake. The function raises no error, because zeros and
+ones are numbers as well.
+:::
+
+
+# Cross-validated AUC
+
+```{pyodide}
+from sklearn.model_selection import TimeSeriesSplit, cross_val_score
+
+folds = TimeSeriesSplit(n_splits=5)
+scores = cross_val_score(LogisticRegression(), train[["vol_20d"]], train["rising"],
+                         cv=folds, scoring="roc_auc")
+print(scores.round(3))
+print(scores.mean())
+```
+
+The same five folds as for regression, with `"roc_auc"` as the scoring
+string. A larger AUC is better, so no minus sign is needed. The mean is 0.78,
+and the folds range from 0.70 to 0.85.
+
+
+# Which score
+
+| the question | `scoring=` | needs a threshold |
+|---|---|---|
+| how many predictions were right, when the classes are balanced | `"accuracy"` | yes |
+| how well the probabilities rank the two classes | `"roc_auc"` | no |
+| how close the probabilities are to what happened | `"neg_log_loss"` | no |
+| how many alarms were real, and how many events were caught | `"precision"`, `"recall"` | yes |
+
+: {.vocab}
+
+::: {.keypoint}
+Cross-validation chooses between models with one of these scores, and the
+test rows are scored with the same one. Accuracy alone is enough only when the
+classes are balanced and the threshold is settled.
+:::
+
+
+# Your turn [2]{.chip .chip-turn} {.your-turn}
+
+Cross-validate the two-column pipeline `two` with the same folds and the same
+scoring string. Is its mean AUC higher than 0.78?
+
+```{pyodide}
+#| autorun: false
+two_scores = cross_val_score(...)
+
+print(two_scores.round(3))
+print(two_scores.mean())
+```
+
+::: {.muted .small}
+`cross_val_score` takes the model, the feature table, the label column, `cv`
+and `scoring`, as in the one-column call.
+:::
+
+
+# Your turn 2: answer
+
+```python
+two_scores = cross_val_score(two, train[["vol_20d", "ret_20d"]], train["rising"],
+                             cv=folds, scoring="roc_auc")
+```
+
+The mean is **0.745**, against 0.783 for one column, and it is lower on four
+of the five folds, so cross-validation keeps the one-column model. On the test
+days the two-column model scores 0.847 and the one-column model 0.807, but the
+choice was made on the folds, and the test days only report it.
+
+
+# 5 · 19 columns, and C {.divider}
+
+::: {.divider-kicker}
+Part 5
+:::
+
+::: {.divider-note}
+The whole table in the classifier, and the strength of the penalty under a
+new name.
+:::
+
+
+# All 19 columns
+
+```{pyodide}
+wide = Pipeline([("scale", StandardScaler()), ("logit", LogisticRegression())])
+
+scores = cross_val_score(wide, train[columns], train["rising"], cv=folds, scoring="roc_auc")
+print(scores.round(3))
+print(scores.mean())
+```
+
+The 19 standardised columns score 0.68 on the folds, against 0.78 for
+`vol_20d` alone. As in regression, columns that are near-copies of each other
+get large coefficients of opposite sign, and coefficients fitted on one block
+of years do not hold on the next.
+
+
+# The default penalty
+
+```{pyodide}
+settings = LogisticRegression().get_params()
+
+print(settings["penalty"], settings["C"])
+```
+
+`get_params()` lists every setting of a model with its current value, and two
+of them matter here. `penalty="l2"` means the squared coefficients are
+penalised, as in ridge, and `C=1.0` is the strength of that penalty. Every
+logistic regression fitted so far had a ridge penalty on, at a strength that
+is small next to a log-loss summed over 1,894 rows.
+
+
+# What C multiplies
+
+::: {.formula}
+$$
+C \cdot \text{log-loss} \;+\; \frac{1}{2}\sum_{j=1}^{p} \beta_j^2
+$$
+:::
+
+This is the objective `LogisticRegression` minimises: the log-loss over the
+rows, multiplied by `C`, plus half the sum of squared coefficients. A large
+`C` makes the log-loss count for more, so the penalty barely matters. A small
+`C` makes the penalty count for more, so the coefficients shrink.
+
+::: {.muted .small}
+Ridge wrote the same trade-off the other way round, RSS plus alpha times the
+penalty, so `C` plays the part of 1/alpha.
+:::
+
+
+# C against alpha
+
+::: {.diagram}
+<svg width="1000" height="250" viewBox="0 0 1000 250" role="img" aria-label="Two dials. Alpha runs from zero, no penalty, to very large, every coefficient zero. C runs the opposite way: large C is no penalty, small C shrinks every coefficient to zero. C equals one over alpha.">
+  <text x="60" y="66" text-anchor="start" font-size="20" font-family="Segoe UI, sans-serif" fill="#52514e" font-weight="600">alpha</text>
+  <line x1="200" y1="60" x2="860" y2="60" stroke="#c3c2b7" stroke-width="4"/>
+  <circle cx="200" cy="60" r="12" fill="#1c5cab"/>
+  <circle cx="860" cy="60" r="12" fill="#b3402f"/>
+  <g font-family="Segoe UI, sans-serif" font-size="15" text-anchor="middle">
+    <text x="200" y="98" fill="#0d366b" font-weight="600">0: no penalty</text>
+    <text x="860" y="98" fill="#b3402f" font-weight="600">very large: every slope zero</text>
+    <text x="530" y="40" fill="#898781">ridge and lasso</text>
+  </g>
+  <text x="60" y="176" text-anchor="start" font-size="20" font-family="Segoe UI, sans-serif" fill="#52514e" font-weight="600">C</text>
+  <line x1="200" y1="170" x2="860" y2="170" stroke="#c3c2b7" stroke-width="4"/>
+  <circle cx="200" cy="170" r="12" fill="#1c5cab"/>
+  <circle cx="860" cy="170" r="12" fill="#b3402f"/>
+  <g font-family="Segoe UI, sans-serif" font-size="15" text-anchor="middle">
+    <text x="200" y="208" fill="#0d366b" font-weight="600">very large: no penalty</text>
+    <text x="860" y="208" fill="#b3402f" font-weight="600">near 0: every slope zero</text>
+    <text x="530" y="150" fill="#898781">logistic regression</text>
+  </g>
+  <rect x="380" y="100" width="300" height="34" rx="7" fill="#fbf3de" stroke="#d99a1c" stroke-width="1.4"/>
+  <text x="530" y="123" text-anchor="middle" font-size="17" font-family="Cascadia Mono, monospace" fill="#8a6508" font-weight="600">C = 1 / alpha</text>
+</svg>
+:::
+
+::: {.keypoint}
+`C` is a hyperparameter like alpha: set before `.fit()`, chosen by
+cross-validation on a grid in factors of ten. It is not the number of steps,
+which is `max_iter`, and not the size of a step, which the solver sets itself.
+:::
+
+
+# Drag C
+
+```{python}
+#| echo: false
+#| output: asis
+_grid = np.logspace(-5, 2, 29)
+_paths, _cv = [], []
+for _c in _grid:
+    _p = Pipeline([("scale", StandardScaler()), ("logit", LogisticRegression(C=_c, max_iter=1000))])
+    _cv.append(float(cross_val_score(_p, TRAIN[COLS], TRAIN["rising"], cv=FOLDS, scoring="roc_auc").mean()))
+    _p.fit(TRAIN[COLS], TRAIN["rising"])
+    _paths.append([round(float(v), 4) for v in _p.named_steps["logit"].coef_[0]])
+_ONE = float(cross_val_score(LogisticRegression(), TRAIN[["vol_20d"]], TRAIN["rising"], cv=FOLDS,
+                             scoring="roc_auc").mean())
+_data_js = json.dumps({"grid": [float(v) for v in _grid], "cv": _cv, "paths": _paths, "cols": COLS})
+_html = """
+<style>
+.cslider { margin: 0.2em 0 0; }
+.cs-row { display: flex; align-items: center; gap: 0.7em; }
+.cs-row label { font-size: 0.8em; font-weight: 600; color: #0d366b; }
+.cs-row input[type=range] { flex: 1 1 0; accent-color: #1c5cab; height: 1.6em; }
+.cs-read { display: flex; gap: 2.2em; font-size: 0.68em; color: #52514e; margin: 0.25em 0 0.1em; }
+.cs-read strong { font-family: "Cascadia Mono", Consolas, monospace; color: #0d366b; }
+</style>
+<div class="cslider">
+<div class="cs-row"><label for="c-range">strong penalty</label><input id="c-range" type="range" min="0" max="28" value="20"><label for="c-range">no penalty</label></div>
+<div class="cs-read"><span>C = <strong id="c-val"></strong></span><span>alpha = 1/C = <strong id="a-val"></strong></span><span>largest coefficient <strong id="max-val"></strong></span><span>cross-validated AUC <strong id="auc-val"></strong></span><span>axis <strong id="axis-val"></strong></span></div>
+<svg id="c-svg" width="1000" height="278" viewBox="0 0 1000 278" role="img" aria-label="The 19 standardised coefficients at the chosen C"></svg>
+</div>
+<script>
+(function () {
+  var D = __DATA__;
+  var svgNS = "http://www.w3.org/2000/svg";
+  function fmtNum(c) { if (c >= 1) return String(Math.round(c)); return Number(c.toPrecision(1)).toString(); }
+  function fmtA(a) { return a >= 1 ? Math.round(a).toLocaleString("en-GB") : Number(a.toPrecision(1)).toString(); }
+  function draw(i) {
+    var svg = document.getElementById("c-svg"); if (!svg) return;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var coefs = D.paths[i], n = coefs.length;
+    var mx = 0; for (var k = 0; k < n; k++) mx = Math.max(mx, Math.abs(coefs[k]));
+    var scale = mx > 0.3 ? 3 : (mx > 0.03 ? 0.3 : 0.03);
+    var left = 70, right = 990, base = 112, half = 96;
+    var step = (right - left) / n, w = step * 0.62;
+    var mk = function (tag, attrs, text) { var e = document.createElementNS(svgNS, tag); for (var a in attrs) e.setAttribute(a, attrs[a]); if (text !== undefined) e.textContent = text; svg.appendChild(e); return e; };
+    mk("line", { x1: left, y1: base, x2: right, y2: base, stroke: "#c3c2b7", "stroke-width": 1.2 });
+    [scale, scale / 3, -scale / 3, -scale].forEach(function (v) {
+      var y = base - v / scale * half;
+      mk("line", { x1: left, y1: y, x2: right, y2: y, stroke: "#e6e5df", "stroke-width": 0.8 });
+      mk("text", { x: left - 8, y: y + 4, "text-anchor": "end", "font-size": 12.5, fill: "#898781", "font-family": "Segoe UI, sans-serif" }, (v < 0 ? "\\u2212" : "") + fmtNum(Math.abs(v)));
+    });
+    for (var j = 0; j < n; j++) {
+      var v = coefs[j], h = Math.abs(v) / scale * half, x = left + j * step + (step - w) / 2;
+      mk("rect", { x: x, y: v >= 0 ? base - h : base, width: w, height: Math.max(h, 0.5), fill: v >= 0 ? "#1c5cab" : "#b3402f" });
+      var t = mk("text", { x: x + w / 2 + 4, y: base + half + 10, "font-size": 12.5, fill: "#52514e", "font-family": "Segoe UI, sans-serif", "text-anchor": "end" }, D.cols[j]);
+      t.setAttribute("transform", "rotate(-50 " + (x + w / 2 + 4) + " " + (base + half + 10) + ")");
+    }
+    document.getElementById("c-val").textContent = fmtNum(D.grid[i]);
+    document.getElementById("a-val").textContent = fmtA(1 / D.grid[i]);
+    document.getElementById("max-val").textContent = mx.toFixed(mx >= 0.1 ? 2 : 3);
+    document.getElementById("auc-val").textContent = D.cv[i].toFixed(3);
+    document.getElementById("axis-val").textContent = "\\u00b1" + fmtNum(scale) + " per sd";
+  }
+  function wire() {
+    var r = document.getElementById("c-range"); if (!r) return;
+    r.addEventListener("input", function () { draw(parseInt(r.value, 10)); });
+    draw(parseInt(r.value, 10));
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire); else wire();
+})();
+</script>
+""".replace("__DATA__", _data_js)
+print("\n".join(line for line in _html.strip("\n").split("\n") if line.strip() != ""))
+```
+
+The 19 standardised coefficients at the chosen `C`, and the cross-validated
+AUC of that model. Drag to the left: every coefficient is pulled towards
+zero, the near-copies lose their opposite signs, and the AUC rises.
+
+
+# Try several
+
+```{pyodide}
+for C in [0.0001, 0.01, 1, 100]:
+    wide = Pipeline([("scale", StandardScaler()), ("logit", LogisticRegression(C=C))])
+    scores = cross_val_score(wide, train[columns], train["rising"], cv=folds, scoring="roc_auc")
+    print(C, round(scores.mean(), 4))
+```
+
+The same loop as for alpha, over four values of `C`. The cross-validated AUC
+rises as `C` falls, so the stronger the penalty, the better the 19 columns
+do. At `C=0.0001` they reach 0.73, still below the 0.78 of the single column.
+
+
+# The validation curve
+
+```{python}
+#| echo: false
+#| fig-align: center
+_cv = np.array(_cv)
+_ticks = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100]
+_labels = ["0.00001", "0.0001", "0.001", "0.01", "0.1", "1", "10", "100"]
+fig, ax = plt.subplots(figsize=(10.0, 3.1))
+ax.axhline(_ONE, color=AMBER, linewidth=1.6, linestyle="--")
+ax.text(0.3, _ONE + 0.006, "one column, no penalty needed", fontsize=10.5, color="#8a6508")
+ax.plot(_grid, _cv, color=BLUE, linewidth=2.2)
+ax.set_xscale("log")
+ax.set_xticks(_ticks)
+ax.set_xticklabels(_labels)
+ax.set_ylim(0.64, 0.81)
+ax.set_xlabel("C")
+ax.set_ylabel("cross-validated AUC")
+ax.text(0.00002, 0.665, "strong penalty", fontsize=11, color="#52514e")
+ax.text(8, 0.665, "weak penalty", fontsize=11, color="#52514e", ha="right")
+fig.tight_layout()
+plt.show()
+```
+
+The same loop over a finer grid, which is also the AUC readout of the slider
+at every position. For ridge the curve had a lowest point in the middle. Here
+it keeps improving to the left, where the penalty has shrunk every coefficient
+to almost nothing, and it stays below the line for one column.
+
+
+# GridSearchCV over C
+
+```{pyodide}
+from sklearn.model_selection import GridSearchCV
+
+wide = Pipeline([("scale", StandardScaler()), ("logit", LogisticRegression())])
+grid = {"logit__C": [0.0001, 0.001, 0.01, 0.1, 1, 10]}
+
+search = GridSearchCV(wide, grid, cv=folds, scoring="roc_auc")
+search.fit(train[columns], train["rising"])
+
+print(search.best_params_)
+print(search.best_score_)
+```
+
+The same search as for alpha, with `C` in the grid and `"roc_auc"` as the
+score. `"logit__C"` is the step name, two underscores, and the argument.
+
+
+# The same grid, scored by accuracy
+
+```{pyodide}
+acc_search = GridSearchCV(wide, grid, cv=folds, scoring="accuracy")
+acc_search.fit(train[columns], train["rising"])
+
+print(acc_search.best_params_)
+print(acc_search.best_score_)
+```
+
+Scored by accuracy instead of AUC, the same grid on the same folds picks
+`C=0.01`. The scoring string is part of the choice, so it is set before the
+search and matched to what will be reported.
+
+
+# Two arguments for the lasso's penalty
+
+<div class="compare">
+<div class="compare-col">
+<h3>penalty</h3>
+<p>What the objective charges for. <code>&quot;l2&quot;</code>, the default, charges the squared coefficients, as ridge does. <code>&quot;l1&quot;</code> charges the absolute values, as the lasso does, and sets some coefficients to exactly zero.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>solver</h3>
+<p>The algorithm that walks downhill. The default, <code>&quot;lbfgs&quot;</code>, cannot handle absolute values, so <code>&quot;l1&quot;</code> needs a different one: <code>&quot;liblinear&quot;</code> can.</p>
+</div>
+</div>
+
+::: {.keypoint}
+`C` keeps its meaning under either penalty: small is strong. The two penalties
+are on different scales, as ridge's and the lasso's alphas were.
+:::
+
+
+# The l1 penalty in code
+
+```{pyodide}
+sparse = Pipeline([("scale", StandardScaler()),
+                   ("logit", LogisticRegression(penalty="l1", solver="liblinear", C=0.01))])
+sparse.fit(train[columns], train["rising"])
+
+for name, b in zip(columns, sparse.named_steps["logit"].coef_[0]):
+    if b != 0:
+        print(name, round(b, 3))
+```
+
+The loop prints the columns whose coefficient is not zero. At `C=0.01` two
+of the 19 keep one, `vol_20d` and `ret_5d`; the other 17 are exactly zero.
+
+
+# The test rows
+
+<div class="statband">
+<div class="stat"><span class="stat-big">0.807</span><div class="stat-label">one column</div></div>
+<div class="stat"><span class="stat-big">0.847</span><div class="stat-label">two columns</div></div>
+<div class="stat"><span class="stat-big">0.815</span><div class="stat-label">19 columns, C = 1</div></div>
+<div class="stat"><span class="stat-big">0.811</span><div class="stat-label">19 columns, C chosen</div></div>
+<div class="stat"><span class="stat-big">0.815</span><div class="stat-label">19 columns, l1</div></div>
+</div>
+
+All five are AUCs on the test days, within 0.04 of each other, and the
+two-column model, which cross-validation rejected, is the highest. The choice
+rests on eight years of folds rather than two years of test days, so the
+one-column model stays, and its test AUC of 0.81 is the number to report.
+
+
+# When to change what
+
+::: {.why-grid}
+::: {.why-point}
+**Always** <span>`C`, the strength of the penalty: by cross-validation on a grid in factors of ten, in a pipeline with a scaler. `scoring`: `"roc_auc"` unless a threshold is settled. `cv`: `TimeSeriesSplit` for a time series.</span>
+:::
+::: {.why-point}
+**Sometimes** <span>`penalty="l1"` with `solver="liblinear"` for exact zeros. `max_iter` when the convergence warning appears. `class_weight` when one class is rare, which the next session covers.</span>
+:::
+::: {.why-point}
+**Rarely** <span>`fit_intercept`, `tol`: leave them. `solver` beyond the l1 case: the default handles every table in this course.</span>
+:::
+::: {.why-point}
+**The threshold** <span>is not an argument of the model. `.predict()` uses one half; any other threshold is a comparison on `predict_proba`.</span>
+:::
+:::
+
+
+# The workflow
+
+::: {.diagram}
+<svg width="1000" height="235" viewBox="0 0 1000 235" role="img" aria-label="The workflow: seal the test rows, build a pipeline with a scaler and a classifier, search a grid of C values over the folds scored by AUC, keep the best, refit on all training rows, then score once on the test rows">
+  <rect x="8" y="38" width="148" height="66" rx="8" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.6"/>
+  <text x="82" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">1. seal the</text>
+  <text x="82" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">test rows</text>
+  <rect x="176" y="38" width="148" height="66" rx="8" fill="#ffffff" stroke="#86b6ef" stroke-width="1.6"/>
+  <text x="250" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">2. scaler and</text>
+  <text x="250" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">classifier in a pipeline</text>
+  <rect x="344" y="38" width="186" height="66" rx="8" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.8"/>
+  <text x="437" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">3. grid of C values</text>
+  <text x="437" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">times the folds, by AUC</text>
+  <rect x="550" y="38" width="148" height="66" rx="8" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.8"/>
+  <text x="624" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">4. keep the</text>
+  <text x="624" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">best C</text>
+  <rect x="718" y="38" width="148" height="66" rx="8" fill="#fdf8ed" stroke="#d99a1c" stroke-width="1.6"/>
+  <text x="792" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#8a6508" font-weight="600">5. refit on all</text>
+  <text x="792" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#8a6508" font-weight="600">training rows</text>
+  <rect x="886" y="38" width="106" height="66" rx="8" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.8"/>
+  <text x="939" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">6. score,</text>
+  <text x="939" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">once</text>
+  <g fill="#c3c2b7">
+    <polygon points="160,66 160,76 172,71"/>
+    <polygon points="328,66 328,76 340,71"/>
+    <polygon points="534,66 534,76 546,71"/>
+    <polygon points="702,66 702,76 714,71"/>
+    <polygon points="870,66 870,76 882,71"/>
+  </g>
+  <rect x="176" y="126" width="690" height="42" rx="7" fill="#f4f7fb" stroke="#dde6f2" stroke-width="1.3"/>
+  <text x="521" y="153" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b">steps 2 to 5 are one call: GridSearchCV(pipeline, grid, cv=folds, scoring="roc_auc").fit(train)</text>
+  <rect x="8" y="182" width="858" height="42" rx="7" fill="#f4f7fb" stroke="#dde6f2" stroke-width="1.3"/>
+  <text x="437" y="209" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b">choosing happens in here</text>
+  <rect x="886" y="182" width="106" height="42" rx="7" fill="#fbf1f0" stroke="#e0b3ac" stroke-width="1.3"/>
+  <text x="939" y="209" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">reporting</text>
+</svg>
+:::
+
+::: {.diagram-note}
+The workflow for ridge, with a classifier in the pipeline, `C` in the grid and
+AUC as the score.
+:::
+
+
+# What stays with you {.smaller}
+
+::: {.recap-grid}
+::: {.recap-item}
+**A label from a comparison**
+`(table["vol_next"] > table["vol_20d"]).astype(int)`. Predicting the majority class on every row is the share a model has to beat.
+:::
+::: {.recap-item}
+**A straight line cannot give a probability**
+Fitted to ones and zeros it runs below 0 and above 1. The sigmoid keeps the curve between them.
+:::
+::: {.recap-item}
+**Logistic regression fits the log-odds**
+`LogisticRegression()`, `.fit(X, y)`. A coefficient adds to the log-odds and `np.exp` of it multiplies the odds; the sign is what to read.
+:::
+::: {.recap-item}
+**predict_proba, then a threshold**
+`.predict_proba()` gives a column per class, in the order of `classes_`. `.predict()` compares the second column with one half; any other threshold is a comparison you write.
+:::
+::: {.recap-item}
+**The confusion matrix**
+`confusion_matrix`, with rows for what happened and columns for the prediction. Accuracy, precision and recall are built from its four counts, and the threshold trades precision against recall.
+:::
+::: {.recap-item}
+**AUC needs no threshold**
+`roc_auc_score(y, p)` with the probabilities, never the predicted labels. 0.5 is a random ranking; `scoring="roc_auc"` on the folds.
+:::
+::: {.recap-item}
+**C is one over alpha**
+The penalty is ridge's by default, and a small `C` is a strong penalty. Chosen by `GridSearchCV` in a pipeline with a scaler. `penalty="l1"` for exact zeros.
+:::
+::: {.recap-item}
+**Fitted by iteration**
+Log-loss has no formula for the coefficients, so `.fit()` improves them step by step. Raise `max_iter` when the warning appears.
+:::
+:::
+
+
+# Where this goes next
+
+<div class="timeline">
+<div class="tl-row"><span class="tl-week">before</span><span class="tl-topic">a number as the target: regression, penalised, with the penalty chosen by cross-validation</span><span class="tl-who">ridge, lasso</span></div>
+<div class="tl-row tl-now"><span class="tl-week">now</span><span class="tl-topic">a label as the target: probabilities, predicted labels, and the scores that judge them</span><span class="tl-who">logistic regression</span></div>
+<div class="tl-row tl-future"><span class="tl-week">next</span><span class="tl-topic">the threshold as a decision with costs, rare events, and a second classifier</span><span class="tl-who">the same workflow</span></div>
+<div class="tl-row tl-future"><span class="tl-week">then</span><span class="tl-topic">trees and ensembles, for numbers and for labels</span><span class="tl-who">the same workflow</span></div>
+</div>
+
+::: {.keypoint}
+Every classifier later in the course gives a probability and is scored the
+same way: the confusion matrix, precision, recall and AUC, on the folds first
+and on the test rows once.
+:::
+
+
+# Before the next session [case]{.chip .chip-case}
+
+- **Exercises**: making labels, fitting and reading logistic regression, thresholds and the confusion matrix, cross-validated AUC, and a grid over `C`.
+- **Case Part 8**: the risk report gets its first classifier, on Apple and then on all 11 instruments.
+
+::: {.muted .small}
+Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email
+**jobo@econ.au.dk**.
+:::

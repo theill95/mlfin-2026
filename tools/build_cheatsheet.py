@@ -7,7 +7,7 @@ example raises, the build fails rather than publishing a wrong page.
 
     python tools/build_cheatsheet.py
 
-Adding a session: append entries below with since="S7" and add it to SINCE_LABEL.
+Adding a session: append entries below with since="S9" and add it to SINCE_LABEL.
 """
 import ast
 import html
@@ -550,6 +550,57 @@ e("np.logspace(0, 4, 5)", "Values spaced by a constant factor: 1, 10, 100, 1000,
 e("ax.set_xscale('log')", "A logarithmic axis, so factors of ten are evenly spaced. For a validation curve over alpha.",
   'fig, ax = plt.subplots()\nax.plot([1, 10, 100, 1000], [0.72, 0.69, 0.62, 0.56])\nax.set_xscale("log")\nax.get_xscale()', since="S6")
 
+section("Classification",
+        "Session 8: a label as the target, logistic regression, the probabilities it "
+        "gives, and the scores that judge a classifier.")
+e("(series > other).astype(int)", "A label from a comparison: True and False become 1 and 0. The share of ones is the base rate, and the rule that always says the majority class is the baseline to beat.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nround(float(t["rising"].mean()), 3)', since="S8")
+e("LogisticRegression()", "Fits the log-odds of the label as a straight line in the columns, by log-loss. Same .fit(X, y) as every model. coef_ has one row per class boundary, so two brackets.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nprint(m.intercept_.round(3), m.coef_.round(3))', since="S8")
+e("model.predict_proba(X)", "One row per observation, one column per class in the order of classes_, each row summing to one. Column 1 is the probability of the label being 1.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nm.predict_proba(t[["vol"]])[:3].round(3)', since="S8")
+e("model.predict(X)", "The 0/1 predictions: 1 where the probability of class 1 is at least one half. Any other threshold is a comparison on predict_proba.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\np = m.predict_proba(t[["vol"]])[:, 1]\nprint(m.predict(t[["vol"]])[:8], (p >= 0.5).astype(int)[:8])', since="S8")
+e("model.classes_", "The labels the model knows, in the order predict_proba uses for its columns.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nm.classes_', since="S8")
+e("np.exp(model.coef_)", "A coefficient adds to the log-odds; its exponential multiplies the odds. One unit more of the column multiplies the odds of a 1 by this factor.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nnp.exp(m.coef_).round(3)', since="S8")
+e("accuracy_score(y, predicted)", "The share of predictions that match the label. True labels first, predictions second, like every metric. Compare it with the majority rule before reading anything into it.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import accuracy_score\nround(accuracy_score(t["rising"], m.predict(t[["vol"]])), 3)', since="S8")
+e("confusion_matrix(y, predicted)", "Four counts: rows are what happened, columns are what the model predicted, both in the order of classes_. Top-left true negatives, bottom-right true positives.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import confusion_matrix\nconfusion_matrix(t["rising"], m.predict(t[["vol"]]))', since="S8")
+e("precision_score(y, predicted)  ·  recall_score(y, predicted)", "Precision: the share of predicted 1s that were 1. Recall: the share of real 1s that were predicted. Raising the threshold trades recall for precision.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import precision_score, recall_score\npredicted = m.predict(t[["vol"]])\nprint(round(precision_score(t["rising"], predicted), 3), round(recall_score(t["rising"], predicted), 3))', since="S8")
+e("(p >= 0.6).astype(int)", "Predictions at a threshold other than one half, from the probability column. The model is unchanged; only the comparison changed.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import confusion_matrix\np = m.predict_proba(t[["vol"]])[:, 1]\nconfusion_matrix(t["rising"], (p >= 0.6).astype(int))', since="S8")
+e("roc_auc_score(y, p)", "Area under the ROC curve: 0.5 is a random ranking, 1 a perfect one, and no threshold is involved. Pass the PROBABILITIES, never the 0/1 predictions.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import roc_auc_score\np = m.predict_proba(t[["vol"]])[:, 1]\nround(float(roc_auc_score(t["rising"], p)), 3)', since="S8")
+e("roc_curve(y, p)", "The false positive rate and the true positive rate at every threshold, plus the thresholds, for drawing the ROC curve.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import roc_curve\np = m.predict_proba(t[["vol"]])[:, 1]\nfpr, tpr, thr = roc_curve(t["rising"], p)\nprint(len(thr), fpr[:3].round(3), tpr[:3].round(3))', since="S8")
+e("cross_val_score(model, X, y, cv=folds, scoring='roc_auc')", "The same folds as for a number, with a classification score. Larger is better, so no minus sign. Other strings: 'accuracy', 'neg_log_loss', 'precision', 'recall'.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.model_selection import cross_val_score, TimeSeriesSplit\ns = cross_val_score(LogisticRegression(), t[["vol"]], t["rising"], cv=TimeSeriesSplit(n_splits=5), scoring="roc_auc")\ns.round(3)', since="S8")
+e("LogisticRegression(C=0.01)", "The penalty's strength, upside down: C = 1/alpha, so a small C is a strong ridge penalty and a large C is almost none. Default C=1, penalty 'l2'. Standardise in a pipeline and choose C on a grid in factors of ten.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\npipe = Pipeline([("scale", StandardScaler()), ("logit", LogisticRegression(C=0.01))])\npipe.fit(t[["vol"]], t["rising"])\npipe.named_steps["logit"].coef_.round(3)', since="S8")
+e("LogisticRegression(penalty='l1', solver='liblinear', C=0.01)", "The lasso's penalty on a classifier: exact zeros. It needs a solver that can handle absolute values, and liblinear can.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression(penalty="l1", solver="liblinear", C=0.01).fit(t[["vol"]], t["rising"])\nm.coef_.round(3)', since="S8")
+e("LogisticRegression(max_iter=1000)", "More steps for the solver. Log-loss has no closed form, so .fit() iterates; raise this when the ConvergenceWarning appears, and standardise first.",
+  'from sklearn.linear_model import LogisticRegression\nLogisticRegression(max_iter=1000).get_params()["max_iter"]', since="S8")
+
+e("log_loss(y, p)", "The objective logistic regression minimises, averaged over the rows: minus the log of the probability given to what happened. Takes the true labels and the probabilities.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import log_loss\nround(float(log_loss(t["rising"], m.predict_proba(t[["vol"]])[:, 1])), 4)', since="S8")
+e("model.n_iter_", "How many steps the solver took. Log-loss has no formula for the coefficients, so .fit() improves them step by step until they stop changing or max_iter is reached.",
+  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nm.n_iter_', since="S8")
+e("np.where(mask, a, b)", "An array that takes a where the mask is True and b elsewhere. Handy for keeping one group\'s values and blanking the rest before argmin or argmax.",
+  'import numpy as np\nnp.where(np.array([True, False, True]), np.array([0.2, 0.7, 0.4]), 9)', since="S8")
+e("np.zeros(n)  ·  np.zeros(n, dtype=int)", "An array of n zeros, as floats or as integers. A prediction of 0 on every row is np.zeros(len(test), dtype=int).",
+  'import numpy as np\nnp.zeros(4, dtype=int)', since="S8")
+e("np.arange(start, stop, step)", "Values from start up to but not including stop, a fixed step apart. np.linspace fixes the count instead of the step.",
+  'import numpy as np\nnp.arange(0.3, 0.7, 0.1).round(2)', since="S8")
+e("(a == b).all()", "True only when every element of a comparison is True: the vectorised way to check two columns or arrays agree everywhere.",
+  'import numpy as np\na = np.array([1, 0, 1])\nprint((a == np.array([1, 0, 1])).all(), (a == np.array([1, 1, 1])).all())', since="S8")
+e("series.groupby(series.index.year).mean()", "Group a dated Series by the year in its index and take a mean per year: one accuracy per year from a Series of True and False.",
+  'right = pd.Series([True, False, True, True], index=pd.to_datetime(["2023-03-01", "2023-09-01", "2024-02-01", "2024-08-01"]))\nright.groupby(right.index.year).mean()', since="S8")
+
 section("Reading error messages",
         "The last line names the problem. Read it before you change anything: it is "
         "almost always telling you the truth.")
@@ -654,7 +705,8 @@ def slug(title):
 
 
 SINCE_LABEL = {"S1": "Session 1", "S2": "Session 2", "S3": "Session 3",
-               "S4": "Session 4", "S5": "Session 5", "S6": "Session 6"}
+               "S4": "Session 4", "S5": "Session 5", "S6": "Session 6",
+               "S8": "Session 8"}
 
 # The sidebar comes from the same template every other page uses, so this page
 # cannot drift away from them.

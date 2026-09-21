@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="session_08_files/libs/clipboard/clipboard.min.js"></script>
+<script src="session_08_files/libs/quarto-html/tabby.min.js"></script>
+<script src="session_08_files/libs/quarto-html/popper.min.js"></script>
+<script src="session_08_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="session_08_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="session_08_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="session_08_files/libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="session_08_files/libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="session_08_files/libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.9.38">
+
+  <title>Classification with logistic regression</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="session_08_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="session_08_files/libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+      }
+    pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+    div.sourceCode
+      { color: #24292e;  }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #24292e; } /* Normal */
+    code span.al { color: #ff5555; font-weight: bold; } /* Alert */
+    code span.an { color: #6a737d; } /* Annotation */
+    code span.at { color: #d73a49; } /* Attribute */
+    code span.bn { color: #005cc5; } /* BaseN */
+    code span.bu { color: #d73a49; } /* BuiltIn */
+    code span.cf { color: #d73a49; } /* ControlFlow */
+    code span.ch { color: #032f62; } /* Char */
+    code span.cn { color: #005cc5; } /* Constant */
+    code span.co { color: #6a737d; } /* Comment */
+    code span.cv { color: #6a737d; } /* CommentVar */
+    code span.do { color: #6a737d; } /* Documentation */
+    code span.dt { color: #d73a49; } /* DataType */
+    code span.dv { color: #005cc5; } /* DecVal */
+    code span.er { color: #ff5555; text-decoration: underline; } /* Error */
+    code span.ex { color: #d73a49; font-weight: bold; } /* Extension */
+    code span.fl { color: #005cc5; } /* Float */
+    code span.fu { color: #6f42c1; } /* Function */
+    code span.im { color: #032f62; } /* Import */
+    code span.in { color: #6a737d; } /* Information */
+    code span.kw { color: #d73a49; } /* Keyword */
+    code span.op { color: #24292e; } /* Operator */
+    code span.ot { color: #6f42c1; } /* Other */
+    code span.pp { color: #d73a49; } /* Preprocessor */
+    code span.re { color: #6a737d; } /* RegionMarker */
+    code span.sc { color: #005cc5; } /* SpecialChar */
+    code span.ss { color: #032f62; } /* SpecialString */
+    code span.st { color: #032f62; } /* String */
+    code span.va { color: #e36209; } /* Variable */
+    code span.vs { color: #032f62; } /* VerbatimString */
+    code span.wa { color: #ff5555; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="session_08_files/libs/revealjs/dist/theme/quarto-6111bc620332b17cf5d5ecdb3c24ce47.css">
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+  <link href="session_08_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="session_08_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="session_08_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="session_08_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+  <script type="module" src="session_08_files/libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+  <link href="session_08_files/libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">Classification with logistic regression</h1>
+  <p class="subtitle">Machine Learning in Finance · Session 8</p>
+
+<div class="quarto-title-authors">
+</div>
+
+</section>
+<section id="the-volatility-forecast-so-far" class="title-slide slide level1 center">
+<h1>The volatility forecast so far</h1>
+<div>
+<div id="pyodide-1" class="exercise-cell">
+
+</div>
+<script type="pyodide-1-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVjaG8iOmZhbHNlLCJlZGl0IjpmYWxzZSwiZXZhbCI6dHJ1ZSwiaW5jbHVkZSI6ZmFsc2UsIm91dHB1dCI6ZmFsc2UsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiIjIEhvdXNlIHN0eWxlIGZvciB0aGUgbGl2ZSBmaWd1cmVzLCBzbyB0aGV5IG1hdGNoIHRoZSBwcmludGVkIG9uZXMuXG5pbXBvcnQgbnVtcHkgYXMgbnBcbmltcG9ydCBwYW5kYXMgYXMgcGRcbmltcG9ydCBtYXRwbG90bGliLnB5cGxvdCBhcyBwbHRcbmltcG9ydCB3YXJuaW5nc1xud2FybmluZ3MuZmlsdGVyd2FybmluZ3MoXCJpZ25vcmVcIilcbnBsdC5yY1BhcmFtcy51cGRhdGUoe1xuICAgIFwiZmlndXJlLmZhY2Vjb2xvclwiOiBcIiNmY2ZjZmJcIiwgXCJheGVzLmZhY2Vjb2xvclwiOiBcIiNmY2ZjZmJcIixcbiAgICBcImZvbnQuZmFtaWx5XCI6IFtcIlNlZ29lIFVJXCIsIFwiQXJpYWxcIiwgXCJzYW5zLXNlcmlmXCJdLCBcImZvbnQuc2l6ZVwiOiAxMixcbiAgICBcInRleHQuY29sb3JcIjogXCIjMTQxNDEzXCIsIFwiYXhlcy5lZGdlY29sb3JcIjogXCIjYzNjMmI3XCIsXG4gICAgXCJheGVzLmxhYmVsY29sb3JcIjogXCIjNTI1MTRlXCIsIFwiYXhlcy50aXRsZWNvbG9yXCI6IFwiIzE0MTQxM1wiLFxuICAgIFwiYXhlcy50aXRsZXNpemVcIjogMTMsIFwiYXhlcy5zcGluZXMudG9wXCI6IEZhbHNlLCBcImF4ZXMuc3BpbmVzLnJpZ2h0XCI6IEZhbHNlLFxuICAgIFwiYXhlcy5ncmlkXCI6IFRydWUsIFwiZ3JpZC5jb2xvclwiOiBcIiNlNmU1ZGZcIiwgXCJncmlkLmxpbmV3aWR0aFwiOiAwLjgsXG4gICAgXCJheGVzLmF4aXNiZWxvd1wiOiBUcnVlLFxuICAgIFwieHRpY2suY29sb3JcIjogXCIjODk4NzgxXCIsIFwieXRpY2suY29sb3JcIjogXCIjODk4NzgxXCIsXG4gICAgXCJ4dGljay5sYWJlbHNpemVcIjogMTAuNSwgXCJ5dGljay5sYWJlbHNpemVcIjogMTAuNSxcbiAgICBcImxlZ2VuZC5mcmFtZW9uXCI6IEZhbHNlLCBcImxlZ2VuZC5mb250c2l6ZVwiOiAxMC41LFxuICAgIFwiZmlndXJlLmRwaVwiOiAxMDAsXG59KSJ9
+</script>
+</div>
+<div class="statband">
+<div class="stat">
+<span class="stat-big">0.237</span>
+<div class="stat-label">
+one column
+</div>
+</div>
+<div class="stat stat-warn">
+<span class="stat-big">0.248</span>
+<div class="stat-label">
+19 columns, OLS
+</div>
+</div>
+<div class="stat">
+<span class="stat-big">0.218</span>
+<div class="stat-label">
+19 columns, ridge
+</div>
+</div>
+</div>
+<p>Three test RMSEs for the index’s volatility over the next 20 days, from a table of 19 columns. The 19 columns forecast worse than one until ridge shrank the coefficients, with alpha chosen by cross-validation.</p>
+<div class="keypoint">
+<p>The target was a number. This session gives the same table a target that is a label.</p>
+</div>
+</section>
+
+<section id="the-question" class="title-slide slide level1 center">
+<h1>The question</h1>
+<p><strong>Will the market be more volatile next month than it was this month?</strong></p>
+<div class="why-grid">
+<div class="why-point">
+<p><strong>Why it matters</strong> <span>options and hedges cost more once volatility has risen, so the decision to buy protection is made before the month starts</span></p>
+</div>
+<div class="why-point">
+<p><strong>What you know today</strong> <span>the 19 columns of the table: the index’s own volatility over six windows, its return over three, and the 20-day volatility of 10 stocks</span></p>
+</div>
+</div>
+<div class="muted small">
+<p>One way to answer is to forecast the number, as before, and compare the forecast with this month’s volatility. This session makes the comparison itself the target.</p>
+</div>
+</section>
+
+<section id="the-table" class="title-slide slide level1 center">
+<h1>The table</h1>
+<div>
+<div id="pyodide-2" class="exercise-cell">
+
+</div>
+<script type="pyodide-2-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJ0YWJsZSA9IHBkLnJlYWRfY3N2KFwiZGF0YS9tYXJrZXRfZmVhdHVyZXMuY3N2XCIsIHBhcnNlX2RhdGVzPVtcImRhdGVcIl0pLnNldF9pbmRleChcImRhdGVcIilcbmNvbHVtbnMgPSBsaXN0KHRhYmxlLmNvbHVtbnNbOi0xXSlcblxucHJpbnQodGFibGUuc2hhcGUpXG5wcmludChjb2x1bW5zKSJ9
+</script>
+</div>
+<p>One row per trading day, 19 columns that look back from that day, and <code>vol_next</code>, the volatility over the 20 days after it. The index is SPY, in percent.</p>
+</section>
+
+<section id="making-the-label" class="title-slide slide level1 center">
+<h1>Making the label</h1>
+<div>
+<div id="pyodide-3" class="exercise-cell">
+
+</div>
+<script type="pyodide-3-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJ0YWJsZVtcInJpc2luZ1wiXSA9ICh0YWJsZVtcInZvbF9uZXh0XCJdID4gdGFibGVbXCJ2b2xfMjBkXCJdKS5hc3R5cGUoaW50KVxuXG50YWJsZVtbXCJ2b2xfMjBkXCIsIFwidm9sX25leHRcIiwgXCJyaXNpbmdcIl1dLnRhaWwoNCkifQ==
+</script>
+</div>
+<p>The comparison is asked of every row and answers <code>True</code> or <code>False</code>; <code>.astype(int)</code> turns the answers into 1 and 0. The label is 1 when the 20 days after the row were more volatile than the 20 days before it. In what follows, a day whose label is 1 is called a day with a rise.</p>
+</section>
+
+<section id="splitting-by-date" class="title-slide slide level1 center">
+<h1>Splitting by date</h1>
+<div>
+<div id="pyodide-4" class="exercise-cell">
+
+</div>
+<script type="pyodide-4-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJ0cmFpbiA9IHRhYmxlLmxvY1s6XCIyMDIyLTEyLTMxXCJdXG50ZXN0ID0gdGFibGUubG9jW1wiMjAyMy0wMS0wMVwiOl1cblxucHJpbnQobGVuKHRyYWluKSwgbGVuKHRlc3QpKSJ9
+</script>
+</div>
+<p>Training rows to the end of 2022 and test rows from 2023: 1,894 days to fit on and 482 to check on.</p>
+</section>
+
+<section id="the-majority-rule" class="title-slide slide level1 center">
+<h1>The majority rule</h1>
+<div>
+<div id="pyodide-5" class="exercise-cell">
+
+</div>
+<script type="pyodide-5-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJwcmludCh0cmFpbltcInJpc2luZ1wiXS5tZWFuKCkpXG5wcmludCh0ZXN0W1wicmlzaW5nXCJdLm1lYW4oKSkifQ==
+</script>
+</div>
+<p>The label is 1 on 48 percent of the training days and 47 percent of the test days. Predicting 0 for every day is right on 53 percent of the test days, with no model at all. Every model has to beat that share.</p>
+</section>
+
+<section id="today" class="title-slide slide level1 center">
+<h1>Today</h1>
+<ul>
+<li>a <strong>label</strong> as the target, and the share of test days that a model has to beat</li>
+<li>why a straight line cannot fit a label, and the curve that can: <strong>logistic regression</strong></li>
+<li>the <strong>probability</strong> the curve gives each day, and the threshold that turns it into a 0 or a 1</li>
+<li>scoring a classifier: the <strong>confusion matrix</strong>, precision, recall and <strong>AUC</strong></li>
+<li>all 19 columns, with the strength of the penalty, called <strong>C</strong>, chosen by cross-validation</li>
+</ul>
+<p>The lecture introduces each of these. The exercises and the case are where you practise them.</p>
+</section>
+
+<section id="a-straight-line-on-a-label" class="title-slide slide level1 divider center">
+<h1>1 · A straight line on a label</h1>
+<div class="divider-kicker">
+<p>Part 1</p>
+</div>
+<div class="divider-note">
+<p>The regression fitted to the 0/1 label, and what goes wrong.</p>
+</div>
+</section>
+
+<section id="the-regression-on-the-label" class="title-slide slide level1 center">
+<h1>The regression on the label</h1>
+<div>
+<div id="pyodide-6" class="exercise-cell">
+
+</div>
+<script type="pyodide-6-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4ubGluZWFyX21vZGVsIGltcG9ydCBMaW5lYXJSZWdyZXNzaW9uXG5cbmxpbmUgPSBMaW5lYXJSZWdyZXNzaW9uKClcbmxpbmUuZml0KHRyYWluW1tcInZvbF8yMGRcIl1dLCB0cmFpbltcInJpc2luZ1wiXSlcblxucHJpbnQobGluZS5pbnRlcmNlcHRfLCBsaW5lLmNvZWZfKSJ9
+</script>
+</div>
+<p>The target column holds ones and zeros, and <code>.fit()</code> treats them as numbers. The slope is negative: the higher this month’s volatility, the lower the fitted value.</p>
+</section>
+
+<section id="what-the-line-predicts-predict" class="title-slide slide level1 center">
+<h1>What the line predicts <span class="chip chip-predict">predict</span></h1>
+<p>Read the fitted value as the probability of a rise. Before running the cell, decide what it should give for a volatility of 4 percent, and whether a straight line can give that.</p>
+<div>
+<div id="pyodide-7" class="exercise-cell">
+
+</div>
+<script type="pyodide-7-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIiOnRydWV9LCJjb2RlIjoibGluZS5wcmVkaWN0KHBkLkRhdGFGcmFtZSh7XCJ2b2xfMjBkXCI6IFswLjUsIDIuMCwgNC4wXX0pKSJ9
+</script>
+</div>
+<div class="muted small">
+<p>The index’s 20-day volatility was above 4 percent in March 2020.</p>
+</div>
+</section>
+
+<section id="a-probability-below-zero" class="title-slide slide level1 center">
+<h1>A probability below zero</h1>
+<div>
+<div id="pyodide-8" class="exercise-cell">
+
+</div>
+<script type="pyodide-8-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmaXR0ZWQgPSBsaW5lLnByZWRpY3QodHJhaW5bW1widm9sXzIwZFwiXV0pXG5cbnByaW50KGZpdHRlZC5taW4oKSwgZml0dGVkLm1heCgpKVxucHJpbnQoKGZpdHRlZCA8IDApLnN1bSgpKSJ9
+</script>
+</div>
+<p>The line reaches zero at a volatility of 3.3 percent and keeps falling. 28 training days get a negative fitted value, and no straight line stays between 0 and 1 for every value of the column.</p>
+</section>
+
+<section id="the-share-of-rises-by-this-months-volatility" class="title-slide slide level1 center">
+<h1>The share of rises, by this month’s volatility</h1>
+<div id="274545b5" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_08_files/figure-revealjs/cell-3-output-1.png" class="quarto-figure quarto-figure-center" width="983" height="311"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Each dot is a band of training days, sized by how many days it holds, and its height is the share of those days with a rise. Below 0.4 percent the share is 0.89; above 1.7 percent it is 0.11. The dots flatten out at both ends, and the line cannot.</p>
+</section>
+
+<section id="the-sigmoid" class="title-slide slide level1 center">
+<h1>The sigmoid</h1>
+<div id="22a2c4b3" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_08_files/figure-revealjs/cell-4-output-1.png" class="quarto-figure quarto-figure-center" width="983" height="249"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="formula">
+<p><span class="math display">
+\sigma(z) = \frac{1}{1 + e^{-z}}
+</span></p>
+</div>
+<p>The sigmoid takes any number and returns a number between 0 and 1. Far to the left it is close to 0, far to the right close to 1, and at <span class="math inline">z = 0</span> it is one half.</p>
+</section>
+
+<section id="logistic-regression" class="title-slide slide level1 center">
+<h1>Logistic regression</h1>
+<div class="formula">
+<p><span class="math display">
+P(\text{rising} \mid \text{vol\_20d}) = \sigma\!\left(\beta_0 + \beta_1 \cdot \text{vol\_20d}\right)
+</span></p>
+</div>
+<p>The linear score is the same as in regression, an intercept plus a slope times the column. Passing it through the sigmoid turns any value of the score into a probability.</p>
+<div class="formula">
+<p><span class="math display">
+\log\frac{P}{1 - P} = \beta_0 + \beta_1 \cdot \text{vol\_20d}
+</span></p>
+</div>
+<p>Rearranged, the <strong>log-odds</strong> of a rise are a straight line in the column. The coefficients are on that scale.</p>
+</section>
+
+<section id="logistic-regression-in-code" class="title-slide slide level1 divider center">
+<h1>2 · Logistic regression in code</h1>
+<div class="divider-kicker">
+<p>Part 2</p>
+</div>
+<div class="divider-note">
+<p>Fitting the curve, reading its two numbers, and turning probabilities into predicted labels.</p>
+</div>
+</section>
+
+<section id="import-create-fit" class="title-slide slide level1 center">
+<h1>Import, create, fit</h1>
+<div>
+<div id="pyodide-9" class="exercise-cell">
+
+</div>
+<script type="pyodide-9-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4ubGluZWFyX21vZGVsIGltcG9ydCBMb2dpc3RpY1JlZ3Jlc3Npb25cblxubW9kZWwgPSBMb2dpc3RpY1JlZ3Jlc3Npb24oKVxubW9kZWwuZml0KHRyYWluW1tcInZvbF8yMGRcIl1dLCB0cmFpbltcInJpc2luZ1wiXSlcblxucHJpbnQobW9kZWwpIn0=
+</script>
+</div>
+<p><code>LogisticRegression</code> lives in the same module as <code>LinearRegression</code> and is used the same way: create it, then <code>.fit()</code> with the feature table and the label column. <code>X</code> is a table with two brackets and <code>y</code> is one column with one.</p>
+</section>
+
+<section id="what-it-learned" class="title-slide slide level1 center">
+<h1>What it learned</h1>
+<div>
+<div id="pyodide-10" class="exercise-cell">
+
+</div>
+<script type="pyodide-10-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJwcmludChtb2RlbC5pbnRlcmNlcHRfKVxucHJpbnQobW9kZWwuY29lZl8pIn0=
+</script>
+</div>
+<p>The intercept is 1.16 and the slope −1.34, on the log-odds scale. <code>coef_</code> is printed with two pairs of brackets: <code>LogisticRegression</code> keeps one row of coefficients per boundary between classes, and two classes have one boundary, so the array has one row.</p>
+</section>
+
+<section id="the-fitted-curve" class="title-slide slide level1 center">
+<h1>The fitted curve</h1>
+<div id="7e7faeec" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_08_files/figure-revealjs/cell-5-output-1.png" class="quarto-figure quarto-figure-center" width="983" height="311"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The curve passes through the dots where the line could not. It flattens towards 1 on the left and towards 0 on the right, and stays between them everywhere.</p>
+</section>
+
+<section id="two-probabilities-per-day" class="title-slide slide level1 center">
+<h1>Two probabilities per day</h1>
+<div class="diagram">
+<svg width="1000" height="262" viewbox="0 0 1000 262" role="img" aria-label="predict_proba takes the feature table with 482 rows and one column and returns an array with 482 rows and two columns, one per class in the order of classes_, each row adding up to one">
+<text x="130" y="24" text-anchor="middle" font-size="14" font-family="Cascadia Mono, monospace" fill="#0d366b">test[[“vol_20d”]]</text> <rect x="60" y="36" width="140" height="180" rx="8" fill="#eef4fc" stroke="#86b6ef" stroke-width="1.5"></rect> <g font-family="Cascadia Mono, monospace" font-size="15" fill="#26333f" text-anchor="middle"> <text x="130" y="72">1.162</text> <text x="130" y="104">1.130</text> <text x="130" y="136">1.114</text> <text x="130" y="170">⋮</text> </g> <text x="130" y="242" text-anchor="middle" font-size="13" font-family="Segoe UI, sans-serif" fill="#898781">482 rows, 1 column</text> <g stroke="#c3c2b7" stroke-width="2.4" fill="none"><path d="M 215 126 L 330 126"></path></g> <polygon points="330,119 330,133 344,126" fill="#c3c2b7"></polygon> <text x="280" y="112" text-anchor="middle" font-size="14" font-family="Cascadia Mono, monospace" fill="#0d366b">.predict_proba()</text> <text x="510" y="24" text-anchor="middle" font-size="14" font-family="Cascadia Mono, monospace" fill="#0d366b">probs</text> <rect x="370" y="36" width="280" height="180" rx="8" fill="#fbf3de" stroke="#d99a1c" stroke-width="1.5"></rect> <line x1="510" y1="36" x2="510" y2="216" stroke="#e8d9b0" stroke-width="1.2"></line> <g font-family="Cascadia Mono, monospace" font-size="15" fill="#26333f" text-anchor="middle"> <text x="440" y="72">0.597</text><text x="580" y="72">0.403</text> <text x="440" y="104">0.587</text><text x="580" y="104">0.413</text> <text x="440" y="136">0.582</text><text x="580" y="136">0.418</text> <text x="440" y="170">⋮</text><text x="580" y="170">⋮</text> </g> <g font-family="Segoe UI, sans-serif" font-size="13" fill="#8a6508" text-anchor="middle"> <text x="440" y="203">class 0: no rise</text> <text x="580" y="203">class 1: a rise</text> </g> <text x="510" y="242" text-anchor="middle" font-size="13" font-family="Segoe UI, sans-serif" fill="#898781">482 rows, 2 columns, in the order of classes_</text> <g font-family="Segoe UI, sans-serif" font-size="15" fill="#52514e"> <text x="690" y="72">0.597 + 0.403 = 1: each row</text> <text x="690" y="94">adds up to one</text> <text x="690" y="136">column 1 is the probability</text> <text x="690" y="158">of a rise, the fitted curve</text> <text x="690" y="200">.predict() compares column 1</text> <text x="690" y="222">with one half</text> </g>
+</svg>
+</div>
+<div class="diagram-note">
+<p>The feature table goes in with one column; an array comes out with one column per class. The first three test days had a volatility above 0.87 percent, so their probability of a rise is below one half.</p>
+</div>
+</section>
+
+<section id="predict_proba" class="title-slide slide level1 center">
+<h1>predict_proba</h1>
+<div>
+<div id="pyodide-11" class="exercise-cell">
+
+</div>
+<script type="pyodide-11-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJwcm9icyA9IG1vZGVsLnByZWRpY3RfcHJvYmEodGVzdFtbXCJ2b2xfMjBkXCJdXSlcblxucHJpbnQobW9kZWwuY2xhc3Nlc18pXG5wcmludChwcm9ic1s6M10ucm91bmQoMykpIn0=
+</script>
+</div>
+<p><code>classes_</code> lists the classes in the order of the columns, 0 then 1, and the first three rows are the three days in the diagram. Column 0 is the probability of no rise, column 1 the probability of a rise.</p>
+</section>
+
+<section id="predict-and-the-threshold-inside-it" class="title-slide slide level1 center">
+<h1>predict, and the threshold inside it</h1>
+<div>
+<div id="pyodide-12" class="exercise-cell">
+
+</div>
+<script type="pyodide-12-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJwID0gcHJvYnNbOiwgMV1cbnByZWRpY3RlZCA9IG1vZGVsLnByZWRpY3QodGVzdFtbXCJ2b2xfMjBkXCJdXSlcblxucHJpbnQocHJlZGljdGVkWzoxMF0pXG5wcmludCgocCA+PSAwLjUpLmFzdHlwZShpbnQpWzoxMF0pIn0=
+</script>
+</div>
+<p><code>probs[:, 1]</code> is the second column, every row of it: the probability of a rise. <code>.predict()</code> returns a 0 or a 1 for each day, by comparing that probability with one half. The second line makes the same comparison by hand and gives the same ten values.</p>
+</section>
+
+<section id="where-the-score-is-zero" class="title-slide slide level1 center">
+<h1>Where the score is zero</h1>
+<div class="formula">
+<p><span class="math display">
+\beta_0 + \beta_1 \cdot \text{vol\_20d} = 0
+\qquad\Longrightarrow\qquad
+\text{vol\_20d} = -\,\frac{\beta_0}{\beta_1}
+</span></p>
+</div>
+<div>
+<div id="pyodide-13" class="exercise-cell">
+
+</div>
+<script type="pyodide-13-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJwcmludCgtbW9kZWwuaW50ZXJjZXB0X1swXSAvIG1vZGVsLmNvZWZfWzAsIDBdKSJ9
+</script>
+</div>
+<p>The sigmoid is one half exactly when the score is zero, which solves to a volatility of 0.87 percent; below it the prediction is 1. <code>intercept_</code> is an array holding one number, and <code>[0]</code> takes it out; <code>coef_</code> has one row, and <code>[0, 0]</code> is the first entry of that row.</p>
+</section>
+
+<section id="from-the-score-to-the-odds" class="title-slide slide level1 center">
+<h1>From the score to the odds</h1>
+<div class="formula">
+<p><span class="math display">
+\text{odds} = \frac{P}{1 - P} = e^{\,\beta_0 + \beta_1 \cdot \text{vol\_20d}}
+</span></p>
+</div>
+<table class="vocab caption-top">
+<thead>
+<tr class="header">
+<th><code>vol_20d</code></th>
+<th>score</th>
+<th>odds of a rise</th>
+<th>probability</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.5</td>
+<td>0.49</td>
+<td>1.64 to 1</td>
+<td>0.62</td>
+</tr>
+<tr class="even">
+<td>0.87</td>
+<td>0.00</td>
+<td>1 to 1</td>
+<td>0.50</td>
+</tr>
+<tr class="odd">
+<td>1.5</td>
+<td>−0.85</td>
+<td>0.43 to 1</td>
+<td>0.30</td>
+</tr>
+</tbody>
+</table>
+<p>The model is a straight line on the log-odds scale, and <code>exp</code> undoes the log, so the odds of a rise are <code>exp</code> of the score. Going from 0.5 to 1.5 subtracts 1.34 from the score, and divides the odds by 3.8: from 1.64 to 0.43.</p>
+</section>
+
+<section id="reading-the-coefficient" class="title-slide slide level1 center">
+<h1>Reading the coefficient</h1>
+<div>
+<div id="pyodide-14" class="exercise-cell">
+
+</div>
+<script type="pyodide-14-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJwcmludChucC5leHAobW9kZWwuY29lZl8pKSJ9
+</script>
+</div>
+<p>One percentage point more volatility adds −1.34 to the score, which multiplies the odds of a rise by <span class="math inline">e^{-1.34} = 0.26</span>. <code>np.exp</code> turns a coefficient on the log-odds scale into a factor on the odds scale, which is the number to quote.</p>
+<div class="keypoint">
+<p>The sign is what to read: <strong>the more volatile this month, the less likely volatility is to rise further.</strong> The regression’s slope on this column was below one, which says the same thing about the number.</p>
+</div>
+</section>
+
+<section id="two-columns-in-percentage-points" class="title-slide slide level1 center">
+<h1>Two columns, in percentage points</h1>
+<div>
+<div id="pyodide-15" class="exercise-cell">
+
+</div>
+<script type="pyodide-15-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJyYXcgPSBMb2dpc3RpY1JlZ3Jlc3Npb24oKVxucmF3LmZpdCh0cmFpbltbXCJ2b2xfMjBkXCIsIFwicmV0XzIwZFwiXV0sIHRyYWluW1wicmlzaW5nXCJdKVxuXG5wcmludChyYXcuY29lZl8pXG5wcmludCh0cmFpbltbXCJ2b2xfMjBkXCIsIFwicmV0XzIwZFwiXV0uc3RkKCkucm91bmQoMykpIn0=
+</script>
+</div>
+<p>More columns go in as they do for regression, and each coefficient is per percentage point of its own column. A percentage point is a large move for the 20-day return, whose standard deviation is 0.24, and an ordinary one for volatility, so −1.18 and −1.53 cannot be compared.</p>
+</section>
+
+<section id="standardscaler-again" class="title-slide slide level1 center">
+<h1>StandardScaler, again</h1>
+<div class="formula">
+<p><span class="math display">
+z = \frac{x - \bar{x}}{s}
+</span></p>
+</div>
+<p><code>StandardScaler</code> subtracts each column’s mean and divides by its standard deviation, both computed on the training rows, so every column is measured in standard deviations. It matters twice in this session: coefficients per standard deviation can be compared across columns, and the penalty in Part 5 charges by the size of a coefficient, which must not depend on the column’s units.</p>
+</section>
+
+<section id="two-columns-standardised" class="title-slide slide level1 center">
+<h1>Two columns, standardised</h1>
+<div>
+<div id="pyodide-16" class="exercise-cell">
+
+</div>
+<script type="pyodide-16-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4ucHJlcHJvY2Vzc2luZyBpbXBvcnQgU3RhbmRhcmRTY2FsZXJcbmZyb20gc2tsZWFybi5waXBlbGluZSBpbXBvcnQgUGlwZWxpbmVcblxudHdvID0gUGlwZWxpbmUoWyhcInNjYWxlXCIsIFN0YW5kYXJkU2NhbGVyKCkpLCAoXCJsb2dpdFwiLCBMb2dpc3RpY1JlZ3Jlc3Npb24oKSldKVxudHdvLmZpdCh0cmFpbltbXCJ2b2xfMjBkXCIsIFwicmV0XzIwZFwiXV0sIHRyYWluW1wicmlzaW5nXCJdKVxuXG5wcmludCh0d28ubmFtZWRfc3RlcHNbXCJsb2dpdFwiXS5jb2VmXykifQ==
+</script>
+</div>
+<p>The pipeline fits the scaler on the training rows and then the classifier on the scaled columns, as it did for ridge. One standard deviation of volatility moves the log-odds by −1.08 and one standard deviation of return by −0.30, so volatility carries most of the information.</p>
+</section>
+
+<section id="your-turn-1" class="title-slide slide level1 your-turn center">
+<h1>Your turn <span class="chip chip-turn">1</span></h1>
+<p>Fit the same model on <code>vol_60d</code> instead of <code>vol_20d</code>. Where does its curve cross one half, and is the slope steeper or flatter than −1.34?</p>
+<div>
+<div id="pyodide-17" class="exercise-cell">
+
+</div>
+<script type="pyodide-17-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIiOnRydWV9LCJjb2RlIjoibG9uZ19tb2RlbCA9IExvZ2lzdGljUmVncmVzc2lvbigpXG5sb25nX21vZGVsLmZpdCguLi4pXG5cbnByaW50KGxvbmdfbW9kZWwuaW50ZXJjZXB0XywgbG9uZ19tb2RlbC5jb2VmXylcbnByaW50KC1sb25nX21vZGVsLmludGVyY2VwdF9bMF0gLyBsb25nX21vZGVsLmNvZWZfWzAsIDBdKSJ9
+</script>
+</div>
+<div class="muted small">
+<p><code>.fit()</code> takes the feature table first and the label column second.</p>
+</div>
+</section>
+
+<section id="your-turn-1-answer" class="title-slide slide level1 center">
+<h1>Your turn 1: answer</h1>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="" aria-hidden="true" tabindex="-1"></a>long_model.fit(train[[<span class="st">"vol_60d"</span>]], train[<span class="st">"rising"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The intercept is 0.57 and the slope <strong>−0.65</strong>, half the 20-day slope, and the curve crosses one half at 0.88 percent. A 60-day average moves less from month to month, so it separates the days with a rise from the others less sharply. On the test days it predicts 58.9 percent correctly, against 69.3 percent for <code>vol_20d</code>.</p>
+</section>
+
+<section id="how-the-curve-is-fitted" class="title-slide slide level1 divider center">
+<h1>3 · How the curve is fitted</h1>
+<div class="divider-kicker">
+<p>Part 3</p>
+</div>
+<div class="divider-note">
+<p>What takes the place of least squares when the target is a label, and what that means for <code>.fit()</code>.</p>
+</div>
+</section>
+
+<section id="least-squares-and-maximum-likelihood" class="title-slide slide level1 center">
+<h1>Least squares, and maximum likelihood</h1>
+<div class="compare">
+<div class="compare-col">
+<h3>
+A number
+</h3>
+<p>
+The residual is the prediction minus what happened, in the units of the target. Least squares chooses the line with the smallest sum of squared residuals.
+</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>
+A label
+</h3>
+<p>
+What happened is 0 or 1 and the prediction is a probability. Maximum likelihood chooses the curve that gives <strong>what happened the highest probability</strong>, taken over all the rows.
+</p>
+</div>
+</div>
+<div class="keypoint">
+<p>For a day with a rise, the likelihood uses the probability the curve gave to a rise. For a day without one, it uses the probability the curve gave to no rise.</p>
+</div>
+</section>
+
+<section id="log-loss" class="title-slide slide level1 center">
+<h1>Log-loss</h1>
+<div id="17431c5a" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_08_files/figure-revealjs/cell-6-output-1.png" class="quarto-figure quarto-figure-center" width="973" height="186"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="formula">
+<p><span class="math display">
+\text{log-loss} = -\sum_{i=1}^{n}\Big[\, y_i \log \hat{p}_i + (1 - y_i)\log(1 - \hat{p}_i) \,\Big]
+</span></p>
+</div>
+<p>The bracket is a switch: when <span class="math inline">y_i = 1</span> only <span class="math inline">\log \hat{p}_i</span> remains, when <span class="math inline">y_i = 0</span> only the other term. Each row adds minus the log of the probability given to what happened, so a confident wrong probability adds the most.</p>
+</section>
+
+<section id="walking-downhill" class="title-slide slide level1 center">
+<h1>Walking downhill</h1>
+<div id="f52398c7" class="cell" data-execution_count="6">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_08_files/figure-revealjs/cell-7-output-1.png" class="quarto-figure quarto-figure-center" width="906" height="321"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Every pair of intercept and slope has a log-loss, drawn here as contour lines, and the fitted pair is the lowest point. <code>.fit()</code> starts at (0, 0), where every day gets a probability of one half, and moves to a lower point at each step. The solver picks the direction and the length of each step itself.</p>
+</section>
+
+<section id="the-steps-printed" class="title-slide slide level1 center">
+<h1>The steps, printed</h1>
+<div>
+<div id="pyodide-18" class="exercise-cell">
+
+</div>
+<script type="pyodide-18-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4ubWV0cmljcyBpbXBvcnQgbG9nX2xvc3NcbmZvciBuIGluIFsxLCAyLCAzLCAxMF06XG4gICAgc3RlcHMgPSBMb2dpc3RpY1JlZ3Jlc3Npb24obWF4X2l0ZXI9bilcbiAgICBzdGVwcy5maXQodHJhaW5bW1widm9sXzIwZFwiXV0sIHRyYWluW1wicmlzaW5nXCJdKVxuICAgIHBfdHJhaW4gPSBzdGVwcy5wcmVkaWN0X3Byb2JhKHRyYWluW1tcInZvbF8yMGRcIl1dKVs6LCAxXVxuICAgIHByaW50KG4sIHN0ZXBzLm5faXRlcl8sIHN0ZXBzLmNvZWZfLnJvdW5kKDMpLCByb3VuZChsb2dfbG9zcyh0cmFpbltcInJpc2luZ1wiXSwgcF90cmFpbiksIDUpKSJ9
+</script>
+</div>
+<p><code>max_iter=n</code> stops after n steps, <code>n_iter_</code> records how many were taken, and <code>log_loss</code> is the objective divided by the number of rows. The log-loss falls at every step; after 7 the coefficients stop changing, so the run allowed 10 stops at 7.</p>
+</section>
+
+<section id="max_iter-and-the-warning" class="title-slide slide level1 center">
+<h1>max_iter, and the warning</h1>
+<pre><code>ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT.</code></pre>
+<p>The default <code>max_iter</code> is 100 steps. When the coefficients are still changing at the limit, <code>.fit()</code> returns them anyway and prints this warning.</p>
+<div class="why-grid">
+<div class="why-point">
+<p><strong>Standardise first</strong> <span>columns on very different scales need many more steps; on this column the standardised fit settles in 4 steps instead of 7</span></p>
+</div>
+<div class="why-point">
+<p><strong>Raise <code>max_iter</code></strong> <span><code>LogisticRegression(max_iter=1000)</code> when the warning appears; the coefficients returned with the warning have not settled</span></p>
+</div>
+</div>
+</section>
+
+<section id="scoring-a-classifier" class="title-slide slide level1 divider center">
+<h1>4 · Scoring a classifier</h1>
+<div class="divider-kicker">
+<p>Part 4</p>
+</div>
+<div class="divider-note">
+<p>Four kinds of day, three shares built from them, and one score that needs no threshold.</p>
+</div>
+</section>
+
+<section id="accuracy" class="title-slide slide level1 center">
+<h1>Accuracy</h1>
+<div>
+<div id="pyodide-19" class="exercise-cell">
+
+</div>
+<script type="pyodide-19-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4ubWV0cmljcyBpbXBvcnQgYWNjdXJhY3lfc2NvcmVcblxucHJpbnQoKHByZWRpY3RlZCA9PSB0ZXN0W1wicmlzaW5nXCJdKS5tZWFuKCkpXG5wcmludChhY2N1cmFjeV9zY29yZSh0ZXN0W1wicmlzaW5nXCJdLCBwcmVkaWN0ZWQpKSJ9
+</script>
+</div>
+<p>The majority rule was right on 53.3 percent of the test days. The model’s predictions match the label on 69.3 percent of them, by hand in the first line and with <code>accuracy_score</code> in the second. Every scikit-learn metric takes the true labels first and the predictions second.</p>
+</section>
+
+<section id="the-four-kinds-of-day" class="title-slide slide level1 center">
+<h1>The four kinds of day</h1>
+<div id="a357c86d" class="cell" data-execution_count="7">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_08_files/figure-revealjs/cell-8-output-1.png" class="quarto-figure quarto-figure-center" width="1001" height="301"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Every test day, placed by its volatility and coloured by what the model predicted and what happened. The prediction is a rise on every day below the dotted line. The days in brick are predicted rises that did not come, calm days that stayed calm; the days in amber are rises the model missed.</p>
+</section>
+
+<section id="counting-the-four-kinds" class="title-slide slide level1 center">
+<h1>Counting the four kinds</h1>
+<div>
+<div id="pyodide-20" class="exercise-cell">
+
+</div>
+<script type="pyodide-20-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJyb3NlID0gdGVzdFtcInJpc2luZ1wiXS52YWx1ZXMgPT0gMVxucHJlZF9yaXNlID0gcHJlZGljdGVkID09IDFcblxucHJpbnQoKHByZWRfcmlzZSAmIHJvc2UpLnN1bSgpLCAocHJlZF9yaXNlICYgfnJvc2UpLnN1bSgpKVxucHJpbnQoKH5wcmVkX3Jpc2UgJiByb3NlKS5zdW0oKSwgKH5wcmVkX3Jpc2UgJiB+cm9zZSkuc3VtKCkpIn0=
+</script>
+</div>
+<p>Two masks and the four ways of combining them count the four colours: 198 predicted rises that came and 121 that did not, then 27 rises missed and 136 calm days predicted as calm.</p>
+</section>
+
+<section id="confusion_matrix" class="title-slide slide level1 center">
+<h1>confusion_matrix</h1>
+<div>
+<div id="pyodide-21" class="exercise-cell">
+
+</div>
+<script type="pyodide-21-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4ubWV0cmljcyBpbXBvcnQgY29uZnVzaW9uX21hdHJpeFxuXG5wcmludChjb25mdXNpb25fbWF0cml4KHRlc3RbXCJyaXNpbmdcIl0sIHByZWRpY3RlZCkpIn0=
+</script>
+</div>
+<p><code>confusion_matrix(y, predicted)</code> returns the same four counts as a 2 by 2 array, with the true label down the rows and the prediction across the columns, both in the order of <code>classes_</code>, so 0 comes first: the 136 calm days predicted as calm sit top left, and the 198 rises predicted as rises bottom right.</p>
+</section>
+
+<section id="precision-and-recall" class="title-slide slide level1 center">
+<h1>Precision and recall</h1>
+<div>
+<div id="pyodide-22" class="exercise-cell">
+
+</div>
+<script type="pyodide-22-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4ubWV0cmljcyBpbXBvcnQgcHJlY2lzaW9uX3Njb3JlLCByZWNhbGxfc2NvcmVcblxucHJpbnQocHJlY2lzaW9uX3Njb3JlKHRlc3RbXCJyaXNpbmdcIl0sIHByZWRpY3RlZCkpXG5wcmludChyZWNhbGxfc2NvcmUodGVzdFtcInJpc2luZ1wiXSwgcHJlZGljdGVkKSkifQ==
+</script>
+</div>
+<p>Two questions about this model. Of the 319 days on which it predicted a rise, how many rose? 198, a precision of 62 percent. Of the 225 days that rose, how many had it predicted? 198, a recall of 88 percent. A hedge bought on every predicted rise would have been needed 62 percent of the time, and would have been in place for 88 percent of the rises.</p>
+</section>
+
+<section id="the-threshold-is-a-setting" class="title-slide slide level1 center">
+<h1>The threshold is a setting</h1>
+<div>
+<div id="pyodide-23" class="exercise-cell">
+
+</div>
+<script type="pyodide-23-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJwcmVkaWN0ZWRfNjAgPSAocCA+PSAwLjYpLmFzdHlwZShpbnQpXG5cbnByaW50KGNvbmZ1c2lvbl9tYXRyaXgodGVzdFtcInJpc2luZ1wiXSwgcHJlZGljdGVkXzYwKSlcbnByaW50KHByZWNpc2lvbl9zY29yZSh0ZXN0W1wicmlzaW5nXCJdLCBwcmVkaWN0ZWRfNjApLCByZWNhbGxfc2NvcmUodGVzdFtcInJpc2luZ1wiXSwgcHJlZGljdGVkXzYwKSkifQ==
+</script>
+</div>
+<p>With a threshold of 0.6 instead of 0.5, the rises predicted in error fall from 121 to 9, precision rises to 82 percent, and recall falls to 19 percent. The fitted curve is the same; only the threshold moved.</p>
+</section>
+
+<section id="the-trade-off-across-thresholds" class="title-slide slide level1 center">
+<h1>The trade-off across thresholds</h1>
+<div id="00c6e529" class="cell" data-execution_count="8">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_08_files/figure-revealjs/cell-9-output-1.png" class="quarto-figure quarto-figure-center" width="1002" height="283"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>No test day gets a probability below 0.33 or above 0.67, so the two groups overlap, and moving the threshold trades one kind of error for the other. Where to put it depends on what each error costs, which is the subject of the next session.</p>
+</section>
+
+<section id="three-thresholds" class="title-slide slide level1 center">
+<h1>Three thresholds</h1>
+<div>
+<div id="pyodide-24" class="exercise-cell">
+
+</div>
+<script type="pyodide-24-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmb3IgdGhyZXNob2xkIGluIFswLjQsIDAuNSwgMC42XTpcbiAgICBwcmVkX3QgPSAocCA+PSB0aHJlc2hvbGQpLmFzdHlwZShpbnQpXG4gICAgY2F1Z2h0ID0gKChwcmVkX3QgPT0gMSkgJiByb3NlKS5zdW0oKSAvIHJvc2Uuc3VtKClcbiAgICBmYWxzZV9hbGFybXMgPSAoKHByZWRfdCA9PSAxKSAmIH5yb3NlKS5zdW0oKSAvICh+cm9zZSkuc3VtKClcbiAgICBwcmludCh0aHJlc2hvbGQsIHJvdW5kKGNhdWdodCwgMyksIHJvdW5kKGZhbHNlX2FsYXJtcywgMykpIn0=
+</script>
+</div>
+<p>For each threshold, two shares: the rises that were predicted, which is the recall, and the calm days on which a rise was wrongly predicted, the false positive rate. At 0.4 every rise is predicted and 90 percent of the calm days are false alarms. At 0.6 the false alarms are down to 3.5 percent, and only 19 percent of the rises are predicted.</p>
+</section>
+
+<section id="three-thresholds-as-points" class="title-slide slide level1 center">
+<h1>Three thresholds, as points</h1>
+<div id="00e1da11" class="cell" data-execution_count="9">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_08_files/figure-revealjs/cell-10-output-1.png" class="quarto-figure quarto-figure-center" width="618" height="302"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Each threshold is one point, with the false positive rate across and the recall up. A better threshold sits further up and further left. The dashed line is where a random ranking would put every threshold.</p>
+</section>
+
+<section id="every-threshold-the-roc-curve" class="title-slide slide level1 center">
+<h1>Every threshold: the ROC curve</h1>
+<div id="ea1b473b" class="cell" data-execution_count="10">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_08_files/figure-revealjs/cell-11-output-1.png" class="quarto-figure quarto-figure-center" width="618" height="302"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><code>roc_curve(y, p)</code> repeats the calculation at every threshold where a point moves, 158 of them here, and returns the two shares for each. Joined up, the points are the ROC curve, and the three thresholds are three of them.</p>
+</section>
+
+<section id="roc_auc_score" class="title-slide slide level1 center">
+<h1>roc_auc_score</h1>
+<div>
+<div id="pyodide-25" class="exercise-cell">
+
+</div>
+<script type="pyodide-25-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4ubWV0cmljcyBpbXBvcnQgcm9jX2F1Y19zY29yZVxuXG5wcmludChyb2NfYXVjX3Njb3JlKHRlc3RbXCJyaXNpbmdcIl0sIHApKSJ9
+</script>
+</div>
+<p><code>roc_auc_score(y, p)</code> is the area under that curve: 0.5 for a random ranking, 1 for a perfect one, and no threshold involved. Here it is 0.81: take one day with a rise and one without, at random, and the model gives the first the higher probability 81 percent of the time. The second argument is the probability column, not the predicted labels.</p>
+</section>
+
+<section id="auc-on-the-predicted-labels-predict" class="title-slide slide level1 center">
+<h1>AUC on the predicted labels <span class="chip chip-predict">predict</span></h1>
+<p><code>predicted</code> holds the 0/1 labels at a threshold of one half. What does the function return when it is given those in place of <code>p</code>, and why?</p>
+<div>
+<div id="pyodide-26" class="exercise-cell">
+
+</div>
+<script type="pyodide-26-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIiOnRydWV9LCJjb2RlIjoicHJpbnQocm9jX2F1Y19zY29yZSh0ZXN0W1wicmlzaW5nXCJdLCBwcmVkaWN0ZWQpKSJ9
+</script>
+</div>
+<div class="muted small">
+<p>This is a common mistake. The function raises no error, because zeros and ones are numbers as well.</p>
+</div>
+</section>
+
+<section id="cross-validated-auc" class="title-slide slide level1 center">
+<h1>Cross-validated AUC</h1>
+<div>
+<div id="pyodide-27" class="exercise-cell">
+
+</div>
+<script type="pyodide-27-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4ubW9kZWxfc2VsZWN0aW9uIGltcG9ydCBUaW1lU2VyaWVzU3BsaXQsIGNyb3NzX3ZhbF9zY29yZVxuXG5mb2xkcyA9IFRpbWVTZXJpZXNTcGxpdChuX3NwbGl0cz01KVxuc2NvcmVzID0gY3Jvc3NfdmFsX3Njb3JlKExvZ2lzdGljUmVncmVzc2lvbigpLCB0cmFpbltbXCJ2b2xfMjBkXCJdXSwgdHJhaW5bXCJyaXNpbmdcIl0sXG4gICAgICAgICAgICAgICAgICAgICAgICAgY3Y9Zm9sZHMsIHNjb3Jpbmc9XCJyb2NfYXVjXCIpXG5wcmludChzY29yZXMucm91bmQoMykpXG5wcmludChzY29yZXMubWVhbigpKSJ9
+</script>
+</div>
+<p>The same five folds as for regression, with <code>"roc_auc"</code> as the scoring string. A larger AUC is better, so no minus sign is needed. The mean is 0.78, and the folds range from 0.70 to 0.85.</p>
+</section>
+
+<section id="which-score" class="title-slide slide level1 center">
+<h1>Which score</h1>
+<table class="vocab caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>the question</th>
+<th><code>scoring=</code></th>
+<th>needs a threshold</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>how many predictions were right, when the classes are balanced</td>
+<td><code>"accuracy"</code></td>
+<td>yes</td>
+</tr>
+<tr class="even">
+<td>how well the probabilities rank the two classes</td>
+<td><code>"roc_auc"</code></td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td>how close the probabilities are to what happened</td>
+<td><code>"neg_log_loss"</code></td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td>how many alarms were real, and how many events were caught</td>
+<td><code>"precision"</code>, <code>"recall"</code></td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<div class="keypoint">
+<p>Cross-validation chooses between models with one of these scores, and the test rows are scored with the same one. Accuracy alone is enough only when the classes are balanced and the threshold is settled.</p>
+</div>
+</section>
+
+<section id="your-turn-2" class="title-slide slide level1 your-turn center">
+<h1>Your turn <span class="chip chip-turn">2</span></h1>
+<p>Cross-validate the two-column pipeline <code>two</code> with the same folds and the same scoring string. Is its mean AUC higher than 0.78?</p>
+<div>
+<div id="pyodide-28" class="exercise-cell">
+
+</div>
+<script type="pyodide-28-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIiOnRydWV9LCJjb2RlIjoidHdvX3Njb3JlcyA9IGNyb3NzX3ZhbF9zY29yZSguLi4pXG5cbnByaW50KHR3b19zY29yZXMucm91bmQoMykpXG5wcmludCh0d29fc2NvcmVzLm1lYW4oKSkifQ==
+</script>
+</div>
+<div class="muted small">
+<p><code>cross_val_score</code> takes the model, the feature table, the label column, <code>cv</code> and <code>scoring</code>, as in the one-column call.</p>
+</div>
+</section>
+
+<section id="your-turn-2-answer" class="title-slide slide level1 center">
+<h1>Your turn 2: answer</h1>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="" aria-hidden="true" tabindex="-1"></a>two_scores <span class="op">=</span> cross_val_score(two, train[[<span class="st">"vol_20d"</span>, <span class="st">"ret_20d"</span>]], train[<span class="st">"rising"</span>],</span>
+<span id="cb3-2"><a href="" aria-hidden="true" tabindex="-1"></a>                             cv<span class="op">=</span>folds, scoring<span class="op">=</span><span class="st">"roc_auc"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The mean is <strong>0.745</strong>, against 0.783 for one column, and it is lower on four of the five folds, so cross-validation keeps the one-column model. On the test days the two-column model scores 0.847 and the one-column model 0.807, but the choice was made on the folds, and the test days only report it.</p>
+</section>
+
+<section id="columns-and-c" class="title-slide slide level1 divider center">
+<h1>5 · 19 columns, and C</h1>
+<div class="divider-kicker">
+<p>Part 5</p>
+</div>
+<div class="divider-note">
+<p>The whole table in the classifier, and the strength of the penalty under a new name.</p>
+</div>
+</section>
+
+<section id="all-19-columns" class="title-slide slide level1 center">
+<h1>All 19 columns</h1>
+<div>
+<div id="pyodide-29" class="exercise-cell">
+
+</div>
+<script type="pyodide-29-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJ3aWRlID0gUGlwZWxpbmUoWyhcInNjYWxlXCIsIFN0YW5kYXJkU2NhbGVyKCkpLCAoXCJsb2dpdFwiLCBMb2dpc3RpY1JlZ3Jlc3Npb24oKSldKVxuXG5zY29yZXMgPSBjcm9zc192YWxfc2NvcmUod2lkZSwgdHJhaW5bY29sdW1uc10sIHRyYWluW1wicmlzaW5nXCJdLCBjdj1mb2xkcywgc2NvcmluZz1cInJvY19hdWNcIilcbnByaW50KHNjb3Jlcy5yb3VuZCgzKSlcbnByaW50KHNjb3Jlcy5tZWFuKCkpIn0=
+</script>
+</div>
+<p>The 19 standardised columns score 0.68 on the folds, against 0.78 for <code>vol_20d</code> alone. As in regression, columns that are near-copies of each other get large coefficients of opposite sign, and coefficients fitted on one block of years do not hold on the next.</p>
+</section>
+
+<section id="the-default-penalty" class="title-slide slide level1 center">
+<h1>The default penalty</h1>
+<div>
+<div id="pyodide-30" class="exercise-cell">
+
+</div>
+<script type="pyodide-30-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJzZXR0aW5ncyA9IExvZ2lzdGljUmVncmVzc2lvbigpLmdldF9wYXJhbXMoKVxuXG5wcmludChzZXR0aW5nc1tcInBlbmFsdHlcIl0sIHNldHRpbmdzW1wiQ1wiXSkifQ==
+</script>
+</div>
+<p><code>get_params()</code> lists every setting of a model with its current value, and two of them matter here. <code>penalty="l2"</code> means the squared coefficients are penalised, as in ridge, and <code>C=1.0</code> is the strength of that penalty. Every logistic regression fitted so far had a ridge penalty on, at a strength that is small next to a log-loss summed over 1,894 rows.</p>
+</section>
+
+<section id="what-c-multiplies" class="title-slide slide level1 center">
+<h1>What C multiplies</h1>
+<div class="formula">
+<p><span class="math display">
+C \cdot \text{log-loss} \;+\; \frac{1}{2}\sum_{j=1}^{p} \beta_j^2
+</span></p>
+</div>
+<p>This is the objective <code>LogisticRegression</code> minimises: the log-loss over the rows, multiplied by <code>C</code>, plus half the sum of squared coefficients. A large <code>C</code> makes the log-loss count for more, so the penalty barely matters. A small <code>C</code> makes the penalty count for more, so the coefficients shrink.</p>
+<div class="muted small">
+<p>Ridge wrote the same trade-off the other way round, RSS plus alpha times the penalty, so <code>C</code> plays the part of 1/alpha.</p>
+</div>
+</section>
+
+<section id="c-against-alpha" class="title-slide slide level1 center">
+<h1>C against alpha</h1>
+<div class="diagram">
+<svg width="1000" height="250" viewbox="0 0 1000 250" role="img" aria-label="Two dials. Alpha runs from zero, no penalty, to very large, every coefficient zero. C runs the opposite way: large C is no penalty, small C shrinks every coefficient to zero. C equals one over alpha.">
+<text x="60" y="66" text-anchor="start" font-size="20" font-family="Segoe UI, sans-serif" fill="#52514e" font-weight="600">alpha</text> <line x1="200" y1="60" x2="860" y2="60" stroke="#c3c2b7" stroke-width="4"></line> <circle cx="200" cy="60" r="12" fill="#1c5cab"></circle> <circle cx="860" cy="60" r="12" fill="#b3402f"></circle> <g font-family="Segoe UI, sans-serif" font-size="15" text-anchor="middle"> <text x="200" y="98" fill="#0d366b" font-weight="600">0: no penalty</text> <text x="860" y="98" fill="#b3402f" font-weight="600">very large: every slope zero</text> <text x="530" y="40" fill="#898781">ridge and lasso</text> </g> <text x="60" y="176" text-anchor="start" font-size="20" font-family="Segoe UI, sans-serif" fill="#52514e" font-weight="600">C</text> <line x1="200" y1="170" x2="860" y2="170" stroke="#c3c2b7" stroke-width="4"></line> <circle cx="200" cy="170" r="12" fill="#1c5cab"></circle> <circle cx="860" cy="170" r="12" fill="#b3402f"></circle> <g font-family="Segoe UI, sans-serif" font-size="15" text-anchor="middle"> <text x="200" y="208" fill="#0d366b" font-weight="600">very large: no penalty</text> <text x="860" y="208" fill="#b3402f" font-weight="600">near 0: every slope zero</text> <text x="530" y="150" fill="#898781">logistic regression</text> </g> <rect x="380" y="100" width="300" height="34" rx="7" fill="#fbf3de" stroke="#d99a1c" stroke-width="1.4"></rect> <text x="530" y="123" text-anchor="middle" font-size="17" font-family="Cascadia Mono, monospace" fill="#8a6508" font-weight="600">C = 1 / alpha</text>
+</svg>
+</div>
+<div class="keypoint">
+<p><code>C</code> is a hyperparameter like alpha: set before <code>.fit()</code>, chosen by cross-validation on a grid in factors of ten. It is not the number of steps, which is <code>max_iter</code>, and not the size of a step, which the solver sets itself.</p>
+</div>
+</section>
+
+<section id="drag-c" class="title-slide slide level1 center">
+<h1>Drag C</h1>
+<style>
+.cslider { margin: 0.2em 0 0; }
+.cs-row { display: flex; align-items: center; gap: 0.7em; }
+.cs-row label { font-size: 0.8em; font-weight: 600; color: #0d366b; }
+.cs-row input[type=range] { flex: 1 1 0; accent-color: #1c5cab; height: 1.6em; }
+.cs-read { display: flex; gap: 2.2em; font-size: 0.68em; color: #52514e; margin: 0.25em 0 0.1em; }
+.cs-read strong { font-family: "Cascadia Mono", Consolas, monospace; color: #0d366b; }
+</style>
+<div class="cslider">
+<div class="cs-row">
+<label for="c-range">strong penalty</label><input id="c-range" type="range" min="0" max="28" value="20"><label for="c-range">no penalty</label>
+</div>
+<div class="cs-read">
+<span>C = <strong id="c-val"></strong></span><span>alpha = 1/C = <strong id="a-val"></strong></span><span>largest coefficient <strong id="max-val"></strong></span><span>cross-validated AUC <strong id="auc-val"></strong></span><span>axis <strong id="axis-val"></strong></span>
+</div>
+<svg id="c-svg" width="1000" height="278" viewbox="0 0 1000 278" role="img" aria-label="The 19 standardised coefficients at the chosen C">
+</svg>
+</div>
+<script>
+(function () {
+  var D = {"grid": [1e-05, 1.778279410038923e-05, 3.1622776601683795e-05, 5.623413251903491e-05, 0.0001, 0.00017782794100389227, 0.00031622776601683794, 0.0005623413251903491, 0.001, 0.0017782794100389228, 0.0031622776601683794, 0.005623413251903491, 0.01, 0.01778279410038923, 0.03162277660168379, 0.05623413251903491, 0.1, 0.1778279410038923, 0.31622776601683794, 0.5623413251903491, 1.0, 1.7782794100389228, 3.1622776601683795, 5.623413251903491, 10.0, 17.78279410038923, 31.622776601683793, 56.23413251903491, 100.0], "cv": [0.7317684583118725, 0.7318161597900703, 0.7318076381855645, 0.7318866230346368, 0.7319235865346081, 0.7320071621819189, 0.7318438375037167, 0.7311983552393135, 0.728272290723045, 0.7241304996763096, 0.7164142133081856, 0.7062189967887444, 0.698472962615967, 0.6905715280450879, 0.6829439890545304, 0.6771979715126558, 0.6757526356122414, 0.6768489872231864, 0.6783828445064717, 0.6785671180086389, 0.6786693619735255, 0.677863014154488, 0.6766578470378724, 0.6764035229752483, 0.6758875883999071, 0.6756878584032546, 0.6756326282271992, 0.6755924866304693, 0.6754800436935212], "paths": [[-0.0015, -0.0021, -0.0026, -0.0021, -0.0016, -0.0012, -0.0016, 0.0003, 0.0016, -0.002, -0.0022, -0.002, -0.0021, -0.0018, -0.0016, -0.0015, -0.002, -0.0017, -0.0012], [-0.0026, -0.0036, -0.0044, -0.0037, -0.0026, -0.0021, -0.0028, 0.0005, 0.0028, -0.0034, -0.0037, -0.0035, -0.0037, -0.0031, -0.0027, -0.0026, -0.0034, -0.0029, -0.0019], [-0.0043, -0.006, -0.0074, -0.0061, -0.0043, -0.0034, -0.0049, 0.0007, 0.0047, -0.0056, -0.0062, -0.0059, -0.0061, -0.0051, -0.0044, -0.0042, -0.0057, -0.0048, -0.0031], [-0.0067, -0.0096, -0.0121, -0.0099, -0.0068, -0.0053, -0.0086, 0.0009, 0.0077, -0.009, -0.0101, -0.0098, -0.0099, -0.0081, -0.0068, -0.0066, -0.0091, -0.0077, -0.0046], [-0.0099, -0.0148, -0.0191, -0.0152, -0.0099, -0.0077, -0.0152, 0.0008, 0.0121, -0.0137, -0.0155, -0.0155, -0.0154, -0.0121, -0.0098, -0.0096, -0.0141, -0.0118, -0.006], [-0.0136, -0.0217, -0.029, -0.0221, -0.0131, -0.0102, -0.0266, 0.0001, 0.0185, -0.0197, -0.0228, -0.0238, -0.0229, -0.0171, -0.0131, -0.0126, -0.0209, -0.0173, -0.0066], [-0.017, -0.0305, -0.0426, -0.0306, -0.0152, -0.0118, -0.0455, -0.0018, 0.0272, -0.0269, -0.0318, -0.0351, -0.0329, -0.0227, -0.0157, -0.0147, -0.0298, -0.0242, -0.0045], [-0.0194, -0.0412, -0.0616, -0.0403, -0.014, -0.011, -0.0759, -0.0057, 0.0386, -0.0344, -0.0425, -0.0501, -0.0466, -0.0286, -0.0164, -0.0143, -0.0416, -0.0324, 0.0027], [-0.0194, -0.0542, -0.0884, -0.0509, -0.0065, -0.0064, -0.1212, -0.0118, 0.0533, -0.0412, -0.0541, -0.0686, -0.0658, -0.0345, -0.0128, -0.0092, -0.0571, -0.0416, 0.0183], [-0.0158, -0.0704, -0.1279, -0.063, 0.0113, 0.0018, -0.1822, -0.0199, 0.0711, -0.0458, -0.0657, -0.0897, -0.0943, -0.0409, -0.0012, 0.002, -0.0774, -0.0509, 0.0457], [-0.0077, -0.0905, -0.1869, -0.0775, 0.0437, 0.0111, -0.255, -0.029, 0.0908, -0.0464, -0.0753, -0.1109, -0.1369, -0.0487, 0.0236, 0.0201, -0.1031, -0.0588, 0.0868], [0.0075, -0.1147, -0.2759, -0.0969, 0.0964, 0.0166, -0.3304, -0.0389, 0.1112, -0.0409, -0.0795, -0.1298, -0.1988, -0.0595, 0.0685, 0.0451, -0.1338, -0.0639, 0.1404], [0.0321, -0.1408, -0.4095, -0.1241, 0.1753, 0.0128, -0.3988, -0.0516, 0.1309, -0.0277, -0.073, -0.1443, -0.2786, -0.0747, 0.1366, 0.0775, -0.167, -0.065, 0.2008], [0.069, -0.1647, -0.5987, -0.1617, 0.2841, -0.0032, -0.4524, -0.0709, 0.1499, -0.0057, -0.0508, -0.1541, -0.3707, -0.0952, 0.2265, 0.1189, -0.1988, -0.0622, 0.2593], [0.1143, -0.1761, -0.8568, -0.2087, 0.4214, -0.0331, -0.4888, -0.0997, 0.1682, 0.0272, -0.0105, -0.1609, -0.4579, -0.1225, 0.3263, 0.1655, -0.224, -0.0555, 0.3119], [0.1587, -0.1631, -1.1793, -0.2565, 0.5765, -0.0733, -0.5128, -0.1375, 0.1859, 0.0689, 0.0421, -0.1624, -0.5247, -0.1538, 0.4245, 0.2134, -0.2372, -0.0457, 0.3509], [0.1942, -0.124, -1.5417, -0.2984, 0.7326, -0.1193, -0.5272, -0.1796, 0.2012, 0.1174, 0.1016, -0.1613, -0.5645, -0.1895, 0.5085, 0.2611, -0.24, -0.0333, 0.3784], [0.2135, -0.0578, -1.9074, -0.3256, 0.8734, -0.1645, -0.5371, -0.2197, 0.2144, 0.1673, 0.1553, -0.1585, -0.579, -0.2241, 0.5746, 0.2994, -0.2352, -0.0206, 0.3984], [0.2253, 0.0178, -2.2324, -0.3315, 0.9778, -0.2002, -0.5436, -0.2513, 0.2236, 0.2058, 0.2044, -0.1563, -0.5859, -0.2514, 0.6239, 0.3286, -0.2305, -0.0113, 0.4146], [0.2265, 0.0835, -2.4917, -0.3279, 1.0514, -0.2268, -0.5478, -0.2783, 0.2304, 0.2331, 0.2422, -0.1529, -0.5841, -0.2692, 0.6572, 0.3502, -0.2223, -0.0032, 0.4258], [0.2235, 0.1383, -2.6718, -0.323, 1.1003, -0.2452, -0.5515, -0.2939, 0.2342, 0.2534, 0.265, -0.1508, -0.5797, -0.2826, 0.6787, 0.3619, -0.2174, 0.0015, 0.4338], [0.2214, 0.1729, -2.7856, -0.3203, 1.1315, -0.2568, -0.5538, -0.3046, 0.2373, 0.2666, 0.2792, -0.1493, -0.5766, -0.2907, 0.6919, 0.3694, -0.2138, 0.0048, 0.4386], [0.2188, 0.1967, -2.8597, -0.3165, 1.1491, -0.2634, -0.5553, -0.3114, 0.2393, 0.2741, 0.2877, -0.1482, -0.5749, -0.2954, 0.7009, 0.3759, -0.2111, 0.0072, 0.4406], [0.2174, 0.2095, -2.906, -0.3138, 1.1609, -0.2678, -0.5555, -0.3177, 0.2409, 0.2798, 0.2945, -0.1478, -0.5727, -0.2989, 0.7043, 0.3785, -0.2091, 0.0088, 0.4424], [0.2167, 0.2165, -2.9311, -0.3113, 1.167, -0.2705, -0.5558, -0.3202, 0.2418, 0.2827, 0.298, -0.1473, -0.571, -0.3011, 0.7059, 0.3807, -0.2081, 0.0094, 0.4433], [0.2169, 0.2204, -2.9433, -0.3111, 1.1699, -0.2718, -0.5559, -0.3214, 0.2419, 0.2841, 0.2999, -0.1477, -0.5715, -0.3022, 0.7076, 0.3814, -0.2081, 0.0097, 0.4442], [0.2173, 0.2227, -2.9497, -0.3139, 1.1735, -0.2722, -0.5561, -0.321, 0.2413, 0.2839, 0.3004, -0.1471, -0.5719, -0.3019, 0.7099, 0.3823, -0.2075, 0.0097, 0.4436], [0.2163, 0.225, -2.955, -0.3121, 1.1731, -0.2725, -0.5566, -0.3214, 0.2417, 0.2845, 0.3011, -0.147, -0.5706, -0.3025, 0.7093, 0.3828, -0.2074, 0.01, 0.4438], [0.2168, 0.2276, -2.9604, -0.3129, 1.1743, -0.2728, -0.5573, -0.3206, 0.2413, 0.2842, 0.3025, -0.1464, -0.5692, -0.3024, 0.7093, 0.383, -0.2071, 0.0101, 0.4429]], "cols": ["vol_5d", "vol_10d", "vol_20d", "vol_40d", "vol_60d", "vol_120d", "ret_5d", "ret_20d", "ret_60d", "AAPL_vol", "MSFT_vol", "NVDA_vol", "JPM_vol", "KO_vol", "PG_vol", "XOM_vol", "JNJ_vol", "WMT_vol", "DIS_vol"]};
+  var svgNS = "http://www.w3.org/2000/svg";
+  function fmtNum(c) { if (c >= 1) return String(Math.round(c)); return Number(c.toPrecision(1)).toString(); }
+  function fmtA(a) { return a >= 1 ? Math.round(a).toLocaleString("en-GB") : Number(a.toPrecision(1)).toString(); }
+  function draw(i) {
+    var svg = document.getElementById("c-svg"); if (!svg) return;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var coefs = D.paths[i], n = coefs.length;
+    var mx = 0; for (var k = 0; k < n; k++) mx = Math.max(mx, Math.abs(coefs[k]));
+    var scale = mx > 0.3 ? 3 : (mx > 0.03 ? 0.3 : 0.03);
+    var left = 70, right = 990, base = 112, half = 96;
+    var step = (right - left) / n, w = step * 0.62;
+    var mk = function (tag, attrs, text) { var e = document.createElementNS(svgNS, tag); for (var a in attrs) e.setAttribute(a, attrs[a]); if (text !== undefined) e.textContent = text; svg.appendChild(e); return e; };
+    mk("line", { x1: left, y1: base, x2: right, y2: base, stroke: "#c3c2b7", "stroke-width": 1.2 });
+    [scale, scale / 3, -scale / 3, -scale].forEach(function (v) {
+      var y = base - v / scale * half;
+      mk("line", { x1: left, y1: y, x2: right, y2: y, stroke: "#e6e5df", "stroke-width": 0.8 });
+      mk("text", { x: left - 8, y: y + 4, "text-anchor": "end", "font-size": 12.5, fill: "#898781", "font-family": "Segoe UI, sans-serif" }, (v < 0 ? "\u2212" : "") + fmtNum(Math.abs(v)));
+    });
+    for (var j = 0; j < n; j++) {
+      var v = coefs[j], h = Math.abs(v) / scale * half, x = left + j * step + (step - w) / 2;
+      mk("rect", { x: x, y: v >= 0 ? base - h : base, width: w, height: Math.max(h, 0.5), fill: v >= 0 ? "#1c5cab" : "#b3402f" });
+      var t = mk("text", { x: x + w / 2 + 4, y: base + half + 10, "font-size": 12.5, fill: "#52514e", "font-family": "Segoe UI, sans-serif", "text-anchor": "end" }, D.cols[j]);
+      t.setAttribute("transform", "rotate(-50 " + (x + w / 2 + 4) + " " + (base + half + 10) + ")");
+    }
+    document.getElementById("c-val").textContent = fmtNum(D.grid[i]);
+    document.getElementById("a-val").textContent = fmtA(1 / D.grid[i]);
+    document.getElementById("max-val").textContent = mx.toFixed(mx >= 0.1 ? 2 : 3);
+    document.getElementById("auc-val").textContent = D.cv[i].toFixed(3);
+    document.getElementById("axis-val").textContent = "\u00b1" + fmtNum(scale) + " per sd";
+  }
+  function wire() {
+    var r = document.getElementById("c-range"); if (!r) return;
+    r.addEventListener("input", function () { draw(parseInt(r.value, 10)); });
+    draw(parseInt(r.value, 10));
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire); else wire();
+})();
+</script>
+<p>The 19 standardised coefficients at the chosen <code>C</code>, and the cross-validated AUC of that model. Drag to the left: every coefficient is pulled towards zero, the near-copies lose their opposite signs, and the AUC rises.</p>
+</section>
+
+<section id="try-several" class="title-slide slide level1 center">
+<h1>Try several</h1>
+<div>
+<div id="pyodide-31" class="exercise-cell">
+
+</div>
+<script type="pyodide-31-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmb3IgQyBpbiBbMC4wMDAxLCAwLjAxLCAxLCAxMDBdOlxuICAgIHdpZGUgPSBQaXBlbGluZShbKFwic2NhbGVcIiwgU3RhbmRhcmRTY2FsZXIoKSksIChcImxvZ2l0XCIsIExvZ2lzdGljUmVncmVzc2lvbihDPUMpKV0pXG4gICAgc2NvcmVzID0gY3Jvc3NfdmFsX3Njb3JlKHdpZGUsIHRyYWluW2NvbHVtbnNdLCB0cmFpbltcInJpc2luZ1wiXSwgY3Y9Zm9sZHMsIHNjb3Jpbmc9XCJyb2NfYXVjXCIpXG4gICAgcHJpbnQoQywgcm91bmQoc2NvcmVzLm1lYW4oKSwgNCkpIn0=
+</script>
+</div>
+<p>The same loop as for alpha, over four values of <code>C</code>. The cross-validated AUC rises as <code>C</code> falls, so the stronger the penalty, the better the 19 columns do. At <code>C=0.0001</code> they reach 0.73, still below the 0.78 of the single column.</p>
+</section>
+
+<section id="the-validation-curve" class="title-slide slide level1 center">
+<h1>The validation curve</h1>
+<div id="7d91ae8e" class="cell" data-execution_count="12">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_08_files/figure-revealjs/cell-13-output-1.png" class="quarto-figure quarto-figure-center" width="944" height="282"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The same loop over a finer grid, which is also the AUC readout of the slider at every position. For ridge the curve had a lowest point in the middle. Here it keeps improving to the left, where the penalty has shrunk every coefficient to almost nothing, and it stays below the line for one column.</p>
+</section>
+
+<section id="gridsearchcv-over-c" class="title-slide slide level1 center">
+<h1>GridSearchCV over C</h1>
+<div>
+<div id="pyodide-32" class="exercise-cell">
+
+</div>
+<script type="pyodide-32-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4ubW9kZWxfc2VsZWN0aW9uIGltcG9ydCBHcmlkU2VhcmNoQ1Zcblxud2lkZSA9IFBpcGVsaW5lKFsoXCJzY2FsZVwiLCBTdGFuZGFyZFNjYWxlcigpKSwgKFwibG9naXRcIiwgTG9naXN0aWNSZWdyZXNzaW9uKCkpXSlcbmdyaWQgPSB7XCJsb2dpdF9fQ1wiOiBbMC4wMDAxLCAwLjAwMSwgMC4wMSwgMC4xLCAxLCAxMF19XG5cbnNlYXJjaCA9IEdyaWRTZWFyY2hDVih3aWRlLCBncmlkLCBjdj1mb2xkcywgc2NvcmluZz1cInJvY19hdWNcIilcbnNlYXJjaC5maXQodHJhaW5bY29sdW1uc10sIHRyYWluW1wicmlzaW5nXCJdKVxuXG5wcmludChzZWFyY2guYmVzdF9wYXJhbXNfKVxucHJpbnQoc2VhcmNoLmJlc3Rfc2NvcmVfKSJ9
+</script>
+</div>
+<p>The same search as for alpha, with <code>C</code> in the grid and <code>"roc_auc"</code> as the score. <code>"logit__C"</code> is the step name, two underscores, and the argument.</p>
+</section>
+
+<section id="the-same-grid-scored-by-accuracy" class="title-slide slide level1 center">
+<h1>The same grid, scored by accuracy</h1>
+<div>
+<div id="pyodide-33" class="exercise-cell">
+
+</div>
+<script type="pyodide-33-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJhY2Nfc2VhcmNoID0gR3JpZFNlYXJjaENWKHdpZGUsIGdyaWQsIGN2PWZvbGRzLCBzY29yaW5nPVwiYWNjdXJhY3lcIilcbmFjY19zZWFyY2guZml0KHRyYWluW2NvbHVtbnNdLCB0cmFpbltcInJpc2luZ1wiXSlcblxucHJpbnQoYWNjX3NlYXJjaC5iZXN0X3BhcmFtc18pXG5wcmludChhY2Nfc2VhcmNoLmJlc3Rfc2NvcmVfKSJ9
+</script>
+</div>
+<p>Scored by accuracy instead of AUC, the same grid on the same folds picks <code>C=0.01</code>. The scoring string is part of the choice, so it is set before the search and matched to what will be reported.</p>
+</section>
+
+<section id="two-arguments-for-the-lassos-penalty" class="title-slide slide level1 center">
+<h1>Two arguments for the lasso’s penalty</h1>
+<div class="compare">
+<div class="compare-col">
+<h3>
+penalty
+</h3>
+<p>
+What the objective charges for. <code>"l2"</code>, the default, charges the squared coefficients, as ridge does. <code>"l1"</code> charges the absolute values, as the lasso does, and sets some coefficients to exactly zero.
+</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>
+solver
+</h3>
+<p>
+The algorithm that walks downhill. The default, <code>"lbfgs"</code>, cannot handle absolute values, so <code>"l1"</code> needs a different one: <code>"liblinear"</code> can.
+</p>
+</div>
+</div>
+<div class="keypoint">
+<p><code>C</code> keeps its meaning under either penalty: small is strong. The two penalties are on different scales, as ridge’s and the lasso’s alphas were.</p>
+</div>
+</section>
+
+<section id="the-l1-penalty-in-code" class="title-slide slide level1 center">
+<h1>The l1 penalty in code</h1>
+<div>
+<div id="pyodide-34" class="exercise-cell">
+
+</div>
+<script type="pyodide-34-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJzcGFyc2UgPSBQaXBlbGluZShbKFwic2NhbGVcIiwgU3RhbmRhcmRTY2FsZXIoKSksXG4gICAgICAgICAgICAgICAgICAgKFwibG9naXRcIiwgTG9naXN0aWNSZWdyZXNzaW9uKHBlbmFsdHk9XCJsMVwiLCBzb2x2ZXI9XCJsaWJsaW5lYXJcIiwgQz0wLjAxKSldKVxuc3BhcnNlLmZpdCh0cmFpbltjb2x1bW5zXSwgdHJhaW5bXCJyaXNpbmdcIl0pXG5cbmZvciBuYW1lLCBiIGluIHppcChjb2x1bW5zLCBzcGFyc2UubmFtZWRfc3RlcHNbXCJsb2dpdFwiXS5jb2VmX1swXSk6XG4gICAgaWYgYiAhPSAwOlxuICAgICAgICBwcmludChuYW1lLCByb3VuZChiLCAzKSkifQ==
+</script>
+</div>
+<p>The loop prints the columns whose coefficient is not zero. At <code>C=0.01</code> two of the 19 keep one, <code>vol_20d</code> and <code>ret_5d</code>; the other 17 are exactly zero.</p>
+</section>
+
+<section id="the-test-rows" class="title-slide slide level1 center">
+<h1>The test rows</h1>
+<div class="statband">
+<div class="stat">
+<span class="stat-big">0.807</span>
+<div class="stat-label">
+one column
+</div>
+</div>
+<div class="stat">
+<span class="stat-big">0.847</span>
+<div class="stat-label">
+two columns
+</div>
+</div>
+<div class="stat">
+<span class="stat-big">0.815</span>
+<div class="stat-label">
+19 columns, C = 1
+</div>
+</div>
+<div class="stat">
+<span class="stat-big">0.811</span>
+<div class="stat-label">
+19 columns, C chosen
+</div>
+</div>
+<div class="stat">
+<span class="stat-big">0.815</span>
+<div class="stat-label">
+19 columns, l1
+</div>
+</div>
+</div>
+<p>All five are AUCs on the test days, within 0.04 of each other, and the two-column model, which cross-validation rejected, is the highest. The choice rests on eight years of folds rather than two years of test days, so the one-column model stays, and its test AUC of 0.81 is the number to report.</p>
+</section>
+
+<section id="when-to-change-what" class="title-slide slide level1 center">
+<h1>When to change what</h1>
+<div class="why-grid">
+<div class="why-point">
+<p><strong>Always</strong> <span><code>C</code>, the strength of the penalty: by cross-validation on a grid in factors of ten, in a pipeline with a scaler. <code>scoring</code>: <code>"roc_auc"</code> unless a threshold is settled. <code>cv</code>: <code>TimeSeriesSplit</code> for a time series.</span></p>
+</div>
+<div class="why-point">
+<p><strong>Sometimes</strong> <span><code>penalty="l1"</code> with <code>solver="liblinear"</code> for exact zeros. <code>max_iter</code> when the convergence warning appears. <code>class_weight</code> when one class is rare, which the next session covers.</span></p>
+</div>
+<div class="why-point">
+<p><strong>Rarely</strong> <span><code>fit_intercept</code>, <code>tol</code>: leave them. <code>solver</code> beyond the l1 case: the default handles every table in this course.</span></p>
+</div>
+<div class="why-point">
+<p><strong>The threshold</strong> <span>is not an argument of the model. <code>.predict()</code> uses one half; any other threshold is a comparison on <code>predict_proba</code>.</span></p>
+</div>
+</div>
+</section>
+
+<section id="the-workflow" class="title-slide slide level1 center">
+<h1>The workflow</h1>
+<div class="diagram">
+<svg width="1000" height="235" viewbox="0 0 1000 235" role="img" aria-label="The workflow: seal the test rows, build a pipeline with a scaler and a classifier, search a grid of C values over the folds scored by AUC, keep the best, refit on all training rows, then score once on the test rows">
+<rect x="8" y="38" width="148" height="66" rx="8" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.6"></rect> <text x="82" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">1. seal the</text> <text x="82" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">test rows</text> <rect x="176" y="38" width="148" height="66" rx="8" fill="#ffffff" stroke="#86b6ef" stroke-width="1.6"></rect> <text x="250" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">2. scaler and</text> <text x="250" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">classifier in a pipeline</text> <rect x="344" y="38" width="186" height="66" rx="8" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.8"></rect> <text x="437" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">3. grid of C values</text> <text x="437" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">times the folds, by AUC</text> <rect x="550" y="38" width="148" height="66" rx="8" fill="#eef4fc" stroke="#1c5cab" stroke-width="1.8"></rect> <text x="624" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">4. keep the</text> <text x="624" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">best C</text> <rect x="718" y="38" width="148" height="66" rx="8" fill="#fdf8ed" stroke="#d99a1c" stroke-width="1.6"></rect> <text x="792" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#8a6508" font-weight="600">5. refit on all</text> <text x="792" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#8a6508" font-weight="600">training rows</text> <rect x="886" y="38" width="106" height="66" rx="8" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.8"></rect> <text x="939" y="66" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">6. score,</text> <text x="939" y="86" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">once</text> <g fill="#c3c2b7"> <polygon points="160,66 160,76 172,71"></polygon> <polygon points="328,66 328,76 340,71"></polygon> <polygon points="534,66 534,76 546,71"></polygon> <polygon points="702,66 702,76 714,71"></polygon> <polygon points="870,66 870,76 882,71"></polygon> </g> <rect x="176" y="126" width="690" height="42" rx="7" fill="#f4f7fb" stroke="#dde6f2" stroke-width="1.3"></rect> <text x="521" y="153" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b">steps 2 to 5 are one call: GridSearchCV(pipeline, grid, cv=folds, scoring=“roc_auc”).fit(train)</text> <rect x="8" y="182" width="858" height="42" rx="7" fill="#f4f7fb" stroke="#dde6f2" stroke-width="1.3"></rect> <text x="437" y="209" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b">choosing happens in here</text> <rect x="886" y="182" width="106" height="42" rx="7" fill="#fbf1f0" stroke="#e0b3ac" stroke-width="1.3"></rect> <text x="939" y="209" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">reporting</text>
+</svg>
+</div>
+<div class="diagram-note">
+<p>The workflow for ridge, with a classifier in the pipeline, <code>C</code> in the grid and AUC as the score.</p>
+</div>
+</section>
+
+<section id="what-stays-with-you" class="title-slide slide level1 smaller center">
+<h1>What stays with you</h1>
+<div class="recap-grid">
+<div class="recap-item">
+<p><strong>A label from a comparison</strong> <code>(table["vol_next"] &gt; table["vol_20d"]).astype(int)</code>. Predicting the majority class on every row is the share a model has to beat.</p>
+</div>
+<div class="recap-item">
+<p><strong>A straight line cannot give a probability</strong> Fitted to ones and zeros it runs below 0 and above 1. The sigmoid keeps the curve between them.</p>
+</div>
+<div class="recap-item">
+<p><strong>Logistic regression fits the log-odds</strong> <code>LogisticRegression()</code>, <code>.fit(X, y)</code>. A coefficient adds to the log-odds and <code>np.exp</code> of it multiplies the odds; the sign is what to read.</p>
+</div>
+<div class="recap-item">
+<p><strong>predict_proba, then a threshold</strong> <code>.predict_proba()</code> gives a column per class, in the order of <code>classes_</code>. <code>.predict()</code> compares the second column with one half; any other threshold is a comparison you write.</p>
+</div>
+<div class="recap-item">
+<p><strong>The confusion matrix</strong> <code>confusion_matrix</code>, with rows for what happened and columns for the prediction. Accuracy, precision and recall are built from its four counts, and the threshold trades precision against recall.</p>
+</div>
+<div class="recap-item">
+<p><strong>AUC needs no threshold</strong> <code>roc_auc_score(y, p)</code> with the probabilities, never the predicted labels. 0.5 is a random ranking; <code>scoring="roc_auc"</code> on the folds.</p>
+</div>
+<div class="recap-item">
+<p><strong>C is one over alpha</strong> The penalty is ridge’s by default, and a small <code>C</code> is a strong penalty. Chosen by <code>GridSearchCV</code> in a pipeline with a scaler. <code>penalty="l1"</code> for exact zeros.</p>
+</div>
+<div class="recap-item">
+<p><strong>Fitted by iteration</strong> Log-loss has no formula for the coefficients, so <code>.fit()</code> improves them step by step. Raise <code>max_iter</code> when the warning appears.</p>
+</div>
+</div>
+</section>
+
+<section id="where-this-goes-next" class="title-slide slide level1 center">
+<h1>Where this goes next</h1>
+<div class="timeline">
+<div class="tl-row">
+<span class="tl-week">before</span><span class="tl-topic">a number as the target: regression, penalised, with the penalty chosen by cross-validation</span><span class="tl-who">ridge, lasso</span>
+</div>
+<div class="tl-row tl-now">
+<span class="tl-week">now</span><span class="tl-topic">a label as the target: probabilities, predicted labels, and the scores that judge them</span><span class="tl-who">logistic regression</span>
+</div>
+<div class="tl-row tl-future">
+<span class="tl-week">next</span><span class="tl-topic">the threshold as a decision with costs, rare events, and a second classifier</span><span class="tl-who">the same workflow</span>
+</div>
+<div class="tl-row tl-future">
+<span class="tl-week">then</span><span class="tl-topic">trees and ensembles, for numbers and for labels</span><span class="tl-who">the same workflow</span>
+</div>
+</div>
+<div class="keypoint">
+<p>Every classifier later in the course gives a probability and is scored the same way: the confusion matrix, precision, recall and AUC, on the folds first and on the test rows once.</p>
+</div>
+</section>
+
+<section id="before-the-next-session-case" class="title-slide slide level1 center">
+<h1>Before the next session <span class="chip chip-case">case</span></h1>
+<ul>
+<li><strong>Exercises</strong>: making labels, fitting and reading logistic regression, thresholds and the confusion matrix, cross-validated AUC, and a grid over <code>C</code>.</li>
+<li><strong>Case Part 8</strong>: the risk report gets its first classifier, on Apple and then on all 11 instruments.</li>
+</ul>
+<div class="muted small">
+<p>Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email <strong>jobo@econ.au.dk</strong>.</p>
+</div>
+
+<script type="pyodide-data">
+eyJvcHRpb25zIjp7ImVudiI6eyJQTE9UTFlfUkVOREVSRVIiOiJwbG90bHlfbWltZXR5cGUifSwiaW5kZXhVUkwiOiJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvcHlvZGlkZS92MC4yOC4xL2Z1bGwvIn0sInBhY2thZ2VzIjp7InBrZ3MiOlsicHlvZGlkZV9odHRwIiwibWljcm9waXAiLCJpcHl0aG9uIiwibnVtcHkiLCJwYW5kYXMiLCJtYXRwbG90bGliIiwic2Npa2l0LWxlYXJuIl19fQ==
+</script>
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3siY2VsbE5hbWUiOiJweW9kaWRlLTM0IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMzQgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTM0LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMzQtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8zNCA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMzQsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTMzIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMzMgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTMzLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMzMtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8zMyA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMzMsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTMyIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMzIgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTMyLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMzItY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8zMiA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMzIsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTMxIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMzEgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTMxLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMzEtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8zMSA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMzEsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTMwIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMzAgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTMwLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMzAtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8zMCA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMzAsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTI5IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMjkgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTI5LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMjktY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8yOSA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMjksIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTI4IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMjggPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTI4LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMjgtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8yOCA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMjgsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTI3IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMjcgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTI3LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMjctY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8yNyA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMjcsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTI2IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMjYgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTI2LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMjYtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8yNiA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMjYsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTI1IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMjUgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTI1LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMjUtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8yNSA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMjUsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTI0IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMjQgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTI0LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMjQtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8yNCA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMjQsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTIzIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMjMgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTIzLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMjMtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8yMyA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMjMsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTIyIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMjIgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTIyLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMjItY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8yMiA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMjIsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTIxIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMjEgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTIxLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMjEtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8yMSA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMjEsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTIwIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMjAgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTIwLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMjAtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8yMCA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMjAsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTE5IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTkgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTE5LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTktY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xOSA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTksIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTE4IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTggPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTE4LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTgtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xOCA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTgsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTE3IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTcgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTE3LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTctY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xNyA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTcsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTE2IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTYgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTE2LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTYtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xNiA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTYsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTE1IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTUgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTE1LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTUtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xNSA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTUsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTE0IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTQgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTE0LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTQtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xNCA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTQsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTEzIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTMgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTEzLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTMtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xMyA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTMsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTEyIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTIgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTEyLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTItY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xMiA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTIsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTExIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTEgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTExLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTEtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xMSA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTEsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTEwIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTAgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTEwLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTAtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xMCA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTAsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTkiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl85ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS05LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtOS1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzkgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzksIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTgiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl84ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS04LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtOC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzggPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzgsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTciLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl83ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS03LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtNy1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzcgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzcsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTYiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl82ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS02LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtNi1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzYgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzYsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTUiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl81ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS01LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtNS1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzUgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzUsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTQiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl80ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS00LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtNC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzQgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzQsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTMiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl8zID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS0zLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMy1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzMgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzMsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTIiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl8yID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS0yLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMi1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzIgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzIsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTEiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoiX3B5b2RpZGVfdmFsdWVfMSA9IHtcbiAgY29uc3QgeyBoaWdobGlnaHRQeXRob24sIGI2NERlY29kZX0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS0xLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgLy8gRGVmYXVsdCBldmFsdWF0aW9uIGNvbmZpZ3VyYXRpb25cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oe1xuICAgIGlkOiBcInB5b2RpZGUtMS1jb250ZW50c1wiLFxuICAgIGVjaG86IHRydWUsXG4gICAgb3V0cHV0OiB0cnVlXG4gIH0sIGJsb2NrLmF0dHIpO1xuXG4gIC8vIEV2YWx1YXRlIHRoZSBwcm92aWRlZCBQeXRob24gY29kZVxuICBjb25zdCByZXN1bHQgPSBweW9kaWRlT2pzLnByb2Nlc3Moe2NvZGU6IGJsb2NrLmNvZGUsIG9wdGlvbnN9LCB7fSk7XG5cbiAgLy8gRWFybHkgeWllbGQgd2hpbGUgd2Ugd2FpdCBmb3IgdGhlIGZpcnN0IGV2YWx1YXRpb24gYW5kIHJlbmRlclxuICBpZiAob3B0aW9ucy5vdXRwdXQgJiYgIShcIjFcIiBpbiBweW9kaWRlT2pzLnJlbmRlcmVkT2pzKSkge1xuICAgIGNvbnN0IGNvbnRhaW5lciA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJkaXZcIik7XG4gICAgY29uc3Qgc3Bpbm5lciA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJkaXZcIik7XG5cbiAgICBpZiAob3B0aW9ucy5lY2hvKSB7XG4gICAgICAvLyBTaG93IG91dHB1dCBhcyBoaWdobGlnaHRlZCBzb3VyY2VcbiAgICAgIGNvbnN0IHByZUVsZW0gPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KFwicHJlXCIpO1xuICAgICAgY29udGFpbmVyLmNsYXNzTmFtZSA9IFwic291cmNlQ29kZVwiO1xuICAgICAgcHJlRWxlbS5jbGFzc05hbWUgPSBcInNvdXJjZUNvZGUgcHl0aG9uXCI7XG4gICAgICBwcmVFbGVtLmFwcGVuZENoaWxkKGhpZ2hsaWdodFB5dGhvbihibG9jay5jb2RlKSk7XG4gICAgICBzcGlubmVyLmNsYXNzTmFtZSA9IFwic3Bpbm5lci1ncm93IHNwaW5uZXItZ3Jvdy1zbSBtLTIgcG9zaXRpb24tYWJzb2x1dGUgdG9wLTAgZW5kLTBcIjtcbiAgICAgIHByZUVsZW0uYXBwZW5kQ2hpbGQoc3Bpbm5lcik7XG4gICAgICBjb250YWluZXIuYXBwZW5kQ2hpbGQocHJlRWxlbSk7XG4gICAgfSBlbHNlIHtcbiAgICAgIHNwaW5uZXIuY2xhc3NOYW1lID0gXCJzcGlubmVyLWJvcmRlciBzcGlubmVyLWJvcmRlci1zbVwiO1xuICAgICAgY29udGFpbmVyLmFwcGVuZENoaWxkKHNwaW5uZXIpO1xuICAgIH1cblxuICAgIHlpZWxkIGNvbnRhaW5lcjtcbiAgfVxuXG4gIHB5b2RpZGVPanMucmVuZGVyZWRPanNbXCIxXCJdID0gdHJ1ZTtcbiAgeWllbGQgYXdhaXQgcmVzdWx0O1xufVxuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtcHJlbHVkZSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InB5b2RpZGVPanMgPSB7XG4gIGNvbnN0IHtcbiAgICBQeW9kaWRlRXZhbHVhdG9yLFxuICAgIFB5b2RpZGVFbnZpcm9ubWVudE1hbmFnZXIsXG4gICAgc2V0dXBQeXRob24sXG4gICAgc3RhcnRQeW9kaWRlV29ya2VyLFxuICAgIGI2NERlY29kZSxcbiAgICBjb2xsYXBzZVBhdGgsXG4gIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHN0YXR1c0NvbnRhaW5lciA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKFwiZXhlcmNpc2UtbG9hZGluZy1zdGF0dXNcIik7XG4gIGNvbnN0IGluZGljYXRvckNvbnRhaW5lciA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKFwiZXhlcmNpc2UtbG9hZGluZy1pbmRpY2F0b3JcIik7XG4gIGluZGljYXRvckNvbnRhaW5lci5jbGFzc0xpc3QucmVtb3ZlKFwiZC1ub25lXCIpO1xuXG4gIGxldCBzdGF0dXNUZXh0ID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChcImRpdlwiKVxuICBzdGF0dXNUZXh0LmNsYXNzTGlzdCA9IFwiZXhlcmNpc2UtbG9hZGluZy1kZXRhaWxzXCI7XG4gIHN0YXR1c1RleHQgPSBzdGF0dXNDb250YWluZXIuYXBwZW5kQ2hpbGQoc3RhdHVzVGV4dCk7XG4gIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSBgSW5pdGlhbGlzZWA7XG5cbiAgLy8gSG9pc3QgaW5kaWNhdG9yIG91dCBmcm9tIGZpbmFsIHNsaWRlIHdoZW4gcnVubmluZyB1bmRlciByZXZlYWxcbiAgY29uc3QgcmV2ZWFsU3RhdHVzID0gZG9jdW1lbnQucXVlcnlTZWxlY3RvcihcIi5yZXZlYWwgLmV4ZXJjaXNlLWxvYWRpbmctaW5kaWNhdG9yXCIpO1xuICBpZiAocmV2ZWFsU3RhdHVzKSB7XG4gICAgcmV2ZWFsU3RhdHVzLnJlbW92ZSgpO1xuICAgIGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoXCIucmV2ZWFsID4gLnNsaWRlc1wiKS5hcHBlbmRDaGlsZChyZXZlYWxTdGF0dXMpO1xuICB9XG5cbiAgLy8gTWFrZSBhbnkgcmV2ZWFsIHNsaWRlcyB3aXRoIGxpdmUgY2VsbHMgc2Nyb2xsYWJsZVxuICBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKFwiLnJldmVhbCAuZXhlcmNpc2UtY2VsbFwiKS5mb3JFYWNoKChlbCkgPT4ge1xuICAgIGVsLmNsb3Nlc3QoJ3NlY3Rpb24uc2xpZGUnKS5jbGFzc0xpc3QuYWRkKFwic2Nyb2xsYWJsZVwiKTtcbiAgfSlcblxuICAvLyBQeW9kaWRlIHN1cHBsZW1lbnRhbCBkYXRhIGFuZCBvcHRpb25zXG4gIGNvbnN0IGRhdGFDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcInB5b2RpZGUtZGF0YVxcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGRhdGEgPSBKU09OLnBhcnNlKGI2NERlY29kZShkYXRhQ29udGVudCkpO1xuXG4gIC8vIEdyYWIgbGlzdCBvZiByZXNvdXJjZXMgdG8gYmUgZG93bmxvYWRlZFxuICBjb25zdCBmaWxlc0NvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwidmZzLWZpbGVcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBmaWxlcyA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKGZpbGVzQ29udGVudCkpO1xuXG4gIGxldCBweW9kaWRlUHJvbWlzZSA9IChhc3luYyAoKSA9PiB7XG4gICAgc3RhdHVzVGV4dC50ZXh0Q29udGVudCA9IGBEb3dubG9hZGluZyBQeW9kaWRlYDtcbiAgICBjb25zdCBweW9kaWRlID0gYXdhaXQgc3RhcnRQeW9kaWRlV29ya2VyKGRhdGEub3B0aW9ucyk7XG5cbiAgICBzdGF0dXNUZXh0LnRleHRDb250ZW50ID0gYERvd25sb2FkaW5nIHBhY2thZ2U6IG1pY3JvcGlwYDtcbiAgICBhd2FpdCBweW9kaWRlLmxvYWRQYWNrYWdlKFwibWljcm9waXBcIik7XG4gICAgY29uc3QgbWljcm9waXAgPSBhd2FpdCBweW9kaWRlLnB5aW1wb3J0KFwibWljcm9waXBcIik7XG4gICAgYXdhaXQgZGF0YS5wYWNrYWdlcy5wa2dzLm1hcCgocGtnKSA9PiAoKSA9PiB7XG4gICAgICBzdGF0dXNUZXh0LnRleHRDb250ZW50ID0gYERvd25sb2FkaW5nIHBhY2thZ2U6ICR7cGtnfWA7XG4gICAgICByZXR1cm4gbWljcm9waXAuaW5zdGFsbChwa2cpO1xuICAgIH0pLnJlZHVjZSgoY3VyLCBuZXh0KSA9PiBjdXIudGhlbihuZXh0KSwgUHJvbWlzZS5yZXNvbHZlKCkpO1xuICAgIGF3YWl0IG1pY3JvcGlwLmRlc3Ryb3koKTtcblxuICAgIC8vIERvd25sb2FkIGFuZCBpbnN0YWxsIHJlc291cmNlc1xuICAgIGF3YWl0IGZpbGVzLm1hcCgoZmlsZSkgPT4gYXN5bmMgKCkgPT4ge1xuICAgICAgY29uc3QgbmFtZSA9IGZpbGUuc3Vic3RyaW5nKGZpbGUubGFzdEluZGV4T2YoJy8nKSArIDEpO1xuICAgICAgc3RhdHVzVGV4dC50ZXh0Q29udGVudCA9IGBEb3dubG9hZGluZyByZXNvdXJjZTogJHtuYW1lfWA7XG4gICAgICBjb25zdCByZXNwb25zZSA9IGF3YWl0IGZldGNoKGZpbGUpO1xuICAgICAgaWYgKCFyZXNwb25zZS5vaykge1xuICAgICAgICB0aHJvdyBuZXcgRXJyb3IoYENhbid0IGRvd25sb2FkIFxcYCR7ZmlsZX1cXGAuIEVycm9yICR7cmVzcG9uc2Uuc3RhdHVzfTogXCIke3Jlc3BvbnNlLnN0YXR1c1RleHR9XCIuYCk7XG4gICAgICB9XG4gICAgICBjb25zdCBkYXRhID0gYXdhaXQgcmVzcG9uc2UuYXJyYXlCdWZmZXIoKTtcblxuICAgICAgLy8gU3RvcmUgVVJMcyBpbiB0aGUgY3dkIHdpdGhvdXQgYW55IHN1YmRpcmVjdG9yeSBzdHJ1Y3R1cmVcbiAgICAgIGlmIChmaWxlLmluY2x1ZGVzKFwiOi8vXCIpKSB7XG4gICAgICAgIGZpbGUgPSBuYW1lO1xuICAgICAgfVxuXG4gICAgICAvLyBDb2xsYXBzZSBoaWdoZXIgZGlyZWN0b3J5IHN0cnVjdHVyZVxuICAgICAgZmlsZSA9IGNvbGxhcHNlUGF0aChmaWxlKTtcblxuICAgICAgLy8gQ3JlYXRlIGRpcmVjdG9yeSB0cmVlLCBpZ25vcmluZyBcImRpcmVjdG9yeSBleGlzdHNcIiBWRlMgZXJyb3JzXG4gICAgICBjb25zdCBwYXJ0cyA9IGZpbGUuc3BsaXQoJy8nKS5zbGljZSgwLCAtMSk7XG4gICAgICBsZXQgcGF0aCA9ICcnO1xuICAgICAgd2hpbGUgKHBhcnRzLmxlbmd0aCA+IDApIHtcbiAgICAgICAgcGF0aCArPSBwYXJ0cy5zaGlmdCgpICsgJy8nO1xuICAgICAgICB0cnkge1xuICAgICAgICAgIGF3YWl0IHB5b2RpZGUuRlMubWtkaXIocGF0aCk7XG4gICAgICAgIH0gY2F0Y2ggKGUpIHtcbiAgICAgICAgICBpZiAoZS5uYW1lICE9PSBcIkVycm5vRXJyb3JcIikgdGhyb3cgZTtcbiAgICAgICAgICBpZiAoZS5lcnJubyAhPT0gMjApIHtcbiAgICAgICAgICAgIGNvbnN0IGVycm9yVGV4dFB0ciA9IGF3YWl0IHB5b2RpZGUuX21vZHVsZS5fc3RyZXJyb3IoZS5lcnJubyk7XG4gICAgICAgICAgICBjb25zdCBlcnJvclRleHQgPSBhd2FpdCBweW9kaWRlLl9tb2R1bGUuVVRGOFRvU3RyaW5nKGVycm9yVGV4dFB0cik7XG4gICAgICAgICAgICB0aHJvdyBuZXcgRXJyb3IoYEZpbGVzeXN0ZW0gRXJyb3IgJHtlLmVycm5vfSBcIiR7ZXJyb3JUZXh0fVwiLmApO1xuICAgICAgICAgIH1cbiAgICAgICAgfVxuICAgICAgfVxuXG4gICAgICAvLyBXcml0ZSB0aGlzIGZpbGUgdG8gdGhlIFZGU1xuICAgICAgdHJ5IHtcbiAgICAgICAgcmV0dXJuIGF3YWl0IHB5b2RpZGUuRlMud3JpdGVGaWxlKGZpbGUsIG5ldyBVaW50OEFycmF5KGRhdGEpKTtcbiAgICAgIH0gY2F0Y2ggKGUpIHtcbiAgICAgICAgaWYgKGUubmFtZSAhPT0gXCJFcnJub0Vycm9yXCIpIHRocm93IGU7XG4gICAgICAgIGNvbnN0IGVycm9yVGV4dFB0ciA9IGF3YWl0IHB5b2RpZGUuX21vZHVsZS5fc3RyZXJyb3IoZS5lcnJubyk7XG4gICAgICAgIGNvbnN0IGVycm9yVGV4dCA9IGF3YWl0IHB5b2RpZGUuX21vZHVsZS5VVEY4VG9TdHJpbmcoZXJyb3JUZXh0UHRyKTtcbiAgICAgICAgdGhyb3cgbmV3IEVycm9yKGBGaWxlc3lzdGVtIEVycm9yICR7ZS5lcnJub30gXCIke2Vycm9yVGV4dH1cIi5gKTtcbiAgICAgIH1cbiAgICB9KS5yZWR1Y2UoKGN1ciwgbmV4dCkgPT4gY3VyLnRoZW4obmV4dCksIFByb21pc2UucmVzb2x2ZSgpKTtcblxuICAgIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSBgUHlvZGlkZSBlbnZpcm9ubWVudCBzZXR1cGA7XG4gICAgYXdhaXQgc2V0dXBQeXRob24ocHlvZGlkZSk7XG5cbiAgICBzdGF0dXNUZXh0LnJlbW92ZSgpO1xuICAgIGlmIChzdGF0dXNDb250YWluZXIuY2hpbGRyZW4ubGVuZ3RoID09IDApIHtcbiAgICAgIHN0YXR1c0NvbnRhaW5lci5wYXJlbnROb2RlLnJlbW92ZSgpO1xuICAgIH1cbiAgICByZXR1cm4gcHlvZGlkZTtcbiAgfSkoKS5jYXRjaCgoZXJyKSA9PiB7XG4gICAgc3RhdHVzVGV4dC5zdHlsZS5jb2xvciA9IFwidmFyKC0tZXhlcmNpc2UtZWRpdG9yLWhsLWVyLCAjQUQwMDAwKVwiO1xuICAgIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSBlcnIubWVzc2FnZTtcbiAgICAvL2luZGljYXRvckNvbnRhaW5lci5xdWVyeVNlbGVjdG9yKFwiLnNwaW5uZXItZ3Jvd1wiKS5jbGFzc0xpc3QuYWRkKFwiZC1ub25lXCIpO1xuICAgIHRocm93IGVycjtcbiAgfSk7XG5cbiAgLy8gS2VlcCB0cmFjayBvZiBpbml0aWFsIE9KUyBibG9jayByZW5kZXJcbiAgY29uc3QgcmVuZGVyZWRPanMgPSB7fTtcblxuICBjb25zdCBwcm9jZXNzID0gYXN5bmMgKGNvbnRleHQsIGlucHV0cykgPT4ge1xuICAgIGNvbnN0IHB5b2RpZGUgPSBhd2FpdCBweW9kaWRlUHJvbWlzZTtcbiAgICBjb25zdCBldmFsdWF0b3IgPSBuZXcgUHlvZGlkZUV2YWx1YXRvcihweW9kaWRlLCBjb250ZXh0KTtcbiAgICBhd2FpdCBldmFsdWF0b3IucHJvY2VzcyhpbnB1dHMpO1xuICAgIHJldHVybiBldmFsdWF0b3IuY29udGFpbmVyO1xuICB9XG5cbiAgcmV0dXJuIHtcbiAgICBweW9kaWRlUHJvbWlzZSxcbiAgICByZW5kZXJlZE9qcyxcbiAgICBwcm9jZXNzLFxuICB9O1xufVxuIn1dfQ==
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
+
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+WyJkYXRhL21hcmtldF9mZWF0dXJlcy5jc3YiXQ==
+</script>
+</section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="session_08_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="session_08_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="session_08_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="session_08_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="session_08_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="session_08_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="session_08_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="session_08_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="session_08_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': false,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: false,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'fast',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1280,
+
+        height: 720,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 6.0e-2,
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script type="ojs-module-contents">
+    eyJjb250ZW50cyI6W119
+    </script>
+    <script type="module">
+    if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+    window._ojs.paths.runtimeToDoc = "../../..";
+    window._ojs.paths.runtimeToRoot = "../../../..";
+    window._ojs.paths.docToRoot = "..";
+    window._ojs.selfContained = false;
+    window._ojs.runtime.interpretFromScriptTags();
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

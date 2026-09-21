@@ -72,6 +72,7 @@
     <li><a href="#fitting-a-model">Fitting a model</a></li>
     <li><a href="#choosing-between-models">Choosing between models</a></li>
     <li><a href="#penalised-regression">Penalised regression</a></li>
+    <li><a href="#classification">Classification</a></li>
     <li><a href="#reading-error-messages">Reading error messages</a></li>
   </ul>
   <section class="cs-section" id="running-code">
@@ -2160,6 +2161,324 @@ ax.plot([1, 10, 100, 1000], [0.72, 0.69, 0.62, 0.56])
 ax.set_xscale(&quot;log&quot;)
 ax.get_xscale()</code></pre>
         <div class="cs-out">&#x27;log&#x27;</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="classification">
+    <h2>Classification</h2>
+    <p class="lede">Session 8: a label as the target, logistic regression, the probabilities it gives, and the scores that judge a classifier.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>(series &gt; other).astype(int)</div>
+      <div class="cs-what">A label from a comparison: True and False become 1 and 0. The share of ones is the base rate, and the rule that always says the majority class is the baseline to beat.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+round(float(t[&quot;rising&quot;].mean()), 3)</code></pre>
+        <div class="cs-out">0.472</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>LogisticRegression()</div>
+      <div class="cs-what">Fits the log-odds of the label as a straight line in the columns, by log-loss. Same .fit(X, y) as every model. coef_ has one row per class boundary, so two brackets.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+print(m.intercept_.round(3), m.coef_.round(3))</code></pre>
+        <div class="cs-out">[1.245] [[-1.545]]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>model.predict_proba(X)</div>
+      <div class="cs-what">One row per observation, one column per class in the order of classes_, each row summing to one. Column 1 is the probability of the label being 1.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+m.predict_proba(t[[&quot;vol&quot;]])[:3].round(3)</code></pre>
+        <div class="cs-out">array([[0.614, 0.386],
+       [0.603, 0.397],
+       [0.595, 0.405]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>model.predict(X)</div>
+      <div class="cs-what">The 0/1 predictions: 1 where the probability of class 1 is at least one half. Any other threshold is a comparison on predict_proba.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+p = m.predict_proba(t[[&quot;vol&quot;]])[:, 1]
+print(m.predict(t[[&quot;vol&quot;]])[:8], (p &gt;= 0.5).astype(int)[:8])</code></pre>
+        <div class="cs-out">[0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>model.classes_</div>
+      <div class="cs-what">The labels the model knows, in the order predict_proba uses for its columns.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+m.classes_</code></pre>
+        <div class="cs-out">array([0, 1])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>np.exp(model.coef_)</div>
+      <div class="cs-what">A coefficient adds to the log-odds; its exponential multiplies the odds. One unit more of the column multiplies the odds of a 1 by this factor.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+np.exp(m.coef_).round(3)</code></pre>
+        <div class="cs-out">array([[0.213]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>accuracy_score(y, predicted)</div>
+      <div class="cs-what">The share of predictions that match the label. True labels first, predictions second, like every metric. Compare it with the majority rule before reading anything into it.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import accuracy_score
+round(accuracy_score(t[&quot;rising&quot;], m.predict(t[[&quot;vol&quot;]])), 3)</code></pre>
+        <div class="cs-out">0.643</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>confusion_matrix(y, predicted)</div>
+      <div class="cs-what">Four counts: rows are what happened, columns are what the model predicted, both in the order of classes_. Top-left true negatives, bottom-right true positives.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import confusion_matrix
+confusion_matrix(t[&quot;rising&quot;], m.predict(t[[&quot;vol&quot;]]))</code></pre>
+        <div class="cs-out">array([[801, 517],
+       [373, 805]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>precision_score(y, predicted)  ·  recall_score(y, predicted)</div>
+      <div class="cs-what">Precision: the share of predicted 1s that were 1. Recall: the share of real 1s that were predicted. Raising the threshold trades recall for precision.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import precision_score, recall_score
+predicted = m.predict(t[[&quot;vol&quot;]])
+print(round(precision_score(t[&quot;rising&quot;], predicted), 3), round(recall_score(t[&quot;rising&quot;], predicted), 3))</code></pre>
+        <div class="cs-out">0.609 0.683</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>(p &gt;= 0.6).astype(int)</div>
+      <div class="cs-what">Predictions at a threshold other than one half, from the probability column. The model is unchanged; only the comparison changed.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import confusion_matrix
+p = m.predict_proba(t[[&quot;vol&quot;]])[:, 1]
+confusion_matrix(t[&quot;rising&quot;], (p &gt;= 0.6).astype(int))</code></pre>
+        <div class="cs-out">array([[1137,  181],
+       [ 793,  385]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>roc_auc_score(y, p)</div>
+      <div class="cs-what">Area under the ROC curve: 0.5 is a random ranking, 1 a perfect one, and no threshold is involved. Pass the PROBABILITIES, never the 0/1 predictions.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import roc_auc_score
+p = m.predict_proba(t[[&quot;vol&quot;]])[:, 1]
+round(float(roc_auc_score(t[&quot;rising&quot;], p)), 3)</code></pre>
+        <div class="cs-out">0.699</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>roc_curve(y, p)</div>
+      <div class="cs-what">The false positive rate and the true positive rate at every threshold, plus the thresholds, for drawing the ROC curve.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import roc_curve
+p = m.predict_proba(t[[&quot;vol&quot;]])[:, 1]
+fpr, tpr, thr = roc_curve(t[&quot;rising&quot;], p)
+print(len(thr), fpr[:3].round(3), tpr[:3].round(3))</code></pre>
+        <div class="cs-out">940 [0. 0. 0.] [0.    0.001 0.051]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>cross_val_score(model, X, y, cv=folds, scoring=&#x27;roc_auc&#x27;)</div>
+      <div class="cs-what">The same folds as for a number, with a classification score. Larger is better, so no minus sign. Other strings: &#x27;accuracy&#x27;, &#x27;neg_log_loss&#x27;, &#x27;precision&#x27;, &#x27;recall&#x27;.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score, TimeSeriesSplit
+s = cross_val_score(LogisticRegression(), t[[&quot;vol&quot;]], t[&quot;rising&quot;], cv=TimeSeriesSplit(n_splits=5), scoring=&quot;roc_auc&quot;)
+s.round(3)</code></pre>
+        <div class="cs-out">array([0.814, 0.714, 0.783, 0.724, 0.81 ])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>LogisticRegression(C=0.01)</div>
+      <div class="cs-what">The penalty&#x27;s strength, upside down: C = 1/alpha, so a small C is a strong ridge penalty and a large C is almost none. Default C=1, penalty &#x27;l2&#x27;. Standardise in a pipeline and choose C on a grid in factors of ten.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+pipe = Pipeline([(&quot;scale&quot;, StandardScaler()), (&quot;logit&quot;, LogisticRegression(C=0.01))])
+pipe.fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+pipe.named_steps[&quot;logit&quot;].coef_.round(3)</code></pre>
+        <div class="cs-out">array([[-0.677]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>LogisticRegression(penalty=&#x27;l1&#x27;, solver=&#x27;liblinear&#x27;, C=0.01)</div>
+      <div class="cs-what">The lasso&#x27;s penalty on a classifier: exact zeros. It needs a solver that can handle absolute values, and liblinear can.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression(penalty=&quot;l1&quot;, solver=&quot;liblinear&quot;, C=0.01).fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+m.coef_.round(3)</code></pre>
+        <div class="cs-out">array([[-0.236]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>LogisticRegression(max_iter=1000)</div>
+      <div class="cs-what">More steps for the solver. Log-loss has no closed form, so .fit() iterates; raise this when the ConvergenceWarning appears, and standardise first.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import LogisticRegression
+LogisticRegression(max_iter=1000).get_params()[&quot;max_iter&quot;]</code></pre>
+        <div class="cs-out">1000</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>log_loss(y, p)</div>
+      <div class="cs-what">The objective logistic regression minimises, averaged over the rows: minus the log of the probability given to what happened. Takes the true labels and the probabilities.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import log_loss
+round(float(log_loss(t[&quot;rising&quot;], m.predict_proba(t[[&quot;vol&quot;]])[:, 1])), 4)</code></pre>
+        <div class="cs-out">0.6381</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>model.n_iter_</div>
+      <div class="cs-what">How many steps the solver took. Log-loss has no formula for the coefficients, so .fit() improves them step by step until they stop changing or max_iter is reached.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+m.n_iter_</code></pre>
+        <div class="cs-out">array([6], dtype=int32)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>np.where(mask, a, b)</div>
+      <div class="cs-what">An array that takes a where the mask is True and b elsewhere. Handy for keeping one group&#x27;s values and blanking the rest before argmin or argmax.</div>
+      <div class="cs-demo">
+        <pre><code>import numpy as np
+np.where(np.array([True, False, True]), np.array([0.2, 0.7, 0.4]), 9)</code></pre>
+        <div class="cs-out">array([0.2, 9. , 0.4])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>np.zeros(n)  ·  np.zeros(n, dtype=int)</div>
+      <div class="cs-what">An array of n zeros, as floats or as integers. A prediction of 0 on every row is np.zeros(len(test), dtype=int).</div>
+      <div class="cs-demo">
+        <pre><code>import numpy as np
+np.zeros(4, dtype=int)</code></pre>
+        <div class="cs-out">array([0, 0, 0, 0])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>np.arange(start, stop, step)</div>
+      <div class="cs-what">Values from start up to but not including stop, a fixed step apart. np.linspace fixes the count instead of the step.</div>
+      <div class="cs-demo">
+        <pre><code>import numpy as np
+np.arange(0.3, 0.7, 0.1).round(2)</code></pre>
+        <div class="cs-out">array([0.3, 0.4, 0.5, 0.6])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>(a == b).all()</div>
+      <div class="cs-what">True only when every element of a comparison is True: the vectorised way to check two columns or arrays agree everywhere.</div>
+      <div class="cs-demo">
+        <pre><code>import numpy as np
+a = np.array([1, 0, 1])
+print((a == np.array([1, 0, 1])).all(), (a == np.array([1, 1, 1])).all())</code></pre>
+        <div class="cs-out">True False</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>series.groupby(series.index.year).mean()</div>
+      <div class="cs-what">Group a dated Series by the year in its index and take a mean per year: one accuracy per year from a Series of True and False.</div>
+      <div class="cs-demo">
+        <pre><code>right = pd.Series([True, False, True, True], index=pd.to_datetime([&quot;2023-03-01&quot;, &quot;2023-09-01&quot;, &quot;2024-02-01&quot;, &quot;2024-08-01&quot;]))
+right.groupby(right.index.year).mean()</code></pre>
+        <div class="cs-out">2023    0.5
+2024    1.0
+dtype: float64</div>
       </div>
     </div>
   </section>
