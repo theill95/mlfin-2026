@@ -251,39 +251,40 @@ td code { white-space: nowrap; }
 .cs-section { margin-top: 2.2rem; }
 .cs-section > h2 { scroll-margin-top: 1rem; }
 
-.cs-entry {
-  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-  padding: 0.75rem 0.95rem; margin-bottom: 0.6rem;
+/* The imports a section needs, shown once under its heading. */
+.cs-imports {
+  margin: 0.2rem 0 0.6rem; padding: 0.5rem 0.8rem; background: #f7f7f4;
+  border: 1px solid var(--line); border-radius: 8px; font-size: 0.78rem;
+  line-height: 1.45; white-space: pre-wrap; word-break: normal; overflow-wrap: break-word;
 }
-.cs-call {
-  font-family: "Cascadia Mono", Consolas, Menlo, "Courier New", monospace;
-  font-size: 0.9rem; color: var(--blue-deep); font-weight: 600;
-  margin-bottom: 0.2rem;
+.cs-names { font-size: 0.8rem; color: var(--ink-soft); margin: 0 0 0.7rem; }
+
+/* One row per function: the call on the left, what it does on the right.
+   Long calls wrap at spaces rather than inside a name, and never scroll. */
+.cs-ref {
+  display: grid; grid-template-columns: minmax(0, 1fr); column-gap: 1rem; row-gap: 0;
+  border-top: 1px solid var(--line);
 }
-.cs-what { font-size: 0.88rem; color: var(--ink-soft); margin-bottom: 0.5rem; }
-.cs-demo {
-  display: grid; grid-template-columns: 1fr; gap: 0.35rem;
+.cs-sig, .cs-desc { padding: 0.45rem 0 0.45rem; border-bottom: 1px solid var(--line); }
+.cs-sig {
   font-family: "Cascadia Mono", Consolas, Menlo, "Courier New", monospace;
-  font-size: 0.8rem;
+  font-size: 0.82rem; font-weight: 600; color: var(--blue-deep);
+  word-break: normal; overflow-wrap: break-word;
+}
+.cs-sig code { font: inherit; background: transparent; padding: 0; }
+.cs-or { color: var(--faint); font-weight: 400; padding: 0 0.2em; }
+.cs-desc { font-size: 0.85rem; color: var(--ink-soft); position: relative; padding-right: 4.2rem; }
+.cs-since {
+  position: absolute; right: 0; top: 0.5rem;
+  font-size: 0.7rem; color: var(--faint);
+  font-family: "Segoe UI", system-ui, sans-serif; font-weight: 400;
 }
 @media (min-width: 720px) {
-  .cs-demo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.6rem; }
+  .cs-ref { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
 }
-/* Wrap rather than scroll: this is a reference card, and a horizontal
-   scrollbar on every long line makes it unreadable at a glance. */
-.cs-demo pre {
-  margin: 0; background: #f7f7f4;
-  white-space: pre-wrap; word-break: break-word; overflow-x: visible;
-}
-.cs-out {
-  margin: 0; padding: 0.8rem 1rem; border-radius: 8px;
-  background: #fff; border: 1px solid var(--line); color: #26333f;
-  white-space: pre-wrap; word-break: break-word; overflow-x: auto;
-}
-.cs-out.empty { color: var(--faint); font-style: italic; }
-.cs-since {
-  float: right; font-size: 0.7rem; color: var(--faint);
-  font-family: "Segoe UI", system-ui, sans-serif; font-weight: 400;
+/* On a narrow screen the two cells stack, so only the second one draws the rule. */
+@media (max-width: 719px) {
+  .cs-sig { border-bottom: 0; padding-bottom: 0.1rem; }
 }
 
 /* ------------------------------------------------------------ maths page */
@@ -406,10 +407,18 @@ td .katex-display > .katex { text-align: left; font-size: 0.95em; }
   .shell { display: block; }
   .sidenav, .banner, .skip, .cs-toc, footer { display: none; }
   .wrap { max-width: none; padding: 0; }
-  .card, .cs-entry { break-inside: avoid; box-shadow: none; }
+  .card { break-inside: avoid; box-shadow: none; }
+  /* A4 is narrower than the 720px breakpoint, so the two columns are set here too,
+     a little wider on the left so the longest scoring string fits on one line. */
+  .cs-ref { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+  .cs-sig { font-size: 0.76rem; }
+  .cs-sig, .cs-desc { break-inside: avoid; }
+  .cs-section > h2, .cs-section > .lede, .cs-imports, .cs-names { break-after: avoid; break-inside: avoid; }
+  .cs-sig { border-bottom: 1px solid var(--line); padding-bottom: 0.45rem; }
+  .cs-imports { background: #fff; }
   .cs-section { break-before: auto; }
   a { color: var(--ink); text-decoration: none; }
-  pre, .cs-out { background: #fff; }
+  pre { background: #fff; }
   .m-eq, .m-card, .m-panel, .m-step, details.m-check { break-inside: avoid; }
   /* Print the answers: a folded question is no use on paper. */
   details.m-check > * { display: block !important; }

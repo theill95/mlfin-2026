@@ -1,0 +1,2578 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cheatsheet · Machine Learning in Finance</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+
+  <!-- nav:start -->
+  <nav class="sidenav" aria-label="Course pages">
+    <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
+    <ul>
+      <li><a href="index.html">Sessions</a></li>
+      <li><a href="cheatsheet.html" aria-current="page">Cheatsheet</a></li>
+      <li><a href="math.html">Maths brush-up</a></li>
+      <li><a href="setup.html">Setup &amp; tools</a></li>
+      <li><a href="resources.html">Resources</a></li>
+      <li><a href="downloads.html">Downloads</a></li>
+    </ul>
+    <div class="nav-foot">
+      <div class="nav-owner">Jonas Theill Bøjstrup</div>
+      <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>
+      <div class="nav-legal">Aarhus University<br>&copy; 2026 Jonas Theill Bøjstrup</div>
+    </div>
+  </nav>
+  <!-- nav:end -->
+
+  <main class="wrap" id="main">
+  <header>
+    <div class="accent"></div>
+    <div class="eyebrow">Every function the course has used</div>
+    <h1>Cheatsheet</h1>
+    <p class="lede">One line on what each thing does, and a worked example with the
+       output it actually produced. Every example on this page was run against the real
+       course data when the page was built, so nothing here is a guess.</p>
+  </header>
+
+  <div class="note">
+    <strong>Ctrl+P saves this as a PDF.</strong> The menu and the page furniture drop out
+    when printing, so you get the reference on its own.
+  </div>
+
+  <ul class="cs-toc">
+    <li><a href="#running-code">Running code</a></li>
+    <li><a href="#numbers">Numbers</a></li>
+    <li><a href="#text">Text</a></li>
+    <li><a href="#true-and-false">True and false</a></li>
+    <li><a href="#types">Types</a></li>
+    <li><a href="#built-in-functions">Built-in functions</a></li>
+    <li><a href="#lists">Lists</a></li>
+    <li><a href="#loops">Loops</a></li>
+    <li><a href="#making-choices">Making choices</a></li>
+    <li><a href="#your-own-functions">Your own functions</a></li>
+    <li><a href="#dictionaries">Dictionaries</a></li>
+    <li><a href="#packages">Packages</a></li>
+    <li><a href="#numpy-arrays">NumPy arrays</a></li>
+    <li><a href="#numpy-matrices">NumPy matrices</a></li>
+    <li><a href="#pandas--one-column">pandas: one column</a></li>
+    <li><a href="#pandas--a-table">pandas: a table</a></li>
+    <li><a href="#pandas--groups-and-shapes">pandas: groups and shapes</a></li>
+    <li><a href="#matplotlib">matplotlib</a></li>
+    <li><a href="#features-and-a-target">Features and a target</a></li>
+    <li><a href="#missing-values">Missing values</a></li>
+    <li><a href="#extremes--and-changing-the-scale">Extremes, and changing the scale</a></li>
+    <li><a href="#scoring-a-prediction-of-a-number">Scoring a prediction of a number</a></li>
+    <li><a href="#scoring-a-prediction-of-a-label">Scoring a prediction of a label</a></li>
+    <li><a href="#training-rows-and-test-rows">Training rows and test rows</a></li>
+    <li><a href="#fitting-a-model">Fitting a model</a></li>
+    <li><a href="#choosing-between-models">Choosing between models</a></li>
+    <li><a href="#penalised-regression">Penalised regression</a></li>
+    <li><a href="#classification">Classification</a></li>
+    <li><a href="#reading-error-messages">Reading error messages</a></li>
+  </ul>
+  <section class="cs-section" id="running-code">
+    <h2>Running code</h2>
+    <p class="lede">A notebook shows the value of the last line of a cell. Anything else you want to see, you have to print.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>print(value)</div>
+      <div class="cs-what">Show one or more values. Separate several with commas.</div>
+      <div class="cs-demo">
+        <pre><code>print(&quot;volatility:&quot;, 0.0143)</code></pre>
+        <div class="cs-out">volatility: 0.0143</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span># comment</div>
+      <div class="cs-what">Everything after # on a line is a note for humans, not code.</div>
+      <div class="cs-demo">
+        <pre><code>total = 10  # dollars, not cents
+total</code></pre>
+        <div class="cs-out">10</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>value</div>
+      <div class="cs-what">The last line of a cell is displayed automatically, with no print.</div>
+      <div class="cs-demo">
+        <pre><code>2 + 2</code></pre>
+        <div class="cs-out">4</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="numbers">
+    <h2>Numbers</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>+  -  *  /</div>
+      <div class="cs-what">The usual arithmetic. Division always gives a float.</div>
+      <div class="cs-demo">
+        <pre><code>(10 - 4) * 2 / 3</code></pre>
+        <div class="cs-out">4.0</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>**</div>
+      <div class="cs-what">To the power of. Compound growth, and square roots as ** 0.5.</div>
+      <div class="cs-demo">
+        <pre><code>1.07 ** 10</code></pre>
+        <div class="cs-out">1.9671513572895665</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>round(number, ndigits)</div>
+      <div class="cs-what">Round to a number of decimals.</div>
+      <div class="cs-demo">
+        <pre><code>round(0.014287, 4)</code></pre>
+        <div class="cs-out">0.0143</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>abs(number)</div>
+      <div class="cs-what">Distance from zero, sign discarded.</div>
+      <div class="cs-demo">
+        <pre><code>abs(-0.0482)</code></pre>
+        <div class="cs-out">0.0482</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="text">
+    <h2>Text</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>&quot;text&quot;</div>
+      <div class="cs-what">A string. Single or double quotes, as long as they match.</div>
+      <div class="cs-demo">
+        <pre><code>ticker = &quot;AAPL&quot;
+ticker</code></pre>
+        <div class="cs-out">&#x27;AAPL&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>+</div>
+      <div class="cs-what">Glue strings together. Both sides must be strings.</div>
+      <div class="cs-demo">
+        <pre><code>&quot;AA&quot; + &quot;PL&quot;</code></pre>
+        <div class="cs-out">&#x27;AAPL&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>f&quot;{value}&quot;</div>
+      <div class="cs-what">An f-string: put a value inside text.</div>
+      <div class="cs-demo">
+        <pre><code>ticker = &quot;AAPL&quot;
+f&quot;the ticker is {ticker}&quot;</code></pre>
+        <div class="cs-out">&#x27;the ticker is AAPL&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>f&quot;{r:.2%}&quot;</div>
+      <div class="cs-what">As a percentage with 2 decimals. The recipe for returns.</div>
+      <div class="cs-demo">
+        <pre><code>r = 0.014287
+f&quot;{r:.2%}&quot;</code></pre>
+        <div class="cs-out">&#x27;1.43%&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>f&quot;{x:.2f}&quot;</div>
+      <div class="cs-what">As a plain number with 2 decimals. The recipe for prices.</div>
+      <div class="cs-demo">
+        <pre><code>f&quot;{183.5622:.2f}&quot;</code></pre>
+        <div class="cs-out">&#x27;183.56&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>f&quot;{name:&lt;6}&quot;  f&quot;{x:&gt;7.1%}&quot;</div>
+      <div class="cs-what">A field width: pad left-aligned text, or right-align a number, so a column of output lines up.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0141, &quot;KO&quot;: 0.0080}
+for t in vol:
+    print(f&quot;{t:&lt;6}{vol[t]:&gt;7.2%}&quot;)</code></pre>
+        <div class="cs-out">AAPL    1.41%
+KO      0.80%</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>text.upper()  .lower()</div>
+      <div class="cs-what">A copy of the string in one case. Tickers arrive in every mixture of both.</div>
+      <div class="cs-demo">
+        <pre><code>&quot;aapl&quot;.upper()</code></pre>
+        <div class="cs-out">&#x27;AAPL&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>text.strip()</div>
+      <div class="cs-what">A copy with the spaces at each end removed. The first thing you do to text from a file.</div>
+      <div class="cs-demo">
+        <pre><code>&quot;  aapl &quot;.strip().upper()</code></pre>
+        <div class="cs-out">&#x27;AAPL&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>text.count(part)</div>
+      <div class="cs-what">How many times a piece of text appears inside a string.</div>
+      <div class="cs-demo">
+        <pre><code>&quot;Coca-Cola Company&quot;.count(&quot;o&quot;)</code></pre>
+        <div class="cs-out">3</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="true-and-false">
+    <h2>True and false</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>==  !=</div>
+      <div class="cs-what">Equal, and not equal. Two equals signs, because one assigns.</div>
+      <div class="cs-demo">
+        <pre><code>&quot;AAPL&quot; == &quot;KO&quot;</code></pre>
+        <div class="cs-out">False</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>&lt;  &gt;  &lt;=  &gt;=</div>
+      <div class="cs-what">The usual comparisons. The answer is True or False.</div>
+      <div class="cs-demo">
+        <pre><code>0.0331 &gt; 0.0141</code></pre>
+        <div class="cs-out">True</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>and  or  not</div>
+      <div class="cs-what">Combine conditions. In pandas the same job is done by &amp; and |.</div>
+      <div class="cs-demo">
+        <pre><code>r = -0.02
+r &lt; 0 and r &gt; -0.05</code></pre>
+        <div class="cs-out">True</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="types">
+    <h2>Types</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>type(value)</div>
+      <div class="cs-what">What kind of thing this is.</div>
+      <div class="cs-demo">
+        <pre><code>type(0.0143)</code></pre>
+        <div class="cs-out">&lt;class &#x27;float&#x27;&gt;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>int(x)  float(x)  str(x)</div>
+      <div class="cs-what">Convert between whole number, decimal and text.</div>
+      <div class="cs-demo">
+        <pre><code>int(&quot;252&quot;) + 1</code></pre>
+        <div class="cs-out">253</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>None</div>
+      <div class="cs-what">The absence of a value. What a function returns when it has no return.</div>
+      <div class="cs-demo">
+        <pre><code>x = None
+print(x)</code></pre>
+        <div class="cs-out">None</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="built-in-functions">
+    <h2>Built-in functions</h2>
+    <p class="lede">Always available, no import needed.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>len(items)</div>
+      <div class="cs-what">How many items.</div>
+      <div class="cs-demo">
+        <pre><code>len(closes)</code></pre>
+        <div class="cs-out">5</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>sum(numbers)</div>
+      <div class="cs-what">Add them all up.</div>
+      <div class="cs-demo">
+        <pre><code>sum([0.012, -0.004, 0.008])</code></pre>
+        <div class="cs-out">0.016</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>min(values)  max(values)</div>
+      <div class="cs-what">Smallest and largest.</div>
+      <div class="cs-demo">
+        <pre><code>print(min(closes), max(closes))</code></pre>
+        <div class="cs-out">179.15 183.56</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>sorted(values)</div>
+      <div class="cs-what">A new list, in order. The original is untouched.</div>
+      <div class="cs-demo">
+        <pre><code>sorted([0.03, 0.01, 0.02])</code></pre>
+        <div class="cs-out">[0.01, 0.02, 0.03]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>range(start, stop)</div>
+      <div class="cs-what">Whole numbers from start up to but NOT including stop.</div>
+      <div class="cs-demo">
+        <pre><code>list(range(1, 5))</code></pre>
+        <div class="cs-out">[1, 2, 3, 4]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>enumerate(items)</div>
+      <div class="cs-what">The position and the value together, so you need no counter of your own.</div>
+      <div class="cs-demo">
+        <pre><code>for i, r in enumerate([0.012, -0.004]):
+    print(i, r)</code></pre>
+        <div class="cs-out">0 0.012
+1 -0.004</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>zip(a, b)</div>
+      <div class="cs-what">Walk two lists in step, with no indexing. Stops at the shorter one.</div>
+      <div class="cs-demo">
+        <pre><code>for d, c in zip([&quot;Jan 02&quot;, &quot;Jan 03&quot;], [183.56, 182.19]):
+    print(d, c)</code></pre>
+        <div class="cs-out">Jan 02 183.56
+Jan 03 182.19</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>help(thing)</div>
+      <div class="cs-what">Print the documentation. Works offline.</div>
+      <div class="cs-demo">
+        <pre><code>help(round)</code></pre>
+        <div class="cs-out">Help on built-in function round in module builtins:
+
+round(number, ndigits=None)
+    Round a number to a given precision in decimal digits.
+
+    The return value is an integer if ndigits is omitted or None.  Otherwise
+    the return value has the same type as the number.  ndigits may be negative.</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>dir(thing)</div>
+      <div class="cs-what">List everything an object can do. Useful when you half-remember a name.</div>
+      <div class="cs-demo">
+        <pre><code>s = pd.Series([3, 1, 2])
+[n for n in dir(s) if &quot;sort&quot; in n and not n.startswith(&quot;_&quot;)]</code></pre>
+        <div class="cs-out">[&#x27;argsort&#x27;, &#x27;searchsorted&#x27;, &#x27;sort_index&#x27;, &#x27;sort_values&#x27;]</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="lists">
+    <h2>Lists</h2>
+    <p class="lede">An ordered box of values. Counting starts at 0.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>[a, b, c]</div>
+      <div class="cs-what">Make a list.</div>
+      <div class="cs-demo">
+        <pre><code>closes = [183.56, 182.19, 179.87]
+closes</code></pre>
+        <div class="cs-out">[183.56, 182.19, 179.87]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>items[i]</div>
+      <div class="cs-what">The item at that position. [0] is first.</div>
+      <div class="cs-demo">
+        <pre><code>closes[0]</code></pre>
+        <div class="cs-out">183.56</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>items[-1]</div>
+      <div class="cs-what">Counting from the end. [-1] is last.</div>
+      <div class="cs-demo">
+        <pre><code>closes[-1]</code></pre>
+        <div class="cs-out">183.48</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>items[a:b]</div>
+      <div class="cs-what">A slice: from a up to but NOT including b.</div>
+      <div class="cs-demo">
+        <pre><code>closes[1:3]</code></pre>
+        <div class="cs-out">[182.19, 179.87]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>items[:n]  items[n:]</div>
+      <div class="cs-what">Everything before n, everything from n.</div>
+      <div class="cs-demo">
+        <pre><code>closes[:2]</code></pre>
+        <div class="cs-out">[183.56, 182.19]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>items.append(x)</div>
+      <div class="cs-what">Add to the end. Changes the list itself.</div>
+      <div class="cs-demo">
+        <pre><code>out = []
+out.append(0.012)
+out.append(-0.004)
+out</code></pre>
+        <div class="cs-out">[0.012, -0.004]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>items.index(x)</div>
+      <div class="cs-what">The position of the first x.</div>
+      <div class="cs-demo">
+        <pre><code>closes.index(max(closes))</code></pre>
+        <div class="cs-out">0</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>[]</div>
+      <div class="cs-what">An empty list, ready for a loop to fill.</div>
+      <div class="cs-demo">
+        <pre><code>results = []
+len(results)</code></pre>
+        <div class="cs-out">0</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="loops">
+    <h2>Loops</h2>
+    <p class="lede">Doing something once per item.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>for item in items:</div>
+      <div class="cs-what">Run the indented body once for every item.</div>
+      <div class="cs-demo">
+        <pre><code>for r in [0.012, -0.004]:
+    print(r)</code></pre>
+        <div class="cs-out">0.012
+-0.004</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>for i in range(n):</div>
+      <div class="cs-what">Loop over positions rather than values.</div>
+      <div class="cs-demo">
+        <pre><code>for i in range(3):
+    print(i)</code></pre>
+        <div class="cs-out">0
+1
+2</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>range(1, len(items))</div>
+      <div class="cs-what">Positions 1 onwards: how you reach item i and i-1 together.</div>
+      <div class="cs-demo">
+        <pre><code>for i in range(1, len(closes)):
+    print(round(closes[i] - closes[i - 1], 2))</code></pre>
+        <div class="cs-out">-1.37
+-2.32
+-0.72
+4.33</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>total += x</div>
+      <div class="cs-what">Add to a variable and store it back. Same as total = total + x.</div>
+      <div class="cs-demo">
+        <pre><code>total = 0
+for r in [0.012, -0.004, 0.008]:
+    total += r
+round(total, 4)</code></pre>
+        <div class="cs-out">0.016</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>while condition:</div>
+      <div class="cs-what">Repeat for as long as the condition holds. Something inside must change it.</div>
+      <div class="cs-demo">
+        <pre><code>value, years = 100, 0
+while value &lt; 150:
+    value *= 1.10
+    years += 1
+years</code></pre>
+        <div class="cs-out">5</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="making-choices">
+    <h2>Making choices</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>if condition:</div>
+      <div class="cs-what">Run the block only when the condition is True.</div>
+      <div class="cs-demo">
+        <pre><code>r = 0.012
+if r &gt; 0:
+    print(&quot;up day&quot;)</code></pre>
+        <div class="cs-out">up day</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>elif / else</div>
+      <div class="cs-what">Further cases, checked in order, and a catch-all.</div>
+      <div class="cs-demo">
+        <pre><code>r = -0.02
+if r &gt; 0:
+    print(&quot;up&quot;)
+elif r &lt; 0:
+    print(&quot;down&quot;)
+else:
+    print(&quot;flat&quot;)</code></pre>
+        <div class="cs-out">down</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="your-own-functions">
+    <h2>Your own functions</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>def name(parameters):</div>
+      <div class="cs-what">Create a function. The indented body is what it does.</div>
+      <div class="cs-demo">
+        <pre><code>def simple_return(p0, p1):
+    return (p1 - p0) / p0
+
+round(simple_return(100, 110), 4)</code></pre>
+        <div class="cs-out">0.1</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>return value</div>
+      <div class="cs-what">Hand a value back and stop there. Without it you get None.</div>
+      <div class="cs-demo">
+        <pre><code>def double(x):
+    return x * 2
+
+double(21)</code></pre>
+        <div class="cs-out">42</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>def name(x, rate=0.05):</div>
+      <div class="cs-what">A default: used when the caller does not pass it.</div>
+      <div class="cs-demo">
+        <pre><code>def grow(price, rate=0.05):
+    return price * (1 + rate)
+
+print(grow(100), grow(100, 0.10))</code></pre>
+        <div class="cs-out">105.0 110.00000000000001</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>&quot;&quot;&quot;What it does.&quot;&quot;&quot;</div>
+      <div class="cs-what">A docstring. Editors show it on hover, and help() prints it.</div>
+      <div class="cs-demo">
+        <pre><code>def volatility(prices):
+    &quot;&quot;&quot;Standard deviation of the daily returns.&quot;&quot;&quot;
+    return 0
+
+volatility.__doc__</code></pre>
+        <div class="cs-out">&#x27;Standard deviation of the daily returns.&#x27;</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="dictionaries">
+    <h2>Dictionaries</h2>
+    <p class="lede">Values stored by name instead of by position.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>{&quot;AAPL&quot;: 0.36}</div>
+      <div class="cs-what">Make one. Keys are usually strings.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080}
+vol</code></pre>
+        <div class="cs-out">{&#x27;AAPL&#x27;: 0.0143, &#x27;KO&#x27;: 0.008}</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>data[key]</div>
+      <div class="cs-what">Read the value under that key.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080}
+vol[&quot;AAPL&quot;]</code></pre>
+        <div class="cs-out">0.0143</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>data[key] = value</div>
+      <div class="cs-what">Add a new key, or overwrite an existing one.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0143}
+vol[&quot;NVDA&quot;] = 0.0331
+vol</code></pre>
+        <div class="cs-out">{&#x27;AAPL&#x27;: 0.0143, &#x27;NVDA&#x27;: 0.0331}</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>for key in data:</div>
+      <div class="cs-what">Loop over the keys. Read each value with data[key].</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080}
+for t in vol:
+    print(t, vol[t])</code></pre>
+        <div class="cs-out">AAPL 0.0143
+KO 0.008</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>data.keys()  data.values()</div>
+      <div class="cs-what">The names on their own, or the numbers on their own. max, min, sum and for all accept them.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080, &quot;NVDA&quot;: 0.0331}
+max(vol.values())</code></pre>
+        <div class="cs-out">0.0331</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>data.items()</div>
+      <div class="cs-what">The key and the value together, so you need no lookup. Name two variables in the for line.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080}
+for t, v in vol.items():
+    print(t, f&quot;{v:.2%}&quot;)</code></pre>
+        <div class="cs-out">AAPL 1.43%
+KO 0.80%</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>{}</div>
+      <div class="cs-what">An empty dictionary, ready for a loop to fill. The counterpart of [].</div>
+      <div class="cs-demo">
+        <pre><code>out = {}
+out[&quot;AAPL&quot;] = 0.0141
+out</code></pre>
+        <div class="cs-out">{&#x27;AAPL&#x27;: 0.0141}</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>min(data, key=data.get)</div>
+      <div class="cs-what">The KEY with the smallest value, not the value itself. max works the same way.</div>
+      <div class="cs-demo">
+        <pre><code>rmse = {&quot;A&quot;: 0.740, &quot;B&quot;: 0.772, &quot;C&quot;: 0.747}
+min(rmse, key=rmse.get)</code></pre>
+        <div class="cs-out">&#x27;A&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>sorted(data, key=data.get)</div>
+      <div class="cs-what">All the keys, ordered by their values. Best first with reverse=True.</div>
+      <div class="cs-demo">
+        <pre><code>rmse = {&quot;A&quot;: 0.740, &quot;B&quot;: 0.772, &quot;C&quot;: 0.747}
+sorted(rmse, key=rmse.get)</code></pre>
+        <div class="cs-out">[&#x27;A&#x27;, &#x27;C&#x27;, &#x27;B&#x27;]</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="packages">
+    <h2>Packages</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>import numpy as np</div>
+      <div class="cs-what">Bring a package in under a short name. np, pd and plt are conventions everybody uses.</div>
+      <div class="cs-demo">
+        <pre><code>import numpy as np
+np.sqrt(144)</code></pre>
+        <div class="cs-out">np.float64(12.0)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>%pip install pandas</div>
+      <div class="cs-what">Install a package. Once per machine, in a notebook cell.</div>
+      <div class="cs-demo">
+        <pre><code>%pip install pandas</code></pre>
+        <div class="cs-out">Successfully installed pandas   (or: Requirement already satisfied)</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="numpy-arrays">
+    <h2>NumPy arrays</h2>
+    <p class="lede">A list that does arithmetic on every element at once. Indexing and slicing work exactly as they do for lists.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.array(list)</div>
+      <div class="cs-what">Turn a list of numbers into an array.</div>
+      <div class="cs-demo">
+        <pre><code>close = np.array([183.56, 182.19, 179.87])
+close</code></pre>
+        <div class="cs-out">array([183.56, 182.19, 179.87])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values * 2</div>
+      <div class="cs-what">Arithmetic applies to every element. No loop.</div>
+      <div class="cs-demo">
+        <pre><code>np.array([1.0, 2.0, 3.0]) * 2</code></pre>
+        <div class="cs-out">array([2., 4., 6.])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>a - b</div>
+      <div class="cs-what">Two arrays, element by element.</div>
+      <div class="cs-demo">
+        <pre><code>np.array([100.0, 200.0]) - np.array([1.0, 2.0])</code></pre>
+        <div class="cs-out">array([ 99., 198.])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>(v[1:] - v[:-1]) / v[:-1]</div>
+      <div class="cs-what">Every daily return in one line: each day against the day before.</div>
+      <div class="cs-demo">
+        <pre><code>(week[1:] - week[:-1]) / week[:-1]</code></pre>
+        <div class="cs-out">array([-0.0074635 , -0.01273396, -0.00400289,  0.02416969])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values.mean()</div>
+      <div class="cs-what">The average.</div>
+      <div class="cs-demo">
+        <pre><code>returns.mean()</code></pre>
+        <div class="cs-out">np.float64(-7.66487498582262e-06)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values.std()</div>
+      <div class="cs-what">The standard deviation. This is what volatility is.</div>
+      <div class="cs-demo">
+        <pre><code>returns.std()</code></pre>
+        <div class="cs-out">np.float64(0.014300824856182554)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values.min()  .max()  .sum()</div>
+      <div class="cs-what">The usual summaries.</div>
+      <div class="cs-demo">
+        <pre><code>print(returns.min(), returns.max(), round(returns.sum(), 4))</code></pre>
+        <div class="cs-out">-0.012733959053735075 0.024169690203739793 -0.0</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.sqrt(x)</div>
+      <div class="cs-what">Square root. np.sqrt(252) annualises a daily volatility.</div>
+      <div class="cs-demo">
+        <pre><code>0.0143 * np.sqrt(252)</code></pre>
+        <div class="cs-out">np.float64(0.2270054624893419)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values &gt; 0</div>
+      <div class="cs-what">A question asked of every element: True or False for each.</div>
+      <div class="cs-demo">
+        <pre><code>returns &gt; 0</code></pre>
+        <div class="cs-out">array([False, False, False,  True])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>(values &gt; 0).sum()</div>
+      <div class="cs-what">Count the Trues, because True counts as 1.</div>
+      <div class="cs-demo">
+        <pre><code>(returns &gt; 0).sum()</code></pre>
+        <div class="cs-out">np.int64(1)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>(values &gt; 0).mean()</div>
+      <div class="cs-what">The share that are True.</div>
+      <div class="cs-demo">
+        <pre><code>(returns &gt; 0).mean()</code></pre>
+        <div class="cs-out">np.float64(0.25)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values[values &gt; 0]</div>
+      <div class="cs-what">Keep only the elements where the condition holds.</div>
+      <div class="cs-demo">
+        <pre><code>returns[returns &gt; 0]</code></pre>
+        <div class="cs-out">array([0.02416969])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>values.shape</div>
+      <div class="cs-what">How big it is. For a 1-D array it prints as (n,).</div>
+      <div class="cs-demo">
+        <pre><code>week.shape</code></pre>
+        <div class="cs-out">(5,)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>values.argmax()  .argmin()</div>
+      <div class="cs-what">The POSITION of the largest or smallest element. Feed it to an index to get the label.</div>
+      <div class="cs-demo">
+        <pre><code>folds = np.array([0.583, 0.703, 1.255, 0.582, 0.580])
+print(folds.argmax(), folds.max())</code></pre>
+        <div class="cs-out">2 1.255</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>np.random.default_rng(0)</div>
+      <div class="cs-what">A random number generator with a fixed seed, so the same code gives the same numbers every time.</div>
+      <div class="cs-demo">
+        <pre><code>rng = np.random.default_rng(0)
+rng.normal(0, 1, 4).round(3)</code></pre>
+        <div class="cs-out">array([ 0.126, -0.132,  0.64 ,  0.105])</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="numpy-matrices">
+    <h2>NumPy matrices</h2>
+    <p class="lede">A matrix is a 2-D array: rows first, then columns.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.array([[1, 2], [3, 4]])</div>
+      <div class="cs-what">A matrix, written as a list of rows.</div>
+      <div class="cs-demo">
+        <pre><code>X = np.array([[1.0, 0.5],
+              [1.0, 1.5],
+              [1.0, 2.5]])
+X</code></pre>
+        <div class="cs-out">array([[1. , 0.5],
+       [1. , 1.5],
+       [1. , 2.5]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>X.shape</div>
+      <div class="cs-what">Rows and columns.</div>
+      <div class="cs-demo">
+        <pre><code>X = np.array([[1.0, 0.5], [1.0, 1.5], [1.0, 2.5]])
+X.shape</code></pre>
+        <div class="cs-out">(3, 2)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>X[i, j]  X[i, :]  X[:, j]</div>
+      <div class="cs-what">One element, a whole row, a whole column. The colon means all.</div>
+      <div class="cs-demo">
+        <pre><code>X = np.array([[1.0, 0.5], [1.0, 1.5], [1.0, 2.5]])
+print(X[1, 0], X[1, :], X[:, 1])</code></pre>
+        <div class="cs-out">1.0 [1.  1.5] [0.5 1.5 2.5]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>X.T</div>
+      <div class="cs-what">The transpose: rows become columns.</div>
+      <div class="cs-demo">
+        <pre><code>X = np.array([[1.0, 0.5], [1.0, 1.5], [1.0, 2.5]])
+X.T.shape</code></pre>
+        <div class="cs-out">(2, 3)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>A @ B</div>
+      <div class="cs-what">Matrix multiplication. For two vectors this is the dot product.</div>
+      <div class="cs-demo">
+        <pre><code>np.array([0.5, 0.3, 0.2]) @ np.array([0.012, -0.004, 0.031])</code></pre>
+        <div class="cs-out">np.float64(0.011000000000000001)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.ones(n)</div>
+      <div class="cs-what">A vector of ones. The intercept column of a regression.</div>
+      <div class="cs-demo">
+        <pre><code>np.ones(4)</code></pre>
+        <div class="cs-out">array([1., 1., 1., 1.])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.column_stack([a, b])</div>
+      <div class="cs-what">Glue 1-D arrays together as the columns of a matrix.</div>
+      <div class="cs-demo">
+        <pre><code>x = np.array([0.5, 1.5, 2.5])
+np.column_stack([np.ones(3), x])</code></pre>
+        <div class="cs-out">array([[1. , 0.5],
+       [1. , 1.5],
+       [1. , 2.5]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.linalg.inv(A)</div>
+      <div class="cs-what">The inverse: the matrix that undoes A. Fails if a column is redundant.</div>
+      <div class="cs-demo">
+        <pre><code>A = np.array([[2.0, 1.0], [1.0, 3.0]])
+np.round(np.linalg.inv(A) @ A, 10)</code></pre>
+        <div class="cs-out">array([[ 1., -0.],
+       [ 0.,  1.]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>np.linalg.solve(A, b)</div>
+      <div class="cs-what">Solve A x = b. Safer and faster than inverting. OLS in one line.</div>
+      <div class="cs-demo">
+        <pre><code>x = np.array([0.5, 1.5, 2.5, 3.5])
+y = np.array([1.0, 2.0, 2.6, 3.8])
+X = np.column_stack([np.ones(4), x])
+np.linalg.solve(X.T @ X, X.T @ y)</code></pre>
+        <div class="cs-out">array([0.55, 0.9 ])</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="pandas--one-column">
+    <h2>pandas: one column</h2>
+    <p class="lede">A Series is values with a label on each one: a list and a dictionary at once.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>pd.Series(a_dict)</div>
+      <div class="cs-what">Build one from a dictionary. The keys become the labels.</div>
+      <div class="cs-demo">
+        <pre><code>pd.Series({&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080, &quot;NVDA&quot;: 0.0331})</code></pre>
+        <div class="cs-out">AAPL    0.0143
+KO      0.0080
+NVDA    0.0331
+dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s[&#x27;AAPL&#x27;]</div>
+      <div class="cs-what">Look a value up by its label.</div>
+      <div class="cs-demo">
+        <pre><code>s = pd.Series({&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080})
+s[&quot;AAPL&quot;]</code></pre>
+        <div class="cs-out">np.float64(0.0143)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s * 2</div>
+      <div class="cs-what">Maths applies to every value, and the labels come along.</div>
+      <div class="cs-demo">
+        <pre><code>pd.Series({&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080}) * np.sqrt(252)</code></pre>
+        <div class="cs-out">AAPL    0.227005
+KO      0.126996
+dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.mean()  .std()  .min()  .max()</div>
+      <div class="cs-what">A Series summarises itself, like an array.</div>
+      <div class="cs-demo">
+        <pre><code>wide[&quot;AAPL&quot;].mean()</code></pre>
+        <div class="cs-out">np.float64(205.45739523809527)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.median()</div>
+      <div class="cs-what">The middle value. Compare it with the mean: a gap between them means a skewed tail.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change().dropna()
+round(r.mean(), 5), round(r.median(), 5)</code></pre>
+        <div class="cs-out">(np.float64(0.00131), np.float64(0.0016))</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.sort_values()</div>
+      <div class="cs-what">In order. ascending=False for largest first.</div>
+      <div class="cs-demo">
+        <pre><code>s = pd.Series({&quot;AAPL&quot;: 0.0143, &quot;KO&quot;: 0.0080, &quot;NVDA&quot;: 0.0331})
+s.sort_values(ascending=False)</code></pre>
+        <div class="cs-out">NVDA    0.0331
+AAPL    0.0143
+KO      0.0080
+dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.dropna()</div>
+      <div class="cs-what">Throw away the missing values.</div>
+      <div class="cs-demo">
+        <pre><code>wide[&quot;AAPL&quot;].pct_change().dropna().shape</code></pre>
+        <div class="cs-out">(251,)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.abs()</div>
+      <div class="cs-what">The size of every value, sign dropped. abs() on its own does the same for one number.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change().dropna()
+r.abs().mean().round(5)</code></pre>
+        <div class="cs-out">np.float64(0.01034)</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="pandas--a-table">
+    <h2>pandas: a table</h2>
+    <p class="lede">A DataFrame is several Series side by side, sharing one index.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>pd.read_csv(path, parse_dates=[&#x27;date&#x27;])</div>
+      <div class="cs-what">Read a CSV. parse_dates turns a text column into real dates.</div>
+      <div class="cs-demo">
+        <pre><code>prices.head(3)</code></pre>
+        <div class="cs-out">        date ticker    close     volume
+0 2015-01-02   AAPL  24.1926  212818400
+1 2015-01-05   AAPL  23.5111  257142000
+2 2015-01-06   AAPL  23.5133  263188400</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>pd.DataFrame({...})</div>
+      <div class="cs-what">Build a table from a dictionary of columns.</div>
+      <div class="cs-demo">
+        <pre><code>pd.DataFrame({&quot;ticker&quot;: [&quot;AAPL&quot;, &quot;KO&quot;],
+              &quot;vol&quot;: [0.0143, 0.0080]})</code></pre>
+        <div class="cs-out">  ticker     vol
+0   AAPL  0.0143
+1     KO  0.0080</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.head(n)  .tail(n)</div>
+      <div class="cs-what">The first or last n rows, 5 by default.</div>
+      <div class="cs-demo">
+        <pre><code>prices.head(2)</code></pre>
+        <div class="cs-out">        date ticker    close     volume
+0 2015-01-02   AAPL  24.1926  212818400
+1 2015-01-05   AAPL  23.5111  257142000</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.shape</div>
+      <div class="cs-what">Rows and columns.</div>
+      <div class="cs-demo">
+        <pre><code>prices.shape</code></pre>
+        <div class="cs-out">(27676, 4)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.dtypes</div>
+      <div class="cs-what">What each column holds. A price column that arrived as text is a silent bug.</div>
+      <div class="cs-demo">
+        <pre><code>prices.dtypes</code></pre>
+        <div class="cs-out">date      datetime64[ns]
+ticker            object
+close            float64
+volume             int64
+dtype: object</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.columns</div>
+      <div class="cs-what">The column names.</div>
+      <div class="cs-demo">
+        <pre><code>list(prices.columns)</code></pre>
+        <div class="cs-out">[&#x27;date&#x27;, &#x27;ticker&#x27;, &#x27;close&#x27;, &#x27;volume&#x27;]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame[&#x27;close&#x27;]</div>
+      <div class="cs-what">One column, as a Series.</div>
+      <div class="cs-demo">
+        <pre><code>prices[&quot;close&quot;].head(3)</code></pre>
+        <div class="cs-out">0    24.1926
+1    23.5111
+2    23.5133
+Name: close, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame[[&#x27;date&#x27;, &#x27;close&#x27;]]</div>
+      <div class="cs-what">Several columns, as a smaller table. Note the two sets of brackets.</div>
+      <div class="cs-demo">
+        <pre><code>prices[[&quot;date&quot;, &quot;close&quot;]].head(3)</code></pre>
+        <div class="cs-out">        date    close
+0 2015-01-02  24.1926
+1 2015-01-05  23.5111
+2 2015-01-06  23.5133</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame[frame[&#x27;ticker&#x27;] == &#x27;AAPL&#x27;]</div>
+      <div class="cs-what">Keep only the rows where the condition is True.</div>
+      <div class="cs-demo">
+        <pre><code>prices[prices[&quot;ticker&quot;] == &quot;AAPL&quot;].shape</code></pre>
+        <div class="cs-out">(2516, 4)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>&amp;  |</div>
+      <div class="cs-what">And, or. Each condition needs its own brackets.</div>
+      <div class="cs-demo">
+        <pre><code>big = prices[(prices[&quot;ticker&quot;] == &quot;AAPL&quot;)
+             &amp; (prices[&quot;close&quot;] &gt; 250)]
+big.shape</code></pre>
+        <div class="cs-out">(7, 4)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>~mask</div>
+      <div class="cs-what">Flip a mask: every True becomes False. How you get &quot;the other half&quot; without writing the condition twice.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change().dropna()
+calm = r.abs() &lt; r.abs().median()
+print(calm.sum(), (~calm).sum())</code></pre>
+        <div class="cs-out">125 126</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>.copy()</div>
+      <div class="cs-what">Take your own copy before modifying a selection, so pandas knows what you meant.</div>
+      <div class="cs-demo">
+        <pre><code>aapl = prices[prices[&quot;ticker&quot;] == &quot;AAPL&quot;].copy()
+aapl.shape</code></pre>
+        <div class="cs-out">(2516, 4)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame[&#x27;ret&#x27;] = ...</div>
+      <div class="cs-what">Assign to a name that does not exist yet, and the column appears.</div>
+      <div class="cs-demo">
+        <pre><code>aapl = prices[prices[&quot;ticker&quot;] == &quot;AAPL&quot;].copy()
+aapl[&quot;ret&quot;] = aapl[&quot;close&quot;].pct_change()
+aapl[[&quot;date&quot;, &quot;close&quot;, &quot;ret&quot;]].head(3)</code></pre>
+        <div class="cs-out">        date    close       ret
+0 2015-01-02  24.1926       NaN
+1 2015-01-05  23.5111 -0.028170
+2 2015-01-06  23.5133  0.000094</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.pct_change()</div>
+      <div class="cs-what">The percentage change from each row to the next. The first is NaN.</div>
+      <div class="cs-demo">
+        <pre><code>wide[&quot;AAPL&quot;].pct_change().head(3)</code></pre>
+        <div class="cs-out">date
+2024-01-02         NaN
+2024-01-03   -0.007487
+2024-01-04   -0.012701
+Name: AAPL, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.sort_values(&#x27;ret&#x27;)</div>
+      <div class="cs-what">Sort the rows by a column.</div>
+      <div class="cs-demo">
+        <pre><code>aapl = prices[prices[&quot;ticker&quot;] == &quot;AAPL&quot;].copy()
+aapl[&quot;ret&quot;] = aapl[&quot;close&quot;].pct_change()
+aapl.sort_values(&quot;ret&quot;)[[&quot;date&quot;, &quot;ret&quot;]].head(3)</code></pre>
+        <div class="cs-out">           date       ret
+1308 2020-03-16 -0.128647
+1007 2019-01-03 -0.099607
+1306 2020-03-12 -0.098755</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.loc[&#x27;2024&#x27;]</div>
+      <div class="cs-what">Rows by label. With a date index you can slice with dates.</div>
+      <div class="cs-demo">
+        <pre><code>wide.loc[&quot;2024-01-02&quot;:&quot;2024-01-04&quot;, [&quot;AAPL&quot;, &quot;KO&quot;]]</code></pre>
+        <div class="cs-out">ticker          AAPL       KO
+date                         
+2024-01-02  183.5622  55.6394
+2024-01-03  182.1878  55.7696
+2024-01-04  179.8739  55.5836</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.iloc[0]  .iloc[-1]</div>
+      <div class="cs-what">Rows by position: the first row, the last row.</div>
+      <div class="cs-demo">
+        <pre><code>wide.iloc[-1].head(3)</code></pre>
+        <div class="cs-out">ticker
+AAPL    248.8302
+DIS     109.2946
+JNJ     138.7844
+Name: 2024-12-31 00:00:00, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.values</div>
+      <div class="cs-what">The plain numbers underneath, as a NumPy array, labels dropped.</div>
+      <div class="cs-demo">
+        <pre><code>m = wide[[&quot;AAPL&quot;, &quot;KO&quot;]].values
+print(type(m).__name__, m.shape)</code></pre>
+        <div class="cs-out">ndarray (252, 2)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>frame.set_index(&#x27;date&#x27;)</div>
+      <div class="cs-what">Move a column into the index, so .loc can slice by it.</div>
+      <div class="cs-demo">
+        <pre><code>a = prices[prices[&quot;ticker&quot;] == &quot;AAPL&quot;].set_index(&quot;date&quot;)
+a.loc[&quot;2024-01-02&quot;:&quot;2024-01-04&quot;, [&quot;close&quot;]]</code></pre>
+        <div class="cs-out">               close
+date                
+2024-01-02  183.5622
+2024-01-03  182.1878
+2024-01-04  179.8739</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="pandas--groups-and-shapes">
+    <h2>pandas: groups and shapes</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.groupby(&#x27;ticker&#x27;).size()</div>
+      <div class="cs-what">Split by a column, then count the rows in each group.</div>
+      <div class="cs-demo">
+        <pre><code>prices.groupby(&quot;ticker&quot;).size()</code></pre>
+        <div class="cs-out">ticker
+AAPL    2516
+DIS     2516
+JNJ     2516
+JPM     2516
+KO      2516
+MSFT    2516
+NVDA    2516
+PG      2516
+SPY     2516
+WMT     2516
+XOM     2516
+...</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.groupby(&#x27;ticker&#x27;)[&#x27;close&#x27;].mean()</div>
+      <div class="cs-what">Split, compute inside each group, put the answers back together.</div>
+      <div class="cs-demo">
+        <pre><code>prices.groupby(&quot;ticker&quot;)[&quot;close&quot;].mean().round(2)</code></pre>
+        <div class="cs-out">ticker
+AAPL     93.68
+DIS     110.83
+JNJ     119.34
+JPM     102.74
+KO       42.89
+MSFT    179.87
+NVDA     20.76
+PG      101.36
+SPY     308.67
+WMT      36.85
+XOM      63.96
+...</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>groupby(...)[&#x27;close&#x27;].pct_change()</div>
+      <div class="cs-what">A return WITHIN each stock. Group first, or you take a return across two companies.</div>
+      <div class="cs-demo">
+        <pre><code>p = prices.copy()
+p[&quot;ret&quot;] = p.groupby(&quot;ticker&quot;)[&quot;close&quot;].pct_change()
+p.groupby(&quot;ticker&quot;)[&quot;ret&quot;].std().sort_values(ascending=False).round(4)</code></pre>
+        <div class="cs-out">ticker
+NVDA    0.0306
+AAPL    0.0179
+DIS     0.0175
+XOM     0.0175
+JPM     0.0172
+MSFT    0.0171
+WMT     0.0133
+PG      0.0116
+JNJ     0.0114
+KO      0.0112
+SPY     0.0111
+...</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>g.agg([&#x27;mean&#x27;, &#x27;std&#x27;, &#x27;min&#x27;, &#x27;max&#x27;])</div>
+      <div class="cs-what">Several summaries at once, as a table.</div>
+      <div class="cs-demo">
+        <pre><code>p = prices.copy()
+p[&quot;ret&quot;] = p.groupby(&quot;ticker&quot;)[&quot;close&quot;].pct_change()
+p.groupby(&quot;ticker&quot;)[&quot;ret&quot;].agg([&quot;mean&quot;, &quot;std&quot;]).round(4).head(4)</code></pre>
+        <div class="cs-out">          mean     std
+ticker                
+AAPL    0.0011  0.0179
+DIS     0.0003  0.0175
+JNJ     0.0003  0.0114
+JPM     0.0008  0.0172</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>frame.pivot(index=, columns=, values=)</div>
+      <div class="cs-what">Reshape: one row per date, one column per ticker.</div>
+      <div class="cs-demo">
+        <pre><code>wide = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;,
+                    values=&quot;close&quot;)
+wide.shape</code></pre>
+        <div class="cs-out">(2516, 11)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.shift(1)</div>
+      <div class="cs-what">Slide a column down by one, so each row can see the previous one. How you line the past up next to the present.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change()
+pd.DataFrame({&quot;ret&quot;: r, &quot;yesterday&quot;: r.shift(1)}).head(4)</code></pre>
+        <div class="cs-out">                 ret  yesterday
+date                           
+2024-01-02       NaN        NaN
+2024-01-03 -0.007487        NaN
+2024-01-04 -0.012701  -0.007487
+2024-01-05 -0.004013  -0.012701</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.rolling(20).std()</div>
+      <div class="cs-what">A statistic over a sliding window of rows. Where most financial features come from.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change()
+(r.rolling(20).std() * np.sqrt(252)).tail(3)</code></pre>
+        <div class="cs-out">date
+2024-12-27    0.152639
+2024-12-30    0.162911
+2024-12-31    0.164852
+Name: AAPL, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.describe()</div>
+      <div class="cs-what">Count, mean, standard deviation and the quartiles, in one call.</div>
+      <div class="cs-demo">
+        <pre><code>wide[&quot;KO&quot;].describe().round(2)</code></pre>
+        <div class="cs-out">count    252.00
+mean      60.34
+std        4.13
+min       54.43
+25%       56.68
+50%       59.67
+75%       63.37
+max       68.98
+Name: KO, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>s.nlargest(n)</div>
+      <div class="cs-what">The n largest values, largest first.</div>
+      <div class="cs-demo">
+        <pre><code>wide.pct_change().std().nlargest(3)</code></pre>
+        <div class="cs-out">ticker
+NVDA    0.033079
+DIS     0.016298
+JPM     0.014815
+dtype: float64</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="matplotlib">
+    <h2>matplotlib</h2>
+    <p class="lede">Every plot is the same three steps: make the axes, draw on them, then say what the reader is looking at. Figures are not shown on this page.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>fig, ax = plt.subplots(figsize=(9, 3))</div>
+      <div class="cs-what">Make a figure and one axes to draw on. Every plot starts here.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots(figsize=(9, 3))
+type(ax).__name__</code></pre>
+        <div class="cs-out">&#x27;Axes&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.plot(x, y)</div>
+      <div class="cs-what">A line: something over time.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.plot([1, 2, 3], [10, 12, 11])
+&quot;drawn&quot;</code></pre>
+        <div class="cs-out">&#x27;drawn&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.barh(names, values)</div>
+      <div class="cs-what">Horizontal bars: comparing named things. Sort before you plot.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+v = wide.pct_change().std().sort_values()
+ax.barh(v.index, v.values)
+&quot;drawn&quot;</code></pre>
+        <div class="cs-out">&#x27;drawn&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.hist(values, bins=40)</div>
+      <div class="cs-what">A histogram: the shape of one variable.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.hist(wide[&quot;AAPL&quot;].pct_change().dropna(), bins=40)
+&quot;drawn&quot;</code></pre>
+        <div class="cs-out">&#x27;drawn&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.scatter(x, y)</div>
+      <div class="cs-what">A scatter: one thing against another.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+r = wide.pct_change().dropna()
+ax.scatter(r[&quot;SPY&quot;], r[&quot;AAPL&quot;], s=6)
+&quot;drawn&quot;</code></pre>
+        <div class="cs-out">&#x27;drawn&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.set_title(text, loc=&#x27;left&#x27;)</div>
+      <div class="cs-what">Say what the reader is looking at.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.set_title(&quot;Apple, 2024&quot;, loc=&quot;left&quot;)
+ax.get_title(loc=&quot;left&quot;)</code></pre>
+        <div class="cs-out">&#x27;Apple, 2024&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.set_ylabel(text)  ax.set_xlabel(text)</div>
+      <div class="cs-what">Label the axes, with units. &quot;price (USD)&quot;, not &quot;price&quot;.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.set_ylabel(&quot;price (USD)&quot;)
+ax.get_ylabel()</code></pre>
+        <div class="cs-out">&#x27;price (USD)&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>label= and ax.legend()</div>
+      <div class="cs-what">Name each line, then show the key. Needed as soon as there are two.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.plot([1, 2], [1, 2], label=&quot;AAPL&quot;)
+ax.legend()
+&quot;drawn&quot;</code></pre>
+        <div class="cs-out">&#x27;drawn&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ax.set_ylim(a, b)</div>
+      <div class="cs-what">Fix the vertical range. For bars, always start at zero.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.set_ylim(0, 0.55)
+ax.get_ylim()</code></pre>
+        <div class="cs-out">(np.float64(0.0), np.float64(0.55))</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>ax.axhline(0)</div>
+      <div class="cs-what">A horizontal reference line. Zero on an error plot, or an average across bars.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.axhline(0, color=&quot;grey&quot;, linewidth=1)
+&quot;drawn&quot;</code></pre>
+        <div class="cs-out">&#x27;drawn&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>plt.show()</div>
+      <div class="cs-what">Display the figure. The last line of a plotting cell.</div>
+      <div class="cs-demo">
+        <pre><code>plt.show()</code></pre>
+        <div class="cs-out">(the figure appears under the cell)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>fig.savefig(&#x27;name.png&#x27;, dpi=200)</div>
+      <div class="cs-what">Save it to a file. Use .pdf for something that stays sharp at any size.</div>
+      <div class="cs-demo">
+        <pre><code>fig.savefig(&#x27;name.png&#x27;, dpi=200, bbox_inches=&#x27;tight&#x27;)</code></pre>
+        <div class="cs-out">(writes name.png next to your notebook)</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="features-and-a-target">
+    <h2>Features and a target</h2>
+    <p class="lede">Session 4&#x27;s table: one row per observation, one column per feature, and one column you are trying to predict. Every model assumes it.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.shift(-1)</div>
+      <div class="cs-what">Move a column UP, so tomorrow&#x27;s value sits on today&#x27;s row. This is how a target is built.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change()
+pd.DataFrame({&quot;today&quot;: r, &quot;target&quot;: r.shift(-1)}).tail(3).round(4)</code></pre>
+        <div class="cs-out">             today  target
+date                      
+2024-12-27 -0.0132 -0.0133
+2024-12-30 -0.0133 -0.0071
+2024-12-31 -0.0071     NaN</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.rolling(20).mean()</div>
+      <div class="cs-what">A feature over the last twenty rows. It only ever looks backwards, which is what makes it legal.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change()
+r.rolling(20).std().tail(2).round(4)</code></pre>
+        <div class="cs-out">date
+2024-12-30    0.0103
+2024-12-31    0.0104
+Name: AAPL, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>(s &gt; 0).astype(int)</div>
+      <div class="cs-what">Turn a number into a 0/1 label, which turns a regression into a classification.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change()
+(r.shift(-1) &gt; 0).astype(int).tail(4)</code></pre>
+        <div class="cs-out">date
+2024-12-26    0
+2024-12-27    0
+2024-12-30    0
+2024-12-31    0
+Name: AAPL, dtype: int64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.corr(other)</div>
+      <div class="cs-what">How strongly two columns move together, between -1 and +1. A feature that correlates almost perfectly with the target is a leak, not a discovery.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change()
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std(),
+                  &quot;target&quot;: r.rolling(20).std().shift(-20)}).dropna()
+round(t[&quot;vol&quot;].corr(t[&quot;target&quot;]), 3)</code></pre>
+        <div class="cs-out">np.float64(0.129)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.diff()</div>
+      <div class="cs-what">The difference between each row and the one before it. On logged prices this is the log return.</div>
+      <div class="cs-demo">
+        <pre><code>np.log(wide[&quot;AAPL&quot;]).diff().tail(2).round(4)</code></pre>
+        <div class="cs-out">date
+2024-12-30   -0.0134
+2024-12-31   -0.0071
+Name: AAPL, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>n and p</div>
+      <div class="cs-what">The two numbers that describe a learning problem: observations, and feature columns. The target is not a feature.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change()
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std(),
+                  &quot;target&quot;: r.shift(-1)}).dropna()
+(t.shape[0], t.shape[1] - 1)</code></pre>
+        <div class="cs-out">(231, 1)</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="missing-values">
+    <h2>Missing values</h2>
+    <p class="lede">Real tables have holes in them. What you do about the holes changes your answer, so it is a decision rather than a formality.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>pd.date_range(start, end, freq=&#x27;D&#x27;)</div>
+      <div class="cs-what">Every calendar day between two dates.</div>
+      <div class="cs-demo">
+        <pre><code>pd.date_range(&quot;2024-01-01&quot;, &quot;2024-01-05&quot;, freq=&quot;D&quot;)</code></pre>
+        <div class="cs-out">DatetimeIndex([&#x27;2024-01-01&#x27;, &#x27;2024-01-02&#x27;, &#x27;2024-01-03&#x27;, &#x27;2024-01-04&#x27;,
+               &#x27;2024-01-05&#x27;],
+              dtype=&#x27;datetime64[ns]&#x27;, freq=&#x27;D&#x27;)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>frame.reindex(index)</div>
+      <div class="cs-what">Force a table onto different row labels. Rows that did not exist arrive empty.</div>
+      <div class="cs-demo">
+        <pre><code>cal = pd.date_range(wide.index.min(), wide.index.max(), freq=&quot;D&quot;)
+wide.reindex(cal).shape</code></pre>
+        <div class="cs-out">(365, 11)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>frame.isna().sum()</div>
+      <div class="cs-what">Count the missing values in each column.</div>
+      <div class="cs-demo">
+        <pre><code>cal = pd.date_range(wide.index.min(), wide.index.max(), freq=&quot;D&quot;)
+wide.reindex(cal).isna().sum().head(3)</code></pre>
+        <div class="cs-out">ticker
+AAPL    113
+DIS     113
+JNJ     113
+dtype: int64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.ffill()</div>
+      <div class="cs-what">Carry the last known value forward. It only looks backwards, so a forecast may use it.</div>
+      <div class="cs-demo">
+        <pre><code>s = pd.Series([1.0, None, None, 4.0])
+s.ffill().tolist()</code></pre>
+        <div class="cs-out">[1.0, 1.0, 1.0, 4.0]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.fillna(value)</div>
+      <div class="cs-what">Fill with something you choose. Filling with the column mean shrinks the variance, so be deliberate.</div>
+      <div class="cs-demo">
+        <pre><code>s = pd.Series([1.0, None, 4.0])
+s.fillna(s.mean()).tolist()</code></pre>
+        <div class="cs-out">[1.0, 2.5, 4.0]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.interpolate()</div>
+      <div class="cs-what">Draw a straight line across the gap. It uses the value AFTER the gap, so never in a forecast.</div>
+      <div class="cs-demo">
+        <pre><code>s = pd.Series([1.0, None, 3.0])
+s.interpolate().tolist()</code></pre>
+        <div class="cs-out">[1.0, 2.0, 3.0]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.isna().astype(int)</div>
+      <div class="cs-what">Record that a value was missing. Sometimes that fact is itself the signal.</div>
+      <div class="cs-demo">
+        <pre><code>s = pd.Series([1.0, None, 3.0])
+s.isna().astype(int).tolist()</code></pre>
+        <div class="cs-out">[0, 1, 0]</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="extremes--and-changing-the-scale">
+    <h2>Extremes, and changing the scale</h2>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>s.quantile([0.25, 0.75])</div>
+      <div class="cs-what">The percentiles. Q1 and Q3 are the edges of the middle half of the data.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change().dropna()
+r.quantile([0.25, 0.75]).round(4)</code></pre>
+        <div class="cs-out">0.25   -0.0067
+0.75    0.0093
+Name: AAPL, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>the IQR rule</div>
+      <div class="cs-what">Flag anything outside Q1 - 1.5 IQR to Q3 + 1.5 IQR. On returns it flags far more than it should.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change().dropna()
+q1, q3 = r.quantile([0.25, 0.75])
+iqr = q3 - q1
+int(((r &lt; q1 - 1.5 * iqr) | (r &gt; q3 + 1.5 * iqr)).sum())</code></pre>
+        <div class="cs-out">6</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>np.log(values)</div>
+      <div class="cs-what">The natural log. Log returns add up over time, and a log tames a long right tail.</div>
+      <div class="cs-demo">
+        <pre><code>np.log(wide[&quot;AAPL&quot;]).diff().tail(2).round(4)</code></pre>
+        <div class="cs-out">date
+2024-12-30   -0.0134
+2024-12-31   -0.0071
+Name: AAPL, dtype: float64</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>(s - s.mean()) / s.std()</div>
+      <div class="cs-what">Standardise: mean 0, standard deviation 1. Compute those two numbers on the training rows only.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change().dropna()
+z = (r - r.mean()) / r.std()
+round(z.mean(), 8), round(z.std(), 4)</code></pre>
+        <div class="cs-out">(np.float64(0.0), np.float64(1.0))</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>pd.get_dummies(frame, columns=[...])</div>
+      <div class="cs-what">One 0/1 column per category. This is how text gets into a feature table.</div>
+      <div class="cs-demo">
+        <pre><code>f = pd.DataFrame({&quot;t&quot;: [&quot;AAPL&quot;, &quot;KO&quot;], &quot;sector&quot;: [&quot;Tech&quot;, &quot;Staples&quot;]})
+pd.get_dummies(f, columns=[&quot;sector&quot;], dtype=int)</code></pre>
+        <div class="cs-out">      t  sector_Staples  sector_Tech
+0  AAPL               0            1
+1    KO               1            0</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="scoring-a-prediction-of-a-number">
+    <h2>Scoring a prediction of a number</h2>
+    <p class="lede">Choose the metric before you see the answer, and always report it beside a baseline.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>MAE</div>
+      <div class="cs-what">Mean absolute error: the average size of a mistake, in the units of the target.</div>
+      <div class="cs-demo">
+        <pre><code>y = np.array([2.0, 4.0, 6.0, 8.0])
+p = np.array([3.0, 4.0, 5.0, 11.0])
+np.abs(y - p).mean()</code></pre>
+        <div class="cs-out">np.float64(1.25)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>MSE</div>
+      <div class="cs-what">Mean squared error: one large miss dominates it, which is sometimes exactly what you want.</div>
+      <div class="cs-demo">
+        <pre><code>y = np.array([2.0, 4.0, 6.0, 8.0])
+p = np.array([3.0, 4.0, 5.0, 11.0])
+((y - p) ** 2).mean()</code></pre>
+        <div class="cs-out">np.float64(2.75)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>RMSE</div>
+      <div class="cs-what">The root of the MSE, back in the units of the target. The one to report.</div>
+      <div class="cs-demo">
+        <pre><code>y = np.array([2.0, 4.0, 6.0, 8.0])
+p = np.array([3.0, 4.0, 5.0, 11.0])
+np.sqrt(((y - p) ** 2).mean())</code></pre>
+        <div class="cs-out">np.float64(1.6583123951777)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>R squared</div>
+      <div class="cs-what">How much better than always predicting the average. Zero means no better at all, and out of sample it can be negative.</div>
+      <div class="cs-demo">
+        <pre><code>y = np.array([2.0, 4.0, 6.0, 8.0])
+p = np.array([3.0, 4.0, 5.0, 11.0])
+1 - ((y - p) ** 2).sum() / ((y - y.mean()) ** 2).sum()</code></pre>
+        <div class="cs-out">np.float64(0.44999999999999996)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>np.full(n, value)</div>
+      <div class="cs-what">The baseline prediction: one number, repeated. Nothing counts as a result until it beats this.</div>
+      <div class="cs-demo">
+        <pre><code>y = np.array([2.0, 4.0, 6.0, 8.0])
+base = np.full(len(y), y.mean())
+np.sqrt(((y - base) ** 2).mean())</code></pre>
+        <div class="cs-out">np.float64(2.23606797749979)</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="scoring-a-prediction-of-a-label">
+    <h2>Scoring a prediction of a label</h2>
+    <p class="lede">No residuals here. Four counts, and every classification metric is built out of them.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>TP, FP, FN, TN</div>
+      <div class="cs-what">Combine the two boolean columns with &amp; and ~, then count.</div>
+      <div class="cs-demo">
+        <pre><code>said = pd.Series([True, True, False, False])
+was = pd.Series([True, False, True, False])
+[int((said &amp; was).sum()), int((said &amp; ~was).sum()),
+ int((~said &amp; was).sum()), int((~said &amp; ~was).sum())]</code></pre>
+        <div class="cs-out">[1, 1, 1, 1]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>accuracy</div>
+      <div class="cs-what">The share called correctly. Meaningless when one class is rare.</div>
+      <div class="cs-demo">
+        <pre><code>tp, fp, fn, tn = 1, 1, 1, 1
+(tp + tn) / (tp + fp + fn + tn)</code></pre>
+        <div class="cs-out">0.5</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>precision</div>
+      <div class="cs-what">Of the times I said yes, how often was I right? Low precision means false alarms.</div>
+      <div class="cs-demo">
+        <pre><code>tp, fp = 1042, 331
+tp / (tp + fp)</code></pre>
+        <div class="cs-out">0.7589220684632192</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>recall</div>
+      <div class="cs-what">Of the times it really happened, how many did I catch? Low recall means misses.</div>
+      <div class="cs-demo">
+        <pre><code>tp, fn = 1042, 297
+tp / (tp + fn)</code></pre>
+        <div class="cs-out">0.7781926811053025</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>F1</div>
+      <div class="cs-what">The harmonic mean of the two, which sits close to the smaller one.</div>
+      <div class="cs-demo">
+        <pre><code>p, r = 0.759, 0.778
+2 * p * r / (p + r)</code></pre>
+        <div class="cs-out">0.7683825634352635</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="training-rows-and-test-rows">
+    <h2>Training rows and test rows</h2>
+    <p class="lede">A score computed on the rows a model learned from is not evidence.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>frame.loc[:&#x27;2022-12-31&#x27;]</div>
+      <div class="cs-what">Split by date, never at random. A shuffled time series lets a model train on the future.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change().dropna()
+(len(r.loc[:&quot;2024-06-30&quot;]), len(r.loc[&quot;2024-07-01&quot;:]))</code></pre>
+        <div class="cs-out">(123, 128)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>np.polyfit(x, y, degree)</div>
+      <div class="cs-what">Fit a polynomial of that degree. Raising the degree always lowers training error.</div>
+      <div class="cs-demo">
+        <pre><code>x = np.linspace(0, 1, 12)
+y = np.sin(2 * np.pi * x)
+np.round(np.polyfit(x, y, 1), 3)</code></pre>
+        <div class="cs-out">array([-1.441,  0.72 ])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 4</span>np.polyval(coef, x)</div>
+      <div class="cs-what">Evaluate a fitted polynomial, so you can score it on rows it never saw.</div>
+      <div class="cs-demo">
+        <pre><code>x = np.linspace(0, 1, 12)
+y = np.sin(2 * np.pi * x)
+c = np.polyfit(x, y, 3)
+round(float(((np.polyval(c, x) - y) ** 2).mean()), 5)</code></pre>
+        <div class="cs-out">0.00656</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="fitting-a-model">
+    <h2>Fitting a model</h2>
+    <p class="lede">Session 5&#x27;s four lines. Every model in scikit-learn takes them, so the only thing that changes later is the first one.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>from sklearn.linear_model import LinearRegression</div>
+      <div class="cs-what">The model. It installs as scikit-learn and imports as sklearn.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import LinearRegression
+LinearRegression()</code></pre>
+        <div class="cs-out">LinearRegression()</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>frame[[&#x27;col&#x27;]]</div>
+      <div class="cs-what">A LIST of column names, so the result stays a table. X always has to be two-dimensional.</div>
+      <div class="cs-demo">
+        <pre><code>r = wide[&quot;AAPL&quot;].pct_change()
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()}).dropna()
+(t[&quot;vol&quot;].shape, t[[&quot;vol&quot;]].shape)</code></pre>
+        <div class="cs-out">((232,), (232, 1))</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>model.fit(X, y)</div>
+      <div class="cs-what">Read the training rows and compute the coefficients. Features first, target second.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import LinearRegression
+r = wide[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+m = LinearRegression().fit(t[[&quot;vol&quot;]], t[&quot;target&quot;])
+round(float(m.coef_[0]), 3)</code></pre>
+        <div class="cs-out">0.14</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>model.predict(X)</div>
+      <div class="cs-what">One prediction per row of X, in the same order, as a plain numpy array.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import LinearRegression
+r = wide[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+m = LinearRegression().fit(t[[&quot;vol&quot;]], t[&quot;target&quot;])
+m.predict(t[[&quot;vol&quot;]])[:3].round(3)</code></pre>
+        <div class="cs-out">array([1.391, 1.394, 1.39 ])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>model.intercept_  and  model.coef_</div>
+      <div class="cs-what">What the fit found. A trailing underscore means it came from the data rather than from you.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import LinearRegression
+r = wide[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+m = LinearRegression().fit(t[[&quot;vol&quot;]], t[&quot;target&quot;])
+(round(float(m.intercept_), 3), m.coef_.round(3))</code></pre>
+        <div class="cs-out">(1.203, array([0.14]))</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>mean_squared_error(y_true, y_pred)</div>
+      <div class="cs-what">The truth goes first. Take np.sqrt of it to get back into the units of the target.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.metrics import mean_squared_error
+round(float(np.sqrt(mean_squared_error([1.0, 2.0, 3.0], [1.2, 1.9, 3.4]))), 4)</code></pre>
+        <div class="cs-out">0.2646</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="choosing-between-models">
+    <h2>Choosing between models</h2>
+    <p class="lede">Rows used to compare candidates can no longer give the winner an honest score. That is what the folds are for.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>TimeSeriesSplit(n_splits=5)</div>
+      <div class="cs-what">Folds that move forward in time, so every scored block comes after the rows fitted on.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.model_selection import TimeSeriesSplit
+r = wide[&quot;AAPL&quot;].pct_change().dropna()
+[(len(a), len(b)) for a, b in TimeSeriesSplit(n_splits=3).split(r)]</code></pre>
+        <div class="cs-out">[(65, 62), (127, 62), (189, 62)]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>TimeSeriesSplit(..., max_train_size=500)</div>
+      <div class="cs-what">A rolling window instead of an expanding one: the oldest rows drop out.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.model_selection import TimeSeriesSplit
+r = wide[&quot;AAPL&quot;].pct_change().dropna()
+[len(a) for a, b in TimeSeriesSplit(n_splits=3, max_train_size=500).split(r)]</code></pre>
+        <div class="cs-out">[65, 127, 189]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>TimeSeriesSplit(..., gap=20)</div>
+      <div class="cs-what">Drop the rows whose target reaches into the block about to be scored.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.model_selection import TimeSeriesSplit
+r = wide[&quot;AAPL&quot;].pct_change().dropna()
+[len(a) for a, b in TimeSeriesSplit(n_splits=3, gap=20).split(r)]</code></pre>
+        <div class="cs-out">[45, 107, 169]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>KFold(n_splits=5, shuffle=True)</div>
+      <div class="cs-what">The textbook folds. They assume the rows are interchangeable, which a time series is not.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.model_selection import KFold
+r = wide[&quot;AAPL&quot;].pct_change().dropna()
+[(len(a), len(b)) for a, b in KFold(n_splits=3, shuffle=True, random_state=0).split(r)]</code></pre>
+        <div class="cs-out">[(167, 84), (167, 84), (168, 83)]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>folds.split(frame)</div>
+      <div class="cs-what">The row positions in each fold, as pairs. cross_val_score loops over this for you.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.model_selection import TimeSeriesSplit
+r = wide[&quot;AAPL&quot;].pct_change().dropna()
+folds = TimeSeriesSplit(n_splits=3)
+for fit_rows, score_rows in folds.split(r):
+    print(len(fit_rows), len(score_rows))</code></pre>
+        <div class="cs-out">65 62
+127 62
+189 62</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 5</span>cross_val_score(model, X, y, cv=folds, scoring=...)</div>
+      <div class="cs-what">Fit and score once per fold. Errors come back negative, because scikit-learn reports every score so that larger is better.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_score, TimeSeriesSplit
+r = wide[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+s = cross_val_score(LinearRegression(), t[[&quot;vol&quot;]], t[&quot;target&quot;],
+                    cv=TimeSeriesSplit(n_splits=5),
+                    scoring=&quot;neg_root_mean_squared_error&quot;)
+(-s).round(3)</code></pre>
+        <div class="cs-out">array([0.62 , 0.483, 0.325, 0.212, 0.604])</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="penalised-regression">
+    <h2>Penalised regression</h2>
+    <p class="lede">Session 6: linear regression with a charge on the size of the coefficients, the scaling that charge needs, and a search over how strong it should be.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>Ridge(alpha=1000)</div>
+      <div class="cs-what">Linear regression plus alpha times the sum of squared slopes. alpha=0 is OLS; larger alpha pulls every slope towards zero.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+m = Ridge(alpha=1000).fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+m.coef_.round(4)</code></pre>
+        <div class="cs-out">array([0.178 , 0.1677, 0.0729])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>Lasso(alpha=0.1)</div>
+      <div class="cs-what">The same with a charge on the sum of absolute slopes. Sets some coefficients to exactly zero.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Lasso
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+m = Lasso(alpha=0.1).fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+m.coef_.round(4)</code></pre>
+        <div class="cs-out">array([0.1793, 0.1582, 0.    ])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>ElasticNet(alpha=0.1, l1_ratio=0.5)</div>
+      <div class="cs-what">Both penalties at once. l1_ratio=1 is the lasso, l1_ratio=0 is ridge.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import ElasticNet
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+m = ElasticNet(alpha=0.1, l1_ratio=0.5).fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+m.coef_.round(4)</code></pre>
+        <div class="cs-out">array([0.1867, 0.2175, 0.    ])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>StandardScaler().fit(X_train)</div>
+      <div class="cs-what">Learn each column&#x27;s mean and standard deviation from the TRAINING rows. The penalty charges by coefficient size, and size depends on units.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.preprocessing import StandardScaler
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+sc = StandardScaler().fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]])
+print(sc.mean_.round(3), sc.scale_.round(3))</code></pre>
+        <div class="cs-out">[1.532 1.633 1.688] [1.001 0.769 0.638]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>scaler.transform(X)</div>
+      <div class="cs-what">Subtract the learned mean and divide by the learned standard deviation. Returns a NumPy array; use it on the test rows too, with the training numbers.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.preprocessing import StandardScaler
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+sc = StandardScaler().fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]])
+X = sc.transform(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]])
+print(X[:, 1].mean().round(6), X[:, 1].std().round(6))</code></pre>
+        <div class="cs-out">0.0 1.0</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>Pipeline([(&#x27;scale&#x27;, StandardScaler()), (&#x27;ridge&#x27;, Ridge(alpha=1000))])</div>
+      <div class="cs-what">Two steps as one model: .fit scales then fits, .predict scales with the fitted scaler then predicts. Cross-validation refits the scaler inside every fold.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+pipe = Pipeline([(&quot;scale&quot;, StandardScaler()), (&quot;ridge&quot;, Ridge(alpha=1000))])
+pipe.fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+pipe.predict(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]])[:3].round(3)</code></pre>
+        <div class="cs-out">array([1.671, 1.596, 1.593])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>pipe.named_steps[&#x27;ridge&#x27;].coef_</div>
+      <div class="cs-what">Reach the fitted object inside a step. The pipeline itself has no coef_.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+pipe = Pipeline([(&quot;scale&quot;, StandardScaler()), (&quot;ridge&quot;, Ridge(alpha=1000))])
+pipe.fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+pipe.named_steps[&quot;ridge&quot;].coef_.round(4)</code></pre>
+        <div class="cs-out">array([0.1585, 0.1595, 0.0571])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>{&#x27;ridge__alpha&#x27;: [1, 10, 100, 1000, 10000]}</div>
+      <div class="cs-what">A grid: the setting to search and the values to try. Step name, two underscores, argument name. Several keys multiply.</div>
+      <div class="cs-demo">
+        <pre><code>grid = {&quot;ridge__alpha&quot;: [1, 10, 100, 1000, 10000]}
+len(grid[&quot;ridge__alpha&quot;])</code></pre>
+        <div class="cs-out">5</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>GridSearchCV(pipe, grid, cv=folds, scoring=...)</div>
+      <div class="cs-what">Fit every value on every fold, keep the best mean score, and refit it on all the training rows. Always pass cv; the default ignores time order.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+pipe = Pipeline([(&quot;scale&quot;, StandardScaler()), (&quot;ridge&quot;, Ridge())])
+s = GridSearchCV(pipe, {&quot;ridge__alpha&quot;: [1, 100, 10000]}, cv=TimeSeriesSplit(n_splits=3),
+                 scoring=&quot;neg_root_mean_squared_error&quot;)
+s.fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+print(s.best_params_, round(-s.best_score_, 4))</code></pre>
+        <div class="cs-out">{&#x27;ridge__alpha&#x27;: 100} 0.697</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>search.best_estimator_  ·  search.predict(X)</div>
+      <div class="cs-what">The winning pipeline, refitted on every training row, and predictions from it. Open the test rows once, here.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+pipe = Pipeline([(&quot;scale&quot;, StandardScaler()), (&quot;ridge&quot;, Ridge())])
+s = GridSearchCV(pipe, {&quot;ridge__alpha&quot;: [1, 100, 10000]}, cv=TimeSeriesSplit(n_splits=3),
+                 scoring=&quot;neg_root_mean_squared_error&quot;).fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+print(s.best_estimator_.named_steps[&quot;ridge&quot;].alpha, s.predict(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]])[:2].round(3))</code></pre>
+        <div class="cs-out">100 [1.666 1.58 ]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>pd.DataFrame(search.cv_results_)</div>
+      <div class="cs-what">The whole grid as a table: every value tried, its mean score over the folds, the spread, and its rank.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;AAPL&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;v5&quot;: r.rolling(5).std(), &quot;v20&quot;: r.rolling(20).std(), &quot;v60&quot;: r.rolling(60).std()})
+t[&quot;target&quot;] = r.rolling(20).std().shift(-20)
+t = t.dropna()
+pipe = Pipeline([(&quot;scale&quot;, StandardScaler()), (&quot;ridge&quot;, Ridge())])
+s = GridSearchCV(pipe, {&quot;ridge__alpha&quot;: [1, 100, 10000]}, cv=TimeSeriesSplit(n_splits=3),
+                 scoring=&quot;neg_root_mean_squared_error&quot;).fit(t[[&quot;v5&quot;, &quot;v20&quot;, &quot;v60&quot;]], t[&quot;target&quot;])
+pd.DataFrame(s.cv_results_)[[&quot;param_ridge__alpha&quot;, &quot;mean_test_score&quot;, &quot;rank_test_score&quot;]]</code></pre>
+        <div class="cs-out">   param_ridge__alpha  mean_test_score  rank_test_score
+0                   1        -0.697869                2
+1                 100        -0.696999                1
+2               10000        -0.777811                3</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>model.get_params()</div>
+      <div class="cs-what">Every argument of an object and its current value. help(Ridge) prints the documentation.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Ridge
+Ridge(alpha=1000).get_params()[&quot;alpha&quot;]</code></pre>
+        <div class="cs-out">1000</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>Lasso(alpha=0.001, max_iter=10000)</div>
+      <div class="cs-what">More passes for the lasso solver. Raise it when the ConvergenceWarning appears; standardise first, which is the usual cause.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import Lasso
+Lasso(alpha=0.001, max_iter=10000).get_params()[&quot;max_iter&quot;]</code></pre>
+        <div class="cs-out">10000</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>np.logspace(0, 4, 5)</div>
+      <div class="cs-what">Values spaced by a constant factor: 1, 10, 100, 1000, 10000. The right shape for a grid of alphas.</div>
+      <div class="cs-demo">
+        <pre><code>np.logspace(0, 4, 5)</code></pre>
+        <div class="cs-out">array([1.e+00, 1.e+01, 1.e+02, 1.e+03, 1.e+04])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 6</span>ax.set_xscale(&#x27;log&#x27;)</div>
+      <div class="cs-what">A logarithmic axis, so factors of ten are evenly spaced. For a validation curve over alpha.</div>
+      <div class="cs-demo">
+        <pre><code>fig, ax = plt.subplots()
+ax.plot([1, 10, 100, 1000], [0.72, 0.69, 0.62, 0.56])
+ax.set_xscale(&quot;log&quot;)
+ax.get_xscale()</code></pre>
+        <div class="cs-out">&#x27;log&#x27;</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="classification">
+    <h2>Classification</h2>
+    <p class="lede">Session 8: a label as the target, logistic regression, the probabilities it gives, and the scores that judge a classifier.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>(series &gt; other).astype(int)</div>
+      <div class="cs-what">A label from a comparison: True and False become 1 and 0. The share of ones is the base rate, and the rule that always says the majority class is the baseline to beat.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+round(float(t[&quot;rising&quot;].mean()), 3)</code></pre>
+        <div class="cs-out">0.472</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>LogisticRegression()</div>
+      <div class="cs-what">Fits the log-odds of the label as a straight line in the columns, by log-loss. Same .fit(X, y) as every model. coef_ has one row per class boundary, so two brackets.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+print(m.intercept_.round(3), m.coef_.round(3))</code></pre>
+        <div class="cs-out">[1.245] [[-1.545]]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>model.predict_proba(X)</div>
+      <div class="cs-what">One row per observation, one column per class in the order of classes_, each row summing to one. Column 1 is the probability of the label being 1.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+m.predict_proba(t[[&quot;vol&quot;]])[:3].round(3)</code></pre>
+        <div class="cs-out">array([[0.614, 0.386],
+       [0.603, 0.397],
+       [0.595, 0.405]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>model.predict(X)</div>
+      <div class="cs-what">The 0/1 predictions: 1 where the probability of class 1 is at least one half. Any other threshold is a comparison on predict_proba.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+p = m.predict_proba(t[[&quot;vol&quot;]])[:, 1]
+print(m.predict(t[[&quot;vol&quot;]])[:8], (p &gt;= 0.5).astype(int)[:8])</code></pre>
+        <div class="cs-out">[0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>model.classes_</div>
+      <div class="cs-what">The labels the model knows, in the order predict_proba uses for its columns.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+m.classes_</code></pre>
+        <div class="cs-out">array([0, 1])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>np.exp(model.coef_)</div>
+      <div class="cs-what">A coefficient adds to the log-odds; its exponential multiplies the odds. One unit more of the column multiplies the odds of a 1 by this factor.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+np.exp(m.coef_).round(3)</code></pre>
+        <div class="cs-out">array([[0.213]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>accuracy_score(y, predicted)</div>
+      <div class="cs-what">The share of predictions that match the label. True labels first, predictions second, like every metric. Compare it with the majority rule before reading anything into it.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import accuracy_score
+round(accuracy_score(t[&quot;rising&quot;], m.predict(t[[&quot;vol&quot;]])), 3)</code></pre>
+        <div class="cs-out">0.643</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>confusion_matrix(y, predicted)</div>
+      <div class="cs-what">Four counts: rows are what happened, columns are what the model predicted, both in the order of classes_. Top-left true negatives, bottom-right true positives.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import confusion_matrix
+confusion_matrix(t[&quot;rising&quot;], m.predict(t[[&quot;vol&quot;]]))</code></pre>
+        <div class="cs-out">array([[801, 517],
+       [373, 805]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>precision_score(y, predicted)  ·  recall_score(y, predicted)</div>
+      <div class="cs-what">Precision: the share of predicted 1s that were 1. Recall: the share of real 1s that were predicted. Raising the threshold trades recall for precision.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import precision_score, recall_score
+predicted = m.predict(t[[&quot;vol&quot;]])
+print(round(precision_score(t[&quot;rising&quot;], predicted), 3), round(recall_score(t[&quot;rising&quot;], predicted), 3))</code></pre>
+        <div class="cs-out">0.609 0.683</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>(p &gt;= 0.6).astype(int)</div>
+      <div class="cs-what">Predictions at a threshold other than one half, from the probability column. The model is unchanged; only the comparison changed.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import confusion_matrix
+p = m.predict_proba(t[[&quot;vol&quot;]])[:, 1]
+confusion_matrix(t[&quot;rising&quot;], (p &gt;= 0.6).astype(int))</code></pre>
+        <div class="cs-out">array([[1137,  181],
+       [ 793,  385]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>roc_auc_score(y, p)</div>
+      <div class="cs-what">Area under the ROC curve: 0.5 is a random ranking, 1 a perfect one, and no threshold is involved. Pass the PROBABILITIES, never the 0/1 predictions.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import roc_auc_score
+p = m.predict_proba(t[[&quot;vol&quot;]])[:, 1]
+round(float(roc_auc_score(t[&quot;rising&quot;], p)), 3)</code></pre>
+        <div class="cs-out">0.699</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>roc_curve(y, p)</div>
+      <div class="cs-what">The false positive rate and the true positive rate at every threshold, plus the thresholds, for drawing the ROC curve.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import roc_curve
+p = m.predict_proba(t[[&quot;vol&quot;]])[:, 1]
+fpr, tpr, thr = roc_curve(t[&quot;rising&quot;], p)
+print(len(thr), fpr[:3].round(3), tpr[:3].round(3))</code></pre>
+        <div class="cs-out">940 [0. 0. 0.] [0.    0.001 0.051]</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>cross_val_score(model, X, y, cv=folds, scoring=&#x27;roc_auc&#x27;)</div>
+      <div class="cs-what">The same folds as for a number, with a classification score. Larger is better, so no minus sign. Other strings: &#x27;accuracy&#x27;, &#x27;neg_log_loss&#x27;, &#x27;precision&#x27;, &#x27;recall&#x27;.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score, TimeSeriesSplit
+s = cross_val_score(LogisticRegression(), t[[&quot;vol&quot;]], t[&quot;rising&quot;], cv=TimeSeriesSplit(n_splits=5), scoring=&quot;roc_auc&quot;)
+s.round(3)</code></pre>
+        <div class="cs-out">array([0.814, 0.714, 0.783, 0.724, 0.81 ])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>LogisticRegression(C=0.01)</div>
+      <div class="cs-what">The penalty&#x27;s strength, upside down: C = 1/alpha, so a small C is a strong ridge penalty and a large C is almost none. Default C=1, penalty &#x27;l2&#x27;. Standardise in a pipeline and choose C on a grid in factors of ten.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+pipe = Pipeline([(&quot;scale&quot;, StandardScaler()), (&quot;logit&quot;, LogisticRegression(C=0.01))])
+pipe.fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+pipe.named_steps[&quot;logit&quot;].coef_.round(3)</code></pre>
+        <div class="cs-out">array([[-0.677]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>LogisticRegression(penalty=&#x27;l1&#x27;, solver=&#x27;liblinear&#x27;, C=0.01)</div>
+      <div class="cs-what">The lasso&#x27;s penalty on a classifier: exact zeros. It needs a solver that can handle absolute values, and liblinear can.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression(penalty=&quot;l1&quot;, solver=&quot;liblinear&quot;, C=0.01).fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+m.coef_.round(3)</code></pre>
+        <div class="cs-out">array([[-0.236]])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>LogisticRegression(max_iter=1000)</div>
+      <div class="cs-what">More steps for the solver. Log-loss has no closed form, so .fit() iterates; raise this when the ConvergenceWarning appears, and standardise first.</div>
+      <div class="cs-demo">
+        <pre><code>from sklearn.linear_model import LogisticRegression
+LogisticRegression(max_iter=1000).get_params()[&quot;max_iter&quot;]</code></pre>
+        <div class="cs-out">1000</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>log_loss(y, p)</div>
+      <div class="cs-what">The objective logistic regression minimises, averaged over the rows: minus the log of the probability given to what happened. Takes the true labels and the probabilities.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+from sklearn.metrics import log_loss
+round(float(log_loss(t[&quot;rising&quot;], m.predict_proba(t[[&quot;vol&quot;]])[:, 1])), 4)</code></pre>
+        <div class="cs-out">0.6381</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>model.n_iter_</div>
+      <div class="cs-what">How many steps the solver took. Log-loss has no formula for the coefficients, so .fit() improves them step by step until they stop changing or max_iter is reached.</div>
+      <div class="cs-demo">
+        <pre><code>r = prices.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)[&quot;SPY&quot;].pct_change() * 100
+t = pd.DataFrame({&quot;vol&quot;: r.rolling(20).std()})
+t[&quot;rising&quot;] = (r.rolling(20).std().shift(-20) &gt; t[&quot;vol&quot;]).astype(int)
+t = t.dropna()
+from sklearn.linear_model import LogisticRegression
+m = LogisticRegression().fit(t[[&quot;vol&quot;]], t[&quot;rising&quot;])
+m.n_iter_</code></pre>
+        <div class="cs-out">array([6], dtype=int32)</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>np.where(mask, a, b)</div>
+      <div class="cs-what">An array that takes a where the mask is True and b elsewhere. Handy for keeping one group&#x27;s values and blanking the rest before argmin or argmax.</div>
+      <div class="cs-demo">
+        <pre><code>import numpy as np
+np.where(np.array([True, False, True]), np.array([0.2, 0.7, 0.4]), 9)</code></pre>
+        <div class="cs-out">array([0.2, 9. , 0.4])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>np.zeros(n)  ·  np.zeros(n, dtype=int)</div>
+      <div class="cs-what">An array of n zeros, as floats or as integers. A prediction of 0 on every row is np.zeros(len(test), dtype=int).</div>
+      <div class="cs-demo">
+        <pre><code>import numpy as np
+np.zeros(4, dtype=int)</code></pre>
+        <div class="cs-out">array([0, 0, 0, 0])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>np.arange(start, stop, step)</div>
+      <div class="cs-what">Values from start up to but not including stop, a fixed step apart. np.linspace fixes the count instead of the step.</div>
+      <div class="cs-demo">
+        <pre><code>import numpy as np
+np.arange(0.3, 0.7, 0.1).round(2)</code></pre>
+        <div class="cs-out">array([0.3, 0.4, 0.5, 0.6])</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>(a == b).all()</div>
+      <div class="cs-what">True only when every element of a comparison is True: the vectorised way to check two columns or arrays agree everywhere.</div>
+      <div class="cs-demo">
+        <pre><code>import numpy as np
+a = np.array([1, 0, 1])
+print((a == np.array([1, 0, 1])).all(), (a == np.array([1, 1, 1])).all())</code></pre>
+        <div class="cs-out">True False</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 8</span>series.groupby(series.index.year).mean()</div>
+      <div class="cs-what">Group a dated Series by the year in its index and take a mean per year: one accuracy per year from a Series of True and False.</div>
+      <div class="cs-demo">
+        <pre><code>right = pd.Series([True, False, True, True], index=pd.to_datetime([&quot;2023-03-01&quot;, &quot;2023-09-01&quot;, &quot;2024-02-01&quot;, &quot;2024-08-01&quot;]))
+right.groupby(right.index.year).mean()</code></pre>
+        <div class="cs-out">2023    0.5
+2024    1.0
+dtype: float64</div>
+      </div>
+    </div>
+  </section>
+  <section class="cs-section" id="reading-error-messages">
+    <h2>Reading error messages</h2>
+    <p class="lede">The last line names the problem. Read it before you change anything: it is almost always telling you the truth.</p>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>NameError</div>
+      <div class="cs-what">A name Python has never seen. Usually a typo, or a cell you have not run yet.</div>
+      <div class="cs-demo">
+        <pre><code>volatilty</code></pre>
+        <div class="cs-out">NameError: name &#x27;volatilty&#x27; is not defined</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>TypeError</div>
+      <div class="cs-what">The right operation on the wrong kind of thing. Often text where a number belongs.</div>
+      <div class="cs-demo">
+        <pre><code>&quot;5&quot; + 5</code></pre>
+        <div class="cs-out">TypeError: can only concatenate str (not &quot;int&quot;) to str</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>IndexError</div>
+      <div class="cs-what">A position that does not exist. A list of 5 stops at index 4.</div>
+      <div class="cs-demo">
+        <pre><code>[1, 2, 3][5]</code></pre>
+        <div class="cs-out">IndexError: list index out of range</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 2</span>KeyError</div>
+      <div class="cs-what">A dictionary key that is not there.</div>
+      <div class="cs-demo">
+        <pre><code>vol = {&quot;AAPL&quot;: 0.01}
+vol[&quot;KO&quot;]</code></pre>
+        <div class="cs-out">KeyError: &#x27;KO&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>SyntaxError</div>
+      <div class="cs-what">Python could not read the line at all. Look for a missing bracket, quote or colon.</div>
+      <div class="cs-demo">
+        <pre><code>print(&quot;hello&quot;</code></pre>
+        <div class="cs-out">SyntaxError: &#x27;(&#x27; was never closed</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 1</span>ZeroDivisionError</div>
+      <div class="cs-what">Dividing by zero. Often an empty list you thought had something in it.</div>
+      <div class="cs-demo">
+        <pre><code>1 / 0</code></pre>
+        <div class="cs-out">ZeroDivisionError: division by zero</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ModuleNotFoundError</div>
+      <div class="cs-what">The package is not installed, or you are running a different Python.</div>
+      <div class="cs-demo">
+        <pre><code>import pandas</code></pre>
+        <div class="cs-out">ModuleNotFoundError: No module named &#x27;pandas&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>FileNotFoundError</div>
+      <div class="cs-what">The path is wrong relative to where you are running from.</div>
+      <div class="cs-demo">
+        <pre><code>pd.read_csv(&quot;data/prices.csv&quot;)</code></pre>
+        <div class="cs-out">FileNotFoundError: [Errno 2] No such file or directory: &#x27;data/prices.csv&#x27;</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>ValueError, on shapes</div>
+      <div class="cs-what">Two arrays whose dimensions do not fit. Check .shape on both.</div>
+      <div class="cs-demo">
+        <pre><code>np.array([[1.0, 2.0], [3.0, 4.0]]) @ np.array([1.0, 2.0, 3.0])</code></pre>
+        <div class="cs-out">ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0</div>
+      </div>
+    </div>
+    <div class="cs-entry">
+      <div class="cs-call"><span class="cs-since">Session 3</span>LinAlgError</div>
+      <div class="cs-what">A matrix with no inverse: one column carries nothing the others do not. Perfect multicollinearity.</div>
+      <div class="cs-demo">
+        <pre><code>np.linalg.inv(np.array([[1.0, 2.0], [2.0, 4.0]]))</code></pre>
+        <div class="cs-out">LinAlgError: Singular matrix</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Built from the course materials, with every example executed. Something missing?
+    Email me at <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
+  </footer>
+  </main>
+</div>
+</body>
+</html>

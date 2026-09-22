@@ -1,715 +1,452 @@
 # -*- coding: utf-8 -*-
-"""Build cheatsheet.html: every function the course has used, with an example.
+"""Build cheatsheet.html: every function the course has used, one row each.
 
-Every example on the page is EXECUTED while the page is built, against the real
-course data, and the output shown is the output that actually came back. If an
-example raises, the build fails rather than publishing a wrong page.
+A reference page rather than a set of worked examples. Each section opens with
+the imports it needs, then one row per function: the call, written with general
+argument names, on the left, and what it does on the right. Nothing is run.
+Instead the build checks every name in every call: a bare function has to be
+imported in its section (or be a builtin), and an attribute written against a
+known object (np.x, pd.x, plt.x, ax.x, s.x, frame.x, ...) has to exist in that
+library. A misspelt name fails the build rather than reaching a student.
 
     python tools/build_cheatsheet.py
 
-Adding a session: append entries below with since="S9" and add it to SINCE_LABEL.
-"""
-import ast
-import html
-import io
-import sys
-import traceback
-from contextlib import redirect_stdout
-from pathlib import Path
+The previous format, with an executed example under every entry, is archived
+in tools/archive/ together with its rendered page and CSS.
 
-import matplotlib
-matplotlib.use("Agg")
+Adding a session: append rows below with since="S9" and add it to SINCE_LABEL.
+Rows belong with their topic (a NumPy function under NumPy, whichever session
+introduced it); the session tag at the edge of the row says when it arrived.
+"""
+import builtins
+import html
+import re
+import sys
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "cheatsheet.html"
 
-# --------------------------------------------------------------- entries
-# (call, what it does, example code, since)
-# The example runs in a namespace that already holds: np, pd, plt, prices
-# (the full table), wide (one column per ticker), closes (five Apple closes as
-# a plain list), week (the same as a NumPy array), and returns (four daily
-# returns as an array).
-
 SECTIONS = []
 
 
-def section(title, blurb=""):
-    SECTIONS.append({"title": title, "blurb": blurb, "entries": []})
+def section(title, blurb="", imports=None, names=None):
+    """A card: an optional import block shown once, an optional line naming
+    the conventions its rows use, then the rows."""
+    SECTIONS.append({"title": title, "blurb": blurb, "rows": [],
+                     "imports": imports.strip() if imports else None, "names": names})
 
 
-def e(call, what, example, since="S1", run=True, result=None):
-    SECTIONS[-1]["entries"].append(
-        {"call": call, "what": what, "example": example.strip(),
-         "since": since, "run": run, "result": result})
+def r(signature, what, since="S1"):
+    """One row: the call with general argument names, and what it does."""
+    SECTIONS[-1]["rows"].append({"call": signature, "what": what, "since": since})
 
 
-# ------------------------------------------------------------------------
+# ======================================================================
 section("Running code",
-        "A notebook shows the value of the last line of a cell. Anything else you "
-        "want to see, you have to print.")
-e("print(value)", "Show one or more values. Separate several with commas.",
-  'print("volatility:", 0.0143)')
-e("# comment", "Everything after # on a line is a note for humans, not code.",
-  'total = 10  # dollars, not cents\ntotal')
-e("value", "The last line of a cell is displayed automatically, with no print.",
-  '2 + 2')
+        "A notebook shows the value of the last line of a cell. Anything else you want "
+        "to see, you have to print.")
+r("print(value, other)", "Show one or more values. Separate several with commas.")
+r("# comment", "Everything after # on a line is a note for humans, not code.")
+r("value", "The last line of a cell is displayed automatically, with no print.")
 
 section("Numbers")
-e("+  -  *  /", "The usual arithmetic. Division always gives a float.",
-  '(10 - 4) * 2 / 3')
-e("**", "To the power of. Compound growth, and square roots as ** 0.5.",
-  '1.07 ** 10')
-e("round(number, ndigits)", "Round to a number of decimals.",
-  'round(0.014287, 4)')
-e("abs(number)", "Distance from zero, sign discarded.", 'abs(-0.0482)', since="S2")
+r("+  -  *  /", "The usual arithmetic. Division always gives a float.")
+r("x ** n", "To the power of. Compound growth, and square roots as ** 0.5.")
+r("round(number, ndigits)", "Round to a number of decimals.")
+r("abs(number)", "Distance from zero, sign discarded.", "S2")
 
 section("Text")
-e('"text"', "A string. Single or double quotes, as long as they match.",
-  'ticker = "AAPL"\nticker')
-e("+", "Glue strings together. Both sides must be strings.",
-  '"AA" + "PL"')
-e('f"{value}"', "An f-string: put a value inside text.",
-  'ticker = "AAPL"\nf"the ticker is {ticker}"')
-e('f"{r:.2%}"', "As a percentage with 2 decimals. The recipe for returns.",
-  'r = 0.014287\nf"{r:.2%}"')
-e('f"{x:.2f}"', "As a plain number with 2 decimals. The recipe for prices.",
-  'f"{183.5622:.2f}"')
-e('f"{name:<6}"  f"{x:>7.1%}"', "A field width: pad left-aligned text, or right-align a number, so a column of output lines up.",
-  'vol = {"AAPL": 0.0141, "KO": 0.0080}\nfor t in vol:\n    print(f"{t:<6}{vol[t]:>7.2%}")',
-  since="S2")
-e("text.upper()  .lower()", "A copy of the string in one case. Tickers arrive in every mixture of both.",
-  '"aapl".upper()')
-e("text.strip()", "A copy with the spaces at each end removed. The first thing you do to text from a file.",
-  '"  aapl ".strip().upper()', since="S2")
-e("text.count(part)", "How many times a piece of text appears inside a string.",
-  '"Coca-Cola Company".count("o")')
+r('"text"', "A string. Single or double quotes, as long as they match.")
+r('"AA" + "PL"', "Glue strings together. Both sides must be strings.")
+r('f"{value}"', "An f-string: put a value inside text.")
+r('f"{r:.2%}"', "As a percentage with 2 decimals. The recipe for returns.")
+r('f"{x:.2f}"', "As a plain number with 2 decimals. The recipe for prices.")
+r('f"{name:<6}"  f"{x:>7.1%}"', "A field width: pad left-aligned text, or right-align a number, so a column of output lines up.", "S2")
+r("text.upper()  text.lower()", "A copy of the string in one case. Tickers arrive in every mixture of both.")
+r("text.strip()", "A copy with the spaces at each end removed. The first thing you do to text from a file.", "S2")
+r("text.count(part)", "How many times a piece of text appears inside a string.")
 
 section("True and false")
-e("==  !=", "Equal, and not equal. Two equals signs, because one assigns.",
-  '"AAPL" == "KO"')
-e("<  >  <=  >=", "The usual comparisons. The answer is True or False.",
-  '0.0331 > 0.0141')
-e("and  or  not", "Combine conditions. In pandas the same job is done by & and |.",
-  'r = -0.02\nr < 0 and r > -0.05', since="S2")
+r("==  !=", "Equal, and not equal. Two equals signs, because one assigns.")
+r("<  >  <=  >=", "The usual comparisons. The answer is True or False.")
+r("and  or  not", "Combine conditions. In pandas the same job is done by &, | and ~.", "S2")
 
 section("Types")
-e("type(value)", "What kind of thing this is.", 'type(0.0143)')
-e("int(x)  float(x)  str(x)", "Convert between whole number, decimal and text.",
-  'int("252") + 1')
-e("None", "The absence of a value. What a function returns when it has no return.",
-  'x = None\nprint(x)')
+r("type(value)", "What kind of thing this is.")
+r("int(x)  float(x)  str(x)", "Convert between whole number, decimal and text.")
+r("None", "The absence of a value. What a function returns when it has no return.")
 
-section("Built-in functions",
-        "Always available, no import needed.")
-e("len(items)", "How many items.", 'len(closes)')
-e("sum(numbers)", "Add them all up.", 'sum([0.012, -0.004, 0.008])')
-e("min(values)  max(values)", "Smallest and largest.",
-  'print(min(closes), max(closes))')
-e("sorted(values)", "A new list, in order. The original is untouched.",
-  'sorted([0.03, 0.01, 0.02])', since="S2")
-e("range(start, stop)", "Whole numbers from start up to but NOT including stop.",
-  'list(range(1, 5))', since="S2")
-e("enumerate(items)", "The position and the value together, so you need no counter of your own.",
-  'for i, r in enumerate([0.012, -0.004]):\n    print(i, r)', since="S2")
-e("zip(a, b)", "Walk two lists in step, with no indexing. Stops at the shorter one.",
-  'for d, c in zip(["Jan 02", "Jan 03"], [183.56, 182.19]):\n    print(d, c)',
-  since="S2")
-e("help(thing)", "Print the documentation. Works offline.",
-  'help(round)', since="S2")
-e("dir(thing)", "List everything an object can do. Useful when you half-remember a name.",
-  's = pd.Series([3, 1, 2])\n[n for n in dir(s) if "sort" in n and not n.startswith("_")]',
-  since="S3")
+section("Built-in functions", "Always available, no import needed.")
+r("len(items)", "How many items.")
+r("sum(numbers)", "Add them all up.")
+r("min(values)  max(values)", "Smallest and largest.")
+r("sorted(values)", "A new list, in order. The original is untouched.", "S2")
+r("range(start, stop)", "Whole numbers from start up to but NOT including stop.", "S2")
+r("enumerate(items)", "The position and the value together, so you need no counter of your own.", "S2")
+r("zip(a, b)", "Walk two lists in step, with no indexing. Stops at the shorter one.", "S2")
+r("help(thing)", "Print the documentation. Works offline.", "S2")
+r("dir(thing)", "List everything an object can do. Useful when you half-remember a name.", "S3")
 
-section("Lists",
-        "An ordered box of values. Counting starts at 0.")
-e("[a, b, c]", "Make a list.", 'closes = [183.56, 182.19, 179.87]\ncloses')
-e("items[i]", "The item at that position. [0] is first.", 'closes[0]')
-e("items[-1]", "Counting from the end. [-1] is last.", 'closes[-1]')
-e("items[a:b]", "A slice: from a up to but NOT including b.", 'closes[1:3]')
-e("items[:n]  items[n:]", "Everything before n, everything from n.", 'closes[:2]')
-e("items.append(x)", "Add to the end. Changes the list itself.",
-  'out = []\nout.append(0.012)\nout.append(-0.004)\nout')
-e("items.index(x)", "The position of the first x.", 'closes.index(max(closes))')
-e("[]", "An empty list, ready for a loop to fill.", 'results = []\nlen(results)')
+section("Lists", "An ordered box of values. Counting starts at 0.")
+r("[a, b, c]", "Make a list.")
+r("items[i]", "The item at that position. [0] is first.")
+r("items[-1]", "Counting from the end. [-1] is last.")
+r("items[a:b]", "A slice: from a up to but NOT including b.")
+r("items[:n]  items[n:]", "Everything before n, everything from n.")
+r("items.append(x)", "Add to the end. Changes the list itself.")
+r("items.index(x)", "The position of the first x.")
+r("[]", "An empty list, ready for a loop to fill.")
 
 section("Loops", "Doing something once per item.")
-e("for item in items:", "Run the indented body once for every item.",
-  'for r in [0.012, -0.004]:\n    print(r)', since="S2")
-e("for i in range(n):", "Loop over positions rather than values.",
-  'for i in range(3):\n    print(i)', since="S2")
-e("range(1, len(items))", "Positions 1 onwards: how you reach item i and i-1 together.",
-  'for i in range(1, len(closes)):\n    print(round(closes[i] - closes[i - 1], 2))', since="S2")
-e("total += x", "Add to a variable and store it back. Same as total = total + x.",
-  'total = 0\nfor r in [0.012, -0.004, 0.008]:\n    total += r\nround(total, 4)', since="S2")
-e("while condition:", "Repeat for as long as the condition holds. Something inside must change it.",
-  'value, years = 100, 0\nwhile value < 150:\n    value *= 1.10\n    years += 1\nyears', since="S2")
+r("for item in items:", "Run the indented body once for every item.", "S2")
+r("for i in range(n):", "Loop over positions rather than values.", "S2")
+r("for i in range(1, len(items)):", "Positions 1 onwards: how you reach item i and i-1 together.", "S2")
+r("total += x", "Add to a variable and store it back. Same as total = total + x.", "S2")
+r("while condition:", "Repeat for as long as the condition holds. Something inside must change it.", "S2")
 
 section("Making choices")
-e("if condition:", "Run the block only when the condition is True.",
-  'r = 0.012\nif r > 0:\n    print("up day")', since="S2")
-e("elif / else", "Further cases, checked in order, and a catch-all.",
-  'r = -0.02\nif r > 0:\n    print("up")\nelif r < 0:\n    print("down")\nelse:\n    print("flat")',
-  since="S2")
+r("if condition:", "Run the block only when the condition is True.", "S2")
+r("elif condition:  else:", "Further cases, checked in order, and a catch-all.", "S2")
 
 section("Your own functions")
-e("def name(parameters):", "Create a function. The indented body is what it does.",
-  'def simple_return(p0, p1):\n    return (p1 - p0) / p0\n\nround(simple_return(100, 110), 4)',
-  since="S2")
-e("return value", "Hand a value back and stop there. Without it you get None.",
-  'def double(x):\n    return x * 2\n\ndouble(21)', since="S2")
-e("def name(x, rate=0.05):", "A default: used when the caller does not pass it.",
-  'def grow(price, rate=0.05):\n    return price * (1 + rate)\n\nprint(grow(100), grow(100, 0.10))',
-  since="S2")
-e('"""What it does."""', "A docstring. Editors show it on hover, and help() prints it.",
-  'def volatility(prices):\n    """Standard deviation of the daily returns."""\n    return 0\n\nvolatility.__doc__',
-  since="S2")
+r("def name(parameters):", "Create a function. The indented body is what it does.", "S2")
+r("return value", "Hand a value back and stop there. Without it you get None.", "S2")
+r("def name(x, rate=0.05):", "A default: used when the caller does not pass it.", "S2")
+r('"""What it does."""', "A docstring, the first line of the body. Editors show it on hover, and help() prints it.", "S2")
 
 section("Dictionaries", "Values stored by name instead of by position.")
-e('{"AAPL": 0.36}', "Make one. Keys are usually strings.",
-  'vol = {"AAPL": 0.0143, "KO": 0.0080}\nvol', since="S2")
-e("data[key]", "Read the value under that key.",
-  'vol = {"AAPL": 0.0143, "KO": 0.0080}\nvol["AAPL"]', since="S2")
-e("data[key] = value", "Add a new key, or overwrite an existing one.",
-  'vol = {"AAPL": 0.0143}\nvol["NVDA"] = 0.0331\nvol', since="S2")
-e("for key in data:", "Loop over the keys. Read each value with data[key].",
-  'vol = {"AAPL": 0.0143, "KO": 0.0080}\nfor t in vol:\n    print(t, vol[t])', since="S2")
-e("data.keys()  data.values()", "The names on their own, or the numbers on their own. max, min, sum and for all accept them.",
-  'vol = {"AAPL": 0.0143, "KO": 0.0080, "NVDA": 0.0331}\nmax(vol.values())', since="S2")
-e("data.items()", "The key and the value together, so you need no lookup. Name two variables in the for line.",
-  'vol = {"AAPL": 0.0143, "KO": 0.0080}\nfor t, v in vol.items():\n    print(t, f"{v:.2%}")',
-  since="S2")
-e("{}", "An empty dictionary, ready for a loop to fill. The counterpart of [].",
-  'out = {}\nout["AAPL"] = 0.0141\nout', since="S2")
-e("min(data, key=data.get)", "The KEY with the smallest value, not the value itself. max works the same way.",
-  'rmse = {"A": 0.740, "B": 0.772, "C": 0.747}\nmin(rmse, key=rmse.get)', since="S5")
-e("sorted(data, key=data.get)", "All the keys, ordered by their values. Best first with reverse=True.",
-  'rmse = {"A": 0.740, "B": 0.772, "C": 0.747}\nsorted(rmse, key=rmse.get)', since="S5")
+r('{"AAPL": 0.36, "KO": 0.12}', "Make one. Keys are usually strings.", "S2")
+r("data[key]", "Read the value under that key.", "S2")
+r("data[key] = value", "Add a new key, or overwrite an existing one.", "S2")
+r("for key in data:", "Loop over the keys. Read each value with data[key].", "S2")
+r("data.keys()  data.values()", "The names on their own, or the numbers on their own. max, min, sum and for all accept them.", "S2")
+r("for key, value in data.items():", "The key and the value together, so you need no lookup.", "S2")
+r("{}", "An empty dictionary, ready for a loop to fill. The counterpart of [].", "S2")
+r("min(data, key=data.get)", "The KEY with the smallest value, not the value itself. max works the same way.", "S5")
+r("sorted(data, key=data.get)", "All the keys, ordered by their values. Largest first with reverse=True.", "S5")
 
 section("Packages")
-e("import numpy as np", "Bring a package in under a short name. np, pd and plt are conventions everybody uses.",
-  'import numpy as np\nnp.sqrt(144)', since="S3")
-e("%pip install pandas", "Install a package. Once per machine, in a notebook cell.",
-  '%pip install pandas', since="S3", run=False,
-  result="Successfully installed pandas   (or: Requirement already satisfied)")
+r("import numpy as np", "Bring a package in under a short name. np, pd and plt are conventions everybody uses.", "S3")
+r("%pip install pandas", "Install a package. Once per machine, in a notebook cell.", "S3")
 
+# ======================================================================
 section("NumPy arrays",
-        "A list that does arithmetic on every element at once. Indexing and "
-        "slicing work exactly as they do for lists.")
-e("np.array(list)", "Turn a list of numbers into an array.",
-  'close = np.array([183.56, 182.19, 179.87])\nclose', since="S3")
-e("values * 2", "Arithmetic applies to every element. No loop.",
-  'np.array([1.0, 2.0, 3.0]) * 2', since="S3")
-e("a - b", "Two arrays, element by element.",
-  'np.array([100.0, 200.0]) - np.array([1.0, 2.0])', since="S3")
-e("(v[1:] - v[:-1]) / v[:-1]", "Every daily return in one line: each day against the day before.",
-  '(week[1:] - week[:-1]) / week[:-1]', since="S3")
-e("values.mean()", "The average.", 'returns.mean()', since="S3")
-e("values.std()", "The standard deviation. This is what volatility is.",
-  'returns.std()', since="S3")
-e("values.min()  .max()  .sum()", "The usual summaries.",
-  'print(returns.min(), returns.max(), round(returns.sum(), 4))', since="S3")
-e("np.sqrt(x)", "Square root. np.sqrt(252) annualises a daily volatility.",
-  '0.0143 * np.sqrt(252)', since="S3")
-e("values > 0", "A question asked of every element: True or False for each.",
-  'returns > 0', since="S3")
-e("(values > 0).sum()", "Count the Trues, because True counts as 1.",
-  '(returns > 0).sum()', since="S3")
-e("(values > 0).mean()", "The share that are True.", '(returns > 0).mean()', since="S3")
-e("values[values > 0]", "Keep only the elements where the condition holds.",
-  'returns[returns > 0]', since="S3")
-e("values.shape", "How big it is. For a 1-D array it prints as (n,).",
-  'week.shape', since="S3")
-e("values.argmax()  .argmin()", "The POSITION of the largest or smallest element. Feed it to an index to get the label.",
-  'folds = np.array([0.583, 0.703, 1.255, 0.582, 0.580])\nprint(folds.argmax(), folds.max())',
-  since="S5")
-e("np.random.default_rng(0)", "A random number generator with a fixed seed, so the same code gives the same numbers every time.",
-  'rng = np.random.default_rng(0)\nrng.normal(0, 1, 4).round(3)', since="S4")
+        "A list that does arithmetic on every element at once. Indexing and slicing "
+        "work exactly as they do for lists.",
+        imports="import numpy as np",
+        names="On this card: values is a one-dimensional array, mask an array of True and False.")
+r("np.array(list)", "Turn a list of numbers into an array.", "S3")
+r("values * 2", "Arithmetic applies to every element. No loop.", "S3")
+r("a - b", "Two arrays, element by element.", "S3")
+r("(v[1:] - v[:-1]) / v[:-1]", "Every daily return in one line: each day against the day before.", "S3")
+r("values.mean()", "The average.", "S3")
+r("values.std()", "The standard deviation. This is what volatility is.", "S3")
+r("values.min()  values.max()  values.sum()", "The usual summaries.", "S3")
+r("np.sqrt(x)", "Square root. np.sqrt(252) annualises a daily volatility.", "S3")
+r("values > 0", "A question asked of every element: True or False for each.", "S3")
+r("(values > 0).sum()", "Count the Trues, because True counts as 1.", "S3")
+r("(values > 0).mean()", "The share that are True.", "S3")
+r("values[values > 0]", "Keep only the elements where the condition holds.", "S3")
+r("values.shape", "How big it is. For a 1-D array it prints as (n,).", "S3")
+r("values.argmax()  values.argmin()", "The POSITION of the largest or smallest element. Feed it to an index to get the label.", "S5")
+r("(a == b).all()", "True only when every element of a comparison is True: the vectorised way to check that two arrays or columns agree everywhere.", "S8")
+r("np.where(mask, a, b)", "An array that takes a where the mask is True and b elsewhere. Keeps one group's values and blanks the rest before argmin or argmax.", "S8")
+r("np.zeros(n, dtype=int)", "An array of n zeros, as integers; without dtype, as floats. A prediction of 0 on every row is np.zeros(len(test), dtype=int).", "S8")
+r("np.arange(start, stop, step)", "Values from start up to but not including stop, a fixed step apart. np.linspace fixes the count instead of the step.", "S8")
+r("np.logspace(0, 4, 5)", "Values spaced by a constant factor: 1, 10, 100, 1000, 10000. The right shape for a grid of alphas.", "S6")
+r("np.random.default_rng(0)", "A random number generator with a fixed seed, so the same code gives the same numbers every time.", "S4")
 
-section("NumPy matrices",
-        "A matrix is a 2-D array: rows first, then columns.")
-e("np.array([[1, 2], [3, 4]])", "A matrix, written as a list of rows.",
-  'X = np.array([[1.0, 0.5],\n              [1.0, 1.5],\n              [1.0, 2.5]])\nX', since="S3")
-e("X.shape", "Rows and columns.", 'X = np.array([[1.0, 0.5], [1.0, 1.5], [1.0, 2.5]])\nX.shape', since="S3")
-e("X[i, j]  X[i, :]  X[:, j]", "One element, a whole row, a whole column. The colon means all.",
-  'X = np.array([[1.0, 0.5], [1.0, 1.5], [1.0, 2.5]])\nprint(X[1, 0], X[1, :], X[:, 1])', since="S3")
-e("X.T", "The transpose: rows become columns.",
-  'X = np.array([[1.0, 0.5], [1.0, 1.5], [1.0, 2.5]])\nX.T.shape', since="S3")
-e("A @ B", "Matrix multiplication. For two vectors this is the dot product.",
-  'np.array([0.5, 0.3, 0.2]) @ np.array([0.012, -0.004, 0.031])', since="S3")
-e("np.ones(n)", "A vector of ones. The intercept column of a regression.",
-  'np.ones(4)', since="S3")
-e("np.column_stack([a, b])", "Glue 1-D arrays together as the columns of a matrix.",
-  'x = np.array([0.5, 1.5, 2.5])\nnp.column_stack([np.ones(3), x])', since="S3")
-e("np.linalg.inv(A)", "The inverse: the matrix that undoes A. Fails if a column is redundant.",
-  'A = np.array([[2.0, 1.0], [1.0, 3.0]])\nnp.round(np.linalg.inv(A) @ A, 10)', since="S3")
-e("np.linalg.solve(A, b)", "Solve A x = b. Safer and faster than inverting. OLS in one line.",
-  'x = np.array([0.5, 1.5, 2.5, 3.5])\ny = np.array([1.0, 2.0, 2.6, 3.8])\nX = np.column_stack([np.ones(4), x])\nnp.linalg.solve(X.T @ X, X.T @ y)', since="S3")
+section("NumPy matrices", "A matrix is a 2-D array: rows first, then columns.",
+        imports="import numpy as np")
+r("np.array([[1, 2], [3, 4]])", "A matrix, written as a list of rows.", "S3")
+r("X.shape", "Rows and columns.", "S3")
+r("X[i, j]  X[i, :]  X[:, j]", "One element, a whole row, a whole column. The colon means all.", "S3")
+r("X.T", "The transpose: rows become columns.", "S3")
+r("A @ B", "Matrix multiplication. For two vectors this is the dot product.", "S3")
+r("np.ones(n)", "A vector of ones. The intercept column of a regression.", "S3")
+r("np.column_stack([a, b])", "Glue 1-D arrays together as the columns of a matrix.", "S3")
+r("np.linalg.inv(A)", "The inverse: the matrix that undoes A. Fails if a column is redundant.", "S3")
+r("np.linalg.solve(A, b)", "Solve A x = b. Safer and faster than inverting. OLS in one line: solve(X.T @ X, X.T @ y).", "S3")
 
+# ======================================================================
 section("pandas: one column",
-        "A Series is values with a label on each one: a list and a dictionary at once.")
-e("pd.Series(a_dict)", "Build one from a dictionary. The keys become the labels.",
-  'pd.Series({"AAPL": 0.0143, "KO": 0.0080, "NVDA": 0.0331})', since="S3")
-e("s['AAPL']", "Look a value up by its label.",
-  's = pd.Series({"AAPL": 0.0143, "KO": 0.0080})\ns["AAPL"]', since="S3")
-e("s * 2", "Maths applies to every value, and the labels come along.",
-  'pd.Series({"AAPL": 0.0143, "KO": 0.0080}) * np.sqrt(252)', since="S3")
-e("s.mean()  .std()  .min()  .max()", "A Series summarises itself, like an array.",
-  'wide["AAPL"].mean()', since="S3")
-e("s.median()", "The middle value. Compare it with the mean: a gap between them means a skewed tail.",
-  'r = wide["AAPL"].pct_change().dropna()\nround(r.mean(), 5), round(r.median(), 5)',
-  since="S4")
-e("s.sort_values()", "In order. ascending=False for largest first.",
-  's = pd.Series({"AAPL": 0.0143, "KO": 0.0080, "NVDA": 0.0331})\ns.sort_values(ascending=False)',
-  since="S3")
-e("s.dropna()", "Throw away the missing values.",
-  'wide["AAPL"].pct_change().dropna().shape', since="S3")
-e("s.abs()", "The size of every value, sign dropped. abs() on its own does the same for one number.",
-  'r = wide["AAPL"].pct_change().dropna()\nr.abs().mean().round(5)', since="S4")
+        "A Series is values with a label on each one: a list and a dictionary at once.",
+        imports="import pandas as pd",
+        names="On this card: s is a Series.")
+r("pd.Series(a_dict)", "Build one from a dictionary. The keys become the labels.", "S3")
+r('s["AAPL"]', "Look a value up by its label.", "S3")
+r("s * 2", "Maths applies to every value, and the labels come along.", "S3")
+r("s.mean()  s.std()  s.min()  s.max()", "A Series summarises itself, like an array.", "S3")
+r("s.median()", "The middle value. Compare it with the mean: a gap between them means a skewed tail.", "S4")
+r("s.sort_values(ascending=False)", "In order. Leave ascending out for smallest first.", "S3")
+r("s.dropna()", "Throw away the missing values.", "S3")
+r("s.abs()", "The size of every value, sign dropped. abs() on its own does the same for one number.", "S4")
 
-section("pandas: a table",
-        "A DataFrame is several Series side by side, sharing one index.")
-e("pd.read_csv(path, parse_dates=['date'])", "Read a CSV. parse_dates turns a text column into real dates.",
-  'prices.head(3)', since="S3")
-e("pd.DataFrame({...})", "Build a table from a dictionary of columns.",
-  'pd.DataFrame({"ticker": ["AAPL", "KO"],\n              "vol": [0.0143, 0.0080]})', since="S3")
-e("frame.head(n)  .tail(n)", "The first or last n rows, 5 by default.",
-  'prices.head(2)', since="S3")
-e("frame.shape", "Rows and columns.", 'prices.shape', since="S3")
-e("frame.dtypes", "What each column holds. A price column that arrived as text is a silent bug.",
-  'prices.dtypes', since="S3")
-e("frame.columns", "The column names.", 'list(prices.columns)', since="S3")
-e("frame['close']", "One column, as a Series.", 'prices["close"].head(3)', since="S3")
-e("frame[['date', 'close']]", "Several columns, as a smaller table. Note the two sets of brackets.",
-  'prices[["date", "close"]].head(3)', since="S3")
-e("frame[frame['ticker'] == 'AAPL']", "Keep only the rows where the condition is True.",
-  'prices[prices["ticker"] == "AAPL"].shape', since="S3")
-e("&  |", "And, or. Each condition needs its own brackets.",
-  'big = prices[(prices["ticker"] == "AAPL")\n             & (prices["close"] > 250)]\nbig.shape', since="S3")
-e("~mask", "Flip a mask: every True becomes False. How you get \"the other half\" without writing the condition twice.",
-  'r = wide["AAPL"].pct_change().dropna()\ncalm = r.abs() < r.abs().median()\nprint(calm.sum(), (~calm).sum())',
-  since="S4")
-e(".copy()", "Take your own copy before modifying a selection, so pandas knows what you meant.",
-  'aapl = prices[prices["ticker"] == "AAPL"].copy()\naapl.shape', since="S3")
-e("frame['ret'] = ...", "Assign to a name that does not exist yet, and the column appears.",
-  'aapl = prices[prices["ticker"] == "AAPL"].copy()\naapl["ret"] = aapl["close"].pct_change()\naapl[["date", "close", "ret"]].head(3)',
-  since="S3")
-e("s.pct_change()", "The percentage change from each row to the next. The first is NaN.",
-  'wide["AAPL"].pct_change().head(3)', since="S3")
-e("frame.sort_values('ret')", "Sort the rows by a column.",
-  'aapl = prices[prices["ticker"] == "AAPL"].copy()\naapl["ret"] = aapl["close"].pct_change()\naapl.sort_values("ret")[["date", "ret"]].head(3)',
-  since="S3")
-e("frame.loc['2024']", "Rows by label. With a date index you can slice with dates.",
-  'wide.loc["2024-01-02":"2024-01-04", ["AAPL", "KO"]]', since="S3")
-e("frame.iloc[0]  .iloc[-1]", "Rows by position: the first row, the last row.",
-  'wide.iloc[-1].head(3)', since="S3")
-e("frame.values", "The plain numbers underneath, as a NumPy array, labels dropped.",
-  'm = wide[["AAPL", "KO"]].values\nprint(type(m).__name__, m.shape)', since="S3")
-e("frame.set_index('date')", "Move a column into the index, so .loc can slice by it.",
-  'a = prices[prices["ticker"] == "AAPL"].set_index("date")\na.loc["2024-01-02":"2024-01-04", ["close"]]',
-  since="S4")
+section("pandas: a table", "A DataFrame is several Series side by side, sharing one index.",
+        imports="import pandas as pd",
+        names="On this card: frame is a DataFrame, mask a column of True and False.")
+r('pd.read_csv(path, parse_dates=["date"])', "Read a CSV. parse_dates turns a text column into real dates.", "S3")
+r("pd.DataFrame({name: values, ...})", "Build a table from a dictionary of columns.", "S3")
+r("frame.head(n)  frame.tail(n)", "The first or last n rows, 5 by default.", "S3")
+r("frame.shape", "Rows and columns.", "S3")
+r("frame.dtypes", "What each column holds. A price column that arrived as text is a silent bug.", "S3")
+r("frame.columns", "The column names. list(frame.columns) for a plain list.", "S3")
+r('frame["close"]', "One column, as a Series.", "S3")
+r('frame[["date", "close"]]', "Several columns, as a smaller table. Note the two sets of brackets.", "S3")
+r('frame[frame["ticker"] == "AAPL"]', "Keep only the rows where the condition is True.", "S3")
+r("(mask_a) & (mask_b)   (mask_a) | (mask_b)", "And, or. Each condition needs its own brackets.", "S3")
+r("~mask", "Flip a mask: every True becomes False. How you get the other half without writing the condition twice.", "S4")
+r("frame.copy()", "Take your own copy before modifying a selection, so pandas knows what you meant.", "S3")
+r('frame["new"] = values', "Assign to a name that does not exist yet, and the column appears.", "S3")
+r("s.pct_change()", "The percentage change from each row to the next. The first is NaN.", "S3")
+r('frame.sort_values("col")', "Sort the rows by a column.", "S3")
+r('frame.loc["2024-01-02":"2024-01-31"]', "Rows by label. With a date index you can slice with dates, and both ends are included.", "S3")
+r("frame.iloc[0]  frame.iloc[-1]", "Rows by position: the first row, the last row.", "S3")
+r("frame.values", "The plain numbers underneath, as a NumPy array, labels dropped.", "S3")
+r('frame.set_index("date")', "Move a column into the index, so .loc can slice by it.", "S4")
 
-section("pandas: groups and shapes")
-e("frame.groupby('ticker').size()", "Split by a column, then count the rows in each group.",
-  'prices.groupby("ticker").size()', since="S3")
-e("frame.groupby('ticker')['close'].mean()", "Split, compute inside each group, put the answers back together.",
-  'prices.groupby("ticker")["close"].mean().round(2)', since="S3")
-e("groupby(...)['close'].pct_change()", "A return WITHIN each stock. Group first, or you take a return across two companies.",
-  'p = prices.copy()\np["ret"] = p.groupby("ticker")["close"].pct_change()\np.groupby("ticker")["ret"].std().sort_values(ascending=False).round(4)',
-  since="S3")
-e("g.agg(['mean', 'std', 'min', 'max'])", "Several summaries at once, as a table.",
-  'p = prices.copy()\np["ret"] = p.groupby("ticker")["close"].pct_change()\np.groupby("ticker")["ret"].agg(["mean", "std"]).round(4).head(4)',
-  since="S3")
-e("frame.pivot(index=, columns=, values=)", "Reshape: one row per date, one column per ticker.",
-  'wide = prices.pivot(index="date", columns="ticker",\n                    values="close")\nwide.shape', since="S3")
-e("s.shift(1)", "Slide a column down by one, so each row can see the previous one. How you line the past up next to the present.",
-  'r = wide["AAPL"].pct_change()\npd.DataFrame({"ret": r, "yesterday": r.shift(1)}).head(4)',
-  since="S3")
-e("s.rolling(20).std()", "A statistic over a sliding window of rows. Where most financial features come from.",
-  'r = wide["AAPL"].pct_change()\n(r.rolling(20).std() * np.sqrt(252)).tail(3)', since="S3")
-e("s.describe()", "Count, mean, standard deviation and the quartiles, in one call.",
-  'wide["KO"].describe().round(2)', since="S3")
-e("s.nlargest(n)", "The n largest values, largest first.",
-  'wide.pct_change().std().nlargest(3)', since="S3")
+section("pandas: groups and shapes", imports="import pandas as pd",
+        names="On this card: frame is a DataFrame, s a Series, g a grouped table such as frame.groupby(\"ticker\").")
+r('frame.groupby("ticker").size()', "Split by a column, then count the rows in each group.", "S3")
+r('frame.groupby("ticker")["close"].mean()', "Split, compute inside each group, put the answers back together.", "S3")
+r('frame.groupby("ticker")["close"].pct_change()', "A return WITHIN each stock. Group first, or you take a return across two companies.", "S3")
+r('g.agg(["mean", "std", "min", "max"])', "Several summaries at once, as a table.", "S3")
+r('frame.pivot(index="date", columns="ticker", values="close")', "Reshape: one row per date, one column per ticker.", "S3")
+r("s.shift(1)", "Slide a column down by one, so each row can see the previous one. How you line the past up next to the present.", "S3")
+r("s.rolling(window).std()", "A statistic over a sliding window of rows. Where most financial features come from. Also .mean() and .sum().", "S3")
+r("s.groupby(s.index.year).mean()", "A dated Series grouped by the year in its index, one mean per year. From a Series of True and False, one share per year.", "S8")
+r("s.describe()", "Count, mean, standard deviation and the quartiles, in one call.", "S3")
+r("s.nlargest(n)", "The n largest values, largest first.", "S3")
 
+# ======================================================================
 section("matplotlib",
-        "Every plot is the same three steps: make the axes, draw on them, then say "
-        "what the reader is looking at. Figures are not shown on this page.")
-e("fig, ax = plt.subplots(figsize=(9, 3))", "Make a figure and one axes to draw on. Every plot starts here.",
-  'fig, ax = plt.subplots(figsize=(9, 3))\ntype(ax).__name__', since="S3")
-e("ax.plot(x, y)", "A line: something over time.",
-  'fig, ax = plt.subplots()\nax.plot([1, 2, 3], [10, 12, 11])\n"drawn"', since="S3")
-e("ax.barh(names, values)", "Horizontal bars: comparing named things. Sort before you plot.",
-  'fig, ax = plt.subplots()\nv = wide.pct_change().std().sort_values()\nax.barh(v.index, v.values)\n"drawn"',
-  since="S3")
-e("ax.hist(values, bins=40)", "A histogram: the shape of one variable.",
-  'fig, ax = plt.subplots()\nax.hist(wide["AAPL"].pct_change().dropna(), bins=40)\n"drawn"',
-  since="S3")
-e("ax.scatter(x, y)", "A scatter: one thing against another.",
-  'fig, ax = plt.subplots()\nr = wide.pct_change().dropna()\nax.scatter(r["SPY"], r["AAPL"], s=6)\n"drawn"',
-  since="S3")
-e("ax.set_title(text, loc='left')", "Say what the reader is looking at.",
-  'fig, ax = plt.subplots()\nax.set_title("Apple, 2024", loc="left")\nax.get_title(loc="left")', since="S3")
-e("ax.set_ylabel(text)  ax.set_xlabel(text)", "Label the axes, with units. \"price (USD)\", not \"price\".",
-  'fig, ax = plt.subplots()\nax.set_ylabel("price (USD)")\nax.get_ylabel()', since="S3")
-e("label= and ax.legend()", "Name each line, then show the key. Needed as soon as there are two.",
-  'fig, ax = plt.subplots()\nax.plot([1, 2], [1, 2], label="AAPL")\nax.legend()\n"drawn"', since="S3")
-e("ax.set_ylim(a, b)", "Fix the vertical range. For bars, always start at zero.",
-  'fig, ax = plt.subplots()\nax.set_ylim(0, 0.55)\nax.get_ylim()', since="S3")
-e("ax.axhline(0)", "A horizontal reference line. Zero on an error plot, or an average across bars.",
-  'fig, ax = plt.subplots()\nax.axhline(0, color="grey", linewidth=1)\n"drawn"', since="S4")
-e("plt.show()", "Display the figure. The last line of a plotting cell.",
-  'plt.show()', since="S3", run=False, result="(the figure appears under the cell)")
-e("fig.savefig('name.png', dpi=200)", "Save it to a file. Use .pdf for something that stays sharp at any size.",
-  "fig.savefig('name.png', dpi=200, bbox_inches='tight')", since="S3", run=False,
-  result="(writes name.png next to your notebook)")
+        "Every plot is the same three steps: make the axes, draw on them, then say what "
+        "the reader is looking at.",
+        imports="import matplotlib.pyplot as plt")
+r("fig, ax = plt.subplots(figsize=(9, 3))", "Make a figure and one axes to draw on. Every plot starts here.", "S3")
+r("ax.plot(x, y)", "A line: something over time.", "S3")
+r("ax.barh(names, values)", "Horizontal bars: comparing named things. Sort before you plot.", "S3")
+r("ax.hist(values, bins=40)", "A histogram: the shape of one variable.", "S3")
+r("ax.scatter(x, y)", "A scatter: one thing against another. s=6 makes the dots small.", "S3")
+r('ax.set_title(text, loc="left")', "Say what the reader is looking at.", "S3")
+r("ax.set_ylabel(text)  ax.set_xlabel(text)", 'Label the axes, with units. "price (USD)", not "price".', "S3")
+r('ax.plot(x, y, label="AAPL")  ax.legend()', "Name each line, then show the key. Needed as soon as there are two.", "S3")
+r("ax.set_ylim(a, b)", "Fix the vertical range. For bars, always start at zero.", "S3")
+r("ax.axhline(y)", "A horizontal reference line: zero on an error plot, or an average across bars. ax.axvline(x) is the vertical one.", "S4")
+r('ax.set_xscale("log")', "A logarithmic axis, so factors of ten are evenly spaced. For a validation curve over alpha or C.", "S6")
+r("plt.show()", "Display the figure. The last line of a plotting cell.", "S3")
+r('fig.savefig("name.png", dpi=200)', "Save it to a file. Use .pdf for something that stays sharp at any size.", "S3")
 
+# ======================================================================
 section("Features and a target",
-        "Session 4's table: one row per observation, one column per feature, and one "
-        "column you are trying to predict. Every model assumes it.")
-e("s.shift(-1)", "Move a column UP, so tomorrow's value sits on today's row. This is how a target is built.",
-  'r = wide["AAPL"].pct_change()\npd.DataFrame({"today": r, "target": r.shift(-1)}).tail(3).round(4)',
-  since="S4")
-e("s.rolling(20).mean()", "A feature over the last twenty rows. It only ever looks backwards, which is what makes it legal.",
-  'r = wide["AAPL"].pct_change()\nr.rolling(20).std().tail(2).round(4)', since="S4")
-e("(s > 0).astype(int)", "Turn a number into a 0/1 label, which turns a regression into a classification.",
-  'r = wide["AAPL"].pct_change()\n(r.shift(-1) > 0).astype(int).tail(4)', since="S4")
-e("s.corr(other)", "How strongly two columns move together, between -1 and +1. A feature that correlates almost perfectly with the target is a leak, not a discovery.",
-  'r = wide["AAPL"].pct_change()\nt = pd.DataFrame({"vol": r.rolling(20).std(),\n                  "target": r.rolling(20).std().shift(-20)}).dropna()\nround(t["vol"].corr(t["target"]), 3)',
-  since="S4")
-e("s.diff()", "The difference between each row and the one before it. On logged prices this is the log return.",
-  'np.log(wide["AAPL"]).diff().tail(2).round(4)', since="S4")
-e("n and p", "The two numbers that describe a learning problem: observations, and feature columns. The target is not a feature.",
-  'r = wide["AAPL"].pct_change()\nt = pd.DataFrame({"vol": r.rolling(20).std(),\n                  "target": r.shift(-1)}).dropna()\n(t.shape[0], t.shape[1] - 1)',
-  since="S4")
+        "One row per observation, one column per feature, and one column you are trying "
+        "to predict. Every model assumes it.",
+        names="On this card: s is a Series, X the feature table.")
+r("s.shift(-1)", "Move a column UP, so tomorrow's value sits on today's row. This is how a target is built.", "S4")
+r("s.rolling(20).std()", "A feature over the last twenty rows. It only ever looks backwards, which is what makes it legal.", "S4")
+r("(s > 0).astype(int)", "Turn a number into a 0/1 label, which turns a regression into a classification.", "S4")
+r("s.corr(other)", "How strongly two columns move together, between -1 and +1. A feature that correlates almost perfectly with the target is a leak, not a discovery.", "S4")
+r("s.diff()", "The difference between each row and the one before it. On logged prices this is the log return.", "S4")
+r("n, p = X.shape", "The two numbers that describe a learning problem: observations, and feature columns. The target is not a feature.", "S4")
 
 section("Missing values",
-        "Real tables have holes in them. What you do about the holes changes your "
-        "answer, so it is a decision rather than a formality.")
-e("pd.date_range(start, end, freq='D')", "Every calendar day between two dates.",
-  'pd.date_range("2024-01-01", "2024-01-05", freq="D")', since="S4")
-e("frame.reindex(index)", "Force a table onto different row labels. Rows that did not exist arrive empty.",
-  'cal = pd.date_range(wide.index.min(), wide.index.max(), freq="D")\nwide.reindex(cal).shape',
-  since="S4")
-e("frame.isna().sum()", "Count the missing values in each column.",
-  'cal = pd.date_range(wide.index.min(), wide.index.max(), freq="D")\nwide.reindex(cal).isna().sum().head(3)',
-  since="S4")
-e("s.ffill()", "Carry the last known value forward. It only looks backwards, so a forecast may use it.",
-  's = pd.Series([1.0, None, None, 4.0])\ns.ffill().tolist()', since="S4")
-e("s.fillna(value)", "Fill with something you choose. Filling with the column mean shrinks the variance, so be deliberate.",
-  's = pd.Series([1.0, None, 4.0])\ns.fillna(s.mean()).tolist()', since="S4")
-e("s.interpolate()", "Draw a straight line across the gap. It uses the value AFTER the gap, so never in a forecast.",
-  's = pd.Series([1.0, None, 3.0])\ns.interpolate().tolist()', since="S4")
-e("s.isna().astype(int)", "Record that a value was missing. Sometimes that fact is itself the signal.",
-  's = pd.Series([1.0, None, 3.0])\ns.isna().astype(int).tolist()', since="S4")
+        "Real tables have holes in them. What you do about the holes changes your answer, "
+        "so it is a decision rather than a formality.",
+        imports="import pandas as pd")
+r('pd.date_range(start, end, freq="D")', "Every calendar day between two dates.", "S4")
+r("frame.reindex(index)", "Force a table onto different row labels. Rows that did not exist arrive empty.", "S4")
+r("frame.isna().sum()", "Count the missing values in each column.", "S4")
+r("s.ffill()", "Carry the last known value forward. It only looks backwards, so a forecast may use it.", "S4")
+r("s.fillna(value)", "Fill with something you choose. Filling with the column mean shrinks the variance, so be deliberate.", "S4")
+r("s.interpolate()", "Draw a straight line across the gap. It uses the value AFTER the gap, so never in a forecast.", "S4")
+r("s.isna().astype(int)", "Record that a value was missing. Sometimes that fact is itself the signal.", "S4")
 
-section("Extremes, and changing the scale")
-e("s.quantile([0.25, 0.75])", "The percentiles. Q1 and Q3 are the edges of the middle half of the data.",
-  'r = wide["AAPL"].pct_change().dropna()\nr.quantile([0.25, 0.75]).round(4)', since="S4")
-e("the IQR rule", "Flag anything outside Q1 - 1.5 IQR to Q3 + 1.5 IQR. On returns it flags far more than it should.",
-  'r = wide["AAPL"].pct_change().dropna()\nq1, q3 = r.quantile([0.25, 0.75])\niqr = q3 - q1\nint(((r < q1 - 1.5 * iqr) | (r > q3 + 1.5 * iqr)).sum())',
-  since="S4")
-e("np.log(values)", "The natural log. Log returns add up over time, and a log tames a long right tail.",
-  'np.log(wide["AAPL"]).diff().tail(2).round(4)', since="S4")
-e("(s - s.mean()) / s.std()", "Standardise: mean 0, standard deviation 1. Compute those two numbers on the training rows only.",
-  'r = wide["AAPL"].pct_change().dropna()\nz = (r - r.mean()) / r.std()\nround(z.mean(), 8), round(z.std(), 4)',
-  since="S4")
-e("pd.get_dummies(frame, columns=[...])", "One 0/1 column per category. This is how text gets into a feature table.",
-  'f = pd.DataFrame({"t": ["AAPL", "KO"], "sector": ["Tech", "Staples"]})\npd.get_dummies(f, columns=["sector"], dtype=int)',
-  since="S4")
+section("Extremes, and changing the scale",
+        imports="import numpy as np\nimport pandas as pd")
+r("s.quantile([0.25, 0.75])", "The percentiles. Q1 and Q3 are the edges of the middle half of the data.", "S4")
+r("(s < q1 - 1.5 * iqr) | (s > q3 + 1.5 * iqr)", "The IQR rule, with iqr = q3 - q1: flag anything outside Q1 - 1.5 IQR to Q3 + 1.5 IQR. On returns it flags far more than it should.", "S4")
+r("np.log(values)", "The natural log. Log returns add up over time, and a log tames a long right tail.", "S4")
+r("(s - s.mean()) / s.std()", "Standardise: mean 0, standard deviation 1. Compute those two numbers on the training rows only.", "S4")
+r('pd.get_dummies(frame, columns=["sector"], dtype=int)', "One 0/1 column per category. This is how text gets into a feature table.", "S4")
 
+# ======================================================================
 section("Scoring a prediction of a number",
-        "Choose the metric before you see the answer, and always report it beside a "
-        "baseline.")
-e("MAE", "Mean absolute error: the average size of a mistake, in the units of the target.",
-  'y = np.array([2.0, 4.0, 6.0, 8.0])\np = np.array([3.0, 4.0, 5.0, 11.0])\nnp.abs(y - p).mean()',
-  since="S4")
-e("MSE", "Mean squared error: one large miss dominates it, which is sometimes exactly what you want.",
-  'y = np.array([2.0, 4.0, 6.0, 8.0])\np = np.array([3.0, 4.0, 5.0, 11.0])\n((y - p) ** 2).mean()',
-  since="S4")
-e("RMSE", "The root of the MSE, back in the units of the target. The one to report.",
-  'y = np.array([2.0, 4.0, 6.0, 8.0])\np = np.array([3.0, 4.0, 5.0, 11.0])\nnp.sqrt(((y - p) ** 2).mean())',
-  since="S4")
-e("R squared", "How much better than always predicting the average. Zero means no better at all, and out of sample it can be negative.",
-  'y = np.array([2.0, 4.0, 6.0, 8.0])\np = np.array([3.0, 4.0, 5.0, 11.0])\n1 - ((y - p) ** 2).sum() / ((y - y.mean()) ** 2).sum()',
-  since="S4")
-e("np.full(n, value)", "The baseline prediction: one number, repeated. Nothing counts as a result until it beats this.",
-  'y = np.array([2.0, 4.0, 6.0, 8.0])\nbase = np.full(len(y), y.mean())\nnp.sqrt(((y - base) ** 2).mean())',
-  since="S4")
+        "Choose the metric before you see the answer, and always report it beside a baseline.",
+        imports="import numpy as np",
+        names="On this card: y is what happened and p the prediction, two arrays of the same length.")
+r("np.abs(y - p).mean()", "MAE, mean absolute error: the average size of a mistake, in the units of the target.", "S4")
+r("((y - p) ** 2).mean()", "MSE, mean squared error: one large miss dominates it, which is sometimes exactly what you want.", "S4")
+r("np.sqrt(((y - p) ** 2).mean())", "RMSE, the root of the MSE, back in the units of the target. The one to report.", "S4")
+r("1 - ((y - p) ** 2).sum() / ((y - y.mean()) ** 2).sum()", "R squared: how much better than always predicting the average. Zero means no better at all, and out of sample it can be negative.", "S4")
+r("np.full(len(y), y_train.mean())", "The baseline prediction: one number, the training average, repeated. Nothing counts as a result until it beats this.", "S4")
 
 section("Scoring a prediction of a label",
-        "No residuals here. Four counts, and every classification metric is built out "
-        "of them.")
-e("TP, FP, FN, TN", "Combine the two boolean columns with & and ~, then count.",
-  'said = pd.Series([True, True, False, False])\nwas = pd.Series([True, False, True, False])\n[int((said & was).sum()), int((said & ~was).sum()),\n int((~said & was).sum()), int((~said & ~was).sum())]',
-  since="S4")
-e("accuracy", "The share called correctly. Meaningless when one class is rare.",
-  'tp, fp, fn, tn = 1, 1, 1, 1\n(tp + tn) / (tp + fp + fn + tn)', since="S4")
-e("precision", "Of the times I said yes, how often was I right? Low precision means false alarms.",
-  'tp, fp = 1042, 331\ntp / (tp + fp)', since="S4")
-e("recall", "Of the times it really happened, how many did I catch? Low recall means misses.",
-  'tp, fn = 1042, 297\ntp / (tp + fn)', since="S4")
-e("F1", "The harmonic mean of the two, which sits close to the smaller one.",
-  'p, r = 0.759, 0.778\n2 * p * r / (p + r)', since="S4")
+        "No residuals here. Four counts, and every classification metric is built out of them.",
+        names="On this card: said and was are columns of True and False, the prediction and what happened; "
+              "tp, fp, fn and tn are the four counts.")
+r("(said & was).sum()", "True positives. False positives are (said & ~was), misses (~said & was), true negatives (~said & ~was).", "S4")
+r("(tp + tn) / (tp + fp + fn + tn)", "Accuracy: the share called correctly. Meaningless when one class is rare.", "S4")
+r("tp / (tp + fp)", "Precision: of the times the model said yes, how often was it right? Low precision means false alarms.", "S4")
+r("tp / (tp + fn)", "Recall: of the times it really happened, how many were caught? Low recall means misses.", "S4")
+r("2 * precision * recall / (precision + recall)", "F1: the harmonic mean of the two, which sits close to the smaller one.", "S4")
 
 section("Training rows and test rows",
-        "A score computed on the rows a model learned from is not evidence.")
-e("frame.loc[:'2022-12-31']", "Split by date, never at random. A shuffled time series lets a model train on the future.",
-  'r = wide["AAPL"].pct_change().dropna()\n(len(r.loc[:"2024-06-30"]), len(r.loc["2024-07-01":]))',
-  since="S4")
-e("np.polyfit(x, y, degree)", "Fit a polynomial of that degree. Raising the degree always lowers training error.",
-  'x = np.linspace(0, 1, 12)\ny = np.sin(2 * np.pi * x)\nnp.round(np.polyfit(x, y, 1), 3)', since="S4")
-e("np.polyval(coef, x)", "Evaluate a fitted polynomial, so you can score it on rows it never saw.",
-  'x = np.linspace(0, 1, 12)\ny = np.sin(2 * np.pi * x)\nc = np.polyfit(x, y, 3)\nround(float(((np.polyval(c, x) - y) ** 2).mean()), 5)',
-  since="S4")
+        "A score computed on the rows a model learned from is not evidence.",
+        imports="import numpy as np")
+r('frame.loc[:"2022-12-31"]', 'Split by date, never at random: the rows up to a date for training, frame.loc["2023-01-01":] for testing. A shuffled time series lets a model train on the future.', "S4")
+r("np.polyfit(x, y, degree)", "Fit a polynomial of that degree. Raising the degree always lowers training error.", "S4")
+r("np.polyval(coef, x)", "Evaluate a fitted polynomial, so you can score it on rows it never saw.", "S4")
+
+# ======================================================================
+SK_NAMES = ("On this card: X is the feature table, always with two brackets, y the target column, "
+            "model a fitted model, folds a TimeSeriesSplit.")
 
 section("Fitting a model",
-        "Session 5's four lines. Every model in scikit-learn takes them, so the "
-        "only thing that changes later is the first one.")
-e("from sklearn.linear_model import LinearRegression", "The model. It installs as scikit-learn and imports as sklearn.",
-  'from sklearn.linear_model import LinearRegression\nLinearRegression()', since="S5")
-e("frame[['col']]", "A LIST of column names, so the result stays a table. X always has to be two-dimensional.",
-  'r = wide["AAPL"].pct_change()\nt = pd.DataFrame({"vol": r.rolling(20).std()}).dropna()\n(t["vol"].shape, t[["vol"]].shape)',
-  since="S5")
-e("model.fit(X, y)", "Read the training rows and compute the coefficients. Features first, target second.",
-  'from sklearn.linear_model import LinearRegression\nr = wide["AAPL"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nm = LinearRegression().fit(t[["vol"]], t["target"])\nround(float(m.coef_[0]), 3)',
-  since="S5")
-e("model.predict(X)", "One prediction per row of X, in the same order, as a plain numpy array.",
-  'from sklearn.linear_model import LinearRegression\nr = wide["AAPL"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nm = LinearRegression().fit(t[["vol"]], t["target"])\nm.predict(t[["vol"]])[:3].round(3)',
-  since="S5")
-e("model.intercept_  and  model.coef_", "What the fit found. A trailing underscore means it came from the data rather than from you.",
-  'from sklearn.linear_model import LinearRegression\nr = wide["AAPL"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nm = LinearRegression().fit(t[["vol"]], t["target"])\n(round(float(m.intercept_), 3), m.coef_.round(3))',
-  since="S5")
-e("mean_squared_error(y_true, y_pred)", "The truth goes first. Take np.sqrt of it to get back into the units of the target.",
-  'from sklearn.metrics import mean_squared_error\nround(float(np.sqrt(mean_squared_error([1.0, 2.0, 3.0], [1.2, 1.9, 3.4]))), 4)',
-  since="S5")
+        "Four lines: import, create, fit, predict. Every model in scikit-learn takes them, "
+        "so the only thing that changes later is the first one.",
+        imports="from sklearn.linear_model import LinearRegression\nfrom sklearn.metrics import mean_squared_error",
+        names=SK_NAMES)
+r('frame[["col"]]', "A LIST of column names, so the result stays a table. X always has to be two-dimensional.", "S5")
+r("model = LinearRegression()", "Create the model. It installs as scikit-learn and imports as sklearn.", "S5")
+r("model.fit(X, y)", "Read the training rows and compute the coefficients. Features first, target second.", "S5")
+r("model.predict(X)", "One prediction per row of X, in the same order, as a plain NumPy array.", "S5")
+r("model.intercept_  model.coef_", "What the fit found. A trailing underscore means it came from the data rather than from you.", "S5")
+r("mean_squared_error(y, p)", "The truth goes first. Take np.sqrt of it to get back into the units of the target.", "S5")
 
 section("Choosing between models",
-        "Rows used to compare candidates can no longer give the winner an honest "
-        "score. That is what the folds are for.")
-e("TimeSeriesSplit(n_splits=5)", "Folds that move forward in time, so every scored block comes after the rows fitted on.",
-  'from sklearn.model_selection import TimeSeriesSplit\nr = wide["AAPL"].pct_change().dropna()\n[(len(a), len(b)) for a, b in TimeSeriesSplit(n_splits=3).split(r)]',
-  since="S5")
-e("TimeSeriesSplit(..., max_train_size=500)", "A rolling window instead of an expanding one: the oldest rows drop out.",
-  'from sklearn.model_selection import TimeSeriesSplit\nr = wide["AAPL"].pct_change().dropna()\n[len(a) for a, b in TimeSeriesSplit(n_splits=3, max_train_size=500).split(r)]',
-  since="S5")
-e("TimeSeriesSplit(..., gap=20)", "Drop the rows whose target reaches into the block about to be scored.",
-  'from sklearn.model_selection import TimeSeriesSplit\nr = wide["AAPL"].pct_change().dropna()\n[len(a) for a, b in TimeSeriesSplit(n_splits=3, gap=20).split(r)]',
-  since="S5")
-e("KFold(n_splits=5, shuffle=True)", "The textbook folds. They assume the rows are interchangeable, which a time series is not.",
-  'from sklearn.model_selection import KFold\nr = wide["AAPL"].pct_change().dropna()\n[(len(a), len(b)) for a, b in KFold(n_splits=3, shuffle=True, random_state=0).split(r)]',
-  since="S5")
-e("folds.split(frame)", "The row positions in each fold, as pairs. cross_val_score loops over this for you.",
-  'from sklearn.model_selection import TimeSeriesSplit\nr = wide["AAPL"].pct_change().dropna()\nfolds = TimeSeriesSplit(n_splits=3)\nfor fit_rows, score_rows in folds.split(r):\n    print(len(fit_rows), len(score_rows))',
-  since="S5")
-e("cross_val_score(model, X, y, cv=folds, scoring=...)", "Fit and score once per fold. Errors come back negative, because scikit-learn reports every score so that larger is better.",
-  'from sklearn.linear_model import LinearRegression\nfrom sklearn.model_selection import cross_val_score, TimeSeriesSplit\nr = wide["AAPL"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\ns = cross_val_score(LinearRegression(), t[["vol"]], t["target"],\n                    cv=TimeSeriesSplit(n_splits=5),\n                    scoring="neg_root_mean_squared_error")\n(-s).round(3)',
-  since="S5")
-
+        "Rows used to compare candidates can no longer give the winner an honest score. That is "
+        "what the folds are for.",
+        imports="from sklearn.model_selection import TimeSeriesSplit, KFold, cross_val_score",
+        names=SK_NAMES)
+r("folds = TimeSeriesSplit(n_splits=5)", "Folds that move forward in time, so every scored block comes after the rows fitted on.", "S5")
+r("TimeSeriesSplit(n_splits=5, max_train_size=500)", "A rolling window instead of an expanding one: the oldest rows drop out.", "S5")
+r("TimeSeriesSplit(n_splits=5, gap=20)", "Drop the rows whose target reaches into the block about to be scored.", "S5")
+r("KFold(n_splits=5, shuffle=True, random_state=0)", "The textbook folds. They assume the rows are interchangeable, which a time series is not.", "S5")
+r("for fit_rows, score_rows in folds.split(X):", "The row positions in each fold, as pairs. cross_val_score loops over this for you.", "S5")
+r('cross_val_score(model, X, y, cv=folds, scoring="neg_root_mean_squared_error")', "Fit and score once per fold. Errors come back negative, because every score is reported so that larger is better; put a minus in front.", "S5")
 
 section("Penalised regression",
-        "Session 6: linear regression with a charge on the size of the coefficients, "
-        "the scaling that charge needs, and a search over how strong it should be.")
-e("Ridge(alpha=1000)", "Linear regression plus alpha times the sum of squared slopes. alpha=0 is OLS; larger alpha pulls every slope towards zero.",
-  'from sklearn.linear_model import Ridge\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nm = Ridge(alpha=1000).fit(t[["v5", "v20", "v60"]], t["target"])\nm.coef_.round(4)',
-  since="S6")
-e("Lasso(alpha=0.1)", "The same with a charge on the sum of absolute slopes. Sets some coefficients to exactly zero.",
-  'from sklearn.linear_model import Lasso\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nm = Lasso(alpha=0.1).fit(t[["v5", "v20", "v60"]], t["target"])\nm.coef_.round(4)',
-  since="S6")
-e("ElasticNet(alpha=0.1, l1_ratio=0.5)", "Both penalties at once. l1_ratio=1 is the lasso, l1_ratio=0 is ridge.",
-  'from sklearn.linear_model import ElasticNet\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nm = ElasticNet(alpha=0.1, l1_ratio=0.5).fit(t[["v5", "v20", "v60"]], t["target"])\nm.coef_.round(4)',
-  since="S6")
-e("StandardScaler().fit(X_train)", "Learn each column\'s mean and standard deviation from the TRAINING rows. The penalty charges by coefficient size, and size depends on units.",
-  'from sklearn.preprocessing import StandardScaler\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nsc = StandardScaler().fit(t[["v5", "v20", "v60"]])\nprint(sc.mean_.round(3), sc.scale_.round(3))',
-  since="S6")
-e("scaler.transform(X)", "Subtract the learned mean and divide by the learned standard deviation. Returns a NumPy array; use it on the test rows too, with the training numbers.",
-  'from sklearn.preprocessing import StandardScaler\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\nsc = StandardScaler().fit(t[["v5", "v20", "v60"]])\nX = sc.transform(t[["v5", "v20", "v60"]])\nprint(X[:, 1].mean().round(6), X[:, 1].std().round(6))',
-  since="S6")
-e("Pipeline([('scale', StandardScaler()), ('ridge', Ridge(alpha=1000))])", "Two steps as one model: .fit scales then fits, .predict scales with the fitted scaler then predicts. Cross-validation refits the scaler inside every fold.",
-  'from sklearn.linear_model import Ridge\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\npipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge(alpha=1000))])\npipe.fit(t[["v5", "v20", "v60"]], t["target"])\npipe.predict(t[["v5", "v20", "v60"]])[:3].round(3)',
-  since="S6")
-e("pipe.named_steps['ridge'].coef_", "Reach the fitted object inside a step. The pipeline itself has no coef_.",
-  'from sklearn.linear_model import Ridge\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\npipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge(alpha=1000))])\npipe.fit(t[["v5", "v20", "v60"]], t["target"])\npipe.named_steps["ridge"].coef_.round(4)',
-  since="S6")
-e("{'ridge__alpha': [1, 10, 100, 1000, 10000]}", "A grid: the setting to search and the values to try. Step name, two underscores, argument name. Several keys multiply.",
-  'grid = {"ridge__alpha": [1, 10, 100, 1000, 10000]}\nlen(grid["ridge__alpha"])', since="S6")
-e("GridSearchCV(pipe, grid, cv=folds, scoring=...)", "Fit every value on every fold, keep the best mean score, and refit it on all the training rows. Always pass cv; the default ignores time order.",
-  'from sklearn.linear_model import Ridge\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.model_selection import GridSearchCV, TimeSeriesSplit\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\npipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge())])\ns = GridSearchCV(pipe, {"ridge__alpha": [1, 100, 10000]}, cv=TimeSeriesSplit(n_splits=3),\n                 scoring="neg_root_mean_squared_error")\ns.fit(t[["v5", "v20", "v60"]], t["target"])\nprint(s.best_params_, round(-s.best_score_, 4))',
-  since="S6")
-e("search.best_estimator_  ·  search.predict(X)", "The winning pipeline, refitted on every training row, and predictions from it. Open the test rows once, here.",
-  'from sklearn.linear_model import Ridge\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.model_selection import GridSearchCV, TimeSeriesSplit\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\npipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge())])\ns = GridSearchCV(pipe, {"ridge__alpha": [1, 100, 10000]}, cv=TimeSeriesSplit(n_splits=3),\n                 scoring="neg_root_mean_squared_error").fit(t[["v5", "v20", "v60"]], t["target"])\nprint(s.best_estimator_.named_steps["ridge"].alpha, s.predict(t[["v5", "v20", "v60"]])[:2].round(3))',
-  since="S6")
-e("pd.DataFrame(search.cv_results_)", "The whole grid as a table: every value tried, its mean score over the folds, the spread, and its rank.",
-  'from sklearn.linear_model import Ridge\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.model_selection import GridSearchCV, TimeSeriesSplit\nr = prices.pivot(index="date", columns="ticker", values="close")["AAPL"].pct_change() * 100\nt = pd.DataFrame({"v5": r.rolling(5).std(), "v20": r.rolling(20).std(), "v60": r.rolling(60).std()})\nt["target"] = r.rolling(20).std().shift(-20)\nt = t.dropna()\npipe = Pipeline([("scale", StandardScaler()), ("ridge", Ridge())])\ns = GridSearchCV(pipe, {"ridge__alpha": [1, 100, 10000]}, cv=TimeSeriesSplit(n_splits=3),\n                 scoring="neg_root_mean_squared_error").fit(t[["v5", "v20", "v60"]], t["target"])\npd.DataFrame(s.cv_results_)[["param_ridge__alpha", "mean_test_score", "rank_test_score"]]',
-  since="S6")
-e("model.get_params()", "Every argument of an object and its current value. help(Ridge) prints the documentation.",
-  'from sklearn.linear_model import Ridge\nRidge(alpha=1000).get_params()["alpha"]', since="S6")
-e("Lasso(alpha=0.001, max_iter=10000)", "More passes for the lasso solver. Raise it when the ConvergenceWarning appears; standardise first, which is the usual cause.",
-  'from sklearn.linear_model import Lasso\nLasso(alpha=0.001, max_iter=10000).get_params()["max_iter"]', since="S6")
-e("np.logspace(0, 4, 5)", "Values spaced by a constant factor: 1, 10, 100, 1000, 10000. The right shape for a grid of alphas.",
-  'np.logspace(0, 4, 5)', since="S6")
-e("ax.set_xscale('log')", "A logarithmic axis, so factors of ten are evenly spaced. For a validation curve over alpha.",
-  'fig, ax = plt.subplots()\nax.plot([1, 10, 100, 1000], [0.72, 0.69, 0.62, 0.56])\nax.set_xscale("log")\nax.get_xscale()', since="S6")
+        "Linear regression with a charge on the size of the coefficients, the scaling that "
+        "charge needs, and a search over how strong it should be.",
+        imports="from sklearn.linear_model import Ridge, Lasso, ElasticNet\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.model_selection import GridSearchCV",
+        names=SK_NAMES + " scaler is a fitted StandardScaler, pipe a fitted Pipeline, search a fitted GridSearchCV.")
+r("Ridge(alpha=1000)", "Linear regression plus alpha times the sum of squared slopes. alpha=0 is OLS; larger alpha pulls every slope towards zero.", "S6")
+r("Lasso(alpha=0.1)", "The same with a charge on the sum of absolute slopes. Sets some coefficients to exactly zero.", "S6")
+r("ElasticNet(alpha=0.1, l1_ratio=0.5)", "Both penalties at once. l1_ratio=1 is the lasso, l1_ratio=0 is ridge.", "S6")
+r("Lasso(alpha=0.001, max_iter=10000)", "More passes for the solver. Raise it when the ConvergenceWarning appears; standardise first, which is the usual cause.", "S6")
+r("scaler = StandardScaler().fit(X_train)", "Learn each column's mean and standard deviation from the TRAINING rows. The penalty charges by coefficient size, and size depends on units.", "S6")
+r("scaler.transform(X)", "Subtract the learned mean and divide by the learned standard deviation. Returns a NumPy array; use it on the test rows too, with the training numbers.", "S6")
+r("scaler.mean_  scaler.scale_", "The numbers the scaler learned, one per column, in column order.", "S6")
+r('Pipeline([("scale", StandardScaler()), ("ridge", Ridge(alpha=1000))])', "Two steps as one model: .fit scales then fits, .predict scales with the fitted scaler then predicts. Cross-validation refits the scaler inside every fold.", "S6")
+r('pipe.named_steps["ridge"].coef_', "Reach the fitted object inside a step. The pipeline itself has no coef_.", "S6")
+r('grid = {"ridge__alpha": [1, 10, 100, 1000, 10000]}', "The setting to search and the values to try: step name, two underscores, argument name. Several keys multiply.", "S6")
+r('search = GridSearchCV(pipe, grid, cv=folds, scoring="neg_root_mean_squared_error")', "Fit every value on every fold, keep the best mean score, and refit it on all the training rows. Always pass cv; the default ignores time order.", "S6")
+r("search.fit(X, y)  search.best_params_  search.best_score_", "Run the search; then the winning setting, and its mean score over the folds.", "S6")
+r("search.best_estimator_  search.predict(X)", "The winning pipeline, refitted on every training row, and predictions from it. Open the test rows once, here.", "S6")
+r("pd.DataFrame(search.cv_results_)", "The whole grid as a table: every value tried, its mean score over the folds, the spread, and its rank.", "S6")
+r("model.get_params()", "Every argument of an object and its current value. help(Ridge) prints the documentation.", "S6")
 
 section("Classification",
-        "Session 8: a label as the target, logistic regression, the probabilities it "
-        "gives, and the scores that judge a classifier.")
-e("(series > other).astype(int)", "A label from a comparison: True and False become 1 and 0. The share of ones is the base rate, and the rule that always says the majority class is the baseline to beat.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nround(float(t["rising"].mean()), 3)', since="S8")
-e("LogisticRegression()", "Fits the log-odds of the label as a straight line in the columns, by log-loss. Same .fit(X, y) as every model. coef_ has one row per class boundary, so two brackets.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nprint(m.intercept_.round(3), m.coef_.round(3))', since="S8")
-e("model.predict_proba(X)", "One row per observation, one column per class in the order of classes_, each row summing to one. Column 1 is the probability of the label being 1.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nm.predict_proba(t[["vol"]])[:3].round(3)', since="S8")
-e("model.predict(X)", "The 0/1 predictions: 1 where the probability of class 1 is at least one half. Any other threshold is a comparison on predict_proba.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\np = m.predict_proba(t[["vol"]])[:, 1]\nprint(m.predict(t[["vol"]])[:8], (p >= 0.5).astype(int)[:8])', since="S8")
-e("model.classes_", "The labels the model knows, in the order predict_proba uses for its columns.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nm.classes_', since="S8")
-e("np.exp(model.coef_)", "A coefficient adds to the log-odds; its exponential multiplies the odds. One unit more of the column multiplies the odds of a 1 by this factor.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nnp.exp(m.coef_).round(3)', since="S8")
-e("accuracy_score(y, predicted)", "The share of predictions that match the label. True labels first, predictions second, like every metric. Compare it with the majority rule before reading anything into it.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import accuracy_score\nround(accuracy_score(t["rising"], m.predict(t[["vol"]])), 3)', since="S8")
-e("confusion_matrix(y, predicted)", "Four counts: rows are what happened, columns are what the model predicted, both in the order of classes_. Top-left true negatives, bottom-right true positives.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import confusion_matrix\nconfusion_matrix(t["rising"], m.predict(t[["vol"]]))', since="S8")
-e("precision_score(y, predicted)  ·  recall_score(y, predicted)", "Precision: the share of predicted 1s that were 1. Recall: the share of real 1s that were predicted. Raising the threshold trades recall for precision.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import precision_score, recall_score\npredicted = m.predict(t[["vol"]])\nprint(round(precision_score(t["rising"], predicted), 3), round(recall_score(t["rising"], predicted), 3))', since="S8")
-e("(p >= 0.6).astype(int)", "Predictions at a threshold other than one half, from the probability column. The model is unchanged; only the comparison changed.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import confusion_matrix\np = m.predict_proba(t[["vol"]])[:, 1]\nconfusion_matrix(t["rising"], (p >= 0.6).astype(int))', since="S8")
-e("roc_auc_score(y, p)", "Area under the ROC curve: 0.5 is a random ranking, 1 a perfect one, and no threshold is involved. Pass the PROBABILITIES, never the 0/1 predictions.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import roc_auc_score\np = m.predict_proba(t[["vol"]])[:, 1]\nround(float(roc_auc_score(t["rising"], p)), 3)', since="S8")
-e("roc_curve(y, p)", "The false positive rate and the true positive rate at every threshold, plus the thresholds, for drawing the ROC curve.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import roc_curve\np = m.predict_proba(t[["vol"]])[:, 1]\nfpr, tpr, thr = roc_curve(t["rising"], p)\nprint(len(thr), fpr[:3].round(3), tpr[:3].round(3))', since="S8")
-e("cross_val_score(model, X, y, cv=folds, scoring='roc_auc')", "The same folds as for a number, with a classification score. Larger is better, so no minus sign. Other strings: 'accuracy', 'neg_log_loss', 'precision', 'recall'.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.model_selection import cross_val_score, TimeSeriesSplit\ns = cross_val_score(LogisticRegression(), t[["vol"]], t["rising"], cv=TimeSeriesSplit(n_splits=5), scoring="roc_auc")\ns.round(3)', since="S8")
-e("LogisticRegression(C=0.01)", "The penalty's strength, upside down: C = 1/alpha, so a small C is a strong ridge penalty and a large C is almost none. Default C=1, penalty 'l2'. Standardise in a pipeline and choose C on a grid in factors of ten.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\npipe = Pipeline([("scale", StandardScaler()), ("logit", LogisticRegression(C=0.01))])\npipe.fit(t[["vol"]], t["rising"])\npipe.named_steps["logit"].coef_.round(3)', since="S8")
-e("LogisticRegression(penalty='l1', solver='liblinear', C=0.01)", "The lasso's penalty on a classifier: exact zeros. It needs a solver that can handle absolute values, and liblinear can.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression(penalty="l1", solver="liblinear", C=0.01).fit(t[["vol"]], t["rising"])\nm.coef_.round(3)', since="S8")
-e("LogisticRegression(max_iter=1000)", "More steps for the solver. Log-loss has no closed form, so .fit() iterates; raise this when the ConvergenceWarning appears, and standardise first.",
-  'from sklearn.linear_model import LogisticRegression\nLogisticRegression(max_iter=1000).get_params()["max_iter"]', since="S8")
+        "A label as the target, logistic regression, the probabilities it gives, and the "
+        "scores that judge a classifier.",
+        imports="from sklearn.linear_model import LogisticRegression\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.model_selection import cross_val_score, TimeSeriesSplit, GridSearchCV\nfrom sklearn.metrics import (accuracy_score, confusion_matrix, precision_score,\n    recall_score, roc_curve, roc_auc_score, log_loss)",
+        names="On this card: X is the feature table, y the label column of ones and zeros, model a fitted "
+              "classifier, p the probability column model.predict_proba(X)[:, 1], predicted the 0/1 predictions.")
+r("(a > b).astype(int)", "A label from a comparison: True and False become 1 and 0. Its mean is the share of ones, and predicting the majority class everywhere is the accuracy a model has to beat.", "S8")
+r('LogisticRegression(C=1.0, penalty="l2", solver="lbfgs", max_iter=100)', "The classifier, shown with its defaults: a ridge penalty of strength 1/C, solved in at most 100 steps. Create it, then .fit(X, y), as for every model.", "S8")
+r("model.intercept_  model.coef_", "The fitted numbers, on the log-odds scale. coef_ has one row per boundary between classes, so coef_[0, 0] is the first slope.", "S8")
+r("-model.intercept_[0] / model.coef_[0, 0]", "With one column: the value of the column at which the probability is one half, where .predict() switches from 1 to 0.", "S8")
+r("np.exp(model.coef_)", "The odds factor: one unit more of a column multiplies the odds of a 1 by this. A coefficient adds to the log-odds; its exponential multiplies the odds.", "S8")
+r("model.classes_", "The classes, in the order predict_proba uses for its columns.", "S8")
+r("model.predict_proba(X)", "One row per observation, one column per class, each row summing to one. [:, 1] is the probability of a 1.", "S8")
+r("model.predict(X)", "The 0/1 predictions: 1 where the probability of a 1 is at least one half.", "S8")
+r("(p >= threshold).astype(int)", "Predictions at any other threshold, from the probability column. The model is unchanged; only the comparison changed.", "S8")
+r("model.n_iter_", "How many steps the solver took. Log-loss has no formula for the coefficients, so .fit() improves them step by step; raise max_iter when the ConvergenceWarning appears, or standardise first.", "S8")
+r("log_loss(y, p)", "The objective, averaged over the rows: minus the log of the probability given to what happened. A confident wrong probability costs the most.", "S8")
+r("accuracy_score(y, predicted)", "The share of predictions that match the label. True labels first, predictions second, like every metric. Compare it with the majority rule.", "S8")
+r("confusion_matrix(y, predicted)", "A 2 by 2 array: rows are what happened, columns are the prediction, both in the order of classes_. Top left true negatives, bottom right true positives.", "S8")
+r("precision_score(y, predicted)", "The share of predicted 1s that were 1. Falls when the threshold falls.", "S8")
+r("recall_score(y, predicted)", "The share of real 1s that were predicted. Falls when the threshold rises.", "S8")
+r("roc_curve(y, p)", "Returns fpr, tpr, thresholds: the false positive rate and the recall at every threshold where a point moves. Joined up, the ROC curve.", "S8")
+r("roc_auc_score(y, p)", "The area under the ROC curve: 0.5 for a random ranking, 1 for a perfect one, no threshold involved. Pass the probabilities, never the 0/1 predictions.", "S8")
+r('cross_val_score(model, X, y, cv=folds, scoring="roc_auc")', 'One score per fold; larger is better, so no minus sign. Other strings: "accuracy", "neg_log_loss", "precision", "recall".', "S8")
+r("LogisticRegression(C=0.01)", "The strength of the penalty, upside down: C = 1/alpha, so a small C is a strong penalty. Standardise in a pipeline first and choose C on a grid in factors of ten.", "S8")
+r('{"logit__C": [0.0001, 0.001, 0.01, 0.1, 1, 10]}', 'A grid for GridSearchCV: the step name, two underscores, the argument. Then GridSearchCV(pipe, grid, cv=folds, scoring="roc_auc").fit(X, y), and best_params_, best_score_, predict_proba as before.', "S8")
+r('LogisticRegression(penalty="l1", solver="liblinear", C=0.01)', "The lasso's penalty on a classifier, which sets coefficients to exactly zero. It needs a solver that can handle absolute values; the default lbfgs cannot.", "S8")
 
-e("log_loss(y, p)", "The objective logistic regression minimises, averaged over the rows: minus the log of the probability given to what happened. Takes the true labels and the probabilities.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nfrom sklearn.metrics import log_loss\nround(float(log_loss(t["rising"], m.predict_proba(t[["vol"]])[:, 1])), 4)', since="S8")
-e("model.n_iter_", "How many steps the solver took. Log-loss has no formula for the coefficients, so .fit() improves them step by step until they stop changing or max_iter is reached.",
-  'r = prices.pivot(index="date", columns="ticker", values="close")["SPY"].pct_change() * 100\nt = pd.DataFrame({"vol": r.rolling(20).std()})\nt["rising"] = (r.rolling(20).std().shift(-20) > t["vol"]).astype(int)\nt = t.dropna()\nfrom sklearn.linear_model import LogisticRegression\nm = LogisticRegression().fit(t[["vol"]], t["rising"])\nm.n_iter_', since="S8")
-e("np.where(mask, a, b)", "An array that takes a where the mask is True and b elsewhere. Handy for keeping one group\'s values and blanking the rest before argmin or argmax.",
-  'import numpy as np\nnp.where(np.array([True, False, True]), np.array([0.2, 0.7, 0.4]), 9)', since="S8")
-e("np.zeros(n)  ·  np.zeros(n, dtype=int)", "An array of n zeros, as floats or as integers. A prediction of 0 on every row is np.zeros(len(test), dtype=int).",
-  'import numpy as np\nnp.zeros(4, dtype=int)', since="S8")
-e("np.arange(start, stop, step)", "Values from start up to but not including stop, a fixed step apart. np.linspace fixes the count instead of the step.",
-  'import numpy as np\nnp.arange(0.3, 0.7, 0.1).round(2)', since="S8")
-e("(a == b).all()", "True only when every element of a comparison is True: the vectorised way to check two columns or arrays agree everywhere.",
-  'import numpy as np\na = np.array([1, 0, 1])\nprint((a == np.array([1, 0, 1])).all(), (a == np.array([1, 1, 1])).all())', since="S8")
-e("series.groupby(series.index.year).mean()", "Group a dated Series by the year in its index and take a mean per year: one accuracy per year from a Series of True and False.",
-  'right = pd.Series([True, False, True, True], index=pd.to_datetime(["2023-03-01", "2023-09-01", "2024-02-01", "2024-08-01"]))\nright.groupby(right.index.year).mean()', since="S8")
-
+# ======================================================================
 section("Reading error messages",
-        "The last line names the problem. Read it before you change anything: it is "
-        "almost always telling you the truth.")
-e("NameError", "A name Python has never seen. Usually a typo, or a cell you have not run yet.",
-  'volatilty', run=False, result="NameError: name 'volatilty' is not defined")
-e("TypeError", "The right operation on the wrong kind of thing. Often text where a number belongs.",
-  '"5" + 5', run=False, result='TypeError: can only concatenate str (not "int") to str')
-e("IndexError", "A position that does not exist. A list of 5 stops at index 4.",
-  '[1, 2, 3][5]', run=False, result="IndexError: list index out of range")
-e("KeyError", "A dictionary key that is not there.", 'vol = {"AAPL": 0.01}\nvol["KO"]',
-  since="S2", run=False, result="KeyError: 'KO'")
-e("SyntaxError", "Python could not read the line at all. Look for a missing bracket, quote or colon.",
-  'print("hello"', run=False, result="SyntaxError: '(' was never closed")
-e("ZeroDivisionError", "Dividing by zero. Often an empty list you thought had something in it.",
-  '1 / 0', run=False, result="ZeroDivisionError: division by zero")
-e("ModuleNotFoundError", "The package is not installed, or you are running a different Python.",
-  'import pandas', since="S3", run=False,
-  result="ModuleNotFoundError: No module named 'pandas'")
-e("FileNotFoundError", "The path is wrong relative to where you are running from.",
-  'pd.read_csv("data/prices.csv")', since="S3", run=False,
-  result="FileNotFoundError: [Errno 2] No such file or directory: 'data/prices.csv'")
-e("ValueError, on shapes", "Two arrays whose dimensions do not fit. Check .shape on both.",
-  'np.array([[1.0, 2.0], [3.0, 4.0]]) @ np.array([1.0, 2.0, 3.0])', since="S3", run=False,
-  result="ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0")
-e("LinAlgError", "A matrix with no inverse: one column carries nothing the others do not. Perfect multicollinearity.",
-  'np.linalg.inv(np.array([[1.0, 2.0], [2.0, 4.0]]))', since="S3", run=False,
-  result="LinAlgError: Singular matrix")
+        "The last line names the problem. Read it before you change anything: it is almost "
+        "always telling you the truth.")
+r("NameError", "A name Python has never seen. Usually a typo, or a cell you have not run yet.")
+r("TypeError", "The right operation on the wrong kind of thing. Often text where a number belongs, or a placeholder ... left in a cell.")
+r("IndexError", "A position that does not exist. A list of 5 stops at index 4.")
+r("KeyError", "A dictionary key, or a column name, that is not there.", "S2")
+r("SyntaxError", "Python could not read the line at all. Look for a missing bracket, quote or colon.")
+r("ZeroDivisionError", "Dividing by zero. Often an empty list you thought had something in it.")
+r("ModuleNotFoundError", "The package is not installed, or you are running a different Python.", "S3")
+r("FileNotFoundError", "The path is wrong relative to where you are running from.", "S3")
+r("ValueError, on shapes", "Two arrays whose dimensions do not fit. Check .shape on both.", "S3")
+r("LinAlgError", "A matrix with no inverse: one column carries nothing the others do not. Perfect multicollinearity.", "S3")
+r("ConvergenceWarning", "Not an error: the solver ran out of steps before the coefficients settled. Raise max_iter, or standardise the columns first.", "S6")
 
-
-# ------------------------------------------------------------- execution
-def build_namespace():
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
-
-    prices = pd.read_csv(ROOT / "data" / "prices.csv", parse_dates=["date"])
-    wide = prices.pivot(index="date", columns="ticker", values="close").loc["2024"]
-    closes = [183.56, 182.19, 179.87, 179.15, 183.48]
-    week = np.array(closes)
-    returns = (week[1:] - week[:-1]) / week[:-1]
-    return {"np": np, "pd": pd, "plt": plt, "prices": prices, "wide": wide,
-            "closes": closes, "week": week, "returns": returns}
-
-
-def run_example(code, ns):
-    """Execute a snippet and return what a notebook would show under the cell."""
-    tree = ast.parse(code)
-    out = io.StringIO()
-    displayed = None
-    with redirect_stdout(out):
-        if tree.body and isinstance(tree.body[-1], ast.Expr):
-            if len(tree.body) > 1:
-                exec(compile(ast.Module(tree.body[:-1], []), "<ex>", "exec"), ns)
-            displayed = eval(compile(ast.Expression(tree.body[-1].value), "<ex>", "eval"), ns)
-        else:
-            exec(code, ns)
-    text = out.getvalue()
-    if displayed is not None:
-        text += repr(displayed) if not isinstance(displayed, str) or "\n" in repr(displayed) else repr(displayed)
-    return text.rstrip()
-
-
-def truncate(text, max_lines=12, max_chars=600):
-    lines = text.split("\n")
-    if len(lines) > max_lines:
-        lines = lines[:max_lines] + ["..."]
-    text = "\n".join(lines)
-    if len(text) > max_chars:
-        text = text[:max_chars].rstrip() + " ..."
-    return text
-
-
-failures = []
-n_run = 0
-for sec in SECTIONS:
-    for entry in sec["entries"]:
-        if not entry["run"]:
-            entry["output"] = entry["result"] or ""
-            continue
-        ns = build_namespace()          # a clean namespace per example
-        try:
-            entry["output"] = truncate(run_example(entry["example"], ns))
-            n_run += 1
-        except Exception:
-            failures.append((sec["title"], entry["call"],
-                             traceback.format_exc(limit=1).strip().split("\n")[-1]))
-            entry["output"] = "!! FAILED"
-        finally:
-            import matplotlib.pyplot as _plt
-            _plt.close("all")
-
-if failures:
-    print(f"{len(failures)} example(s) failed:", file=sys.stderr)
-    for sect, call, err in failures:
-        print(f"  [{sect}] {call}: {err}", file=sys.stderr)
-    sys.exit(1)
-
-
-# ----------------------------------------------------------------- page
-def slug(title):
-    return "".join(c if c.isalnum() else "-" for c in title.lower()).strip("-")
-
-
+# ======================================================================
 SINCE_LABEL = {"S1": "Session 1", "S2": "Session 2", "S3": "Session 3",
                "S4": "Session 4", "S5": "Session 5", "S6": "Session 6",
                "S8": "Session 8"}
 
-# The sidebar comes from the same template every other page uses, so this page
-# cannot drift away from them.
+
+# --------------------------------------------------------------- checks
+def check_names():
+    """Every bare function must be imported in its section or be a builtin,
+    and every attribute written against a known object must exist."""
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler
+    known = {"np": np, "pd": pd, "plt": plt, "ax": Axes, "fig": Figure,
+             "s": pd.Series, "frame": pd.DataFrame, "g": pd.core.groupby.DataFrameGroupBy,
+             "values": np.ndarray, "text": str, "items": list, "data": dict,
+             "scaler": StandardScaler, "pipe": Pipeline, "search": GridSearchCV,
+             "folds": TimeSeriesSplit}
+    placeholders = {"name"}                  # def name(...): a name the reader chooses
+    problems = []
+    for sec in SECTIONS:
+        imported = set(re.findall(r"\b([A-Za-z_]\w*)\b", sec["imports"] or ""))
+        for row in sec["rows"]:
+            for head in re.findall(r"(?<![\w.\"'])([A-Za-z_][\w.]*)\s*\(", row["call"]):
+                parts = head.split(".")
+                if len(parts) == 1:
+                    if head not in imported and not hasattr(builtins, head) and head not in placeholders:
+                        problems.append((sec["title"], row["call"], f"{head} is not imported in this section"))
+                elif parts[0] in known:
+                    obj = known[parts[0]]
+                    for part in parts[1:]:
+                        obj = getattr(obj, part, None)
+                        if obj is None:
+                            problems.append((sec["title"], row["call"], f"no such attribute: {head}"))
+                            break
+    return problems
+
+
+problems = check_names()
+if problems:
+    print("NAME CHECK FAILED:")
+    for p in problems:
+        print("  ", *p, sep="  ")
+    sys.exit(1)
+
+
+# --------------------------------------------------------------- render
+def slug(title):
+    return re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+
+
 NAV = (ROOT / "assets" / "nav.html").read_text(encoding="utf-8").rstrip("\n")
 NAV = NAV.replace('<a href="cheatsheet.html">', '<a href="cheatsheet.html" aria-current="page">')
 
@@ -735,9 +472,9 @@ parts.append("""<!doctype html>
     <div class="accent"></div>
     <div class="eyebrow">Every function the course has used</div>
     <h1>Cheatsheet</h1>
-    <p class="lede">One line on what each thing does, and a worked example with the
-       output it actually produced. Every example on this page was run against the real
-       course data when the page was built, so nothing here is a guess.</p>
+    <p class="lede">One row per function: the call, with its arguments, and what it does.
+       Grouped by topic, with the imports a topic needs at the top of its card and the
+       session that introduced each row at its edge.</p>
   </header>
 
   <div class="note">
@@ -756,25 +493,25 @@ for sec in SECTIONS:
     parts.append(f'    <h2>{html.escape(sec["title"])}</h2>')
     if sec["blurb"]:
         parts.append(f'    <p class="lede">{html.escape(sec["blurb"])}</p>')
-    for entry in sec["entries"]:
-        out = entry["output"]
-        cls = "cs-out" + ("" if out else " cs-out empty")
-        shown = html.escape(out) if out else "no output"
-        parts.append('    <div class="cs-entry">')
-        parts.append(f'      <div class="cs-call"><span class="cs-since">{SINCE_LABEL[entry["since"]]}</span>'
-                     f'{html.escape(entry["call"])}</div>')
-        parts.append(f'      <div class="cs-what">{html.escape(entry["what"])}</div>')
-        parts.append('      <div class="cs-demo">')
-        parts.append(f'        <pre><code>{html.escape(entry["example"])}</code></pre>')
-        parts.append(f'        <div class="{cls}">{shown}</div>')
-        parts.append("      </div>")
-        parts.append("    </div>")
+    if sec["imports"]:
+        parts.append(f'    <pre class="cs-imports"><code>{html.escape(sec["imports"])}</code></pre>')
+    if sec["names"]:
+        parts.append(f'    <p class="cs-names">{html.escape(sec["names"])}</p>')
+    parts.append('    <div class="cs-ref">')
+    for row in sec["rows"]:
+        # two spaces in a call separate alternatives: rendered as a faint dot
+        call = ' <span class="cs-or">&middot;</span> '.join(html.escape(x) for x in re.split(r"  +", row["call"]))
+        parts.append(f'      <div class="cs-sig"><code>{call}</code></div>')
+        parts.append(f'      <div class="cs-desc">{html.escape(row["what"])}'
+                     f'<span class="cs-since">{SINCE_LABEL[row["since"]]}</span></div>')
+    parts.append('    </div>')
     parts.append("  </section>")
 
 parts.append("""
   <footer>
-    Built from the course materials, with every example executed. Something missing?
-    Email me at <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
+    Built from the course materials, with every name checked against the library it
+    comes from. Something missing? Email me at
+    <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
   </footer>
   </main>
 </div>
@@ -782,7 +519,6 @@ parts.append("""
 </html>
 """)
 
-OUT.write_text("\n".join(parts), encoding="utf-8", newline="\n")
-n_entries = sum(len(s["entries"]) for s in SECTIONS)
-print(f"wrote {OUT.name}: {len(SECTIONS)} sections, {n_entries} entries, "
-      f"{n_run} examples executed, 0 failures")
+OUT.write_text("\n".join(parts), encoding="utf-8")
+n_rows = sum(len(sec["rows"]) for sec in SECTIONS)
+print(f"wrote {OUT.name}: {len(SECTIONS)} sections, {n_rows} rows, every name checked")

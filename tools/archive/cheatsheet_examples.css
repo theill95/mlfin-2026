@@ -1,0 +1,61 @@
+/* The cheatsheet CSS that goes with build_cheatsheet_examples.py (the old
+   worked-examples format). Lifted from assets/site.css as committed in 1197b5d.
+   To restore, paste the first block in place of the cheatsheet block in
+   assets/site.css and the print rules into its @media print block. */
+
+/* ------------------------------------------------------------ cheatsheet */
+
+.cs-toc {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  margin: 0 0 1.6rem; padding: 0;
+  list-style: none;
+}
+.cs-toc a {
+  display: inline-block; padding: 0.28rem 0.6rem; border-radius: 6px;
+  background: #fff; border: 1px solid var(--line);
+  font-size: 0.82rem; text-decoration: none; color: var(--ink-soft);
+}
+.cs-toc a:hover { border-color: #b9d2f0; color: var(--blue-deep); }
+
+.cs-section { margin-top: 2.2rem; }
+.cs-section > h2 { scroll-margin-top: 1rem; }
+
+.cs-entry {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 0.75rem 0.95rem; margin-bottom: 0.6rem;
+}
+.cs-call {
+  font-family: "Cascadia Mono", Consolas, Menlo, "Courier New", monospace;
+  font-size: 0.9rem; color: var(--blue-deep); font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.cs-what { font-size: 0.88rem; color: var(--ink-soft); margin-bottom: 0.5rem; }
+.cs-demo {
+  display: grid; grid-template-columns: 1fr; gap: 0.35rem;
+  font-family: "Cascadia Mono", Consolas, Menlo, "Courier New", monospace;
+  font-size: 0.8rem;
+}
+@media (min-width: 720px) {
+  .cs-demo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.6rem; }
+}
+/* Wrap rather than scroll: this is a reference card, and a horizontal
+   scrollbar on every long line makes it unreadable at a glance. */
+.cs-demo pre {
+  margin: 0; background: #f7f7f4;
+  white-space: pre-wrap; word-break: break-word; overflow-x: visible;
+}
+.cs-out {
+  margin: 0; padding: 0.8rem 1rem; border-radius: 8px;
+  background: #fff; border: 1px solid var(--line); color: #26333f;
+  white-space: pre-wrap; word-break: break-word; overflow-x: auto;
+}
+.cs-out.empty { color: var(--faint); font-style: italic; }
+.cs-since {
+  float: right; font-size: 0.7rem; color: var(--faint);
+  font-family: "Segoe UI", system-ui, sans-serif; font-weight: 400;
+}
+
+/* ---- inside @media print ---- */
+  .card, .cs-entry { break-inside: avoid; box-shadow: none; }
+  .cs-section { break-before: auto; }
+  pre, .cs-out { background: #fff; }
