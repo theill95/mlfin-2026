@@ -30,10 +30,44 @@ The seven habits that get a draft rejected, and what to do instead:
 | anthropomorphism | "the model wants", "no test row was touched", "training error votes for" | give the verb to the analyst or the code |
 | aphoristic closers | "One cut date is one experiment." "The spread is information." | end on the specific consequence |
 | elegant variation | "the scored block", "a stretch of market", "the rows it has never seen" for the same thing | pick one name and repeat it |
+| decorative trailing clauses | "the threshold, and where the cheapest one sits", "the probabilities, and how to put them right", "a second classifier, judged on the same folds", "a second table, where the event worth predicting happens to one borrower in five" | cut everything after the noun. "the threshold, set from the cost of each mistake" |
+| coy phrasing for a plain thing | "where the cheapest one sits" for the cheapest threshold, "how to put them right" for calibrating them, "what the fitted model grows" for the extra rows of `coef_` | name the thing |
 
 Also out: marketing and "bro" register ("workout", "grab a coffee", "that's a
 wrap"), taglines, catchphrases, motivational lines, and adjectives that
 editorialise ("honest", "elegant", "beautiful") where a number would do.
+
+**Length, as a hard limit.** A paragraph under a code cell or a figure is **at
+most two sentences and about 30 words**. Three sentences is already too long;
+so is one sentence with two subordinate clauses. Two examples, both cut in
+review for being too long:
+
+> Last time a logistic regression on two columns predicted whether the index's
+> volatility over the next 20 days would be higher than over the last 20. On
+> the 482 test days it was right on 74 percent of them, against 53 percent for
+> predicting the majority class. *(47 words: borderline)*
+
+> The label is 1 on 48 percent of the days, so the two classes are almost the
+> same size and a day with a rise is as common as a day without one. The
+> decisions a bank, an insurer or a regulator makes are rarely like that: the
+> event worth predicting happens to a small share of the cases, and being wrong
+> in one direction costs more than being wrong in the other. *(73 words: far
+> too long)*
+
+The second became: "The label is 1 on 48 percent of the days, so the two
+classes are almost the same size. Most decisions a bank or an insurer makes are
+not like that." Everything else was either already obvious or belonged on
+another slide. Audit a finished deck by counting: any block over 36 words is a
+rewrite, and the median slide should sit near 25.
+
+**A slide carries one text size besides its code or figure.** Body prose, a
+`.keypoint`, a `.formula` with its `.formula-note`, a `.muted .small` aside and
+a `.why-grid` are five different sizes; a slide may use one of them, not three.
+The pattern that keeps getting flagged is a formula, then a small centred note,
+then a full-size paragraph: pick the formula plus one paragraph and fold the
+note into it. Prose plus a `.keypoint` is fine, because the keypoint is a
+boxed conclusion rather than a second voice. Prose plus a `.muted .small` is
+fine only on a "Your turn" slide, where the small text is the hint.
 
 **Numbers are measured, never asserted.** Every figure on a slide and every
 value in a solution note is computed from the real data by the same code the
@@ -112,7 +146,12 @@ cell, and make building it an exercise.
   demoting text.
 - **Titles name the thing being taught** ("The loop variable", "Ridge in
   code"), never a slogan, a conclusion or a vague pronoun ("Why it gets it
-  wrong"). A question is allowed only where the slide answers it.
+  wrong"). A question is allowed only where the slide answers it. Titles cut in
+  review: "An accuracy that looks respectable" (editorial), "One number for the
+  whole page" (coy), "The errors are almost never two steps" (a conclusion),
+  "Two steps to fix that" (points at the previous slide). They became "Accuracy
+  against the majority rule", "The Brier score", "Where the mistakes fall" and
+  "Making the scores into probabilities".
 - **Visuals do the arguing.** Diagrams for mechanisms (SVG, flush-left, no
   blank lines inside), matplotlib figures precomputed in `{python}` cells,
   fragment animations where a process unfolds (a loop trace, folds taking
@@ -128,6 +167,14 @@ cell, and make building it an exercise.
   session that introduces objects with many settings gets one "when to
   change what" slide (always / sometimes / rarely, each with a few words on
   what the setting is) rather than tables of every argument.
+- **Build a new idea up, never drop it in as a formula.** The order that
+  survived review, for the softmax: the concrete case first (one day, three
+  scores, and why they are not probabilities), then the fix on those actual
+  numbers (exponentiate: 1.061, 0.724, 1.302; divide by 3.087), then the
+  general statement with N classes and its name, then the code. A formula
+  slide that arrives before the reader has seen the arithmetic gets cut. Say
+  in one line how the new idea relates to what is already known ("with two
+  classes it is the sigmoid from last time") rather than re-deriving it.
 - Every number quoted in prose must match the live cell's output. Wrap bare
   expressions in `print()` (NumPy 2 prints `np.float64(...)`), and end a cell
   with `print(model)` rather than the estimator's HTML widget.
@@ -139,6 +186,27 @@ click-test every live cell in a browser, screenshot the figure and diagram
 slides, and run the prose checklist above over every slide. Hand over a
 served URL: opened from `file://` the live cells do not appear at all, and the
 deck will be reviewed as having no code.
+
+Run these four counts over the finished `.qmd` before handing it over. Each of
+them has caught something that would otherwise have come back in review:
+
+1. **Word count per prose block.** Anything over 36 words is a rewrite.
+2. **Text sizes per slide.** More than one of {prose, `.formula-note`,
+   `.muted`, `.why-grid`, `.lede`} on a slide is a rewrite.
+3. **Titles.** Read the list of `^# ` lines on its own. Every one should name a
+   thing; none should state a conclusion, carry an adjective, or point at
+   another slide.
+4. **Decorative clauses.** Grep the prose for `, and how`, `, and where`,
+   `, and what`, `judged on`, `which is what`. Most hits are the habit above.
+
+And one rendering trap, because it is silent: **never put a `###` heading
+inside a `::: {.compare}` or any other pandoc fence on a reveal slide.** Pandoc
+promotes the heading to its own `<section>`, which closes the slide early, so
+the title renders on top of the content and the overflow audit reports a
+meaningless small number instead of flagging it. Write two-column blocks as raw
+HTML (`<div class="compare"><div class="compare-col"><h3>..</h3><p>..</p>`), as
+Session 8 does. After rendering, assert that every `slide level1` section
+contains more than its own `<h1>`.
 
 ---
 
@@ -169,6 +237,12 @@ and keep re-testing the earlier sessions' core skills in the new context.
   refactor a loop into one line, fix-the-figure, write-the-assertion,
   from-scratch with no scaffold, a `while` with a `break`, a function that
   wraps an earlier cell.
+- **About six exercises per notebook ask the student to draw something**, and
+  most of them are one or two stars. Sessions 5 and 6 have three, Session 8 has
+  six; a session that ends up with two was sent back. The simple shapes are
+  enough: a bar chart of a rate with a dashed reference line, a swept curve
+  with the chosen point marked, one score per class as bars, two lines against
+  a setting on a log axis with a legend. Count them before handing over.
 
 ### Self-contained, with short clusters
 

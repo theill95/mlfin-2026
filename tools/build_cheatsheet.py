@@ -205,6 +205,8 @@ r('frame.loc["2024-01-02":"2024-01-31"]', "Rows by label. With a date index you 
 r("frame.iloc[0]  frame.iloc[-1]", "Rows by position: the first row, the last row.", "S3")
 r("frame.values", "The plain numbers underneath, as a NumPy array, labels dropped.", "S3")
 r('frame.set_index("date")', "Move a column into the index, so .loc can slice by it.", "S4")
+r('pd.cut(s, [0, 0.2, 0.4, 1.0])', "Sort every value into one of the ranges given, and return the range it fell in. Group by the result to summarise each range.", "S9")
+r('pd.cut(s, edges, labels=["low", "mid", "high"])', "The same, with a name for each range instead of the range itself. This is how a number becomes a label with more than two values.", "S9")
 
 section("pandas: groups and shapes", imports="import pandas as pd",
         names="On this card: frame is a DataFrame, s a Series, g a grouped table such as frame.groupby(\"ticker\").")
@@ -290,11 +292,14 @@ r("(tp + tn) / (tp + fp + fn + tn)", "Accuracy: the share called correctly. Mean
 r("tp / (tp + fp)", "Precision: of the times the model said yes, how often was it right? Low precision means false alarms.", "S4")
 r("tp / (tp + fn)", "Recall: of the times it really happened, how many were caught? Low recall means misses.", "S4")
 r("2 * precision * recall / (precision + recall)", "F1: the harmonic mean of the two, which sits close to the smaller one.", "S4")
+r("cost_miss * fn + cost_false * fp", "What a set of decisions costs when the two mistakes are not worth the same. Sweep the threshold and keep the cheapest, on training rows only.", "S9")
+r("cost_false / (cost_false + cost_miss)", "The cheapest threshold, written down rather than swept for. It only works on probabilities that are calibrated.", "S9")
 
 section("Training rows and test rows",
         "A score computed on the rows a model learned from is not evidence.",
-        imports="import numpy as np")
+        imports='import numpy as np\nfrom sklearn.model_selection import train_test_split')
 r('frame.loc[:"2022-12-31"]', 'Split by date, never at random: the rows up to a date for training, frame.loc["2023-01-01":] for testing. A shuffled time series lets a model train on the future.', "S4")
+r("train_test_split(frame, test_size=0.3, random_state=0, stratify=y)", "Shuffle the rows and cut them in two. Right for a cross-section where rows are separate cases, wrong for a time series. stratify keeps a label's share equal in both halves, which matters when it is rare.", "S9")
 r("np.polyfit(x, y, degree)", "Fit a polynomial of that degree. Raising the degree always lowers training error.", "S4")
 r("np.polyval(coef, x)", "Evaluate a fitted polynomial, so you can score it on rows it never saw.", "S4")
 
@@ -350,7 +355,7 @@ r("model.get_params()", "Every argument of an object and its current value. help
 section("Classification",
         "A label as the target, logistic regression, the probabilities it gives, and the "
         "scores that judge a classifier.",
-        imports="from sklearn.linear_model import LogisticRegression\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.model_selection import cross_val_score, TimeSeriesSplit, GridSearchCV\nfrom sklearn.metrics import (accuracy_score, confusion_matrix, precision_score,\n    recall_score, roc_curve, roc_auc_score, log_loss)",
+        imports='from sklearn.linear_model import LogisticRegression\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.calibration import CalibratedClassifierCV\nfrom sklearn.model_selection import cross_val_score, TimeSeriesSplit, GridSearchCV\nfrom sklearn.metrics import (accuracy_score, confusion_matrix, precision_score,\n    recall_score, roc_curve, roc_auc_score, log_loss, f1_score,\n    average_precision_score, precision_recall_curve, brier_score_loss,\n    classification_report)',
         names="On this card: X is the feature table, y the label column of ones and zeros, model a fitted "
               "classifier, p the probability column model.predict_proba(X)[:, 1], predicted the 0/1 predictions.")
 r("(a > b).astype(int)", "A label from a comparison: True and False become 1 and 0. Its mean is the share of ones, and predicting the majority class everywhere is the accuracy a model has to beat.", "S8")
@@ -374,6 +379,28 @@ r('cross_val_score(model, X, y, cv=folds, scoring="roc_auc")', 'One score per fo
 r("LogisticRegression(C=0.01)", "The strength of the penalty, upside down: C = 1/alpha, so a small C is a strong penalty. Standardise in a pipeline first and choose C on a grid in factors of ten.", "S8")
 r('{"logit__C": [0.0001, 0.001, 0.01, 0.1, 1, 10]}', 'A grid for GridSearchCV: the step name, two underscores, the argument. Then GridSearchCV(pipe, grid, cv=folds, scoring="roc_auc").fit(X, y), and best_params_, best_score_, predict_proba as before.', "S8")
 r('LogisticRegression(penalty="l1", solver="liblinear", C=0.01)', "The lasso's penalty on a classifier, which sets coefficients to exactly zero. It needs a solver that can handle absolute values; the default lbfgs cannot.", "S8")
+r("confusion_matrix(y, predicted).ravel()", "The 2 by 2 array flattened into tn, fp, fn, tp, in reading order. The four counts every other score is built from.", "S9")
+r('LogisticRegression(class_weight="balanced")', "Count each class in inverse proportion to its size while fitting. Raises recall on a rare class and lowers accuracy, leaves the AUC alone, and breaks the probabilities.", "S9")
+r("average_precision_score(y, p)", "The whole precision-recall curve in one number. Its no-information line is the share of ones, not 0.5, so report the two together. More informative than AUC when the class is rare.", "S9")
+r("precision_recall_curve(y, p)", "Returns precision, recall and the thresholds, for drawing the curve or reading the precision at a recall you care about.", "S9")
+r("brier_score_loss(y, p)", "The mean squared error of the probabilities, with what happened as 1 or 0. Smaller is better. It separates two models that the AUC cannot tell apart.", "S9")
+r('CalibratedClassifierCV(model, method="sigmoid", cv=5)', "Wrap a model and learn a second, small model mapping its numbers onto probabilities, on folds. It repairs a distorted level; it cannot repair a base rate that has changed since fitting.", "S9")
+r("classification_report(y, predicted, labels=order, digits=3)", "Precision, recall and F1 for every class, with the macro and weighted averages underneath. labels= sets the order.", "S9")
+r('f1_score(y, predicted, average="macro")', 'One F1 per class, averaged equally. "weighted" averages by class size instead, and None returns the scores themselves. Read macro when the class you care about is the small one.', "S9")
+r("confusion_matrix(y, predicted, labels=order)", "The matrix with the rows and columns in an order you choose rather than alphabetically. Without it the middle row of a three-class matrix is rarely the class you expect.", "S9")
+r("model.decision_function(X)", "The raw score per class, before the exponential and the division that turn scores into probabilities.", "S9")
+r("np.exp(scores) / np.exp(scores).sum()", "The softmax: make every score positive, then divide by the total so they add to one. With two classes it is the sigmoid.", "S9")
+
+section("k-nearest neighbours",
+        "A classifier with no coefficients: it stores the training rows and lets "
+        "the nearest ones vote.",
+        imports="from sklearn.neighbors import KNeighborsClassifier\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.model_selection import GridSearchCV",
+        names=SK_NAMES)
+r("KNeighborsClassifier(n_neighbors=k)", "Classify a row by a vote among the k training rows closest to it. Works for any number of classes with no change.", "S9")
+r('Pipeline([("scale", StandardScaler()), ("knn", KNeighborsClassifier())])', "The scaler is not optional here: distance is dominated by whichever column has the largest spread, so an unscaled model reads only that one.", "S9")
+r("k, as the dial", "A small k fits the training rows and little else; k of 1 scores a perfect training AUC. A large k is a simple model, the way a small C was.", "S9")
+r('{"knn__n_neighbors": [1, 5, 15, 51, 151, 301]}', "A grid for GridSearchCV. k cannot exceed the SMALLEST fold, not the training size; above that the search returns nan and warns.", "S9")
+r("model.predict_proba(X)", "The share of the k neighbours in each class, so the probabilities are multiples of 1/k. A small k gives coarse ones.", "S9")
 
 # ======================================================================
 section("Reading error messages",
@@ -394,7 +421,7 @@ r("ConvergenceWarning", "Not an error: the solver ran out of steps before the co
 # ======================================================================
 SINCE_LABEL = {"S1": "Session 1", "S2": "Session 2", "S3": "Session 3",
                "S4": "Session 4", "S5": "Session 5", "S6": "Session 6",
-               "S8": "Session 8"}
+               "S8": "Session 8", "S9": "Session 9"}
 
 
 # --------------------------------------------------------------- checks

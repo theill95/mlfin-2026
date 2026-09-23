@@ -73,6 +73,7 @@
     <li><a href="#choosing-between-models">Choosing between models</a></li>
     <li><a href="#penalised-regression">Penalised regression</a></li>
     <li><a href="#classification">Classification</a></li>
+    <li><a href="#k-nearest-neighbours">k-nearest neighbours</a></li>
     <li><a href="#reading-error-messages">Reading error messages</a></li>
   </ul>
   <section class="cs-section" id="running-code">
@@ -403,6 +404,10 @@
       <div class="cs-desc">The plain numbers underneath, as a NumPy array, labels dropped.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>frame.set_index(&quot;date&quot;)</code></div>
       <div class="cs-desc">Move a column into the index, so .loc can slice by it.<span class="cs-since">Session 4</span></div>
+      <div class="cs-sig"><code>pd.cut(s, [0, 0.2, 0.4, 1.0])</code></div>
+      <div class="cs-desc">Sort every value into one of the ranges given, and return the range it fell in. Group by the result to summarise each range.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>pd.cut(s, edges, labels=[&quot;low&quot;, &quot;mid&quot;, &quot;high&quot;])</code></div>
+      <div class="cs-desc">The same, with a name for each range instead of the range itself. This is how a number becomes a label with more than two values.<span class="cs-since">Session 9</span></div>
     </div>
   </section>
   <section class="cs-section" id="pandas-groups-and-shapes">
@@ -555,15 +560,22 @@ import pandas as pd</code></pre>
       <div class="cs-desc">Recall: of the times it really happened, how many were caught? Low recall means misses.<span class="cs-since">Session 4</span></div>
       <div class="cs-sig"><code>2 * precision * recall / (precision + recall)</code></div>
       <div class="cs-desc">F1: the harmonic mean of the two, which sits close to the smaller one.<span class="cs-since">Session 4</span></div>
+      <div class="cs-sig"><code>cost_miss * fn + cost_false * fp</code></div>
+      <div class="cs-desc">What a set of decisions costs when the two mistakes are not worth the same. Sweep the threshold and keep the cheapest, on training rows only.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>cost_false / (cost_false + cost_miss)</code></div>
+      <div class="cs-desc">The cheapest threshold, written down rather than swept for. It only works on probabilities that are calibrated.<span class="cs-since">Session 9</span></div>
     </div>
   </section>
   <section class="cs-section" id="training-rows-and-test-rows">
     <h2>Training rows and test rows</h2>
     <p class="lede">A score computed on the rows a model learned from is not evidence.</p>
-    <pre class="cs-imports"><code>import numpy as np</code></pre>
+    <pre class="cs-imports"><code>import numpy as np
+from sklearn.model_selection import train_test_split</code></pre>
     <div class="cs-ref">
       <div class="cs-sig"><code>frame.loc[:&quot;2022-12-31&quot;]</code></div>
       <div class="cs-desc">Split by date, never at random: the rows up to a date for training, frame.loc[&quot;2023-01-01&quot;:] for testing. A shuffled time series lets a model train on the future.<span class="cs-since">Session 4</span></div>
+      <div class="cs-sig"><code>train_test_split(frame, test_size=0.3, random_state=0, stratify=y)</code></div>
+      <div class="cs-desc">Shuffle the rows and cut them in two. Right for a cross-section where rows are separate cases, wrong for a time series. stratify keeps a label&#x27;s share equal in both halves, which matters when it is rare.<span class="cs-since">Session 9</span></div>
       <div class="cs-sig"><code>np.polyfit(x, y, degree)</code></div>
       <div class="cs-desc">Fit a polynomial of that degree. Raising the degree always lowers training error.<span class="cs-since">Session 4</span></div>
       <div class="cs-sig"><code>np.polyval(coef, x)</code></div>
@@ -658,9 +670,12 @@ from sklearn.model_selection import GridSearchCV</code></pre>
     <pre class="cs-imports"><code>from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import cross_val_score, TimeSeriesSplit, GridSearchCV
 from sklearn.metrics import (accuracy_score, confusion_matrix, precision_score,
-    recall_score, roc_curve, roc_auc_score, log_loss)</code></pre>
+    recall_score, roc_curve, roc_auc_score, log_loss, f1_score,
+    average_precision_score, precision_recall_curve, brier_score_loss,
+    classification_report)</code></pre>
     <p class="cs-names">On this card: X is the feature table, y the label column of ones and zeros, model a fitted classifier, p the probability column model.predict_proba(X)[:, 1], predicted the 0/1 predictions.</p>
     <div class="cs-ref">
       <div class="cs-sig"><code>(a &gt; b).astype(int)</code></div>
@@ -705,6 +720,49 @@ from sklearn.metrics import (accuracy_score, confusion_matrix, precision_score,
       <div class="cs-desc">A grid for GridSearchCV: the step name, two underscores, the argument. Then GridSearchCV(pipe, grid, cv=folds, scoring=&quot;roc_auc&quot;).fit(X, y), and best_params_, best_score_, predict_proba as before.<span class="cs-since">Session 8</span></div>
       <div class="cs-sig"><code>LogisticRegression(penalty=&quot;l1&quot;, solver=&quot;liblinear&quot;, C=0.01)</code></div>
       <div class="cs-desc">The lasso&#x27;s penalty on a classifier, which sets coefficients to exactly zero. It needs a solver that can handle absolute values; the default lbfgs cannot.<span class="cs-since">Session 8</span></div>
+      <div class="cs-sig"><code>confusion_matrix(y, predicted).ravel()</code></div>
+      <div class="cs-desc">The 2 by 2 array flattened into tn, fp, fn, tp, in reading order. The four counts every other score is built from.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>LogisticRegression(class_weight=&quot;balanced&quot;)</code></div>
+      <div class="cs-desc">Count each class in inverse proportion to its size while fitting. Raises recall on a rare class and lowers accuracy, leaves the AUC alone, and breaks the probabilities.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>average_precision_score(y, p)</code></div>
+      <div class="cs-desc">The whole precision-recall curve in one number. Its no-information line is the share of ones, not 0.5, so report the two together. More informative than AUC when the class is rare.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>precision_recall_curve(y, p)</code></div>
+      <div class="cs-desc">Returns precision, recall and the thresholds, for drawing the curve or reading the precision at a recall you care about.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>brier_score_loss(y, p)</code></div>
+      <div class="cs-desc">The mean squared error of the probabilities, with what happened as 1 or 0. Smaller is better. It separates two models that the AUC cannot tell apart.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>CalibratedClassifierCV(model, method=&quot;sigmoid&quot;, cv=5)</code></div>
+      <div class="cs-desc">Wrap a model and learn a second, small model mapping its numbers onto probabilities, on folds. It repairs a distorted level; it cannot repair a base rate that has changed since fitting.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>classification_report(y, predicted, labels=order, digits=3)</code></div>
+      <div class="cs-desc">Precision, recall and F1 for every class, with the macro and weighted averages underneath. labels= sets the order.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>f1_score(y, predicted, average=&quot;macro&quot;)</code></div>
+      <div class="cs-desc">One F1 per class, averaged equally. &quot;weighted&quot; averages by class size instead, and None returns the scores themselves. Read macro when the class you care about is the small one.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>confusion_matrix(y, predicted, labels=order)</code></div>
+      <div class="cs-desc">The matrix with the rows and columns in an order you choose rather than alphabetically. Without it the middle row of a three-class matrix is rarely the class you expect.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>model.decision_function(X)</code></div>
+      <div class="cs-desc">The raw score per class, before the exponential and the division that turn scores into probabilities.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>np.exp(scores) / np.exp(scores).sum()</code></div>
+      <div class="cs-desc">The softmax: make every score positive, then divide by the total so they add to one. With two classes it is the sigmoid.<span class="cs-since">Session 9</span></div>
+    </div>
+  </section>
+  <section class="cs-section" id="k-nearest-neighbours">
+    <h2>k-nearest neighbours</h2>
+    <p class="lede">A classifier with no coefficients: it stores the training rows and lets the nearest ones vote.</p>
+    <pre class="cs-imports"><code>from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV</code></pre>
+    <p class="cs-names">On this card: X is the feature table, always with two brackets, y the target column, model a fitted model, folds a TimeSeriesSplit.</p>
+    <div class="cs-ref">
+      <div class="cs-sig"><code>KNeighborsClassifier(n_neighbors=k)</code></div>
+      <div class="cs-desc">Classify a row by a vote among the k training rows closest to it. Works for any number of classes with no change.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>Pipeline([(&quot;scale&quot;, StandardScaler()), (&quot;knn&quot;, KNeighborsClassifier())])</code></div>
+      <div class="cs-desc">The scaler is not optional here: distance is dominated by whichever column has the largest spread, so an unscaled model reads only that one.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>k, as the dial</code></div>
+      <div class="cs-desc">A small k fits the training rows and little else; k of 1 scores a perfect training AUC. A large k is a simple model, the way a small C was.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>{&quot;knn__n_neighbors&quot;: [1, 5, 15, 51, 151, 301]}</code></div>
+      <div class="cs-desc">A grid for GridSearchCV. k cannot exceed the SMALLEST fold, not the training size; above that the search returns nan and warns.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>model.predict_proba(X)</code></div>
+      <div class="cs-desc">The share of the k neighbours in each class, so the probabilities are multiples of 1/k. A small k gives coarse ones.<span class="cs-since">Session 9</span></div>
     </div>
   </section>
   <section class="cs-section" id="reading-error-messages">

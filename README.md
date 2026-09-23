@@ -29,6 +29,8 @@ This repository is published:
   <https://theill95.github.io/mlfin-2026/session_07/session_07.html>
 - Interactive lecture, Session 8:
   <https://theill95.github.io/mlfin-2026/session_08/session_08.html>
+- Interactive lecture, Session 9:
+  <https://theill95.github.io/mlfin-2026/session_09/session_09.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
 The site has six pages, linked from the sidebar:
@@ -108,9 +110,10 @@ Sessions 2 to 6 have the same shape. Current contents:
 | 6 · Penalised Regression | `session_06.qmd` | 58 | Part 6, 16 questions |
 | 7 · Pricing a house in Aarhus (recap) | `session_07.qmd` | none | none |
 | 8 · Classification with logistic regression | `session_08.qmd` | 64 | Part 8, 15 questions |
+| 9 · Classification in practice | `session_09.qmd` | 68 | Part 9, 16 questions |
 
 Sessions 3 to 8 load numpy, pandas and matplotlib into the browser runtime
-(about 20 MB, once per page load). Sessions 5 to 8 add scikit-learn, which
+(about 20 MB, once per page load). Sessions 5 to 9 add scikit-learn, which
 brings scipy and a BLAS with it, so their cold load is nearer 45 MB. Open the deck and
 run one cell several minutes before class so it is warm.
 
@@ -210,7 +213,7 @@ pip install -r requirements.txt
 ```
 
 Built and tested with Python 3.12, pandas 2.2, numpy 1.26, matplotlib 3.9,
-scikit-learn 1.5. Sessions 5 to 8 use scikit-learn in the materials
+scikit-learn 1.5. Sessions 5 to 9 use scikit-learn in the materials
 themselves, in the deck, the exercises and the case. Session 6 also reads
 `data/market_features.csv`, a nineteen-column table built from the prices by
 `tools/build_session06_table.py`, and Session 7 reads `data/aarhus_houses.csv`,

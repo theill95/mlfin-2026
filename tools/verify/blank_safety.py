@@ -7,6 +7,7 @@ broken on first contact. Two things can go wrong, and only the first one is
 obvious:
 
   raises   `x = ...` then `x.mean()`  ->  AttributeError on 'ellipsis'
+  raises   `x = ...` then f"{x:.1%}"  ->  TypeError: ellipsis.__format__
   HANGS    `while ...:`               ->  Ellipsis is truthy, so it never stops
 
 The second is much worse than a traceback and does not show up in a quick look,
@@ -72,6 +73,13 @@ class Blanks(ast.NodeVisitor):
     def visit_Attribute(self, node):
         if isinstance(node.value, ast.Name) and node.value.id in self.blank:
             self._flag(f"`{node.value.id}.{node.attr}` on a placeholder")
+        self.generic_visit(node)
+
+    def visit_FormattedValue(self, node):
+        # f"{x:.1%}" calls format(x, ".1%"), and Ellipsis has no __format__
+        if node.format_spec is not None and isinstance(node.value, ast.Name) \
+                and node.value.id in self.blank:
+            self._flag(f"formatting the placeholder `{node.value.id}` in an f-string")
         self.generic_visit(node)
 
     def visit_Subscript(self, node):

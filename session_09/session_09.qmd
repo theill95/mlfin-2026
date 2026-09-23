@@ -1,0 +1,1349 @@
+---
+title: "Classification in practice"
+subtitle: "Machine Learning in Finance · Session 9"
+# Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
+# from a data: URI, so embed-resources is off. Ship session_09.html together
+# with session_09_files/ and data/, and SERVE OVER HTTP (double-click
+# serve.cmd, or publish to a URL). Opened from a file:// path the live code
+# cells do not merely fail to run, they do not appear at all.
+#
+# This deck loads numpy, pandas, matplotlib and scikit-learn into the browser
+# runtime (about 45 MB on a cold load). Open the deck and run one cell several
+# minutes before class so it is warm.
+#
+# Two tables. data/market_features.csv is the Session 6 table, carried over
+# from Session 8. data/credit.csv is new, built by tools/build_session09_table.py
+# from the UCI "default of credit card clients" data set (CC BY 4.0). Every
+# number on these slides was measured from those two files.
+format:
+  live-revealjs:
+    theme: [default, ../theme/mlfin.scss]
+    width: 1280
+    height: 720
+    margin: 0.06
+    center: false
+    transition: fade
+    transition-speed: fast
+    background-transition: none
+    slide-number: c/t
+    controls: false
+    progress: true
+    hash: true
+    history: false
+    code-line-numbers: false
+    highlight-style: github
+    auto-stretch: false
+html-math-method: katex
+engine: jupyter
+pyodide:
+  packages:
+    - numpy
+    - pandas
+    - matplotlib
+    - scikit-learn
+  resources:
+    - data/market_features.csv
+    - data/credit.csv
+  cell-options:
+    autorun: true
+    startover: true
+execute:
+  echo: true
+  warning: false
+---
+
+# The classifier so far
+
+```{python}
+#| include: false
+# House style for every precomputed figure in this deck, plus the two tables
+# the session works on and the models the figures draw.
+import warnings
+warnings.filterwarnings("ignore")
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+MLFIN_STYLE = {
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "savefig.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"],
+    "font.size": 12, "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+}
+plt.rcParams.update(MLFIN_STYLE)
+
+from pathlib import Path
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import (confusion_matrix, precision_recall_curve,
+                             average_precision_score, roc_auc_score)
+from sklearn.calibration import calibration_curve
+
+for _name in ("data/credit.csv", "data/market_features.csv"):
+    if not Path(_name).exists():
+        raise FileNotFoundError(
+            f"Missing {_name} - copy it from data/ at the repository root "
+            "(credit.csv is built by tools/build_session09_table.py)."
+        )
+
+CREDIT = pd.read_csv("data/credit.csv")
+CCOLS = ["limit", "age", "late_now", "months_late", "bill", "paid", "utilisation"]
+CTRAIN, CTEST = train_test_split(CREDIT, test_size=0.3, random_state=0,
+                                 stratify=CREDIT["default"])
+PLAIN = Pipeline([("scale", StandardScaler()),
+                  ("logit", LogisticRegression())]).fit(CTRAIN[CCOLS], CTRAIN["default"])
+BAL = Pipeline([("scale", StandardScaler()),
+                ("logit", LogisticRegression(class_weight="balanced"))]).fit(CTRAIN[CCOLS], CTRAIN["default"])
+PC = PLAIN.predict_proba(CTEST[CCOLS])[:, 1]
+PB = BAL.predict_proba(CTEST[CCOLS])[:, 1]
+YC = CTEST["default"].values
+
+TBL = pd.read_csv("data/market_features.csv", parse_dates=["date"]).set_index("date")
+RATIO = TBL["vol_next"] / TBL["vol_20d"]
+TBL["move"] = pd.cut(RATIO, [-np.inf, 0.85, 1.25, np.inf], labels=["falls", "stays", "rises"])
+TBL["rising"] = (TBL["vol_next"] > TBL["vol_20d"]).astype(int)
+MTRAIN, MTEST = TBL.loc[:"2022-12-31"], TBL.loc["2023-01-01":]
+TWO = ["vol_20d", "ret_20d"]
+
+BLUE, BLUE_LIGHT = "#1c5cab", "#86b6ef"
+AMBER, BRICK = "#b8860b", "#b3402f"
+GREY, GREY_LIGHT, INK = "#c3c2b7", "#d8d7d0", "#141413"
+```
+
+```{pyodide}
+#| include: false
+# House style for the live figures, so they match the printed ones.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings("ignore")
+plt.rcParams.update({
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"], "font.size": 12,
+    "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+    "figure.dpi": 100,
+})
+```
+
+<div class="statband">
+<div class="stat"><span class="stat-big">0.533</span><div class="stat-label">majority rule</div></div>
+<div class="stat"><span class="stat-big">0.741</span><div class="stat-label">accuracy</div></div>
+<div class="stat"><span class="stat-big">0.847</span><div class="stat-label">AUC</div></div>
+</div>
+
+Last time a logistic regression predicted whether volatility would be higher
+next month. On the 482 test days it beat the majority class, 74 percent
+against 53.
+
+::: {.keypoint}
+Three things were left at their defaults: the threshold of one half, the
+meaning of the probabilities, and the fact that there were two classes.
+:::
+
+
+# The label was an even split
+
+```{pyodide}
+table = pd.read_csv("data/market_features.csv", parse_dates=["date"]).set_index("date")
+table["rising"] = (table["vol_next"] > table["vol_20d"]).astype(int)
+
+print(table["rising"].mean())
+```
+
+The label is 1 on 48 percent of the days, so the two classes are almost the
+same size. Most decisions a bank or an insurer makes are not like that.
+
+
+# Today
+
+- what a **rare** class does to accuracy
+- the **threshold**, set from the cost of each mistake
+- **calibration**: whether a probability of 0.3 means 0.3
+- a label with **three** classes instead of two
+- **k-nearest neighbours**, a second classifier
+
+The lecture introduces each of these. The exercises and the case are where you
+practise them.
+
+
+# 1 · When one class is rare {.divider}
+
+::: {.divider-kicker}
+Part 1
+:::
+
+::: {.divider-note}
+A second table, in which one borrower in five defaults.
+:::
+
+
+# The credit table
+
+```{pyodide}
+credit = pd.read_csv("data/credit.csv")
+
+print(credit.shape)
+credit.head(4)
+```
+
+Payment records of 30,000 credit card holders at a Taiwanese bank in 2005,
+from the UCI Machine Learning Repository. One row per borrower, and amounts in
+New Taiwan dollars.
+
+
+# What the columns hold {.smaller}
+
+| column | what it is |
+|:--|:--|
+| `limit` | the credit limit on the account |
+| `age` | the borrower's age in years |
+| `late_now` | months behind on the most recent bill, 0 if not behind |
+| `months_late` | how many of the last six months were at least one month late |
+| `bill` | the most recent bill |
+| `paid` | the amount paid against that bill |
+| `utilisation` | the most recent bill divided by the credit limit |
+| `default` | 1 if the borrower defaulted the following month |
+
+
+# One borrower in five
+
+```{pyodide}
+print(credit["default"].sum())
+print(credit["default"].mean())
+```
+
+6,636 of the 30,000 borrowers defaulted, which is 22 percent. The column
+already holds ones and zeros, so there is no label to build.
+
+
+# What the columns say about default
+
+```{python}
+#| echo: false
+#| fig-align: center
+fig, ax = plt.subplots(figsize=(9, 3.1))
+g = CREDIT.groupby("months_late")["default"].agg(["size", "mean"])
+ax.bar(g.index, g["mean"], color=BLUE, width=0.62)
+ax.axhline(CREDIT["default"].mean(), color=BRICK, linewidth=1.4, linestyle="--")
+ax.text(0.35, CREDIT["default"].mean() + 0.03, "everyone: 0.22", color=BRICK,
+        fontsize=10.5, ha="left")
+for x, (n, m) in zip(g.index, g.values):
+    ax.text(x, m + 0.02, f"{m:.2f}", ha="center", fontsize=10, color="#52514e")
+ax.set_ylim(0, 0.82)
+ax.set_xlabel("months of the last six that were at least one month late")
+ax.set_ylabel("share who defaulted")
+ax.set_title("Default rate by months late, all 30,000 borrowers", loc="left")
+plt.show()
+```
+
+A borrower who was never late defaults 12 percent of the time. One who was
+late in all six months defaults 70 percent of the time.
+
+
+# Borrowers, not days
+
+<div class="compare">
+<div class="compare-col">
+<h3>The market table</h3>
+<p>Each row is a trading day, and the rows are in time order. A model fitted on 2023 and scored on 2020 would be using the future to predict the past, so the split is made by date and the folds move forward.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>The credit table</h3>
+<p>Each row is a different borrower, and the order they appear in carries no meaning. Any borrower may go in the training rows and any other in the test rows, so the split can be made at random.</p>
+</div>
+</div>
+
+::: {.keypoint}
+`train_test_split` shuffles the rows and cuts them in two. It is the standard
+tool, and it is wrong for a time series.
+:::
+
+
+# Splitting at random
+
+```{pyodide}
+from sklearn.model_selection import train_test_split
+
+train, test = train_test_split(credit, test_size=0.3, random_state=0,
+                               stratify=credit["default"])
+print(len(train), len(test))
+print(round(test["default"].mean(), 4))
+```
+
+`random_state=0` fixes which borrowers go where, so the split is the same on
+every run. `stratify` keeps the share of defaults equal in both halves.
+
+
+# The same four lines
+
+```{pyodide}
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+
+columns = ["limit", "age", "late_now", "months_late", "bill", "paid", "utilisation"]
+model = Pipeline([("scale", StandardScaler()), ("logit", LogisticRegression())])
+model.fit(train[columns], train["default"])
+p = model.predict_proba(test[columns])[:, 1]
+```
+
+Nothing about the model changed. The columns are in different units, so the
+scaler goes in front of the classifier, as it did for ridge.
+
+
+# Accuracy against the majority rule
+
+```{pyodide}
+from sklearn.metrics import accuracy_score, roc_auc_score
+
+predicted = model.predict(test[columns])
+
+print(round(accuracy_score(test["default"], predicted), 4))
+print(round(1 - test["default"].mean(), 4))
+```
+
+The model is right about 81.5 percent of the 9,000 test borrowers. Predicting
+that nobody defaults is right 77.9 percent of the time.
+
+
+# What the model predicted
+
+```{pyodide}
+from sklearn.metrics import confusion_matrix
+
+print(confusion_matrix(test["default"], predicted))
+print(predicted.sum())
+```
+
+Rows are what happened, columns are the prediction. The model called 914
+defaults and was right about 620; 1,991 borrowers defaulted, so it missed
+1,371.
+
+
+# Precision and recall, on a rare class
+
+```{pyodide}
+from sklearn.metrics import precision_score, recall_score
+
+print(round(precision_score(test["default"], predicted), 3))
+print(round(recall_score(test["default"], predicted), 3))
+```
+
+Of the borrowers the model called a default, 68 percent defaulted; of those
+who defaulted, it caught 31 percent.
+
+::: {.keypoint}
+When one class is rare, report recall beside accuracy. The accuracy of 0.815
+is made of the borrowers the model correctly left alone.
+:::
+
+
+# The probabilities the model gave
+
+```{python}
+#| echo: false
+#| fig-align: center
+fig, ax = plt.subplots(figsize=(9, 3.1))
+ax.hist(PC[YC == 0], bins=40, range=(0, 1), color=BLUE_LIGHT, label="did not default")
+ax.hist(PC[YC == 1], bins=40, range=(0, 1), color=BRICK, alpha=0.75, label="defaulted")
+ax.axvline(0.5, color=INK, linewidth=1.4)
+ax.text(0.52, ax.get_ylim()[1] * 0.88, "0.5, where .predict() cuts", fontsize=10.5, color=INK)
+ax.set_xlabel("probability of default the model gave the borrower")
+ax.set_ylabel("test rows")
+ax.set_title("Almost every borrower is below one half", loc="left")
+ax.legend(loc="upper right", bbox_to_anchor=(1, 0.72))
+plt.show()
+```
+
+Only 914 of the 9,000 borrowers reach 0.5, so `.predict()` calls almost
+everyone safe. The threshold produced the low recall, not the model.
+
+
+# Your turn [1]{.chip .chip-turn} {.your-turn}
+
+Predict a default for every test borrower whose probability reaches 0.2, and
+report the recall and the precision. Decide first which way each will move.
+
+```{pyodide}
+#| autorun: false
+lower = ...
+
+print(round(recall_score(test["default"], lower), 3))
+print(round(precision_score(test["default"], lower), 3))
+```
+
+::: {.muted .small}
+`p` holds the probability of default for each test borrower, from
+`predict_proba` two slides ago. Compare it with 0.2 and turn the answer into
+ones and zeros, as the label itself was made.
+:::
+
+
+# Your turn 1: answer
+
+```python
+lower = (p >= 0.2).astype(int)
+```
+
+Recall rises from 0.311 to **0.574** and precision falls from 0.678 to
+**0.486**. The model called 2,353 defaults instead of 914, and caught 1,143 of
+the 1,991 instead of 620. The model itself never changed.
+
+
+# A missed default is not a false alarm
+
+<div class="compare">
+<div class="compare-col">
+<h3>Missing a default</h3>
+<p>The bank lends, the borrower does not repay, and the balance is written off. The loss is the size of the credit extended.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>A false alarm</h3>
+<p>The bank refuses or reduces a limit for a borrower who would have paid. The loss is the interest that borrower would have earned, and the customer.</p>
+</div>
+</div>
+
+::: {.keypoint}
+The two mistakes are not worth the same, so the threshold with the fewest
+mistakes is not the cheapest one. Suppose a missed default costs 5 and a false
+alarm costs 1.
+:::
+
+
+# Counting the cost
+
+```{pyodide}
+for threshold in [0.1, 0.2, 0.3, 0.5]:
+    called = (p >= threshold).astype(int)
+    tn, fp, fn, tp = confusion_matrix(test["default"], called).ravel()
+    print(threshold, fn, fp, 5 * fn + fp)
+```
+
+`.ravel()` flattens the 2 by 2 array into its four counts, in reading order.
+The last number is the cost of the 9,000 decisions: 7,149 at one half, 5,450
+at 0.2.
+
+
+# The cheapest threshold
+
+```{python}
+#| echo: false
+#| fig-align: center
+grid = np.arange(0.05, 0.85, 0.01)
+cost = []
+for t in grid:
+    tn, fp, fn, tp = confusion_matrix(YC, (PC >= t).astype(int)).ravel()
+    cost.append(5 * fn + fp)
+cost = np.array(cost)
+best = grid[cost.argmin()]
+fig, ax = plt.subplots(figsize=(9, 3.2))
+ax.plot(grid, cost, color=BLUE, linewidth=2)
+ax.plot([best], [cost.min()], "o", color=BRICK, markersize=8)
+ax.annotate(f"cheapest: {best:.2f}, cost {cost.min():,}", xy=(best, cost.min()),
+            xytext=(0.215, 8150), textcoords="data", color=BRICK, fontsize=11,
+            arrowprops=dict(arrowstyle="-", color=BRICK, linewidth=1))
+i50 = int(np.argmin(np.abs(grid - 0.5)))
+ax.plot([0.5], [cost[i50]], "o", color=INK, markersize=7)
+ax.annotate(f"0.5, the default: cost {cost[i50]:,}", (0.5, cost[i50]),
+            textcoords="offset points", xytext=(10, 6), color=INK, fontsize=11)
+ax.set_xlabel("threshold")
+ax.set_ylabel("cost")
+ax.set_title("Cost of the 9,000 test decisions, at 5 for a missed default and 1 for a false alarm",
+             loc="left")
+plt.show()
+```
+
+Sweeping the threshold in steps of 0.01 puts the minimum at 0.18, where the
+9,000 decisions cost 5,373 instead of 7,149. One number, a quarter of the
+cost.
+
+
+# The threshold from the costs
+
+::: {.formula}
+$$\text{threshold} = \frac{\text{cost of a false alarm}}{\text{cost of a false alarm} + \text{cost of a miss}} = \frac{1}{1 + 5} = 0.167$$
+:::
+
+Predicting a default pays when the probability times 5 is larger than 1, which
+is a probability above one sixth. The sweep found 0.18, and the two thresholds
+cost 5,373 and 5,386.
+
+
+# Choosing the threshold on training rows
+
+```{pyodide}
+p_train = model.predict_proba(train[columns])[:, 1]
+for threshold in [0.14, 0.16, 0.18, 0.20]:
+    called = (p_train >= threshold).astype(int)
+    tn, fp, fn, tp = confusion_matrix(train["default"], called).ravel()
+    print(threshold, 5 * fn + fp)
+```
+
+The same sweep on the 21,000 training rows picks 0.16, against the 0.18 the
+test rows would pick. The threshold is a setting like `C`, chosen on rows the
+model may see.
+
+
+# Weighting the rare class
+
+```{pyodide}
+balanced = Pipeline([("scale", StandardScaler()),
+                     ("logit", LogisticRegression(class_weight="balanced"))])
+balanced.fit(train[columns], train["default"])
+pred_b = balanced.predict(test[columns])
+
+print(round(accuracy_score(test["default"], pred_b), 4))
+print(round(recall_score(test["default"], pred_b), 3))
+```
+
+`class_weight="balanced"` counts each default 2.26 times during fitting and
+each repayment 0.64. Recall rises to 0.550 and accuracy falls to 0.778, below
+the 0.779 of predicting that nobody defaults.
+
+
+# What the weights changed
+
+```{pyodide}
+p_balanced = balanced.predict_proba(test[columns])[:, 1]
+
+print(round(roc_auc_score(test["default"], p), 4))
+print(round(roc_auc_score(test["default"], p_balanced), 4))
+```
+
+The weights moved where the cut falls, not the ranking of the borrowers.
+
+::: {.keypoint}
+At a threshold of 0.2 the plain model reaches recall 0.574 at precision 0.486,
+and the weighted model reaches 0.550 at 0.498: the same place on the same
+curve. Only the threshold can be tuned to a cost.
+:::
+
+
+# Precision against recall
+
+```{python}
+#| echo: false
+#| fig-align: center
+prec, rec, _ = precision_recall_curve(YC, PC)
+fig, ax = plt.subplots(figsize=(7.4, 3.3))
+keep = rec >= 0.02
+ax.plot(rec[keep], prec[keep], color=BLUE, linewidth=2)
+ax.axhline(YC.mean(), color=GREY, linewidth=1.4, linestyle="--")
+ax.text(0.05, YC.mean() + 0.03, "guessing: 0.22", color="#898781", fontsize=10.5)
+ax.set_xlabel("recall: share of defaulters caught")
+ax.set_ylabel("precision")
+ax.set_ylim(0, 1)
+ax.set_title(f"Precision against recall, average precision {average_precision_score(YC, PC):.2f}",
+             loc="left")
+plt.show()
+```
+
+Every threshold is one point on this curve, and `average_precision_score`
+summarises it: 0.52 against 0.22 for guessing. On a rare class it says more
+than the ROC curve, which is dominated by true negatives.
+
+
+# 2 · Do the probabilities mean what they say? {.divider}
+
+::: {.divider-kicker}
+Part 2
+:::
+
+::: {.divider-note}
+Whether a model that says 0.30 is right about three borrowers in ten.
+:::
+
+
+# The question
+
+Take every borrower the model gave about 0.30, and count how many defaulted.
+
+::: {.why-grid}
+::: {.why-point}
+**About 30 percent** <span>the number is a probability, and multiplying it by an amount of money gives an expected loss</span>
+:::
+::: {.why-point}
+**12 percent** <span>the ranking may still be useful, but any decision that compares the number with a cost will be wrong</span>
+:::
+:::
+
+A model that passes this check is called calibrated.
+
+
+# Bucketing the test rows
+
+```{pyodide}
+test = test.copy()
+test["p"] = p
+test["bucket"] = pd.cut(test["p"], [0, 0.2, 0.4, 0.6, 1.0])
+
+print(test.groupby("bucket", observed=True)["default"].agg(["size", "mean"]).round(3))
+```
+
+`pd.cut` sorts every value into one of the ranges given. Grouping the label by
+it gives the share that defaulted in each bucket.
+
+
+# The plain model, bucket by bucket
+
+| the model said | borrowers | share that defaulted |
+|:--|--:|--:|
+| 0.0 to 0.2 | 6,647 | 0.128 |
+| 0.2 to 0.4 | 1,084 | 0.309 |
+| 0.4 to 0.6 | 643 | 0.561 |
+| 0.6 to 1.0 | 626 | 0.714 |
+
+Every bucket's share falls inside its own range, and the average probability
+is 0.2187 against the 0.2212 that defaulted.
+
+
+# The balanced model, the same borrowers
+
+| the model said | borrowers | share that defaulted |
+|:--|--:|--:|
+| 0.0 to 0.2 | 214 | 0.042 |
+| 0.2 to 0.4 | 5,518 | 0.121 |
+| 0.4 to 0.6 | 1,502 | 0.226 |
+| 0.6 to 1.0 | 1,766 | 0.551 |
+
+Of the 5,518 borrowers it put between 0.2 and 0.4, 12 percent defaulted. The
+average probability is 0.439 against the same 0.2212, so every bucket says
+more than happens.
+
+
+# Said against happened
+
+```{python}
+#| echo: false
+#| fig-align: center
+fig, ax = plt.subplots(figsize=(7.4, 3.5))
+ax.plot([0, 1], [0, 1], color=GREY, linewidth=1.4, linestyle="--")
+for prob, colour, label in [(PC, BLUE, "plain"), (PB, BRICK, "class_weight='balanced'")]:
+    frac, pred = calibration_curve(YC, prob, n_bins=10, strategy="uniform")
+    ax.plot(pred, frac, "o-", color=colour, linewidth=2, markersize=6, label=label)
+ax.text(0.83, 0.90, "honest", color="#898781", fontsize=10.5, rotation=34)
+ax.set_xlabel("probability the model gave")
+ax.set_ylabel("share that defaulted")
+ax.set_xlim(0, 1)
+ax.set_ylim(0, 1)
+ax.set_title("The test rows in 10 buckets", loc="left")
+ax.legend(loc="upper left")
+plt.show()
+```
+
+A calibrated model sits on the dashed diagonal. The plain model follows it
+closely; the weighted model sits below it everywhere.
+
+
+# Why the weights did that
+
+The weights make the training rows behave as though 50 percent of borrowers
+default instead of 22 percent. The probabilities are then right for that
+invented population, not for the real one.
+
+::: {.keypoint}
+Anything that changes the mix of the training rows changes the level of the
+probabilities: class weights, dropping rows of the common class, or copying
+rows of the rare one.
+:::
+
+
+# The Brier score
+
+```{pyodide}
+from sklearn.metrics import brier_score_loss
+
+print(round(brier_score_loss(test["default"], p), 4))
+print(round(brier_score_loss(test["default"], p_balanced), 4))
+```
+
+The Brier score is the mean squared error of the probabilities, with what
+happened as 1 or 0. It is 0.1395 for the plain model and 0.1879 for the
+weighted one, and smaller is better.
+
+
+# Ranking against level
+
+<div class="compare">
+<div class="compare-col">
+<h3>What AUC measures</h3>
+<p>Whether the borrowers who defaulted were given higher numbers than those who did not. Only the order matters, so 0.7476 and 0.7481 say the two models rank almost identically.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>What calibration measures</h3>
+<p>Whether the numbers are right in level. The Brier score separates the two models, 0.1395 against 0.1879, because one of them says 0.44 on average where 0.22 happens.</p>
+</div>
+</div>
+
+::: {.keypoint}
+A model can rank perfectly and still be useless for a decision made by
+comparing a probability with a cost.
+:::
+
+
+# Recalibrating the weighted model
+
+```{pyodide}
+from sklearn.calibration import CalibratedClassifierCV
+
+fixed = CalibratedClassifierCV(balanced, method="sigmoid", cv=5)
+fixed.fit(train[columns], train["default"])
+p_fixed = fixed.predict_proba(test[columns])[:, 1]
+
+print(round(p_fixed.mean(), 4))
+print(round(brier_score_loss(test["default"], p_fixed), 4))
+```
+
+`CalibratedClassifierCV` learns a second, small model that maps the first
+model's numbers onto probabilities, on folds. The average comes back to 0.2186
+and the Brier score to 0.1395.
+
+
+# The cost threshold on each model
+
+```{pyodide}
+for name, prob in [("plain", p), ("balanced", p_balanced), ("fixed", p_fixed)]:
+    called = (prob >= 1 / 6).astype(int)
+    tn, fp, fn, tp = confusion_matrix(test["default"], called).ravel()
+    print(name, 5 * fn + fp)
+```
+
+One sixth costs 5,386 on the plain model and 6,940 on the weighted one, where
+0.167 does not mean the same thing. Calibrating brings it back to 5,385.
+
+
+# 3 · More than two classes {.divider}
+
+::: {.divider-kicker}
+Part 3
+:::
+
+::: {.divider-note}
+A label with three values instead of two.
+:::
+
+
+# Three answers instead of two
+
+Whether next month is more volatile is a coarse question: a rise of one
+percent and a rise of 60 percent both count as a rise.
+
+```{pyodide}
+ratio = table["vol_next"] / table["vol_20d"]
+
+print(round(ratio.median(), 3))
+print(round(ratio.max(), 2))
+```
+
+The ratio of next month's volatility to this month's is 0.978 in the middle
+and 6.07 at its largest. Its right tail is long, so the two cuts are not
+symmetric around one.
+
+
+# Two cuts
+
+```{python}
+#| echo: false
+#| fig-align: center
+fig, ax = plt.subplots(figsize=(9, 3.1))
+ax.hist(RATIO[RATIO <= 3], bins=60, range=(0, 3), color=BLUE_LIGHT)
+for cut in (0.85, 1.25):
+    ax.axvline(cut, color=BRICK, linewidth=1.6)
+ax.set_ylim(0, 152)
+ax.text(0.42, 136, "falls", color=BRICK, fontsize=12, ha="center")
+ax.text(1.05, 136, "stays", color=BRICK, fontsize=12, ha="center")
+ax.text(1.75, 136, "rises", color=BRICK, fontsize=12, ha="center")
+ax.set_xlabel("next month's volatility divided by this month's")
+ax.set_ylabel("days")
+ax.set_title("Two cuts, chosen so the three groups are about the same size in the training rows",
+             loc="left")
+plt.show()
+```
+
+Below 0.85 next month is at least 15 percent calmer and above 1.25 at least 25
+percent busier. The two cuts split the training days 38, 32 and 29 percent.
+
+
+# Three labels in one line
+
+```{pyodide}
+table["move"] = pd.cut(ratio, [-np.inf, 0.85, 1.25, np.inf],
+                       labels=["falls", "stays", "rises"])
+
+print(table["move"].value_counts())
+```
+
+`pd.cut` is the function that bucketed the probabilities, with names given to
+the ranges. The label is text rather than a number, which scikit-learn
+accepts.
+
+
+# The majority rule, with three classes
+
+```{pyodide}
+train = table.loc[:"2022-12-31"]
+test = table.loc["2023-01-01":]
+
+print(train["move"].value_counts(normalize=True).round(3))
+print(round((test["move"] == "falls").mean(), 4))
+```
+
+`falls` is the most common training label, so predicting it every day is the
+rule to beat. It is right on 35 percent of the test days.
+
+
+# Three classes, the same four lines
+
+```{pyodide}
+three = Pipeline([("scale", StandardScaler()),
+                  ("logit", LogisticRegression(max_iter=1000))])
+three.fit(train[["vol_20d", "ret_20d"]], train["move"])
+
+print(round(accuracy_score(test["move"], three.predict(test[["vol_20d", "ret_20d"]])), 4))
+```
+
+Nothing in the call changed. `LogisticRegression` saw three values in the
+label and fitted three classes, right on 55 percent of the test days against
+35 for the majority rule.
+
+
+# classes_ is in alphabetical order
+
+```{pyodide}
+logit = three.named_steps["logit"]
+
+print(logit.classes_)
+```
+
+The labels come back sorted: `falls`, `rises`, `stays`, not the order the cuts
+were written in. Every array the model produces uses this order.
+
+
+# One row of coefficients per class
+
+```{pyodide}
+print(logit.coef_.shape)
+print(logit.intercept_.shape)
+print(logit.coef_.round(3))
+```
+
+With two classes `coef_` had one row. With three it has three, one per class,
+so the model turns a day's two columns into three numbers instead of one.
+
+
+# Three scores for one day
+
+```{pyodide}
+day = test[["vol_20d", "ret_20d"]].head(1)
+
+print(logit.classes_)
+print(three.decision_function(day).round(3))
+```
+
+The first test day scores 0.060 for `falls`, -0.324 for `rises` and 0.264 for
+`stays`. These are not probabilities: one is negative, and the three do not add
+up to anything in particular.
+
+
+# Making the scores into probabilities
+
+```{pyodide}
+scores = three.decision_function(day)[0]
+
+print(np.exp(scores).round(3))
+print(np.exp(scores).sum().round(3))
+print((np.exp(scores) / np.exp(scores).sum()).round(3))
+```
+
+The exponential makes every score positive: 1.061, 0.724 and 1.302. Dividing
+each by their total of 3.087 makes them add to one, giving 0.344, 0.234 and
+0.422.
+
+
+# The softmax, for any number of classes
+
+::: {.formula}
+$$P(\text{class } j) = \frac{e^{s_j}}{e^{s_1} + e^{s_2} + \cdots + e^{s_N}}$$
+:::
+
+With N classes the model produces N scores and this returns N probabilities.
+It is called the softmax, and with two classes it is the sigmoid from last
+time.
+
+
+# predict_proba and predict
+
+```{pyodide}
+probabilities = three.predict_proba(test[["vol_20d", "ret_20d"]])
+
+print(probabilities.shape)
+print(probabilities.sum(axis=1)[:4].round(6))
+print(three.predict(day))
+```
+
+One row per day, one column per class in the order of `classes_`, and every
+row adds to one. `.predict()` returns the largest of the three.
+
+
+# The confusion matrix is three by three
+
+```{pyodide}
+order = ["falls", "stays", "rises"]
+predicted = three.predict(test[["vol_20d", "ret_20d"]])
+
+print(confusion_matrix(test["move"], predicted, labels=order))
+```
+
+`labels=` puts the rows and columns in the order that reads naturally. Rows
+are what happened, columns the prediction, so the diagonal counts the days
+called correctly: 124, 65 and 78 of 482.
+
+
+# Where the mistakes fall
+
+|  | said falls | said stays | said rises |
+|:--|--:|--:|--:|
+| **was falls** | **124** | 30 | 15 |
+| **was stays** | 77 | **65** | 80 |
+| **was rises** | 2 | 11 | **78** |
+
+A day that fell was called a rise 15 times, and a day that rose was called a
+fall twice. Only 17 of the 482 days are wrong by two steps.
+
+
+# One recall per class
+
+```{pyodide}
+from sklearn.metrics import classification_report
+
+print(classification_report(test["move"], predicted, labels=order, digits=3))
+```
+
+Each class is scored in turn as the 1, with the other two as the 0. Recall is
+0.734 for `falls`, 0.857 for `rises` and 0.293 for `stays`.
+
+
+# Your turn [2]{.chip .chip-turn} {.your-turn}
+
+The report prints a macro average of 0.551. Build it yourself from the three
+per-class F1 scores, then say whether weighting by class size would give
+something larger or smaller.
+
+```{pyodide}
+#| autorun: false
+from sklearn.metrics import f1_score
+
+per_class = f1_score(test["move"], predicted, average=None, labels=order)
+print(per_class.round(3))
+print(round(..., 3))
+```
+
+::: {.muted .small}
+`average=None` returns one F1 per class instead of a single number, in the
+order given by `labels`.
+:::
+
+
+# Your turn 2: answer
+
+```python
+print(round(per_class.mean(), 3))
+```
+
+The three F1 scores are 0.667, 0.396 and 0.591, so the macro average is
+**0.551**. Weighting is **smaller** at 0.528, because `stays` has 222 of the
+482 test days and the worst F1 of the three.
+
+::: {.keypoint}
+Macro treats a rare class as seriously as a common one. Read it when the rare
+class is the one that matters.
+:::
+
+
+# All 19 columns
+
+```{pyodide}
+columns_19 = list(table.columns[:19])
+wide = Pipeline([("scale", StandardScaler()),
+                 ("logit", LogisticRegression(max_iter=1000))])
+wide.fit(train[columns_19], train["move"])
+
+print(round(accuracy_score(test["move"], wide.predict(test[columns_19])), 4))
+print(wide.named_steps["logit"].coef_.shape)
+```
+
+`coef_` is now 3 by 19, which is 57 numbers. The accuracy is 0.533 against
+0.554 for two columns, so the extra 17 columns did not help here either.
+
+
+# 4 · Another kind of classifier {.divider}
+
+::: {.divider-kicker}
+Part 4
+:::
+
+::: {.divider-note}
+A classifier with no coefficients, put against logistic regression.
+:::
+
+
+# The idea
+
+::: {.diagram}
+<svg width="980" height="304" viewBox="0 0 980 304" role="img" aria-label="A scatter of past days coloured by whether volatility rose, a new day marked with a cross, and a dashed circle around its five nearest days, three of which had a rise">
+  <rect x="18" y="8" width="520" height="250" rx="10" fill="#fcfcfb" stroke="#c3c2b7" stroke-width="1.2"/>
+  <circle cx="300" cy="140" r="58" fill="#fdf6e6" stroke="#b8860b" stroke-width="1.8" stroke-dasharray="5 4"/>
+  <circle cx="120" cy="70" r="5" fill="#1c5cab"/>
+  <circle cx="190" cy="50" r="5" fill="#1c5cab"/>
+  <circle cx="108" cy="195" r="5" fill="#1c5cab"/>
+  <circle cx="178" cy="228" r="5" fill="#1c5cab"/>
+  <circle cx="430" cy="80" r="5" fill="#1c5cab"/>
+  <circle cx="468" cy="190" r="5" fill="#1c5cab"/>
+  <circle cx="300" cy="48" r="5" fill="#b3402f"/>
+  <circle cx="392" cy="226" r="5" fill="#b3402f"/>
+  <circle cx="228" cy="235" r="5" fill="#b3402f"/>
+  <circle cx="418" cy="140" r="5" fill="#b3402f"/>
+  <circle cx="272" cy="118" r="5" fill="#b3402f"/>
+  <circle cx="330" cy="128" r="5" fill="#b3402f"/>
+  <circle cx="296" cy="186" r="5" fill="#b3402f"/>
+  <circle cx="258" cy="165" r="5" fill="#1c5cab"/>
+  <circle cx="336" cy="175" r="5" fill="#1c5cab"/>
+  <path d="M292 132 L308 148 M308 132 L292 148" stroke="#141413" stroke-width="2.6" stroke-linecap="round"/>
+  <circle cx="30" cy="284" r="5" fill="#b3402f"/>
+  <text x="44" y="289" font-size="13.5" font-family="Segoe UI, sans-serif" fill="#52514e">a day with a rise</text>
+  <circle cx="200" cy="284" r="5" fill="#1c5cab"/>
+  <text x="214" y="289" font-size="13.5" font-family="Segoe UI, sans-serif" fill="#52514e">a day without one</text>
+  <path d="M393 279 L403 289 M403 279 L393 289" stroke="#141413" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="416" y="289" font-size="13.5" font-family="Segoe UI, sans-serif" fill="#52514e">the new day</text>
+  <text x="566" y="54" font-size="16" font-family="Segoe UI, sans-serif" fill="#141413" font-weight="600">A new day arrives</text>
+  <text x="566" y="84" font-size="14.5" font-family="Segoe UI, sans-serif" fill="#52514e">Measure the distance to every past day</text>
+  <text x="566" y="106" font-size="14.5" font-family="Segoe UI, sans-serif" fill="#52514e">and keep the k closest. Here k is 5.</text>
+  <text x="566" y="150" font-size="16" font-family="Segoe UI, sans-serif" fill="#141413" font-weight="600">The neighbours vote</text>
+  <text x="566" y="180" font-size="14.5" font-family="Segoe UI, sans-serif" fill="#52514e">3 of the 5 had a rise, so the probability</text>
+  <text x="566" y="202" font-size="14.5" font-family="Segoe UI, sans-serif" fill="#52514e">of a rise is 3 of 5, which is 0.6, and the</text>
+  <text x="566" y="224" font-size="14.5" font-family="Segoe UI, sans-serif" fill="#52514e">prediction is the class with most votes.</text>
+  <text x="566" y="266" font-size="14.5" font-family="Segoe UI, sans-serif" fill="#b3402f">Nothing is fitted, and there are no coefficients.</text>
+</svg>
+:::
+
+
+# k-nearest neighbours in code
+
+```{pyodide}
+from sklearn.neighbors import KNeighborsClassifier
+
+neighbours = Pipeline([("scale", StandardScaler()),
+                       ("knn", KNeighborsClassifier(n_neighbors=15))])
+neighbours.fit(train[["vol_20d", "ret_20d"]], train["rising"])
+p_knn = neighbours.predict_proba(test[["vol_20d", "ret_20d"]])[:, 1]
+
+print(round(roc_auc_score(test["rising"], p_knn), 3))
+```
+
+The four lines are the usual ones, with a different class on the first. Back
+on the two-class label, k of 15 scores 0.634 against 0.847 for logistic
+regression.
+
+
+# Distance needs comparable columns
+
+```{pyodide}
+c_train, c_test = train_test_split(credit, test_size=0.3, random_state=0,
+                                   stratify=credit["default"])
+bare = KNeighborsClassifier(n_neighbors=25)
+scaled = Pipeline([("scale", StandardScaler()), ("knn", KNeighborsClassifier(n_neighbors=25))])
+for candidate in [bare, scaled]:
+    candidate.fit(c_train[columns], c_train["default"])
+    print(round(roc_auc_score(c_test["default"], candidate.predict_proba(c_test[columns])[:, 1]), 3))
+```
+
+On the credit table the AUC is 0.627 without a scaler and 0.749 with one.
+`limit` varies by about 129,000 and `late_now` by 0.76, so distance means the
+difference in credit limits.
+
+
+# Training and test AUC against k
+
+```{python}
+#| echo: false
+#| fig-align: center
+ks = [1, 3, 5, 9, 15, 25, 51, 101, 151, 201, 301]
+tr_auc, te_auc = [], []
+for k in ks:
+    _pipe = Pipeline([("s", StandardScaler()),
+                      ("m", KNeighborsClassifier(n_neighbors=k))]).fit(MTRAIN[TWO], MTRAIN["rising"])
+    tr_auc.append(roc_auc_score(MTRAIN["rising"], _pipe.predict_proba(MTRAIN[TWO])[:, 1]))
+    te_auc.append(roc_auc_score(MTEST["rising"], _pipe.predict_proba(MTEST[TWO])[:, 1]))
+fig, ax = plt.subplots(figsize=(8.4, 3.1))
+ax.plot(ks, tr_auc, "o-", color=AMBER, linewidth=2, markersize=5, label="training rows")
+ax.plot(ks, te_auc, "o-", color=BLUE, linewidth=2, markersize=5, label="test rows")
+ax.set_xscale("log")
+ax.set_xticks([1, 3, 10, 30, 100, 300])
+ax.set_xticklabels(["1", "3", "10", "30", "100", "300"])
+ax.set_xlabel("k, the number of neighbours that vote")
+ax.set_ylabel("AUC")
+ax.set_ylim(0.5, 1.02)
+ax.axhline(0.5, color=GREY, linewidth=1.2, linestyle="--")
+ax.legend(loc="upper right")
+ax.set_title("A small k fits the training rows perfectly and the test rows barely at all", loc="left")
+plt.show()
+```
+
+At k of 1 every training day is its own nearest neighbour, so the training AUC
+is 1 and the test AUC is 0.572. By k of 151 they are 0.716 and 0.752.
+
+::: {.keypoint}
+A large k is a simple model, in the same way that a small `C` was.
+:::
+
+
+# What the boundary looks like
+
+```{python}
+#| echo: false
+#| fig-align: center
+xx, yy = np.meshgrid(np.linspace(0.2, 3.2, 320), np.linspace(-0.85, 0.85, 240))
+gridpts = pd.DataFrame({"vol_20d": xx.ravel(), "ret_20d": yy.ravel()})
+fig, axes = plt.subplots(1, 4, figsize=(11.6, 2.9), sharey=True)
+_models = [("k = 1", KNeighborsClassifier(n_neighbors=1)),
+           ("k = 15", KNeighborsClassifier(n_neighbors=15)),
+           ("k = 151", KNeighborsClassifier(n_neighbors=151)),
+           ("logistic", LogisticRegression())]
+for ax, (name, est) in zip(axes, _models):
+    _pipe = Pipeline([("s", StandardScaler()), ("m", est)]).fit(MTRAIN[TWO], MTRAIN["rising"])
+    zz = _pipe.predict_proba(gridpts)[:, 1].reshape(xx.shape)
+    ax.contourf(xx, yy, zz, levels=[0, 0.5, 1], colors=["#eaf1fa", "#f9e9e5"])
+    ax.contour(xx, yy, zz, levels=[0.5], colors=[BRICK], linewidths=1.3)
+    sub = MTRAIN.iloc[::4]
+    ax.scatter(sub["vol_20d"], sub["ret_20d"], c=np.where(sub["rising"] == 1, BRICK, BLUE),
+               s=4.5, alpha=0.75, linewidths=0)
+    ax.set_title(name, loc="left")
+    ax.set_xlabel("vol_20d")
+    ax.set_xlim(0.2, 3.2)
+    ax.set_ylim(-0.85, 0.85)
+axes[0].set_ylabel("ret_20d")
+plt.show()
+```
+
+Each panel shades where the model gives a probability above one half. At k of
+1 the regions are islands around individual days; as k grows they join up.
+
+
+# Choosing k on the folds
+
+```{pyodide}
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+
+folds = TimeSeriesSplit(n_splits=5)
+grid = {"knn__n_neighbors": [1, 5, 15, 51, 101, 151, 201, 301]}
+search = GridSearchCV(neighbours, grid, cv=folds, scoring="roc_auc")
+search.fit(train[["vol_20d", "ret_20d"]], train["rising"])
+
+print(search.best_params_, round(search.best_score_, 3))
+```
+
+The search is the one used for `alpha` and for `C`, with a different setting
+named. It picks k of 301, with a mean AUC of 0.717 over the five folds.
+
+
+# k cannot exceed the smallest fold
+
+```{pyodide}
+for fit_rows, score_rows in folds.split(train):
+    print(len(fit_rows), len(score_rows))
+```
+
+The first fold fits on 319 days, so any k above 319 asks for more neighbours
+than there are rows. `GridSearchCV` returns `nan` and warns, which is why the
+grid stops at 301.
+
+
+# Against logistic regression, same folds
+
+```{pyodide}
+from sklearn.model_selection import cross_val_score
+
+logistic = Pipeline([("scale", StandardScaler()), ("logit", LogisticRegression())])
+scores = cross_val_score(logistic, train[["vol_20d", "ret_20d"]], train["rising"],
+                         cv=folds, scoring="roc_auc")
+
+print(round(scores.mean(), 3))
+```
+
+Logistic regression scores 0.745 against 0.717 for the best k, so the folds
+choose logistic regression. On the test days it is 0.847 against 0.753.
+
+
+# k-NN with three classes
+
+```{pyodide}
+three_nn = Pipeline([("scale", StandardScaler()),
+                     ("knn", KNeighborsClassifier(n_neighbors=151))])
+three_nn.fit(train[["vol_20d", "ret_20d"]], train["move"])
+
+print(round(accuracy_score(test["move"], three_nn.predict(test[["vol_20d", "ret_20d"]])), 3))
+print(three_nn.predict_proba(test[["vol_20d", "ret_20d"]])[0].round(3))
+```
+
+A vote works for any number of classes, so the same call takes the three-class
+label and returns three columns. It is right on 49 percent of the test days
+against 55 for logistic regression.
+
+
+# Fitting time against prediction time
+
+<div class="compare">
+<div class="compare-col">
+<h3>Logistic regression</h3>
+<p>Fitting searches for the coefficients and takes the time. Predicting is one multiplication per column, so it is immediate, and the fitted model is a handful of numbers you can read.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>k-nearest neighbours</h3>
+<p>Fitting only stores the training rows. Predicting measures the distance from each new row to all of them, so the cost falls at prediction time and the whole training table has to be kept.</p>
+</div>
+</div>
+
+::: {.muted .small}
+On the 19-column table here: logistic regression fits in 9 milliseconds and
+predicts in 1, k-NN fits in 2 and predicts in 21.
+:::
+
+
+# Other classifiers
+
+::: {.why-grid}
+::: {.why-point}
+**Trees and ensembles** <span>split the table one column at a time. They come next, and they need no scaler.</span>
+:::
+::: {.why-point}
+**Discriminant analysis** <span>models each class as a bell shape. Close to logistic regression, with more assumptions about the columns.</span>
+:::
+::: {.why-point}
+**Naive Bayes** <span>treats every column as independent given the class. Fast on wide tables, and false on market columns.</span>
+:::
+::: {.why-point}
+**Support vector machines** <span>choose the boundary with the widest margin. Strong on small tables, and no probability without extra work.</span>
+:::
+:::
+
+Each gives a probability, and each is scored the same way.
+
+
+# The workflow
+
+::: {.diagram}
+<svg width="1010" height="196" viewBox="0 0 1010 196" role="img" aria-label="The workflow: seal the test rows, choose the model and its settings on the folds, check the probabilities are calibrated, choose the threshold from the costs, then score once on the test rows">
+  <rect x="6" y="62" width="150" height="66" rx="8" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.6"/>
+  <text x="81" y="88" text-anchor="middle" font-size="14.5" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">seal the</text>
+  <text x="81" y="108" text-anchor="middle" font-size="14.5" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">test rows</text>
+  <path d="M160 95 L196 95" stroke="#898781" stroke-width="1.6" marker-end="url(#a9)"/>
+  <rect x="200" y="62" width="176" height="66" rx="8" fill="#eaf1fa" stroke="#1c5cab" stroke-width="1.4"/>
+  <text x="288" y="88" text-anchor="middle" font-size="14.5" font-family="Segoe UI, sans-serif" fill="#0d366b">model and settings</text>
+  <text x="288" y="108" text-anchor="middle" font-size="13" font-family="Segoe UI, sans-serif" fill="#52514e">on the folds</text>
+  <path d="M380 95 L416 95" stroke="#898781" stroke-width="1.6" marker-end="url(#a9)"/>
+  <rect x="420" y="62" width="176" height="66" rx="8" fill="#eaf1fa" stroke="#1c5cab" stroke-width="1.4"/>
+  <text x="508" y="88" text-anchor="middle" font-size="14.5" font-family="Segoe UI, sans-serif" fill="#0d366b">check the buckets</text>
+  <text x="508" y="108" text-anchor="middle" font-size="13" font-family="Segoe UI, sans-serif" fill="#52514e">said against happened</text>
+  <path d="M600 95 L636 95" stroke="#898781" stroke-width="1.6" marker-end="url(#a9)"/>
+  <rect x="640" y="62" width="176" height="66" rx="8" fill="#fdf6e6" stroke="#b8860b" stroke-width="1.4"/>
+  <text x="728" y="88" text-anchor="middle" font-size="14.5" font-family="Segoe UI, sans-serif" fill="#7a5c07">the threshold</text>
+  <text x="728" y="108" text-anchor="middle" font-size="13" font-family="Segoe UI, sans-serif" fill="#52514e">from the costs</text>
+  <path d="M820 95 L856 95" stroke="#898781" stroke-width="1.6" marker-end="url(#a9)"/>
+  <rect x="860" y="62" width="144" height="66" rx="8" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.6"/>
+  <text x="932" y="88" text-anchor="middle" font-size="14.5" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">score once,</text>
+  <text x="932" y="108" text-anchor="middle" font-size="14.5" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">report</text>
+  <text x="508" y="168" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">everything between the two brick boxes uses training rows only</text>
+  <defs><marker id="a9" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L7,3.2 L0,6.4 z" fill="#898781"/></marker></defs>
+</svg>
+:::
+
+
+# What stays with you {.smaller}
+
+::: {.recap-grid}
+::: {.recap-item}
+**Accuracy hides a rare class**
+77.9 percent of borrowers did not default, so predicting that nobody defaults
+scores 0.779. Report recall beside accuracy, and read the confusion matrix.
+:::
+::: {.recap-item}
+**The threshold is a decision**
+`.predict()` uses one half. At a cost of 5 for a miss and 1 for a false alarm,
+one sixth is cheapest, and saved a quarter of the cost.
+:::
+::: {.recap-item}
+**Rows that are not a time series**
+`train_test_split(..., stratify=y, random_state=0)` for a cross-section,
+`TimeSeriesSplit` for days. `stratify` keeps the rare class in both halves.
+:::
+::: {.recap-item}
+**class_weight moves the cut, not the ranking**
+`class_weight="balanced"` raised recall from 0.311 to 0.550 and left AUC at
+0.748. It also broke the probabilities.
+:::
+::: {.recap-item}
+**Calibration: said against happened**
+Bucket with `pd.cut` and compare each bucket with what happened.
+`brier_score_loss` is the one number, `CalibratedClassifierCV` the repair.
+:::
+::: {.recap-item}
+**More than two classes**
+`classes_` is alphabetical, `coef_` gets a row per class and `predict_proba` a
+column. The softmax turns the scores into probabilities.
+:::
+::: {.recap-item}
+**Macro or weighted**
+Macro treats the classes equally, weighted by their size. When the class you
+care about is the small one, read macro.
+:::
+::: {.recap-item}
+**k-nearest neighbours**
+`KNeighborsClassifier(n_neighbors=k)`, scaled, with k on the folds. A large k
+is a simple model. Logistic regression won here.
+:::
+:::
+
+
+# Where this goes next
+
+<div class="timeline">
+<div class="tl-row"><span class="tl-week">before</span><span class="tl-topic">a label as the target: probabilities, predicted labels, and the scores that judge them</span><span class="tl-who">logistic regression</span></div>
+<div class="tl-row tl-now"><span class="tl-week">now</span><span class="tl-topic">rare classes, the threshold as a cost decision, calibrated probabilities, three classes, and a second classifier</span><span class="tl-who">k-nearest neighbours</span></div>
+<div class="tl-row tl-future"><span class="tl-week">next</span><span class="tl-topic">the whole classification workflow on one instrument, from the label to the decision</span><span class="tl-who">a case in the lecture</span></div>
+<div class="tl-row tl-future"><span class="tl-week">then</span><span class="tl-topic">trees and ensembles, for numbers and for labels</span><span class="tl-who">the same workflow</span></div>
+</div>
+
+::: {.keypoint}
+Every model from here on gives a probability. What changes is how the
+probability is produced; the threshold, the costs and the scores stay the same.
+:::
+
+
+# Before the next session [case]{.chip .chip-case}
+
+- **Exercises**: rare classes, thresholds and costs, `class_weight`, calibration buckets, three-class labels and their scores, and k-NN against logistic regression.
+- **Case Part 9**: the risk report gets a threshold, a cost, and a check on its probabilities.
+
+::: {.muted .small}
+Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email
+**jobo@econ.au.dk**.
+:::
