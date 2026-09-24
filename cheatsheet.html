@@ -324,6 +324,8 @@
       <div class="cs-desc">One element, a whole row, a whole column. The colon means all.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>X.T</code></div>
       <div class="cs-desc">The transpose: rows become columns.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>X.sum(axis=1)</code></div>
+      <div class="cs-desc">Sum along each row, one total per row; axis=0 sums down each column instead. The softmax divides every row of scores by its own total, so each row of probabilities adds to one.<span class="cs-since">Session 9</span></div>
       <div class="cs-sig"><code>A @ B</code></div>
       <div class="cs-desc">Matrix multiplication. For two vectors this is the dot product.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>np.ones(n)</code></div>
@@ -354,6 +356,8 @@
       <div class="cs-desc">The middle value. Compare it with the mean: a gap between them means a skewed tail.<span class="cs-since">Session 4</span></div>
       <div class="cs-sig"><code>s.sort_values(ascending=False)</code></div>
       <div class="cs-desc">In order. Leave ascending out for smallest first.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>s.value_counts(normalize=True)</code></div>
+      <div class="cs-desc">The share of each distinct value, largest first; leave normalize out for the counts. The largest share is what the majority rule scores.<span class="cs-since">Session 9</span></div>
       <div class="cs-sig"><code>s.dropna()</code></div>
       <div class="cs-desc">Throw away the missing values.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>s.abs()</code></div>
@@ -363,7 +367,8 @@
   <section class="cs-section" id="pandas-a-table">
     <h2>pandas: a table</h2>
     <p class="lede">A DataFrame is several Series side by side, sharing one index.</p>
-    <pre class="cs-imports"><code>import pandas as pd</code></pre>
+    <pre class="cs-imports"><code>import numpy as np
+import pandas as pd</code></pre>
     <p class="cs-names">On this card: frame is a DataFrame, mask a column of True and False.</p>
     <div class="cs-ref">
       <div class="cs-sig"><code>pd.read_csv(path, parse_dates=[&quot;date&quot;])</code></div>
@@ -404,10 +409,18 @@
       <div class="cs-desc">The plain numbers underneath, as a NumPy array, labels dropped.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>frame.set_index(&quot;date&quot;)</code></div>
       <div class="cs-desc">Move a column into the index, so .loc can slice by it.<span class="cs-since">Session 4</span></div>
+      <div class="cs-sig"><code>frame.loc[&quot;2023-11-14 13:00&quot;:&quot;2023-11-14 16:00&quot;, [&quot;a&quot;, &quot;b&quot;]]</code></div>
+      <div class="cs-desc">Rows by date and hour on an hourly index, and columns by name, in one pair of brackets. Both ends of the slice are included.<span class="cs-since">Session 10</span></div>
+      <div class="cs-sig"><code>frame.dropna()</code></div>
+      <div class="cs-desc">Drop every row with a missing value in any column, such as the first rows a shift leaves empty. Compare the number of rows before and after.<span class="cs-since">Session 10</span></div>
+      <div class="cs-sig"><code>for col in frame:</code></div>
+      <div class="cs-desc">Looping over a table gives its column names, one at a time: this is how the columns from get_dummies are copied into another table.<span class="cs-since">Session 10</span></div>
       <div class="cs-sig"><code>pd.cut(s, [0, 0.2, 0.4, 1.0])</code></div>
       <div class="cs-desc">Sort every value into one of the ranges given, and return the range it fell in. Group by the result to summarise each range.<span class="cs-since">Session 9</span></div>
       <div class="cs-sig"><code>pd.cut(s, edges, labels=[&quot;low&quot;, &quot;mid&quot;, &quot;high&quot;])</code></div>
       <div class="cs-desc">The same, with a name for each range instead of the range itself. This is how a number becomes a label with more than two values.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>pd.cut(s, [-np.inf, -50, 50, np.inf])</code></div>
+      <div class="cs-desc">Ranges open at both ends, so every value lands in one: down by more than 50, less than 50 either way, up by more than 50.<span class="cs-since">Session 10</span></div>
     </div>
   </section>
   <section class="cs-section" id="pandas-groups-and-shapes">
@@ -421,6 +434,10 @@
       <div class="cs-desc">Split, compute inside each group, put the answers back together.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>frame.groupby(&quot;ticker&quot;)[&quot;close&quot;].pct_change()</code></div>
       <div class="cs-desc">A return WITHIN each stock. Group first, or you take a return across two companies.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>frame.groupby(buckets, observed=True)[&quot;y&quot;].agg([&quot;size&quot;, &quot;mean&quot;])</code></div>
+      <div class="cs-desc">Group by the ranges pd.cut made, keeping only ranges that have rows: how many rows fell in each range, and the share of ones among them. This is how a calibration table is built.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>frame.groupby(&quot;hour&quot;)[&quot;price&quot;].shift(1)</code></div>
+      <div class="cs-desc">The value one row earlier WITHIN each group. With one row per hour, grouped by the clock hour, that is the same hour the day before; .shift(2) reaches two days back. The first row of each group is NaN.<span class="cs-since">Session 10</span></div>
       <div class="cs-sig"><code>g.agg([&quot;mean&quot;, &quot;std&quot;, &quot;min&quot;, &quot;max&quot;])</code></div>
       <div class="cs-desc">Several summaries at once, as a table.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>frame.pivot(index=&quot;date&quot;, columns=&quot;ticker&quot;, values=&quot;close&quot;)</code></div>
@@ -485,6 +502,10 @@
       <div class="cs-desc">How strongly two columns move together, between -1 and +1. A feature that correlates almost perfectly with the target is a leak, not a discovery.<span class="cs-since">Session 4</span></div>
       <div class="cs-sig"><code>s.diff()</code></div>
       <div class="cs-desc">The difference between each row and the one before it. On logged prices this is the log return.<span class="cs-since">Session 4</span></div>
+      <div class="cs-sig"><code>frame[&quot;x&quot;] - frame.groupby(&quot;hour&quot;)[&quot;x&quot;].shift(1)</code></div>
+      <div class="cs-desc">A change as a feature: this hour&#x27;s value minus the same hour the day before, such as tomorrow&#x27;s wind forecast minus today&#x27;s. Often more telling than the level itself.<span class="cs-since">Session 10</span></div>
+      <div class="cs-sig"><code>frame[&quot;change&quot;].abs()</code></div>
+      <div class="cs-desc">The size of a change, sign dropped. A logistic regression cannot build this shape from the change itself, so a big move either way needs the column.<span class="cs-since">Session 10</span></div>
       <div class="cs-sig"><code>n, p = X.shape</code></div>
       <div class="cs-desc">The two numbers that describe a learning problem: observations, and feature columns. The target is not a feature.<span class="cs-since">Session 4</span></div>
     </div>
@@ -525,6 +546,8 @@ import pandas as pd</code></pre>
       <div class="cs-desc">Standardise: mean 0, standard deviation 1. Compute those two numbers on the training rows only.<span class="cs-since">Session 4</span></div>
       <div class="cs-sig"><code>pd.get_dummies(frame, columns=[&quot;sector&quot;], dtype=int)</code></div>
       <div class="cs-desc">One 0/1 column per category. This is how text gets into a feature table.<span class="cs-since">Session 4</span></div>
+      <div class="cs-sig"><code>pd.get_dummies(s, prefix=&quot;weekday&quot;, dtype=int)</code></div>
+      <div class="cs-desc">One 0/1 column per value of a single column, named weekday_0, weekday_1 and so on. A logistic regression then gives each weekday its own level, where the weekday as one number could only give it one slope across the week.<span class="cs-since">Session 10</span></div>
     </div>
   </section>
   <section class="cs-section" id="scoring-a-prediction-of-a-number">
@@ -742,6 +765,8 @@ from sklearn.metrics import (accuracy_score, confusion_matrix, precision_score,
       <div class="cs-desc">The raw score per class, before the exponential and the division that turn scores into probabilities.<span class="cs-since">Session 9</span></div>
       <div class="cs-sig"><code>np.exp(scores) / np.exp(scores).sum()</code></div>
       <div class="cs-desc">The softmax: make every score positive, then divide by the total so they add to one. With two classes it is the sigmoid.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>move[p &gt;= t].sum() - move[p &lt;= 1 - t].sum() - cost * n_trades</code></div>
+      <div class="cs-desc">A bet on the direction, in money: long where the probability of a rise is at least t, short where it is at most 1 - t, every trade paying a cost. The best t rises with the cost; choose it on the training rows.<span class="cs-since">Session 10</span></div>
     </div>
   </section>
   <section class="cs-section" id="k-nearest-neighbours">
@@ -763,6 +788,8 @@ from sklearn.model_selection import GridSearchCV</code></pre>
       <div class="cs-desc">A grid for GridSearchCV. k cannot exceed the SMALLEST fold, not the training size; above that the search returns nan and warns.<span class="cs-since">Session 9</span></div>
       <div class="cs-sig"><code>model.predict_proba(X)</code></div>
       <div class="cs-desc">The share of the k neighbours in each class, so the probabilities are multiples of 1/k. A small k gives coarse ones.<span class="cs-since">Session 9</span></div>
+      <div class="cs-sig"><code>[&quot;wind_change&quot;, &quot;weekday&quot;, &quot;hour&quot;]</code></div>
+      <div class="cs-desc">k-NN can take a category as one plain number: once the columns are scaled, the nearest rows to a Monday at 18:00 are Mondays near 18:00. A logistic regression needs the weekday as columns instead.<span class="cs-since">Session 10</span></div>
     </div>
   </section>
   <section class="cs-section" id="reading-error-messages">

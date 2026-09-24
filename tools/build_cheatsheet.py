@@ -14,7 +14,7 @@ library. A misspelt name fails the build rather than reaching a student.
 The previous format, with an executed example under every entry, is archived
 in tools/archive/ together with its rendered page and CSS.
 
-Adding a session: append rows below with since="S9" and add it to SINCE_LABEL.
+Adding a session: append rows below with since="S11" and add it to SINCE_LABEL.
 Rows belong with their topic (a NumPy function under NumPy, whichever session
 introduced it); the session tag at the edge of the row says when it arrived.
 """
@@ -163,6 +163,7 @@ r("np.array([[1, 2], [3, 4]])", "A matrix, written as a list of rows.", "S3")
 r("X.shape", "Rows and columns.", "S3")
 r("X[i, j]  X[i, :]  X[:, j]", "One element, a whole row, a whole column. The colon means all.", "S3")
 r("X.T", "The transpose: rows become columns.", "S3")
+r("X.sum(axis=1)", "Sum along each row, one total per row; axis=0 sums down each column instead. The softmax divides every row of scores by its own total, so each row of probabilities adds to one.", "S9")
 r("A @ B", "Matrix multiplication. For two vectors this is the dot product.", "S3")
 r("np.ones(n)", "A vector of ones. The intercept column of a regression.", "S3")
 r("np.column_stack([a, b])", "Glue 1-D arrays together as the columns of a matrix.", "S3")
@@ -180,11 +181,12 @@ r("s * 2", "Maths applies to every value, and the labels come along.", "S3")
 r("s.mean()  s.std()  s.min()  s.max()", "A Series summarises itself, like an array.", "S3")
 r("s.median()", "The middle value. Compare it with the mean: a gap between them means a skewed tail.", "S4")
 r("s.sort_values(ascending=False)", "In order. Leave ascending out for smallest first.", "S3")
+r("s.value_counts(normalize=True)", "The share of each distinct value, largest first; leave normalize out for the counts. The largest share is what the majority rule scores.", "S9")
 r("s.dropna()", "Throw away the missing values.", "S3")
 r("s.abs()", "The size of every value, sign dropped. abs() on its own does the same for one number.", "S4")
 
 section("pandas: a table", "A DataFrame is several Series side by side, sharing one index.",
-        imports="import pandas as pd",
+        imports="import numpy as np\nimport pandas as pd",
         names="On this card: frame is a DataFrame, mask a column of True and False.")
 r('pd.read_csv(path, parse_dates=["date"])', "Read a CSV. parse_dates turns a text column into real dates.", "S3")
 r("pd.DataFrame({name: values, ...})", "Build a table from a dictionary of columns.", "S3")
@@ -205,14 +207,20 @@ r('frame.loc["2024-01-02":"2024-01-31"]', "Rows by label. With a date index you 
 r("frame.iloc[0]  frame.iloc[-1]", "Rows by position: the first row, the last row.", "S3")
 r("frame.values", "The plain numbers underneath, as a NumPy array, labels dropped.", "S3")
 r('frame.set_index("date")', "Move a column into the index, so .loc can slice by it.", "S4")
+r('frame.loc["2023-11-14 13:00":"2023-11-14 16:00", ["a", "b"]]', "Rows by date and hour on an hourly index, and columns by name, in one pair of brackets. Both ends of the slice are included.", "S10")
+r("frame.dropna()", "Drop every row with a missing value in any column, such as the first rows a shift leaves empty. Compare the number of rows before and after.", "S10")
+r("for col in frame:", "Looping over a table gives its column names, one at a time: this is how the columns from get_dummies are copied into another table.", "S10")
 r('pd.cut(s, [0, 0.2, 0.4, 1.0])', "Sort every value into one of the ranges given, and return the range it fell in. Group by the result to summarise each range.", "S9")
 r('pd.cut(s, edges, labels=["low", "mid", "high"])', "The same, with a name for each range instead of the range itself. This is how a number becomes a label with more than two values.", "S9")
+r("pd.cut(s, [-np.inf, -50, 50, np.inf])", "Ranges open at both ends, so every value lands in one: down by more than 50, less than 50 either way, up by more than 50.", "S10")
 
 section("pandas: groups and shapes", imports="import pandas as pd",
         names="On this card: frame is a DataFrame, s a Series, g a grouped table such as frame.groupby(\"ticker\").")
 r('frame.groupby("ticker").size()', "Split by a column, then count the rows in each group.", "S3")
 r('frame.groupby("ticker")["close"].mean()', "Split, compute inside each group, put the answers back together.", "S3")
 r('frame.groupby("ticker")["close"].pct_change()', "A return WITHIN each stock. Group first, or you take a return across two companies.", "S3")
+r('frame.groupby(buckets, observed=True)["y"].agg(["size", "mean"])', "Group by the ranges pd.cut made, keeping only ranges that have rows: how many rows fell in each range, and the share of ones among them. This is how a calibration table is built.", "S9")
+r('frame.groupby("hour")["price"].shift(1)', "The value one row earlier WITHIN each group. With one row per hour, grouped by the clock hour, that is the same hour the day before; .shift(2) reaches two days back. The first row of each group is NaN.", "S10")
 r('g.agg(["mean", "std", "min", "max"])', "Several summaries at once, as a table.", "S3")
 r('frame.pivot(index="date", columns="ticker", values="close")', "Reshape: one row per date, one column per ticker.", "S3")
 r("s.shift(1)", "Slide a column down by one, so each row can see the previous one. How you line the past up next to the present.", "S3")
@@ -250,6 +258,8 @@ r("s.rolling(20).std()", "A feature over the last twenty rows. It only ever look
 r("(s > 0).astype(int)", "Turn a number into a 0/1 label, which turns a regression into a classification.", "S4")
 r("s.corr(other)", "How strongly two columns move together, between -1 and +1. A feature that correlates almost perfectly with the target is a leak, not a discovery.", "S4")
 r("s.diff()", "The difference between each row and the one before it. On logged prices this is the log return.", "S4")
+r('frame["x"] - frame.groupby("hour")["x"].shift(1)', "A change as a feature: this hour's value minus the same hour the day before, such as tomorrow's wind forecast minus today's. Often more telling than the level itself.", "S10")
+r('frame["change"].abs()', "The size of a change, sign dropped. A logistic regression cannot build this shape from the change itself, so a big move either way needs the column.", "S10")
 r("n, p = X.shape", "The two numbers that describe a learning problem: observations, and feature columns. The target is not a feature.", "S4")
 
 section("Missing values",
@@ -271,6 +281,7 @@ r("(s < q1 - 1.5 * iqr) | (s > q3 + 1.5 * iqr)", "The IQR rule, with iqr = q3 - 
 r("np.log(values)", "The natural log. Log returns add up over time, and a log tames a long right tail.", "S4")
 r("(s - s.mean()) / s.std()", "Standardise: mean 0, standard deviation 1. Compute those two numbers on the training rows only.", "S4")
 r('pd.get_dummies(frame, columns=["sector"], dtype=int)', "One 0/1 column per category. This is how text gets into a feature table.", "S4")
+r('pd.get_dummies(s, prefix="weekday", dtype=int)', "One 0/1 column per value of a single column, named weekday_0, weekday_1 and so on. A logistic regression then gives each weekday its own level, where the weekday as one number could only give it one slope across the week.", "S10")
 
 # ======================================================================
 section("Scoring a prediction of a number",
@@ -390,6 +401,7 @@ r('f1_score(y, predicted, average="macro")', 'One F1 per class, averaged equally
 r("confusion_matrix(y, predicted, labels=order)", "The matrix with the rows and columns in an order you choose rather than alphabetically. Without it the middle row of a three-class matrix is rarely the class you expect.", "S9")
 r("model.decision_function(X)", "The raw score per class, before the exponential and the division that turn scores into probabilities.", "S9")
 r("np.exp(scores) / np.exp(scores).sum()", "The softmax: make every score positive, then divide by the total so they add to one. With two classes it is the sigmoid.", "S9")
+r("move[p >= t].sum() - move[p <= 1 - t].sum() - cost * n_trades", "A bet on the direction, in money: long where the probability of a rise is at least t, short where it is at most 1 - t, every trade paying a cost. The best t rises with the cost; choose it on the training rows.", "S10")
 
 section("k-nearest neighbours",
         "A classifier with no coefficients: it stores the training rows and lets "
@@ -401,6 +413,7 @@ r('Pipeline([("scale", StandardScaler()), ("knn", KNeighborsClassifier())])', "T
 r("k, as the dial", "A small k fits the training rows and little else; k of 1 scores a perfect training AUC. A large k is a simple model, the way a small C was.", "S9")
 r('{"knn__n_neighbors": [1, 5, 15, 51, 151, 301]}', "A grid for GridSearchCV. k cannot exceed the SMALLEST fold, not the training size; above that the search returns nan and warns.", "S9")
 r("model.predict_proba(X)", "The share of the k neighbours in each class, so the probabilities are multiples of 1/k. A small k gives coarse ones.", "S9")
+r('["wind_change", "weekday", "hour"]', "k-NN can take a category as one plain number: once the columns are scaled, the nearest rows to a Monday at 18:00 are Mondays near 18:00. A logistic regression needs the weekday as columns instead.", "S10")
 
 # ======================================================================
 section("Reading error messages",
@@ -421,7 +434,7 @@ r("ConvergenceWarning", "Not an error: the solver ran out of steps before the co
 # ======================================================================
 SINCE_LABEL = {"S1": "Session 1", "S2": "Session 2", "S3": "Session 3",
                "S4": "Session 4", "S5": "Session 5", "S6": "Session 6",
-               "S8": "Session 8", "S9": "Session 9"}
+               "S8": "Session 8", "S9": "Session 9", "S10": "Session 10"}
 
 
 # --------------------------------------------------------------- checks
