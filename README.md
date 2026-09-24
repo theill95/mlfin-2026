@@ -31,6 +31,8 @@ This repository is published:
   <https://theill95.github.io/mlfin-2026/session_08/session_08.html>
 - Interactive lecture, Session 9:
   <https://theill95.github.io/mlfin-2026/session_09/session_09.html>
+- Interactive lecture, Session 10:
+  <https://theill95.github.io/mlfin-2026/session_10/session_10.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
 The site has six pages, linked from the sidebar:
@@ -111,9 +113,10 @@ Sessions 2 to 6 have the same shape. Current contents:
 | 7 · Pricing a house in Aarhus (recap) | `session_07.qmd` | none | none |
 | 8 · Classification with logistic regression | `session_08.qmd` | 64 | Part 8, 15 questions |
 | 9 · Classification in practice | `session_09.qmd` | 68 | Part 9, 16 questions |
+| 10 · Electricity prices in West Denmark (recap) | `session_10.qmd` | none | none |
 
-Sessions 3 to 8 load numpy, pandas and matplotlib into the browser runtime
-(about 20 MB, once per page load). Sessions 5 to 9 add scikit-learn, which
+Sessions 3 to 10 load numpy, pandas and matplotlib into the browser runtime
+(about 20 MB, once per page load). Sessions 5 to 10 add scikit-learn, which
 brings scipy and a BLAS with it, so their cold load is nearer 45 MB. Open the deck and
 run one cell several minutes before class so it is warm.
 
@@ -213,14 +216,19 @@ pip install -r requirements.txt
 ```
 
 Built and tested with Python 3.12, pandas 2.2, numpy 1.26, matplotlib 3.9,
-scikit-learn 1.5. Sessions 5 to 9 use scikit-learn in the materials
+scikit-learn 1.5. Sessions 5 to 10 use scikit-learn in the materials
 themselves, in the deck, the exercises and the case. Session 6 also reads
 `data/market_features.csv`, a nineteen-column table built from the prices by
 `tools/build_session06_table.py`, and Session 7 reads `data/aarhus_houses.csv`,
 7,621 Aarhus house sales from January 2021 to September 2024, built once by
 `tools/build_session07_table.py` from a public compilation of boliga.dk sale
 records and geocoded with the national address register (no addresses are
-kept). All core materials run **offline** once this environment is installed
+kept). Session 10 reads `data/power.csv`, 26,133 hours of day-ahead prices and
+wind and sun forecasts for West Denmark from 2022 to 2024, built once by
+`tools/build_session10_table.py` from Energinet's Energi Data Service; its
+interactive slides are drawn by `tools/deck10_widgets.py` from numbers that
+`tools/deck10_data.py` computes with the same models as the live cells. All
+core materials run **offline** once this environment is installed
 and the repository is cloned.
 
 ## Working the notebooks (students)

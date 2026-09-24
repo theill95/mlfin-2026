@@ -179,6 +179,70 @@ cell, and make building it an exercise.
   expressions in `print()` (NumPy 2 prints `np.float64(...)`), and end a cell
   with `print(model)` rather than the estimator's HTML widget.
 
+### Interactive slides and the PLAY chip
+
+These rules come from the Session 10 reviews and apply to every deck from
+Session 10 on, above all to the lecture-cases. Session 10's
+`tools/deck10_widgets.py` is the reference implementation.
+
+**What PLAY means.** A slide carries the PLAY chip only when it has controls:
+buttons to click, a slider to drag, a toggle to switch, boxes to tick. A code
+slide never carries it. There are three kinds of slide, and they stay
+distinct:
+
+| slide | what the student does | chip |
+|:--|:--|:--|
+| a live code cell | reads and runs a demonstration | none |
+| YOUR TURN | writes code; the answer is on the next slide | your turn |
+| PLAY | uses controls that change the picture | play |
+
+In his words: "Plays should not be tweaking code, it should be much more
+handholding." A line under a code cell such as "try the same with solar" or
+"put 0.0001 in the grid" does not make a play. Either drop the line, or turn
+it into controls on a slide of its own: a wind/sun toggle, a C slider, a third
+button for a third training window, a price slider with a below/above switch.
+Session 7's plays were working cells with an invitation to edit them; that is
+no longer the pattern.
+
+**Feature engineering is a checklist.** List the candidate columns in two
+groups, the columns in the table and the columns built from them, each with a
+tick box and a one-line description. Each tick shows the pandas line that
+builds the column, the score on the folds (where columns are chosen) with the
+gain or loss from that tick, and the score on the test year beside it. The
+model on the slides is a dashed line that students can try to beat.
+Precompute every combination at render time.
+
+**One question per visual.** A slide with a strong idea was still rejected as
+"information overload", with too much text in too many places, and a viewer
+who had to hunt for what a shaded area and a black tick meant. What fixed it:
+
+- labels on the chart, not in a legend or a caption: name each line at its
+  end ("today", "tomorrow") and each region where it sits ("higher
+  tomorrow", "more wind tomorrow");
+- encodings that need no key: two lines with the gap between them filled red
+  where higher and blue where lower, not bars with ticks; two colours in a
+  heatmap, not a five-step ramp;
+- at most one readout line, and no caption under the chart;
+- two ideas make two slides (the S-curve and the weekday; the threshold and
+  the cost);
+- an opening explorer shows the data only, and the comparison arrives with
+  the question.
+
+**Nothing moves by itself.** No autoplay and no clips. Motion only answers a
+click (a curve easing to its new place) or marks something as live (the
+map's turbines turning).
+
+**Details that get noticed.** Buttons in one row share one height. A table has
+one header row with one rule under it. An example figure does not name its
+day when the day does not matter.
+
+**Forecast, revise, reveal.** A lecture-case can open with a forecasting
+table: a fixed set of cases, every slider visible at once, the information
+the models see shown as numbers, answers kept in the browser, and no answers
+until the end. Before the scoreboard comes a revise slide: the same cases,
+now with the features learned since, next to each first answer. The
+scoreboard then scores the first answer, the revised answer and each model.
+
 ### Before handing a deck over
 
 Render it, run the overflow audit after the autorun cells have finished,

@@ -69,6 +69,7 @@ CHECK = [
     ("session 9 exercise solutions",  "tools/verify/session_09_exercises.py"),
     ("session 9 case solutions",      "tools/verify/session_09_case.py"),
     ("session 9 deck cells",          "tools/verify/session_09_deck.py"),
+    ("session 10 deck cells",         "tools/verify/session_10_deck.py"),
 ]
 
 

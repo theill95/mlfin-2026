@@ -1,0 +1,1240 @@
+---
+title: "Electricity prices in West Denmark"
+subtitle: "Machine Learning in Finance · Session 10"
+# Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
+# from a data: URI, so embed-resources is off. Ship session_10.html together
+# with session_10_files/ and data/, and SERVE OVER HTTP (double-click
+# serve.cmd, or publish to a URL). Opened from a file:// path the live code
+# cells do not merely fail to run, they do not appear at all.
+#
+# This deck loads numpy, pandas, matplotlib and scikit-learn into the browser
+# runtime (about 45 MB on a cold load). Open the deck and run one cell several
+# minutes before class so it is warm.
+#
+# The table the deck works on is data/power.csv, built once by
+# tools/build_session10_table.py from Energinet's Energi Data Service
+# (day-ahead prices and the day-ahead wind and solar forecast for West Denmark,
+# DK1, 2022-2024), with data/map.json for the map. The interactive pieces are
+# drawn by tools/deck10_widgets.py from numbers computed by tools/deck10_data.py
+# with the same models the live cells fit; the feature lab's scores are cached
+# in data/lab.json (rebuild: python tools/deck10_data.py session_10/data --lab).
+# Every number on these slides was measured from that table; re-measure with
+# tools/verify/session_10_deck.py if it changes.
+#
+# The question all the way through: will tomorrow's price at this hour be
+# higher than today's? This session is a recap: one pandas pattern is new
+# (shift inside groupby), and there are no exercises and no case. Slides marked
+# PLAY hold controls to click, slide or tick (never code to edit); the two
+# marked YOUR TURN have an answer on the slide after. The forecasts on the fourth slide are
+# kept in the browser (localStorage key mlfin10-updown) for the scoreboard at
+# the end, and the feature lab keeps each viewer's best (mlfin10-lab).
+format:
+  live-revealjs:
+    theme: [default, ../theme/mlfin.scss]
+    width: 1280
+    height: 720
+    margin: 0.06
+    center: false
+    transition: fade
+    transition-speed: fast
+    background-transition: none
+    slide-number: c/t
+    controls: false
+    progress: true
+    hash: true
+    history: false
+    code-line-numbers: false
+    highlight-style: github
+    auto-stretch: false
+html-math-method: katex
+engine: jupyter
+pyodide:
+  packages:
+    - numpy
+    - pandas
+    - matplotlib
+    - scikit-learn
+  resources:
+    - data/power.csv
+  cell-options:
+    autorun: true
+    startover: true
+execute:
+  echo: true
+  warning: false
+---
+
+# Two years of prices [play]{.chip .chip-predict}
+
+```{python}
+#| include: false
+# House style for every precomputed figure, plus everything the interactive
+# pieces draw. deck10_data fits the same models as the live cells.
+import sys
+import json
+import warnings
+warnings.filterwarnings("ignore")
+from pathlib import Path
+import numpy as np
+import pandas as pd
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+MLFIN_STYLE = {
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "savefig.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"],
+    "font.size": 12, "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+}
+plt.rcParams.update(MLFIN_STYLE)
+
+if not Path("data/power.csv").exists():
+    raise FileNotFoundError(
+        "Missing data/power.csv - run tools/build_session10_table.py from the repository root."
+    )
+sys.path.insert(0, str(Path("../tools").resolve()))
+import deck10_data
+import deck10_widgets as W
+
+POWER = deck10_data.read("data")
+DATA = deck10_data.build("data")
+if DATA["lab"] is None:
+    raise FileNotFoundError("Missing data/lab.json - run python tools/deck10_data.py session_10/data --lab")
+MAP = json.loads(Path("data/map.json").read_text(encoding="utf-8"))
+HEAT = DATA["heat"]
+STILL_DAY = HEAT["days"].index("2024-10-04")
+TT_MARKS = {"the wind falls all day": "2024-12-10", "the wind rises all day": "2024-10-16",
+            "a Monday": "2024-01-08"}
+
+BLUE = "#1c5cab"
+BLUE_LIGHT = "#86b6ef"
+DEEP = "#0d366b"
+AMBER = "#b8860b"
+BRICK = "#b3402f"
+GREY = "#c3c2b7"
+INK = "#141413"
+MUTED = "#52514e"
+
+
+def hour_axis(ax):
+    ax.set_xticks([0, 6, 12, 18, 23])
+    ax.set_xticklabels(["00:00", "06:00", "12:00", "18:00", "23:00"])
+    ax.grid(axis="x", visible=False)
+```
+
+```{pyodide}
+#| include: false
+# House style for the live figures, so they match the printed ones.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings("ignore")
+plt.rcParams.update({
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"], "font.size": 12,
+    "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+    "figure.dpi": 100,
+})
+```
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.explorer(DATA["explorer"])))
+```
+
+Each point on the line is one day's average price in 2022 and 2023, the years
+the models learn from. Click, drag or step to see a day's 24 hours.
+
+
+# The question for 2024
+
+```{python}
+#| echo: false
+#| fig-align: center
+_a, _b = POWER.loc["2023-11-13"], POWER.loc["2023-11-14"]
+_h, _pa, _pb = _a["hour"].to_numpy(), _a["price"].to_numpy(), _b["price"].to_numpy()
+fig, ax = plt.subplots(figsize=(10.6, 3.9))
+ax.fill_between(_h, _pa, _pb, where=_pb > _pa, interpolate=True, color=BRICK, alpha=0.3, linewidth=0)
+ax.fill_between(_h, _pa, _pb, where=_pb <= _pa, interpolate=True, color=BLUE, alpha=0.28, linewidth=0)
+ax.plot(_h, _pa, color="#898781", linewidth=2.2)
+ax.plot(_h, _pb, color=DEEP, linewidth=2.8)
+ax.text(23.4, _pa[-1], "Today", color="#898781", va="center", fontsize=13, fontweight="bold")
+ax.text(23.4, _pb[-1], "Tomorrow", color=DEEP, va="center", fontsize=13, fontweight="bold")
+ax.text(2.5, (_pa[2] + _pb[2]) / 2, "lower tomorrow", color=BLUE, ha="center", va="center", fontsize=12.5, fontweight="bold")
+ax.text(20.2, 775, "higher tomorrow", color=BRICK, ha="center", va="center", fontsize=12.5, fontweight="bold")
+ax.set_xlim(-0.4, 26.4)
+ax.spines["bottom"].set_bounds(0, 23)
+ax.set_ylim(0, 1200)
+ax.set_ylabel("kr per MWh")
+ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter("{x:,.0f}"))
+hour_axis(ax)
+fig.tight_layout()
+plt.show()
+```
+
+Will tomorrow's price at this hour be higher than today's? In this example the
+answer is no until 14:00, and yes from 15:00.
+
+
+# Your forecasts for 2024 [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.forecast(DATA["game"])))
+```
+
+Set how likely tomorrow's price is to be higher than today's, at each of these
+eight hours. Your answers are kept, and two models answer the same hours at the end.
+
+
+# The spot price on a household bill
+
+<div class="statband">
+<div class="stat"><span class="stat-big">578 kr</span><div class="stat-label">170 kWh in August 2022</div></div>
+<div class="stat"><span class="stat-big">109 kr</span><div class="stat-label">170 kWh in August 2023</div></div>
+<div class="stat"><span class="stat-big">93 kr</span><div class="stat-label">170 kWh in August 2024</div></div>
+</div>
+
+On a spot-price contract a household pays each hour's price, plus tariffs and
+taxes. For 170 kWh, the spot part cost 578 kroner in August 2022 and 93 in
+August 2024.
+
+
+# Where the power flows [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.power_map(MAP)))
+```
+
+Denmark is two price areas, joined to five neighbours by cable. The auction
+sends power from cheaper areas to more expensive ones, as far as the cables allow.
+
+
+# Today, in six steps
+
+<div class="timeline">
+<div class="tl-row"><span class="tl-week">Part 1</span><span class="tl-topic">The market: the auction, the file, a price per year, prices below zero, a year hour by hour</span><span class="tl-who">pandas · matplotlib</span></div>
+<div class="tl-row"><span class="tl-week">Part 2</span><span class="tl-topic">Why the price moves: the hour, the month, the wind, today against tomorrow, the S&amp;P 500</span><span class="tl-who">groupby · pd.cut · a loop</span></div>
+<div class="tl-row"><span class="tl-week">Part 3</span><span class="tl-topic">A first classifier: the label, a rule of thumb, the weekday as seven columns, today's move</span><span class="tl-who">shift · LogisticRegression</span></div>
+<div class="tl-row"><span class="tl-week">Part 4</span><span class="tl-topic">What it is worth: a bet on the direction, the threshold and the cost in kroner</span><span class="tl-who">a function · a loop</span></div>
+<div class="tl-row"><span class="tl-week">Part 5</span><span class="tl-topic">The crisis in the training rows: a label on the level, two training windows, the probabilities checked</span><span class="tl-who">Brier · calibration</span></div>
+<div class="tl-row"><span class="tl-week">Part 6</span><span class="tl-topic">Similar hours: three classes, a big move either way, k-nearest neighbours, a feature lab, your forecasts revised and scored</span><span class="tl-who">abs · KNeighborsClassifier</span></div>
+</div>
+
+::: {.muted .small}
+One pattern is new, `shift` inside `groupby`, and it is explained where it
+first appears. A slide marked [play]{.chip .chip-predict} has controls to
+click, slide or tick; a slide marked [your turn]{.chip .chip-turn} has its
+answer on the slide after.
+:::
+
+
+# 1 · The market {.divider}
+
+::: {.divider-kicker}
+Part 1
+:::
+
+::: {.divider-note}
+How one auction sets 24 prices a day, the file, a price per year, prices
+below zero, and a year hour by hour.
+:::
+
+
+# The day-ahead auction
+
+::: {.diagram}
+<svg width="1010" height="206" viewBox="0 0 1010 206" role="img" aria-label="Today: bids until noon, the auction closes at noon, tomorrow's prices are published at about 13:00, and Energinet's wind and sun forecast at 18:00. Tomorrow: the power is delivered hour by hour at those prices.">
+  <rect x="6" y="28" width="196" height="72" rx="8" fill="#eaf1fa" stroke="#1c5cab" stroke-width="1.4"/>
+  <text x="104" y="58" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b">bids for each of</text>
+  <text x="104" y="80" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b">tomorrow's 24 hours</text>
+  <rect x="222" y="28" width="170" height="72" rx="8" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.6"/>
+  <text x="307" y="58" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">the auction</text>
+  <text x="307" y="80" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">closes</text>
+  <rect x="412" y="28" width="186" height="72" rx="8" fill="#eaf1fa" stroke="#1c5cab" stroke-width="1.4"/>
+  <text x="505" y="58" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b">tomorrow's 24 prices</text>
+  <text x="505" y="80" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b">are published</text>
+  <rect x="618" y="28" width="190" height="72" rx="8" fill="#fdf6e6" stroke="#b8860b" stroke-width="1.4"/>
+  <text x="713" y="58" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#7a5c07">Energinet's wind</text>
+  <text x="713" y="80" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#7a5c07">and sun forecast</text>
+  <rect x="842" y="28" width="162" height="72" rx="8" fill="#eaf1fa" stroke="#1c5cab" stroke-width="1.4"/>
+  <text x="923" y="58" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b">the power is</text>
+  <text x="923" y="80" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b">delivered</text>
+  <line x1="6" y1="130" x2="1004" y2="130" stroke="#c3c2b7" stroke-width="2"/>
+  <line x1="825" y1="116" x2="825" y2="146" stroke="#898781" stroke-width="1.6" stroke-dasharray="4 3"/>
+  <text x="104" y="153" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">until 12:00</text>
+  <text x="307" y="153" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="600">12:00</text>
+  <text x="505" y="153" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">about 13:00</text>
+  <text x="713" y="153" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#7a5c07" font-weight="600">18:00</text>
+  <text x="923" y="153" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#52514e">00:00 to 24:00</text>
+  <text x="408" y="191" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#141413" font-weight="600">today</text>
+  <text x="923" y="191" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#141413" font-weight="600">tomorrow</text>
+</svg>
+:::
+
+At noon today one auction sets all 24 of tomorrow's prices, and today's are
+already known. The forecast in the file comes out at 18:00 and stands in for a
+bidder's own.
+
+
+# The merit order [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.merit()))
+```
+
+The offers are stacked from cheapest to most expensive, and the last one needed
+sets the price for all. Wind bids near zero; the blocks are stylised.
+
+
+# Reading the file
+
+```{pyodide}
+power = pd.read_csv("data/power.csv", parse_dates=["time"])
+power = power.set_index("time")
+
+print(power.shape)
+power.head()
+```
+
+The table has 26,133 rows, one per hour from 2022 to 2024. With `time` as the
+index, `.loc` picks out a day, a month or a year.
+
+
+# The columns
+
+<table class="vocab">
+<tr><td>price</td><td>the day-ahead price in West Denmark, kroner per MWh</td><td><strong>wind</strong></td><td>the forecast of wind output, MW</td></tr>
+<tr><td>date</td><td>the day, as text: 2024-10-04</td><td><strong>solar</strong></td><td>the forecast of solar output, MW</td></tr>
+<tr><td>hour</td><td>the clock hour, 0 to 23</td><td><strong>time</strong></td><td>the index: the hour, Danish time</td></tr>
+<tr><td>weekday</td><td>0 for Monday to 6 for Sunday</td><td><strong>weekend</strong></td><td>1 on a Saturday or a Sunday</td></tr>
+</table>
+
+Seven days with no published forecast are left out. On the day the clocks go
+forward there are 23 hours, and on the day they go back the repeated hour is
+averaged.
+
+
+# A price per year
+
+```{pyodide}
+prices = power['price']
+
+print(prices.groupby(power.index.year).mean())
+print(prices.max())
+```
+
+The average hour cost 1,630 kroner in 2022 and 531 in 2024, a fall of two
+thirds. The most expensive hour, at 17:00 on 12 December 2024, cost 6,982.
+
+
+# Prices below zero
+
+```{pyodide}
+below = power['price'] < 0
+
+print(below.groupby(power.index.year).sum())
+print(prices.min())
+```
+
+The price was below zero in 360 hours of 2024, so buyers were paid to take the
+power; the lowest, in July 2023, was 3,277 kroner below zero.
+
+
+# Hours above or below a price [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.hours(DATA)))
+```
+
+Slide the price and switch between below and above. Above 1,000 kroner there
+were 6,086 hours in 2022, and 525 in 2024.
+
+
+# 2024, hour by hour [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.heat("hp", HEAT, ["price"], with_curve=True, start_day=STILL_DAY, marks=DATA["heat_marks"],
+                    label="Every hour of 2024 as a cell coloured by its price, one column per day")))
+```
+
+Each column is a day of 2024 and each row an hour. Step through the days or
+click one to draw its 24 prices; the dark bands are the daily peaks.
+
+
+# 2 · Why the price moves {.divider}
+
+::: {.divider-kicker}
+Part 2
+:::
+
+::: {.divider-note}
+The hour of the day, the month, the wind, today against tomorrow, and the
+size of the moves from one day to the next.
+:::
+
+
+# The shape of a day
+
+```{pyodide}
+by_hour = power.groupby('hour')['price'].mean()
+fig, ax = plt.subplots(figsize=(8, 2.4))
+ax.plot(by_hour.index, by_hour.values)
+ax.set_xlabel("hour of the day")
+plt.show()
+```
+
+The average price peaks at 08:00 and 19:00, when demand peaks, and is lowest
+at 03:00 and 14:00.
+
+
+# The shape, month by month [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.monthly(DATA["months"])))
+```
+
+Step through the months, and switch between weekdays and weekends. At weekends
+the morning peak almost disappears: 08:00 averages 777 kroner, against 1,274.
+
+
+# Wind, sun and the price [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.bands(DATA)))
+```
+
+More wind lowers the median price in every year. The sun lowers it only when
+strong: above 1,000 MW the median is 348 kroner, against 722 with no sun.
+
+
+# Today and tomorrow [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.today_tomorrow(HEAT, start="2024-01-30", marks=TT_MARKS)))
+```
+
+More wind tomorrow is blue, and so is a lower price, so the two panels mostly
+line up. On Monday 8 January they do not, and every hour rose.
+
+
+# Daily moves, power against the S&P 500
+
+```{python}
+#| echo: false
+#| fig-align: center
+_dm = POWER.groupby("date")["price"].mean()
+_dm.index = pd.to_datetime(_dm.index)
+_full = _dm.reindex(pd.date_range(_dm.index.min(), _dm.index.max(), freq="D"))
+_ch = (_full.pct_change(fill_method=None) * 100).loc["2024"]
+_prices = pd.read_csv("../data/prices.csv", parse_dates=["date"])
+_spy = _prices[_prices["ticker"] == "SPY"].set_index("date")["close"].pct_change().loc["2024"] * 100
+fig, ax = plt.subplots(figsize=(10.6, 3.7))
+ax.plot(_ch.index, _ch.clip(-100, 200), color=BLUE, linewidth=1.1)
+ax.plot(_spy.index, _spy, color=AMBER, linewidth=2.2)
+ax.axhline(0, color=GREY, linewidth=1)
+ax.set_ylim(-110, 212)
+ax.set_yticks([-100, -50, 0, 50, 100, 150, 200])
+ax.set_yticklabels(["-100", "-50", "0", "50", "100", "150", "200+"])
+ax.set_ylabel("change on the day before, %")
+ax.annotate("West Denmark,\nthe day's average price", xy=(1.01, 110), xycoords=("axes fraction", "data"),
+            color=BLUE, fontsize=11.5, fontweight="bold", va="center")
+ax.annotate("S&P 500", xy=(1.01, 0), xycoords=("axes fraction", "data"), color=AMBER, fontsize=11.5,
+            fontweight="bold", va="center")
+ax.xaxis.set_major_formatter(mpl.dates.DateFormatter("%b"))
+fig.subplots_adjust(left=0.08, right=0.8, top=0.96, bottom=0.1)
+plt.show()
+```
+
+The day's average price moved more than 20 percent from the day before on 204
+days of 2024. The S&P 500's largest daily move that year was 3.0 percent.
+
+
+# Your turn [1]{.chip .chip-turn} {.your-turn}
+
+Fill a dictionary with the median price at 03:00, 08:00, 13:00 and 18:00, then
+get all 24 medians in one line with `groupby`.
+
+```{pyodide}
+#| autorun: false
+medians = {}
+for h in [3, 8, 13, 18]:
+    medians[h] = ...
+    print(h, medians[h])
+
+print(power.groupby(...)[...].median())
+```
+
+
+# Your turn 1: answer
+
+```python
+medians = {}
+for h in [3, 8, 13, 18]:
+    medians[h] = power[power['hour'] == h]['price'].median()
+    print(h, medians[h])
+
+print(power.groupby('hour')['price'].median())
+```
+
+```
+3 626.47
+8 844.57
+13 550.56
+18 895.19
+```
+
+The mask inside the loop keeps one hour at a time, and `groupby` does all 24 at
+once. The median at 18:00 is 43 percent above the median at 03:00.
+
+
+# 3 · A first classifier {.divider}
+
+::: {.divider-kicker}
+Part 3
+:::
+
+::: {.divider-note}
+The question from your forecasts as a label, a rule of thumb, the weekday as
+seven columns, and today's move.
+:::
+
+
+# The same hour, one day earlier
+
+::: {.diagram}
+<svg width="1000" height="268" viewBox="0 0 1000 268" role="img" aria-label="The 08:00 rows of four days in November 2023. shift(1) moves each price down one row, so each day's price_before is the day before's price at 08:00, and up is 1 where the price is higher than price_before.">
+  <defs><marker id="sh-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b3402f"/></marker></defs>
+  <rect x="236" y="8" width="560" height="236" rx="10" fill="#f3f3f0" stroke="#d9d8d2"/>
+  <rect x="228" y="16" width="560" height="236" rx="10" fill="#f7f7f5" stroke="#d9d8d2"/>
+  <rect x="220" y="24" width="560" height="236" rx="10" fill="#fcfcfb" stroke="#1c5cab" stroke-width="1.5"/>
+  <text x="244" y="58" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="700">08:00, one row per day</text>
+  <text x="508" y="58" text-anchor="end" font-size="15" font-family="Cascadia Mono, Consolas, monospace" fill="#52514e">price</text>
+  <text x="668" y="58" text-anchor="end" font-size="15" font-family="Cascadia Mono, Consolas, monospace" fill="#52514e">price_before</text>
+  <text x="738" y="58" text-anchor="middle" font-size="15" font-family="Cascadia Mono, Consolas, monospace" fill="#52514e">up</text>
+  <line x1="236" y1="72" x2="764" y2="72" stroke="#c3c2b7" stroke-width="1.2"/>
+  <text x="244" y="106" font-size="16" font-family="Segoe UI, sans-serif" fill="#141413">Sun 12 Nov</text>
+  <text x="244" y="148" font-size="16" font-family="Segoe UI, sans-serif" fill="#141413">Mon 13 Nov</text>
+  <text x="244" y="190" font-size="16" font-family="Segoe UI, sans-serif" fill="#141413">Tue 14 Nov</text>
+  <text x="244" y="232" font-size="16" font-family="Segoe UI, sans-serif" fill="#141413">Wed 15 Nov</text>
+  <text x="508" y="106" text-anchor="end" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#141413" font-weight="600">654</text>
+  <text x="508" y="148" text-anchor="end" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#141413" font-weight="600">1,082</text>
+  <text x="508" y="190" text-anchor="end" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#141413" font-weight="600">598</text>
+  <text x="508" y="232" text-anchor="end" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#141413" font-weight="600">959</text>
+  <text x="668" y="106" text-anchor="end" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#52514e">686</text>
+  <text x="668" y="148" text-anchor="end" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#52514e">654</text>
+  <text x="668" y="190" text-anchor="end" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#52514e">1,082</text>
+  <text x="668" y="232" text-anchor="end" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#52514e">598</text>
+  <text x="738" y="106" text-anchor="middle" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#1c5cab" font-weight="700">0</text>
+  <text x="738" y="148" text-anchor="middle" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#b3402f" font-weight="700">1</text>
+  <text x="738" y="190" text-anchor="middle" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#1c5cab" font-weight="700">0</text>
+  <text x="738" y="232" text-anchor="middle" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#b3402f" font-weight="700">1</text>
+  <line x1="514" y1="104" x2="600" y2="136" stroke="#b3402f" stroke-width="1.8" marker-end="url(#sh-head)"/>
+  <line x1="514" y1="146" x2="600" y2="178" stroke="#b3402f" stroke-width="1.8" marker-end="url(#sh-head)"/>
+  <line x1="514" y1="188" x2="600" y2="220" stroke="#b3402f" stroke-width="1.8" marker-end="url(#sh-head)"/>
+  <text x="110" y="120" text-anchor="middle" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#0d366b" font-weight="600">groupby(&#39;hour&#39;)</text>
+  <text x="110" y="146" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">24 groups,</text>
+  <text x="110" y="168" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">one per clock hour</text>
+  <text x="894" y="130" text-anchor="middle" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#b3402f" font-weight="600">shift(1)</text>
+  <text x="894" y="156" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">each price moves</text>
+  <text x="894" y="178" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">down one row</text>
+</svg>
+:::
+
+Within each hour, `shift(1)` moves the prices down one row, so each row gets
+the day before's price. Returns within each ticker were built the same way.
+
+
+# The label
+
+```{pyodide}
+power['price_before'] = power.groupby('hour')['price'].shift(1)
+power['up'] = (power['price'] > power['price_before']).astype(int)
+
+print(power.loc['2023-11-14 13:00':'2023-11-14 16:00', ['price_before', 'price', 'up']])
+```
+
+An hour's label `up` is 1 when it costs more than the same hour the day before.
+The first day of the table has no day before, so its `price_before` is empty.
+
+
+# The wind change
+
+```{pyodide}
+power['wind_change'] = power['wind'] - power.groupby('hour')['wind'].shift(1)
+
+change_bands = pd.cut(power['wind_change'], [-np.inf, -1000, -300, 300, 1000, np.inf])
+print(power.groupby(change_bands)['up'].mean())
+```
+
+`wind_change` is tomorrow's wind forecast minus today's. When it falls by more
+than 1,000 MW, 86 percent of hours rise; when it rises that much, 12 percent.
+
+
+# The logistic curve [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.scurve(DATA)))
+```
+
+The dots are the share of hours that rose, and the red curve is a logistic
+regression on the wind change. Drag the slider to read its probability.
+
+
+# The weekday, as one number or seven columns [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.weekday(DATA)))
+```
+
+As one number, the weekday can only tilt the week one way. As seven columns,
+each day gets its own level, and the dots sit on the bars.
+
+
+# Weekday columns in code
+
+```{pyodide}
+dummies = pd.get_dummies(power['weekday'], prefix='weekday', dtype=int)
+days = []
+for c in dummies:
+    power[c] = dummies[c]
+    days.append(c)
+print(days)
+```
+
+`get_dummies` turns the weekday into seven columns of zeros and ones, and the
+loop copies each into the table and keeps its name. On every row exactly one of
+them is 1.
+
+
+# Today's move
+
+```{pyodide}
+power['change_before'] = power['price_before'] - power.groupby('hour')['price'].shift(2)
+
+move_bands = pd.cut(power['change_before'], [-np.inf, -200, -50, 50, 200, np.inf])
+print(power.groupby(move_bands)['up'].mean())
+```
+
+`shift(2)` reaches two days back, so `change_before` is today's move. After a
+fall of over 200 kroner, 60 percent of hours rise; after such a rise, 42.
+
+
+# The rows to learn from
+
+```{pyodide}
+power = power.dropna()
+train = power.loc[:'2023']
+test = power.loc['2024']
+
+print(len(train), len(test))
+print(1 - test['up'].mean())
+```
+
+`dropna` removes the first two days, which have no day before. Calling no hour
+of 2024 up, the majority rule, is right 50.3 percent of the time.
+
+
+# A rule of thumb
+
+```{pyodide}
+from sklearn.metrics import accuracy_score
+
+rule = (test['wind_change'] < 0).astype(int)
+print(accuracy_score(test['up'], rule))
+```
+
+The rule says up whenever tomorrow's wind forecast is lower than today's. It is
+right 71.9 percent of the time in 2024, against 50.3 for the majority rule.
+
+
+# Logistic regression on the wind change
+
+```{pyodide}
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import roc_auc_score
+
+model = Pipeline([('scale', StandardScaler()), ('logit', LogisticRegression())])
+model.fit(train[['wind_change']], train['up'])
+p = model.predict_proba(test[['wind_change']])[:, 1]
+print(roc_auc_score(test['up'], p))
+```
+
+With one column the model ranks the hours in the same order as the wind change
+itself: an AUC of 0.796. What it adds is a probability for every hour.
+
+
+# Adding columns one kind at a time
+
+```{pyodide}
+ladder = {'+ weekday as a number': ['wind_change', 'weekday'],
+          '+ weekday as 7 columns': ['wind_change'] + days,
+          "+ today's move": ['wind_change'] + days + ['change_before']}
+for name in ladder:
+    model.fit(train[ladder[name]], train['up'])
+    p = model.predict_proba(test[ladder[name]])[:, 1]
+    print(name, round(roc_auc_score(test['up'], p), 4))
+features = ladder["+ today's move"]
+```
+
+Each step adds one kind of column, and the AUC rises from 0.796 to 0.833. After
+the loop, `p` holds the probabilities of the last model, the one with all three.
+
+
+# Choose the columns [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.lab(DATA, prefix="lab3", models=("logit",), labels=("up",), hide=("size of the wind change",))))
+```
+
+Tick the columns the model may use; each tick shows what it adds on the folds of
+2022 and 2023. The dashed line is the model on the slides.
+
+
+# C on the folds
+
+```{pyodide}
+from sklearn.model_selection import TimeSeriesSplit, GridSearchCV
+
+folds = TimeSeriesSplit(n_splits=5)
+grid = {'logit__C': [0.001, 0.01, 0.1, 1, 10]}
+search = GridSearchCV(model, grid, cv=folds, scoring='roc_auc')
+search.fit(train[features], train['up'])
+print(search.best_params_, search.best_score_)
+```
+
+The folds move forward in time. Every C from 0.01 to 10 scores 0.815 on them,
+so the penalty barely matters here.
+
+
+# C, as a slider [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.cpath(DATA)))
+```
+
+A small C pulls every coefficient toward zero and the probabilities toward one
+half. At 0.0001 the ranking barely changes, but the Brier score rises from 0.167
+to 0.211.
+
+
+# The confusion matrix
+
+```{pyodide}
+from sklearn.metrics import confusion_matrix, precision_score, recall_score
+
+predicted = (p >= 0.5).astype(int)
+print(confusion_matrix(test['up'], predicted))
+print(precision_score(test['up'], predicted), recall_score(test['up'], predicted))
+```
+
+At one half the model catches 3,171 of the 4,303 hours that rose, a recall of
+0.737. When it says up, it is right 74.5 percent of the time.
+
+
+# Predictions and mistakes, 2024 [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.heat("hm", HEAT, ["up", "pred", "wrong"],
+                    label="Every hour of 2024 coloured by whether the price rose, by what the model predicted at one half, or by whether it was wrong")))
+```
+
+On 143 of 2024's 361 days, at least 20 of the 24 hours moved the same way. The
+model was right on 85 percent of those hours, and on 68 percent of the others.
+
+
+# The same question for the S&P 500
+
+<div class="statband">
+<div class="stat"><span class="stat-big">74.4%</span><div class="stat-label">power, 2024: hours called right by the model</div></div>
+<div class="stat"><span class="stat-big">50.3%</span><div class="stat-label">power, 2024: the majority rule</div></div>
+<div class="stat stat-warn"><span class="stat-big">50.4%</span><div class="stat-label">S&amp;P 500, 2024: days called right from yesterday's return and the weekday</div></div>
+<div class="stat stat-warn"><span class="stat-big">58.7%</span><div class="stat-label">S&amp;P 500, 2024: always saying up</div></div>
+</div>
+
+A share can be bought today and sold tomorrow, so a rise anyone can predict is
+bought away before it happens. Power cannot be stored in bulk, so tomorrow's
+hour is a different good.
+
+
+# 4 · What it is worth {.divider}
+
+::: {.divider-kicker}
+Part 4
+:::
+
+::: {.divider-note}
+A bet on the direction of every hour, the kroner in each cell of the confusion
+matrix, and a threshold set by the cost of trading.
+:::
+
+
+# A bet on the direction
+
+::: {.diagram}
+<svg width="1000" height="252" viewBox="0 0 1000 252" role="img" aria-label="An example hour: 20:00 on 14 November 2023 cost 482 kroner today and 650 tomorrow, a move of plus 168. A long bet earns 168 minus a cost of 50, plus 118 kroner. A short bet loses 168 and pays the cost, minus 218. No trade earns nothing.">
+  <text x="10" y="26" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="700">20:00 on Tuesday 14 November 2023: 482 kr today, 650 kr tomorrow, a move of +168 kr</text>
+  <rect x="10" y="48" width="300" height="54" rx="8" fill="#fbf1f0" stroke="#b3402f" stroke-width="1.5"/>
+  <text x="30" y="81" font-size="16" font-family="Segoe UI, sans-serif" fill="#141413">long: a bet on higher</text>
+  <text x="346" y="81" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#52514e">the move, minus the cost:  +168 − 50</text>
+  <text x="990" y="81" text-anchor="end" font-size="18" font-family="Cascadia Mono, Consolas, monospace" fill="#0d366b" font-weight="700">+118 kr</text>
+  <rect x="10" y="118" width="300" height="54" rx="8" fill="#eaf1fa" stroke="#1c5cab" stroke-width="1.5"/>
+  <text x="30" y="151" font-size="16" font-family="Segoe UI, sans-serif" fill="#141413">short: a bet on lower</text>
+  <text x="346" y="151" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#52514e">minus the move and the cost:  −168 − 50</text>
+  <text x="990" y="151" text-anchor="end" font-size="18" font-family="Cascadia Mono, Consolas, monospace" fill="#b3402f" font-weight="700">−218 kr</text>
+  <rect x="10" y="188" width="300" height="54" rx="8" fill="#f5f5f2" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="30" y="221" font-size="16" font-family="Segoe UI, sans-serif" fill="#141413">no trade</text>
+  <text x="346" y="221" font-size="16" font-family="Cascadia Mono, Consolas, monospace" fill="#52514e">nothing</text>
+  <text x="990" y="221" text-anchor="end" font-size="18" font-family="Cascadia Mono, Consolas, monospace" fill="#52514e" font-weight="700">0 kr</text>
+</svg>
+:::
+
+For each hour of 2024, bet 1 MWh on the direction: long when the probability is
+high, short when it is low. Each trade earns the move and pays a cost of 50 kroner.
+
+
+# The move in each hour
+
+```{pyodide}
+move = test['price'] - test['price_before']
+
+print(round(move.abs().sum()))
+print(round(move.sum()))
+```
+
+Knowing every direction in advance, with no cost, would earn 1,868,568 kroner
+in 2024. Always going long earns 514, because the rises and falls almost cancel.
+
+
+# A function for the P&L
+
+```{pyodide}
+def pnl(p, move, threshold, cost):
+    long = p >= threshold
+    short = p <= 1 - threshold
+    trades = long.sum() + short.sum()
+    return round(move[long].sum() - move[short].sum() - cost * trades)
+
+print(pnl(p, move, 0.5, 50))
+print(pnl(p, move, 0.6, 50))
+```
+
+At one half every hour is traded, and the model earns 879,112 kroner after costs.
+At 0.6 the hours near one half are left out, and it earns 957,809.
+
+
+# The threshold, in kroner [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.threshold(DATA)))
+```
+
+Each trade earns or loses the move and pays 50 kroner. At 0.64 the model trades
+6,225 of the 8,663 hours and earns 975,120 kroner, the most of any threshold.
+
+
+# The cost of trading [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.cost(DATA)))
+```
+
+The best threshold rises with the cost: 0.53 with no cost, 0.64 at 50 kroner and
+0.77 at 150. At 150, one half earns 12,812 kroner and 0.77 earns 468,445.
+
+
+# Your turn [2]{.chip .chip-turn} {.your-turn}
+
+Choose the threshold on 2022 and 2023 instead, at a cost of 50. Fill `earned`
+with what `pnl` gives on the training rows at each threshold, and find the best.
+
+```{pyodide}
+#| autorun: false
+p_train = model.predict_proba(train[features])[:, 1]
+move_train = train['price'] - train['price_before']
+
+earned = {}
+for t in [0.5, 0.55, 0.6, 0.65, 0.7]:
+    earned[t] = ...
+print(earned)
+```
+
+
+# Your turn 2: answer
+
+```python
+earned = {}
+for t in [0.5, 0.55, 0.6, 0.65, 0.7]:
+    earned[t] = pnl(p_train, move_train, t, 50)
+print(earned)
+# {0.5: 3276105, 0.55: 3354200, 0.6: 3340692, 0.65: 3284499, 0.7: 3157485}
+```
+
+On 2022 and 2023, 0.55 earns the most, and in 2024 it earns 928,247 kroner.
+That is 95 percent of the best threshold in hindsight, 0.64 with 975,120.
+
+
+# What the P&L leaves out
+
+::: {.why-grid}
+::: {.why-point}
+**The cost** <span>of 50 kroner per MWh is a round number for fees and the bid-ask spread, not a measured one.</span>
+:::
+::: {.why-point}
+**The size** <span>of 1 MWh moves no price. A large bet placed in the auction would move the price against itself.</span>
+:::
+::: {.why-point}
+**The contract** <span>that pays the change from one day to the next at one hour does not exist. The bet stands in for a buyer who can move use between days.</span>
+:::
+::: {.why-point}
+**The forecast** <span>in the file comes out at 18:00, after the auction, so the model saw a slightly better forecast than a bidder has.</span>
+:::
+:::
+
+
+# 5 · The crisis in the training rows {.divider}
+
+::: {.divider-kicker}
+Part 5
+:::
+
+::: {.divider-note}
+A second label on the level of the price, an hour above 1,000 kroner, fitted
+with and without 2022, and its probabilities checked against 2024.
+:::
+
+
+# Prices above 1,000 kroner
+
+```{pyodide}
+power['above_1000'] = (power['price'] > 1000).astype(int)
+
+print(power['above_1000'].groupby(power.index.year).mean())
+```
+
+In 2022, 70 percent of the hours cost more than 1,000 kroner, and in 2024, 6
+percent. The share that rose from the day before stayed near half in every year.
+
+
+# Two training windows
+
+```{pyodide}
+levels = ['wind', 'solar'] + days
+crisis = Pipeline([('scale', StandardScaler()), ('logit', LogisticRegression())])
+crisis.fit(power.loc[:'2023', levels], power.loc[:'2023', 'above_1000'])
+calm = Pipeline([('scale', StandardScaler()), ('logit', LogisticRegression())])
+calm.fit(power.loc['2023', levels], power.loc['2023', 'above_1000'])
+
+print(crisis.predict_proba(test[levels])[:, 1].mean())
+print(calm.predict_proba(test[levels])[:, 1].mean())
+```
+
+With 2022 and 2023 the model expects 40 percent of 2024's hours above 1,000
+kroner, and with 2023 alone 13; the share was 6.
+
+
+# Predicted against actual [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.crisis(DATA)))
+```
+
+Each dot is a group of 2024's hours. With 2022 in training, a probability near
+0.3 meant 0.8 percent; with 2023 alone, 15 percent.
+
+
+# AUC against the Brier score
+
+```{pyodide}
+from sklearn.metrics import brier_score_loss
+
+happened = power.loc['2024', 'above_1000']
+for m in [crisis, calm]:
+    q = m.predict_proba(test[levels])[:, 1]
+    print(roc_auc_score(happened, q), brier_score_loss(happened, q))
+```
+
+Both models rank 2024's hours equally well, with AUCs of 0.839 and 0.838. Only
+the Brier score shows the difference: 0.187 against 0.062.
+
+
+# Handling a changed market
+
+::: {.why-grid}
+::: {.why-point}
+**A recent window** <span>2023 alone forecast 2024 better than 2022 and 2023 together: a Brier score of 0.062 against 0.187.</span>
+:::
+::: {.why-point}
+**Watch the average** <span>Compare the mean probability with the share that happened, month by month, and retrain when the gap grows.</span>
+:::
+::: {.why-point}
+**A label that travels** <span>The direction model, trained on the same years, gave 2024 an average probability of 0.495; the share that rose was 0.497.</span>
+:::
+:::
+
+
+# 6 · Similar hours {.divider}
+
+::: {.divider-kicker}
+Part 6
+:::
+
+::: {.divider-note}
+Three classes, a big move either way, the k most similar hours of the past, a
+feature lab, and your forecasts revised and scored.
+:::
+
+
+# Three classes
+
+```{pyodide}
+change = power['price'] - power['price_before']
+power['move'] = pd.cut(change, [-np.inf, -50, 50, np.inf], labels=['lower', 'about the same', 'higher'])
+three = Pipeline([('scale', StandardScaler()), ('logit', LogisticRegression())])
+three.fit(power.loc[:'2023', features], power.loc[:'2023', 'move'])
+predicted_move = three.predict(test[features])
+print(accuracy_score(power.loc['2024', 'move'], predicted_move))
+```
+
+`pd.cut` makes three classes: more than 50 kroner down, less than 50 either way,
+and more than 50 up. The majority rule scores 0.381 and the model 0.606.
+
+
+# The three-class confusion matrix
+
+```{pyodide}
+order = ['lower', 'about the same', 'higher']
+actual = power.loc['2024', 'move']
+
+print(confusion_matrix(actual, predicted_move, labels=order))
+```
+
+Rows are what happened, from lower to higher. The model never predicts about
+the same: in no hour of 2024 is it the most likely of the three.
+
+
+# A big move either way [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.vshape(DATA)))
+```
+
+A move of more than 150 kroner is most likely when the wind forecast changes a
+lot, either way. A logistic regression on the wind change can only slope one way.
+
+
+# The size of the wind change
+
+```{pyodide}
+power['big'] = (change.abs() > 150).astype(int)
+power['size_wind_change'] = power['wind_change'].abs()
+
+big_model = Pipeline([('scale', StandardScaler()), ('logit', LogisticRegression())])
+for cols in [features, features + ['size_wind_change']]:
+    big_model.fit(power.loc[:'2023', cols], power.loc[:'2023', 'big'])
+    q = big_model.predict_proba(power.loc['2024', cols])[:, 1]
+    print(roc_auc_score(power.loc['2024', 'big'], q))
+```
+
+`abs` builds the size of the wind change, a shape a linear model cannot make
+from the change itself. The AUC for a big move rises from 0.559 to 0.670.
+
+
+# The k nearest hours [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.knn(DATA)))
+```
+
+k-NN finds the k hours of 2022 and 2023 most like this one and reports the share
+that rose. Untick the scaler, and the weekday stops counting.
+
+
+# k-NN in code
+
+```{pyodide}
+from sklearn.neighbors import KNeighborsClassifier
+
+near = ['wind_change', 'change_before', 'weekday', 'hour']
+knn = Pipeline([('scale', StandardScaler()), ('knn', KNeighborsClassifier(n_neighbors=201))])
+knn.fit(train[near], train['up'])
+print(roc_auc_score(test['up'], knn.predict_proba(test[near])[:, 1]))
+```
+
+k-NN needs no weekday columns: the nearest hours to a Monday are Mondays. With k
+of 201, chosen on the folds, it scores 0.844 against the logistic regression's 0.833.
+
+
+# k-NN without the scaler
+
+```{pyodide}
+bare = KNeighborsClassifier(n_neighbors=201)
+bare.fit(train[near], train['up'])
+
+print(roc_auc_score(test['up'], bare.predict_proba(test[near])[:, 1]))
+print(train[near].std())
+```
+
+Without the scaler the AUC falls to 0.797, since the wind change spreads over
+thousands of megawatts and the weekday over seven values.
+
+
+# The feature lab [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.lab(DATA, prefix="lab6")))
+```
+
+The same columns for k-NN, and for a big move either way. The dashed lines are
+the models on the slides, and they can be beaten.
+
+
+# Your forecasts, revised [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.revise(DATA["game"])))
+```
+
+You have now seen what moves the price: the wind change, the weekday and today's
+move. Change any forecast you like; your first answers are kept.
+
+
+# The scoreboard
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.scoreboard(DATA["game"])))
+```
+
+Both scores are losses, so lower is better. The log loss punishes a confident
+wrong answer hardest, as on 2 January.
+
+
+# Everything used today {.smaller}
+
+::: {.recap-grid}
+::: {.recap-item}
+**Looking at a market**
+`read_csv` with `parse_dates`, `set_index`, `.loc` by date, `groupby` by year
+and by hour, `pd.cut` into bands, a bar chart and two lines.
+:::
+::: {.recap-item}
+**Loops, dictionaries, functions**
+A dictionary of medians filled by a loop, a loop that adds the weekday columns,
+a ladder of models in a dictionary, and `pnl` on two sets of rows.
+:::
+::: {.recap-item}
+**A label from the day before**
+`shift(1)` inside `groupby('hour')` puts the same hour of the day before on
+every row. About half the hours rose, in every year.
+:::
+::: {.recap-item}
+**Columns built from others**
+The wind change gave an AUC of 0.796, the weekday as seven columns 0.830, and
+today's move 0.833.
+:::
+::: {.recap-item}
+**The threshold and the cost**
+The best threshold rose with the cost. Chosen on 2022 and 2023, 0.55 earned
+928,247 kroner in 2024 at 50 kroner a trade.
+:::
+::: {.recap-item}
+**Training rows from another market**
+Trained through 2022, the model expected 40 percent of 2024's hours above 1,000
+kroner. The share was 6 percent.
+:::
+::: {.recap-item}
+**A shape a line cannot make**
+The size of the wind change took a big move's AUC from 0.559 to 0.670, and k-NN
+found the shape by itself.
+:::
+::: {.recap-item}
+**k-NN and the scoreboard**
+The weekday and the hour as plain numbers, scaled: an AUC of 0.844. On your
+eight hours k-NN scored 0.166 and logistic regression 0.194.
+:::
+:::
+
+
+# Where this goes next
+
+<div class="timeline">
+<div class="tl-row"><span class="tl-week">before</span><span class="tl-topic">logistic regression, thresholds and costs, calibration, three classes and k-NN</span><span class="tl-who">classification</span></div>
+<div class="tl-row tl-now"><span class="tl-week">now</span><span class="tl-topic">one market from the auction to the P&amp;L, with every tool so far</span><span class="tl-who">a recap</span></div>
+<div class="tl-row tl-future"><span class="tl-week">next</span><span class="tl-topic">trees and ensembles, for numbers and for labels</span><span class="tl-who">the same workflow</span></div>
+</div>
+
+::: {.keypoint}
+The label, the split, the folds, the threshold and the scores stay exactly as
+they were today. Only the model inside them changes.
+:::
+
+
+# Before next time
+
+- There are no exercises and no case this time. Open the deck at home: beat the models on the slides in the feature lab, and change the live cells, with 2023 as the test year or another k.
+- Finish any earlier exercise set you skipped. The loops, functions and masks in the early sets carried every step today.
+- Read the case notebooks for Parts 8 and 9 again in one sitting, as one classification investigation.
+
+::: {.muted .small}
+Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email
+**jobo@econ.au.dk**.
+:::
