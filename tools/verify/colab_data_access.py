@@ -33,6 +33,8 @@ NOTEBOOKS = [
     ROOT / "session_08" / "session_08_exercises.ipynb",
     ROOT / "session_09" / "session_09_case.ipynb",
     ROOT / "session_09" / "session_09_exercises.ipynb",
+    ROOT / "session_11" / "session_11_case.ipynb",
+    ROOT / "session_11" / "session_11_exercises.ipynb",
 ]
 
 

@@ -132,6 +132,36 @@ Restate only what the new deck needs (three numbers in a stat band is
 enough). Do not build the dataset live: ship a prepared CSV, load it in one
 cell, and make building it an exercise.
 
+### A new model family
+
+Learned on Session 11 (trees), over five reviews.
+
+- Open from what the students know: one slide of every model so far, grouped
+  by numbers and labels, each with its defining line and its score on the
+  course tables. Introduce the new model on a table they already know, with
+  the same split, so its score sits next to the old ones; one slide of data
+  setup is enough.
+- Intuition, then notation, then code: name the parts on a diagram, work a
+  toy example by hand, state the general formula with its symbols named,
+  then the same numbers in code, then the real table.
+- Every new algorithm gets its reason, measured against the one before: a
+  tree because linear regression has one slope; bagging because one deep
+  tree changes with its rows; a forest because bagged trees all ask the same
+  first question.
+- Show a model with the library's own picture (`plot_tree`), never a text
+  dump such as `export_text`, and use what the library has instead of a
+  home-made helper (a stump, not a hand-written best-cut function). Keep a
+  short loop only where it shows the idea.
+- An algorithm that unfolds in steps gets a click-through SVG: its groups are
+  reveal.js fragments, the picture and the tree sit side by side, and each
+  step has a caption and its running number. No JavaScript.
+- Name a model by its name, "linear regression" or "OLS", never "the line".
+- An in-lecture your-turn is one small change to code already on the slide,
+  such as one argument added to a constructor.
+- When the new model does not win on the course table, keep the result and
+  use it: Session 11 turned "trees do not beat ridge" into a part on tuning
+  and on what a grid of settings costs to run.
+
 ### What goes on a slide
 
 - **The code cell is the slide.** One sentence of setup, a 3 to 8 line live
@@ -347,6 +377,13 @@ generator's preamble from the same code. Outputs print plain numbers, not
 state the result and what it means; they do not moralise and they do not
 copy the deck's sentences.
 
+No exercise chooses a setting on the test rows, not even "only to look":
+sweep on the folds, and open the test rows once for the model that was
+chosen. In a session that puts regression first, keep label material out of
+the early sections. A small by-hand case that quotes numbers (a grid of
+scores, the arrays inside a tree, ten days and their leaves) takes real ones
+from the session's tables, checked by an assert in the generator.
+
 ### Checks before handing over
 
 `nbconvert --execute` on the untouched notebook; the solution verifier
@@ -368,11 +405,21 @@ About 15 to 18 questions, no star badges, a natural easy-to-hard progression.
 
 ### Continuity
 
+- The previous part is the **last part that exists**. Parts are numbered by
+  session and the lecture-case sessions (7 and 10) have none, so Part 8
+  follows Part 6 and Part 11 follows Part 9. Read every earlier case notebook
+  before writing a new part.
 - Open with a **quick load** that restores the previous part's facts as
   named variables and prints them, so the investigation continues without
-  re-reading the earlier notebook.
-- Q1 rebuilds and re-verifies where the previous part stopped (one cell, a
+  re-reading the earlier notebook. Restore the numbers the earlier parts
+  printed, on the test block and on the folds, rather than refitting them.
+- Q1 rebuilds the table and re-verifies one restored number (one cell, a
   `True`).
+- **A part follows its own session's topic.** It gives the new model the
+  report's main question and holds it to the restored numbers; it does not
+  redo the previous part with the new model. The previous part's topic gets
+  at most one light question near the end (Part 11: trees and forests for the
+  volatility forecast, then one forest on Part 9's jump label).
 - Units and the instrument carry forward: the case has used plain decimals
   and Apple since Part 1, even when the lecture used percent and another
   instrument. State the difference in the quick load and use it when it

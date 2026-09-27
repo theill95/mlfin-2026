@@ -1,0 +1,1418 @@
+---
+title: "Trees and forests"
+subtitle: "Machine Learning in Finance · Session 11"
+# Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
+# from a data: URI, so embed-resources is off. Ship session_11.html together
+# with session_11_files/ and data/, and SERVE OVER HTTP (double-click
+# serve.cmd, or publish to a URL). Opened from a file:// path the live code
+# cells do not merely fail to run, they do not appear at all.
+#
+# This deck loads numpy, pandas, matplotlib and scikit-learn into the browser
+# runtime (about 45 MB on a cold load). Open the deck and run one cell several
+# minutes before class so it is warm. The forest cells take a few seconds each.
+#
+# Two tables the students already know: data/market_features.csv (Session 6,
+# split at 2022-12-31) carries the session, and data/credit.csv (Session 9,
+# the UCI "default of credit card clients" data, CC BY 4.0, same split) is the
+# short part on labels at the end. Every number on these slides was measured
+# from those two files; re-measure with tools/verify/session_11_deck.py if
+# either changes. Notation follows the trees section of math.html.
+format:
+  live-revealjs:
+    theme: [default, ../theme/mlfin.scss]
+    width: 1280
+    height: 720
+    margin: 0.06
+    center: false
+    transition: fade
+    transition-speed: fast
+    background-transition: none
+    slide-number: c/t
+    controls: false
+    progress: true
+    hash: true
+    history: false
+    code-line-numbers: false
+    highlight-style: github
+    auto-stretch: false
+html-math-method: katex
+engine: jupyter
+pyodide:
+  packages:
+    - numpy
+    - pandas
+    - matplotlib
+    - scikit-learn
+  resources:
+    - data/market_features.csv
+    - data/credit.csv
+  cell-options:
+    autorun: true
+    startover: true
+execute:
+  echo: true
+  warning: false
+---
+
+
+# The models so far {.smaller}
+
+```{python}
+#| include: false
+# House style for every precomputed figure in this deck, plus the volatility
+# table, split as the live cells split it, and the helpers that draw a tree's
+# boxes on the plane of vol_20d and ret_20d.
+import warnings
+warnings.filterwarnings("ignore")
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.patheffects as pe
+
+MLFIN_STYLE = {
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "savefig.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"],
+    "font.size": 12, "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+}
+plt.rcParams.update(MLFIN_STYLE)
+
+from pathlib import Path
+import numpy as np
+import pandas as pd
+from matplotlib.patches import Rectangle
+from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
+
+for _name in ("data/market_features.csv", "data/credit.csv"):
+    if not Path(_name).exists():
+        raise FileNotFoundError(f"Missing {_name} - copy it from data/ at the repository root.")
+
+TBL = pd.read_csv("data/market_features.csv", parse_dates=["date"]).set_index("date")
+TRAIN, TEST = TBL.loc[:"2022-12-31"], TBL.loc["2023-01-01":]
+COLS = list(TBL.columns[:-1])
+PAIR = ["vol_20d", "ret_20d"]
+
+BLUE = "#1c5cab"
+BLUE_LIGHT = "#86b6ef"
+DEEP = "#0d366b"
+AMBER = "#b8860b"
+BRICK = "#b3402f"
+GREY = "#c3c2b7"
+INK = "#141413"
+MUTED = "#52514e"
+LEVEL_MAP = mpl.colors.LinearSegmentedColormap.from_list(
+    "level", ["#faf7f3", "#e8b8ac", "#b3402f", "#7a261a"])
+
+
+def rmse(actual, predicted):
+    return float(np.sqrt(mean_squared_error(actual, predicted)))
+
+
+def level_position(v):
+    """A forecast volatility as a place on the ramp: log scale from 0.5 to 3."""
+    t = (np.log(v) - np.log(0.5)) / (np.log(3.0) - np.log(0.5))
+    return float(np.sqrt(min(max(t, 0.0), 1.0)))
+
+
+def level_colour(v):
+    return LEVEL_MAP(level_position(v))
+
+
+X_LO, X_HI = 0.2, 3.2     # vol_20d, the range where almost every training day sits
+Y_LO, Y_HI = -0.8, 0.6    # ret_20d, likewise
+
+
+def plane_boxes(model):
+    """The leaves of a tree on (vol_20d, ret_20d) as (x0, x1, y0, y1, forecast, days)."""
+    t = model.tree_
+    boxes = []
+
+    def walk(i, x0, x1, y0, y1):
+        if t.children_left[i] == -1:
+            boxes.append((x0, x1, y0, y1, float(t.value[i][0][0]), t.n_node_samples[i]))
+            return
+        s = t.threshold[i]
+        if t.feature[i] == 0:
+            walk(t.children_left[i], x0, min(x1, s), y0, y1)
+            walk(t.children_right[i], max(x0, s), x1, y0, y1)
+        else:
+            walk(t.children_left[i], x0, x1, y0, min(y1, s))
+            walk(t.children_right[i], x0, x1, max(y0, s), y1)
+
+    walk(0, 0.0, 10.0, -5.0, 5.0)
+    return boxes
+
+
+_inside = TRAIN["vol_20d"].between(X_LO, X_HI) & TRAIN["ret_20d"].between(Y_LO, Y_HI)
+DOT_X = TRAIN.loc[_inside, "vol_20d"].to_numpy()
+DOT_Y = TRAIN.loc[_inside, "ret_20d"].to_numpy()
+
+
+def draw_plane(ax, model, labels=True):
+    """vol_20d across and ret_20d up, cut into a tree's boxes, each shaded by its
+    forecast, with the training days as dots."""
+    for x0, x1, y0, y1, v, n in plane_boxes(model):
+        x0, x1 = max(x0, X_LO), min(x1, X_HI)
+        y0, y1 = max(y0, Y_LO), min(y1, Y_HI)
+        if x1 <= x0 or y1 <= y0:
+            continue
+        ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, facecolor=level_colour(v),
+                               edgecolor="#fcfcfb", linewidth=1.2))
+        if labels and x1 - x0 >= 0.4 and y1 - y0 >= 0.2:
+            ax.text((x0 + x1) / 2, (y0 + y1) / 2, f"{v:.2f}", ha="center", va="center",
+                    fontsize=11, fontweight="bold", zorder=4,
+                    color="white" if level_position(v) > 0.55 else INK,
+                    path_effects=[pe.withStroke(linewidth=3.5, foreground=level_colour(v))])
+    ax.scatter(DOT_X, DOT_Y, s=3, color=DEEP, alpha=0.35, linewidths=0, zorder=2)
+    ax.set_xlim(X_LO, X_HI)
+    ax.set_ylim(Y_LO, Y_HI)
+    ax.grid(False)
+```
+
+```{pyodide}
+#| include: false
+# House style for the live figures, so they match the printed ones.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings("ignore")
+plt.rcParams.update({
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"], "font.size": 12,
+    "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+    "figure.dpi": 100,
+})
+
+# plot_tree measures its text boxes with the canvas's renderer, which the
+# browser runtime's canvas does not have; lend it an Agg renderer.
+from matplotlib.backends.backend_agg import RendererAgg
+_canvas = type(plt.figure().canvas)
+if not hasattr(_canvas, "get_renderer"):
+    _canvas.get_renderer = lambda self: RendererAgg(self.figure.bbox.width, self.figure.bbox.height, self.figure.dpi)
+plt.close("all")
+```
+
+|  | model | defined by | test score |
+|:-------|:----------|:--------------|:-----------------|
+| **a number** | linear regression (OLS) | $\min_{\beta}\ \sum_i \big(y_i - \beta_0 - \sum_j \beta_j x_{ij}\big)^2$ | RMSE 0.237 on one column, 0.248 on 19 |
+|  | ridge | $\min_{\beta}\ \text{RSS} + \alpha \sum_j \beta_j^2$ | RMSE 0.218 |
+|  | lasso | $\min_{\beta}\ \text{RSS} + \alpha \sum_j \lvert \beta_j \rvert$ | RMSE 0.217 |
+| **a label** | logistic regression | $P(y = 1) = \sigma\big(\beta_0 + \sum_j \beta_j x_j\big)$ | AUC 0.748 |
+|  | k-nearest neighbours | $\hat p = \frac{1}{k} \sum_{k\ \text{nearest}} y_i$ | AUC 0.749, $k = 25$ |
+
+Every model so far fits one formula to the whole table, or averages the nearest
+rows. Today's model asks yes-or-no questions instead, with the cuts chosen from
+the data.
+
+# The volatility table
+
+```{pyodide}
+from sklearn.metrics import mean_squared_error
+
+table = pd.read_csv("data/market_features.csv", parse_dates=["date"]).set_index("date")
+train, test = table.loc[:"2022-12-31"], table.loc["2023-01-01":]
+columns = list(table.columns[:-1])
+print(len(train), len(test), len(columns))
+
+def rmse(actual, predicted):
+    return np.sqrt(mean_squared_error(actual, predicted))
+```
+
+One row per trading day, and `vol_next` is the index's volatility over the next
+20 days. The split, the 19 columns and `rmse` are the ones ridge and lasso were
+scored with.
+
+# Today
+
+- where a **linear model** stops on the volatility table
+- a **tree**: questions, boxes and a formula
+- **growing** a tree, one question at a time
+- trees in scikit-learn, and **drawing** them with `plot_tree`
+- how **deep** to grow a tree, and pruning
+- **bagging** and **random forests**: many trees, averaged
+- **tuning** a forest, what a search **costs**, and model **size**
+- a tree for a **label**, on the credit table
+
+The exercises and the case are where you practise each of these.
+
+# 1 · Where a linear model stops {.divider}
+
+::: {.divider-kicker}
+Part 1
+:::
+
+::: {.divider-note}
+A pattern in the volatility table that one coefficient per column cannot follow.
+:::
+
+# The error of linear regression, by level and direction
+
+```{python}
+#| echo: false
+#| fig-align: center
+_line = LinearRegression().fit(TRAIN[["vol_20d"]], TRAIN["vol_next"])
+_res = TRAIN["vol_next"] - _line.predict(TRAIN[["vol_20d"]])
+_bands = ["up to 0.7", "0.7 to 1.2", "above 1.2"]
+_band = pd.cut(TRAIN["vol_20d"], [0, 0.7, 1.2, 10], labels=_bands)
+_fell = TRAIN["ret_20d"] < 0
+_tab = _res.groupby([_band, _fell], observed=True).agg(["mean", "size"])
+fig, ax = plt.subplots(figsize=(9.6, 3.3))
+_x = np.arange(3)
+for _k, (_flag, _colour) in enumerate([(True, BRICK), (False, BLUE)]):
+    _vals = [_tab.loc[(_b, _flag), "mean"] for _b in _bands]
+    _pos = _x + (_k - 0.5) * 0.36
+    ax.bar(_pos, _vals, width=0.34, color=_colour)
+    for _p, _v in zip(_pos, _vals):
+        ax.text(_p, _v + (0.012 if _v >= 0 else -0.012), f"{_v:+.2f}", ha="center",
+                va="bottom" if _v >= 0 else "top", fontsize=10.5, color=MUTED)
+ax.axhline(0, color=GREY, linewidth=1.2)
+ax.text(-0.45, 0.205, "red: the market fell over the last 20 days", color=BRICK, fontsize=11.5)
+ax.text(-0.45, 0.165, "blue: it rose", color=BLUE, fontsize=11.5)
+_days = [int(_tab.loc[_b, "size"].sum()) for _b in _bands]
+ax.set_xticks(_x)
+ax.set_xticklabels([f"vol_20d {_b}\n{_n:,} days" for _b, _n in zip(_bands, _days)])
+ax.set_xlim(-0.55, 2.55)
+ax.set_ylim(-0.2, 0.24)
+ax.grid(axis="x", visible=False)
+ax.set_ylabel("actual minus forecast")
+ax.set_title("The average error of linear regression on vol_20d, training days", loc="left")
+plt.show()
+```
+
+When `vol_20d` is above 1.2, linear regression is 0.18 too low after a 20-day
+fall and 0.14 too high after a rise. It gives both kinds of day the same
+forecast.
+
+# What a line can fit
+
+<div class="compare">
+<div class="compare-col">
+<h3>What the table shows</h3>
+<p>When volatility is high, the next 20 days stay high after a fall and calm down after a rise. How much <code>vol_20d</code> matters depends on the market's direction.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>What a linear model can fit</h3>
+<p>One coefficient per column, the same after a fall and after a rise. A different slope for falls has to be written in by hand as a new column, at a cut already known.</p>
+</div>
+</div>
+
+::: {.keypoint}
+A model of this table has to ask about the level first, and then about the
+direction when the level is high, with the cuts placed by the data.
+:::
+
+# 2 · A tree of questions {.divider}
+
+::: {.divider-kicker}
+Part 2
+:::
+
+::: {.divider-note}
+What a tree is, how it forecasts, and how to write it down.
+:::
+
+# A decision tree
+
+::: {.diagram}
+<svg width="1000" height="330" viewBox="0 0 1000 330" role="img" aria-label="A tree of depth 2 on vol_20d and ret_20d, with the root, the branches and the leaves named, each leaf showing the average volatility of its training days, and the path of a day with vol_20d 1.5 and ret_20d minus 0.6 drawn thick to the leaf of 47 days that averaged 2.84">
+  <text x="0" y="38" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">the root</text>
+  <text x="0" y="57" font-size="13" font-family="Segoe UI, sans-serif" fill="#52514e">depth 0: the first question</text>
+  <text x="0" y="148" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">a question</text>
+  <text x="0" y="167" font-size="13" font-family="Segoe UI, sans-serif" fill="#52514e">depth 1: asked inside one box</text>
+  <text x="0" y="260" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">the leaves</text>
+  <text x="0" y="279" font-size="13" font-family="Segoe UI, sans-serif" fill="#52514e">depth 2: the boxes at the end</text>
+  <line x1="625" y1="60" x2="437" y2="130" stroke="#c3c2b7" stroke-width="1.6"/>
+  <text x="507.0" y="100.6" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">no</text>
+  <line x1="625" y1="60" x2="813" y2="130" stroke="#0d366b" stroke-width="3.4"/>
+  <text x="743.0" y="100.6" text-anchor="start" font-size="14" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="700">yes</text>
+  <line x1="437" y1="170" x2="343" y2="235" stroke="#c3c2b7" stroke-width="1.6"/>
+  <text x="373.5" y="207.7" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">no</text>
+  <line x1="437" y1="170" x2="531" y2="235" stroke="#c3c2b7" stroke-width="1.6"/>
+  <text x="500.5" y="207.7" text-anchor="start" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">yes</text>
+  <line x1="813" y1="170" x2="719" y2="235" stroke="#0d366b" stroke-width="3.4"/>
+  <text x="749.5" y="207.7" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="700">no</text>
+  <line x1="813" y1="170" x2="907" y2="235" stroke="#c3c2b7" stroke-width="1.6"/>
+  <text x="876.5" y="207.7" text-anchor="start" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">yes</text>
+  <rect x="527.0" y="20" width="196" height="40" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2.2"/>
+  <text x="625" y="45.5" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">vol_20d above 0.99?</text>
+  <rect x="339.0" y="130" width="196" height="40" rx="8" fill="#ffffff" stroke="#86b6ef" stroke-width="1.5"/>
+  <text x="437" y="155.5" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">vol_20d above 0.82?</text>
+  <rect x="715.0" y="130" width="196" height="40" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2.2"/>
+  <text x="813" y="155.5" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">ret_20d above −0.45?</text>
+  <rect x="268.0" y="235" width="150" height="54" rx="8" fill="#d89587" stroke="#fcfcfb" stroke-width="1"/>
+  <text x="343" y="264" text-anchor="middle" font-size="18" font-family="Segoe UI, sans-serif" fill="#141413" font-weight="700">0.70</text>
+  <text x="343" y="281" text-anchor="middle" font-size="12.5" font-family="Segoe UI, sans-serif" fill="#141413">969 days</text>
+  <rect x="456.0" y="235" width="150" height="54" rx="8" fill="#bb5141" stroke="#fcfcfb" stroke-width="1"/>
+  <text x="531" y="264" text-anchor="middle" font-size="18" font-family="Segoe UI, sans-serif" fill="#ffffff" font-weight="700">0.99</text>
+  <text x="531" y="281" text-anchor="middle" font-size="12.5" font-family="Segoe UI, sans-serif" fill="#ffffff">185 days</text>
+  <rect x="644.0" y="235" width="150" height="54" rx="8" fill="#7d271b" stroke="#0d366b" stroke-width="3"/>
+  <text x="719" y="264" text-anchor="middle" font-size="18" font-family="Segoe UI, sans-serif" fill="#ffffff" font-weight="700">2.84</text>
+  <text x="719" y="281" text-anchor="middle" font-size="12.5" font-family="Segoe UI, sans-serif" fill="#ffffff">47 days</text>
+  <rect x="832.0" y="235" width="150" height="54" rx="8" fill="#ab3c2c" stroke="#fcfcfb" stroke-width="1"/>
+  <text x="907" y="264" text-anchor="middle" font-size="18" font-family="Segoe UI, sans-serif" fill="#ffffff" font-weight="700">1.25</text>
+  <text x="907" y="281" text-anchor="middle" font-size="12.5" font-family="Segoe UI, sans-serif" fill="#ffffff">693 days</text>
+  <text x="719" y="312" text-anchor="middle" font-size="13.5" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">vol_20d 1.5, ret_20d −0.6</text>
+</svg>
+:::
+
+A day answers the questions from the root down and lands in one leaf. A day
+with `vol_20d` at 1.5 and `ret_20d` at −0.6 gets 2.84: the average of 47
+training days.
+
+# A tree on one column
+
+```{python}
+#| echo: false
+#| fig-align: center
+_st = DecisionTreeRegressor(max_depth=2, random_state=0).fit(TRAIN[["vol_20d"]], TRAIN["vol_next"])
+_rm = lambda m: rmse(TEST["vol_next"], m.predict(TEST[["vol_20d"]]))
+_gx = pd.DataFrame({"vol_20d": np.linspace(0, 6.2, 1241)})
+fig, ax = plt.subplots(figsize=(9.6, 3.4))
+ax.scatter(TRAIN["vol_20d"], TRAIN["vol_next"], s=6, color=BLUE_LIGHT, alpha=0.6, linewidths=0)
+ax.plot(_gx["vol_20d"], _line.predict(_gx), color=MUTED, linewidth=1.8, linestyle="--")
+ax.plot(_gx["vol_20d"], _st.predict(_gx), color=BRICK, linewidth=2.6)
+ax.text(5.9, _line.predict(pd.DataFrame({"vol_20d": [5.9]}))[0] + 0.3, "linear regression", color=MUTED,
+        fontsize=12, ha="right")
+ax.text(5.9, _st.predict(pd.DataFrame({"vol_20d": [5.9]}))[0] - 0.45, "tree, depth 2", color=BRICK,
+        fontsize=12, ha="right")
+ax.set_xlim(0, 6.2)
+ax.set_ylim(0, 6.2)
+ax.set_xlabel("vol_20d: the last 20 days")
+ax.set_ylabel("vol_next: the next 20 days")
+ax.set_title(f"Training days, 2015 to 2022; test RMSE: linear regression {_rm(_line):.3f}, tree {_rm(_st):.3f}", loc="left")
+plt.show()
+```
+
+On `vol_20d` alone, a tree of depth 2 cuts at 0.82, 0.99 and 2.15 and forecasts
+four flat steps. On the test days it scores 0.271, linear regression 0.237.
+
+# The same tree as boxes
+
+```{python}
+#| echo: false
+#| fig-align: center
+fig, axes = plt.subplots(1, 3, figsize=(11.6, 3.5), sharey=True)
+for ax, _depth in zip(axes, [1, 2, 3]):
+    _m = DecisionTreeRegressor(max_depth=_depth, random_state=0).fit(TRAIN[PAIR], TRAIN["vol_next"])
+    draw_plane(ax, _m)
+    ax.set_title(f"depth {_depth}: {_m.get_n_leaves()} leaves", loc="left")
+    ax.set_xlabel("vol_20d")
+axes[0].set_ylabel("ret_20d")
+fig.tight_layout()
+plt.show()
+```
+
+With two columns each question cuts the plane in two, and each level cuts every
+box again. Each box is shaded by its forecast; the dots are the training days.
+
+# A tree as a formula
+
+::: {.formula}
+$$\hat f(\mathbf{x}) = \sum_{m=1}^{M} c_m \,\mathbf{1}\{\mathbf{x} \in R_m\}$$
+:::
+
+The leaves are boxes $R_1, \dots, R_M$, and $c_m$ is the mean `vol_next` of the
+training days in box $m$. The indicator picks out the one box holding
+$\mathbf{x}$.
+
+::: {.keypoint}
+In the tree of depth 2, $M = 4$, and the four $c_m$ are 0.70, 0.99, 2.84 and
+1.25.
+:::
+
+# Three ways to forecast {.smaller}
+
+| model | a forecast is | it needs |
+|:--|:--|:--|
+| linear regression | one straight formula for the whole table | the shape written in: a column for every bend or interaction |
+| k-nearest neighbours | the average of the $k$ closest training rows | a scaler, and a distance that suits the columns |
+| a tree | the average of the training rows in the same box | enough rows to place the cuts |
+
+::: {.keypoint}
+A tree forecasts from nearby training rows, as k-nearest neighbours does, but
+its neighbourhoods are boxes placed by the data, and a scaler changes nothing.
+:::
+
+# 3 · Growing a tree {.divider}
+
+::: {.divider-kicker}
+Part 3
+:::
+
+::: {.divider-note}
+How the questions are chosen, one at a time.
+:::
+
+# Six days
+
+```{python}
+#| echo: false
+#| fig-align: center
+_sx = [0.4, 0.6, 0.8, 1.2, 1.6, 2.4]
+_sy = [0.5, 0.6, 0.7, 1.2, 1.5, 1.2]
+fig, ax = plt.subplots(figsize=(9.4, 3.0))
+for _c, _after in zip([0.5, 0.7, 1.0, 1.4, 2.0], ["0.4", "0.6", "0.8", "1.2", "1.6"]):
+    ax.axvline(_c, color=GREY, linewidth=1.4, linestyle="--", zorder=1)
+    ax.text(_c, 1.83, f"after {_after}", ha="center", fontsize=10.5, color=MUTED, zorder=2,
+            bbox=dict(facecolor="#fcfcfb", edgecolor="none", pad=1.5))
+ax.scatter(_sx, _sy, s=120, color=BLUE, zorder=3)
+for _px, _py in zip(_sx, _sy):
+    ax.annotate(f"{_py}", (_px, _py), textcoords="offset points", xytext=(0, -20),
+                ha="center", fontsize=11, color=DEEP)
+ax.set_xlim(0.2, 2.6)
+ax.set_ylim(0.2, 1.95)
+ax.grid(axis="x", visible=False)
+ax.set_xticks(_sx)
+ax.set_xlabel("vol_20d")
+ax.set_ylabel("vol_next")
+fig.tight_layout()
+plt.show()
+```
+
+The six are real training days, rounded to one decimal. A question on `vol_20d`
+can cut them in five places; the best cut leaves each box with days as alike as
+possible.
+
+# The best number for one box
+
+A box forecasts one number, $c$, for all its days. The squared error is
+smallest where its slope in $c$ is zero:
+
+::: {.formula}
+$$\frac{d}{dc}\sum_{i} (y_i - c)^2 = -2\sum_{i} (y_i - c) = 0 \quad\Longrightarrow\quad c = \bar y$$
+:::
+
+The best forecast is the box's mean, and what is left is its RSS,
+$\sum_i (y_i - \bar y)^2$. Three days at 0.5, 0.6 and 0.7 forecast 0.6 and
+leave 0.02.
+
+# Every cut on the six
+
+<table class="cut-table">
+<thead><tr><th>cut after</th><th>left box</th><th>right box</th><th>total RSS</th></tr></thead>
+<tbody>
+<tr><td>no cut</td><td></td><td>6 days, mean 0.95: 0.815</td><td>0.815</td></tr>
+<tr class="fragment"><td>0.4</td><td>1 day, mean 0.5: 0</td><td>5 days, mean 1.04: 0.572</td><td>0.572</td></tr>
+<tr class="fragment"><td>0.6</td><td>2 days, mean 0.55: 0.005</td><td>4 days, mean 1.15: 0.330</td><td>0.335</td></tr>
+<tr class="fragment"><td><strong>0.8</strong></td><td>3 days, mean 0.6: 0.020</td><td>3 days, mean 1.3: 0.060</td><td><strong>0.080</strong></td></tr>
+<tr class="fragment"><td>1.2</td><td>4 days, mean 0.75: 0.290</td><td>2 days, mean 1.35: 0.045</td><td>0.335</td></tr>
+<tr class="fragment"><td>1.6</td><td>5 days, mean 0.9: 0.740</td><td>1 day, mean 1.2: 0</td><td>0.740</td></tr>
+</tbody>
+</table>
+
+Each row adds up the RSS of the two boxes. The cut after 0.8 leaves 0.080, far
+below the rest: it separates the calm days from the busy ones.
+
+# The rule, in general
+
+::: {.formula}
+$$\min_{j,\;s}\;\Bigg[\sum_{i:\;x_{ij} \le s} \big(y_i - \bar y_{L}\big)^2 \;+\; \sum_{i:\;x_{ij} > s} \big(y_i - \bar y_{R}\big)^2\Bigg]$$
+:::
+
+Column $j$ and cut $s$ make the two boxes, with means $\bar y_L$ and
+$\bar y_R$. It is the RSS of least squares, with one constant per box in place
+of a line.
+
+::: {.keypoint}
+scikit-learn tries every column and every cut, and keeps the smallest.
+:::
+
+# The six, in code
+
+```{pyodide}
+six = pd.DataFrame({"vol_20d": [0.4, 0.6, 0.8, 1.2, 1.6, 2.4],
+                    "vol_next": [0.5, 0.6, 0.7, 1.2, 1.5, 1.2]})
+
+def rss(y):
+    return ((y - y.mean()) ** 2).sum()
+
+left = six[six["vol_20d"] <= 0.8]
+right = six[six["vol_20d"] > 0.8]
+print(round(rss(left["vol_next"]), 3), round(rss(right["vol_next"]), 3))
+```
+
+`rss` adds up each value's squared distance from the mean of its box. The cut
+after 0.8 leaves 0.02 on the left and 0.06 on the right, as in the table.
+
+# Every cut on vol_20d
+
+```{pyodide}
+print(round(rss(train["vol_next"]), 1))
+for cut in [0.5, 0.75, 1.25, 1.5, 2.0, 3.0]:
+    left = train[train["vol_20d"] <= cut]["vol_next"]
+    right = train[train["vol_20d"] > cut]["vol_next"]
+    print(cut, round(rss(left) + rss(right), 1))
+```
+
+A loop tries six cuts on the 1,894 training days. Without a cut the RSS is
+908.5, and the cut at 1.25 leaves the least of these six, 752.1.
+
+# Recursive binary splitting, step by step
+
+::: {.diagram}
+<svg width="1100" height="470" viewBox="0 0 1100 470" role="img" aria-label="Growing a tree in three steps: the plane of vol_20d and ret_20d is cut first at vol_20d 0.99, then the calm box at 0.82, then the busy box at ret_20d minus 0.45, while the tree beside it gains one question per step and the RSS falls from 908.5 to 617.6">
+  <rect x="78.0" y="14.0" width="470.0" height="368.0" fill="#bb5343" stroke="#fcfcfb" stroke-width="1.5"/>
+  <g class="fragment" data-fragment-index="1"><rect x="78.0" y="14.0" width="123.1" height="368.0" fill="#d28678" stroke="#fcfcfb" stroke-width="1.5"/><rect x="201.1" y="14.0" width="346.9" height="368.0" fill="#a63a2a" stroke="#fcfcfb" stroke-width="1.5"/></g>
+  <g class="fragment" data-fragment-index="2"><rect x="78.0" y="14.0" width="97.7" height="368.0" fill="#d89587" stroke="#fcfcfb" stroke-width="1.5"/><rect x="175.7" y="14.0" width="25.5" height="368.0" fill="#bb5141" stroke="#fcfcfb" stroke-width="1.5"/></g>
+  <g class="fragment" data-fragment-index="3"><rect x="201.1" y="290.8" width="346.9" height="91.2" fill="#7d271b" stroke="#fcfcfb" stroke-width="1.5"/><rect x="201.1" y="14.0" width="346.9" height="276.8" fill="#ab3c2c" stroke="#fcfcfb" stroke-width="1.5"/></g>
+  <g fill="#0d366b" fill-opacity="0.45"><circle cx="119.8" cy="154.3" r="2.1"/><circle cx="118.1" cy="149.1" r="2.1"/><circle cx="88.9" cy="137.0" r="2.1"/><circle cx="241.7" cy="227.3" r="2.1"/><circle cx="124.5" cy="126.4" r="2.1"/><circle cx="214.2" cy="187.4" r="2.1"/><circle cx="133.0" cy="136.3" r="2.1"/><circle cx="119.9" cy="161.5" r="2.1"/><circle cx="155.5" cy="89.6" r="2.1"/><circle cx="137.8" cy="133.5" r="2.1"/><circle cx="189.3" cy="126.6" r="2.1"/><circle cx="141.5" cy="142.0" r="2.1"/><circle cx="139.9" cy="138.4" r="2.1"/><circle cx="109.1" cy="117.5" r="2.1"/><circle cx="345.3" cy="190.3" r="2.1"/><circle cx="190.0" cy="219.1" r="2.1"/><circle cx="174.6" cy="200.4" r="2.1"/><circle cx="211.3" cy="113.7" r="2.1"/><circle cx="333.7" cy="282.7" r="2.1"/><circle cx="209.8" cy="193.2" r="2.1"/><circle cx="284.9" cy="313.7" r="2.1"/><circle cx="138.6" cy="126.9" r="2.1"/><circle cx="189.6" cy="179.7" r="2.1"/><circle cx="130.4" cy="174.7" r="2.1"/><circle cx="330.4" cy="200.6" r="2.1"/><circle cx="110.7" cy="162.2" r="2.1"/><circle cx="104.2" cy="137.8" r="2.1"/><circle cx="194.8" cy="131.3" r="2.1"/><circle cx="116.0" cy="158.5" r="2.1"/><circle cx="110.3" cy="96.6" r="2.1"/><circle cx="89.5" cy="144.3" r="2.1"/><circle cx="115.0" cy="174.2" r="2.1"/><circle cx="289.3" cy="149.0" r="2.1"/><circle cx="345.0" cy="192.1" r="2.1"/><circle cx="172.8" cy="56.9" r="2.1"/><circle cx="344.1" cy="262.1" r="2.1"/><circle cx="149.7" cy="113.5" r="2.1"/><circle cx="152.5" cy="130.4" r="2.1"/><circle cx="93.1" cy="150.9" r="2.1"/><circle cx="93.1" cy="150.7" r="2.1"/><circle cx="153.5" cy="121.5" r="2.1"/><circle cx="107.3" cy="149.9" r="2.1"/><circle cx="160.9" cy="90.1" r="2.1"/><circle cx="247.8" cy="233.5" r="2.1"/><circle cx="265.8" cy="253.3" r="2.1"/><circle cx="100.8" cy="127.2" r="2.1"/><circle cx="144.3" cy="177.6" r="2.1"/><circle cx="179.6" cy="115.1" r="2.1"/><circle cx="106.8" cy="133.7" r="2.1"/><circle cx="151.7" cy="140.2" r="2.1"/><circle cx="211.8" cy="182.9" r="2.1"/><circle cx="257.8" cy="160.8" r="2.1"/><circle cx="145.2" cy="127.9" r="2.1"/><circle cx="139.2" cy="123.6" r="2.1"/><circle cx="133.4" cy="153.4" r="2.1"/><circle cx="178.8" cy="101.2" r="2.1"/><circle cx="274.8" cy="226.8" r="2.1"/><circle cx="219.1" cy="172.2" r="2.1"/><circle cx="261.7" cy="209.7" r="2.1"/><circle cx="103.9" cy="143.2" r="2.1"/><circle cx="173.0" cy="90.8" r="2.1"/><circle cx="143.6" cy="172.8" r="2.1"/><circle cx="249.7" cy="202.9" r="2.1"/><circle cx="188.6" cy="165.8" r="2.1"/><circle cx="236.2" cy="95.4" r="2.1"/><circle cx="166.3" cy="166.4" r="2.1"/><circle cx="102.9" cy="152.0" r="2.1"/><circle cx="195.5" cy="92.3" r="2.1"/><circle cx="101.6" cy="159.2" r="2.1"/><circle cx="112.1" cy="148.2" r="2.1"/><circle cx="284.8" cy="335.2" r="2.1"/><circle cx="296.6" cy="104.5" r="2.1"/><circle cx="168.4" cy="186.4" r="2.1"/><circle cx="122.7" cy="122.0" r="2.1"/><circle cx="233.9" cy="252.9" r="2.1"/><circle cx="109.5" cy="125.0" r="2.1"/><circle cx="251.3" cy="204.2" r="2.1"/><circle cx="260.9" cy="155.7" r="2.1"/><circle cx="209.0" cy="116.2" r="2.1"/><circle cx="141.2" cy="207.7" r="2.1"/><circle cx="252.1" cy="102.2" r="2.1"/><circle cx="188.9" cy="168.4" r="2.1"/><circle cx="184.0" cy="161.2" r="2.1"/><circle cx="266.2" cy="260.7" r="2.1"/><circle cx="331.0" cy="180.9" r="2.1"/><circle cx="209.4" cy="180.0" r="2.1"/><circle cx="141.3" cy="149.0" r="2.1"/><circle cx="393.8" cy="331.3" r="2.1"/><circle cx="108.2" cy="107.9" r="2.1"/><circle cx="161.8" cy="87.9" r="2.1"/><circle cx="151.1" cy="154.8" r="2.1"/><circle cx="310.9" cy="208.5" r="2.1"/><circle cx="103.3" cy="163.0" r="2.1"/><circle cx="246.6" cy="211.4" r="2.1"/><circle cx="153.9" cy="123.3" r="2.1"/><circle cx="170.6" cy="217.5" r="2.1"/><circle cx="370.2" cy="279.3" r="2.1"/><circle cx="164.0" cy="171.5" r="2.1"/><circle cx="81.2" cy="139.9" r="2.1"/><circle cx="141.7" cy="145.4" r="2.1"/><circle cx="222.5" cy="249.9" r="2.1"/><circle cx="91.8" cy="129.2" r="2.1"/><circle cx="212.9" cy="147.4" r="2.1"/><circle cx="113.6" cy="129.6" r="2.1"/><circle cx="152.2" cy="120.4" r="2.1"/><circle cx="271.4" cy="126.1" r="2.1"/><circle cx="219.8" cy="155.0" r="2.1"/><circle cx="86.1" cy="144.4" r="2.1"/><circle cx="338.5" cy="220.0" r="2.1"/><circle cx="375.5" cy="237.1" r="2.1"/><circle cx="195.7" cy="174.4" r="2.1"/><circle cx="107.0" cy="175.1" r="2.1"/><circle cx="148.8" cy="173.2" r="2.1"/><circle cx="183.8" cy="222.6" r="2.1"/><circle cx="97.1" cy="149.5" r="2.1"/><circle cx="131.0" cy="128.1" r="2.1"/><circle cx="168.0" cy="100.8" r="2.1"/><circle cx="220.6" cy="126.9" r="2.1"/><circle cx="111.9" cy="119.8" r="2.1"/><circle cx="131.2" cy="108.5" r="2.1"/><circle cx="188.8" cy="251.8" r="2.1"/><circle cx="161.2" cy="147.2" r="2.1"/><circle cx="330.1" cy="198.9" r="2.1"/><circle cx="170.5" cy="189.7" r="2.1"/><circle cx="343.4" cy="160.2" r="2.1"/><circle cx="365.1" cy="185.2" r="2.1"/><circle cx="135.5" cy="122.1" r="2.1"/><circle cx="246.8" cy="285.8" r="2.1"/><circle cx="93.7" cy="166.4" r="2.1"/><circle cx="190.8" cy="149.0" r="2.1"/><circle cx="258.1" cy="202.1" r="2.1"/><circle cx="225.1" cy="174.8" r="2.1"/><circle cx="127.3" cy="121.5" r="2.1"/><circle cx="158.2" cy="159.4" r="2.1"/><circle cx="147.9" cy="134.6" r="2.1"/><circle cx="114.6" cy="191.3" r="2.1"/><circle cx="216.3" cy="125.5" r="2.1"/><circle cx="146.2" cy="182.2" r="2.1"/><circle cx="148.7" cy="120.5" r="2.1"/><circle cx="345.5" cy="264.2" r="2.1"/><circle cx="106.8" cy="193.2" r="2.1"/><circle cx="166.2" cy="83.0" r="2.1"/><circle cx="170.5" cy="115.6" r="2.1"/><circle cx="95.1" cy="156.0" r="2.1"/><circle cx="157.5" cy="119.4" r="2.1"/><circle cx="110.0" cy="109.9" r="2.1"/><circle cx="283.9" cy="178.9" r="2.1"/><circle cx="180.4" cy="183.3" r="2.1"/><circle cx="152.7" cy="148.6" r="2.1"/><circle cx="176.7" cy="189.4" r="2.1"/><circle cx="265.2" cy="235.3" r="2.1"/><circle cx="172.4" cy="204.7" r="2.1"/><circle cx="126.3" cy="121.2" r="2.1"/><circle cx="278.5" cy="171.7" r="2.1"/><circle cx="194.4" cy="87.4" r="2.1"/><circle cx="165.0" cy="183.8" r="2.1"/><circle cx="116.9" cy="138.6" r="2.1"/><circle cx="105.2" cy="120.8" r="2.1"/><circle cx="152.6" cy="149.9" r="2.1"/><circle cx="126.9" cy="128.1" r="2.1"/><circle cx="346.3" cy="169.5" r="2.1"/><circle cx="137.2" cy="170.3" r="2.1"/><circle cx="253.0" cy="86.5" r="2.1"/><circle cx="112.2" cy="133.6" r="2.1"/><circle cx="147.0" cy="104.9" r="2.1"/><circle cx="183.4" cy="155.9" r="2.1"/><circle cx="241.4" cy="108.2" r="2.1"/><circle cx="249.9" cy="211.2" r="2.1"/><circle cx="391.1" cy="266.1" r="2.1"/><circle cx="150.2" cy="117.4" r="2.1"/><circle cx="277.3" cy="211.7" r="2.1"/><circle cx="226.9" cy="183.3" r="2.1"/><circle cx="239.6" cy="82.8" r="2.1"/><circle cx="261.1" cy="212.5" r="2.1"/><circle cx="143.6" cy="113.5" r="2.1"/><circle cx="164.7" cy="154.9" r="2.1"/><circle cx="215.6" cy="164.3" r="2.1"/><circle cx="129.0" cy="130.8" r="2.1"/><circle cx="323.5" cy="335.8" r="2.1"/><circle cx="251.5" cy="181.6" r="2.1"/><circle cx="272.4" cy="227.3" r="2.1"/><circle cx="128.2" cy="140.7" r="2.1"/><circle cx="134.3" cy="172.0" r="2.1"/><circle cx="96.8" cy="160.2" r="2.1"/><circle cx="263.9" cy="104.8" r="2.1"/><circle cx="125.6" cy="147.7" r="2.1"/><circle cx="242.0" cy="232.3" r="2.1"/><circle cx="93.8" cy="165.7" r="2.1"/><circle cx="145.7" cy="147.0" r="2.1"/><circle cx="298.1" cy="221.5" r="2.1"/><circle cx="143.8" cy="137.7" r="2.1"/><circle cx="135.0" cy="78.2" r="2.1"/><circle cx="216.7" cy="74.7" r="2.1"/><circle cx="175.5" cy="234.2" r="2.1"/><circle cx="125.2" cy="138.8" r="2.1"/><circle cx="206.1" cy="115.5" r="2.1"/><circle cx="107.0" cy="121.2" r="2.1"/><circle cx="125.6" cy="77.8" r="2.1"/><circle cx="114.9" cy="120.5" r="2.1"/><circle cx="97.2" cy="125.6" r="2.1"/><circle cx="129.1" cy="136.0" r="2.1"/><circle cx="226.7" cy="195.7" r="2.1"/><circle cx="236.9" cy="158.8" r="2.1"/><circle cx="340.0" cy="280.5" r="2.1"/><circle cx="180.6" cy="111.9" r="2.1"/><circle cx="242.2" cy="120.1" r="2.1"/><circle cx="242.7" cy="126.5" r="2.1"/><circle cx="102.6" cy="169.2" r="2.1"/><circle cx="119.3" cy="159.8" r="2.1"/><circle cx="150.0" cy="87.2" r="2.1"/><circle cx="144.0" cy="108.6" r="2.1"/><circle cx="234.4" cy="146.9" r="2.1"/><circle cx="195.7" cy="115.3" r="2.1"/><circle cx="125.2" cy="137.7" r="2.1"/><circle cx="115.0" cy="129.1" r="2.1"/><circle cx="213.1" cy="215.3" r="2.1"/><circle cx="128.4" cy="91.7" r="2.1"/><circle cx="133.1" cy="150.1" r="2.1"/><circle cx="239.5" cy="181.4" r="2.1"/><circle cx="118.3" cy="119.5" r="2.1"/><circle cx="116.7" cy="128.4" r="2.1"/><circle cx="160.8" cy="85.9" r="2.1"/><circle cx="114.1" cy="131.2" r="2.1"/><circle cx="133.8" cy="134.0" r="2.1"/><circle cx="158.5" cy="143.6" r="2.1"/><circle cx="92.7" cy="170.5" r="2.1"/><circle cx="127.6" cy="123.7" r="2.1"/><circle cx="78.2" cy="154.3" r="2.1"/><circle cx="191.8" cy="233.4" r="2.1"/><circle cx="101.7" cy="144.8" r="2.1"/><circle cx="159.3" cy="167.5" r="2.1"/><circle cx="210.4" cy="129.6" r="2.1"/><circle cx="350.5" cy="327.0" r="2.1"/><circle cx="361.2" cy="251.4" r="2.1"/><circle cx="161.0" cy="146.3" r="2.1"/><circle cx="180.6" cy="165.9" r="2.1"/><circle cx="141.2" cy="188.4" r="2.1"/><circle cx="174.1" cy="134.3" r="2.1"/><circle cx="356.1" cy="216.5" r="2.1"/><circle cx="119.5" cy="72.7" r="2.1"/><circle cx="259.3" cy="129.8" r="2.1"/><circle cx="127.7" cy="103.3" r="2.1"/><circle cx="162.9" cy="153.6" r="2.1"/><circle cx="180.8" cy="188.6" r="2.1"/><circle cx="99.3" cy="156.3" r="2.1"/><circle cx="216.0" cy="179.0" r="2.1"/><circle cx="166.2" cy="168.7" r="2.1"/><circle cx="81.8" cy="140.4" r="2.1"/><circle cx="147.9" cy="201.5" r="2.1"/><circle cx="201.1" cy="134.9" r="2.1"/><circle cx="141.9" cy="190.5" r="2.1"/><circle cx="263.3" cy="238.9" r="2.1"/><circle cx="247.5" cy="126.9" r="2.1"/><circle cx="237.4" cy="29.1" r="2.1"/><circle cx="97.2" cy="148.7" r="2.1"/><circle cx="364.8" cy="244.4" r="2.1"/><circle cx="249.5" cy="149.0" r="2.1"/><circle cx="114.6" cy="121.5" r="2.1"/><circle cx="106.4" cy="143.4" r="2.1"/><circle cx="310.9" cy="208.6" r="2.1"/><circle cx="241.2" cy="118.0" r="2.1"/><circle cx="329.3" cy="166.2" r="2.1"/><circle cx="240.9" cy="88.4" r="2.1"/><circle cx="230.4" cy="80.1" r="2.1"/><circle cx="173.2" cy="147.5" r="2.1"/><circle cx="161.5" cy="199.4" r="2.1"/><circle cx="291.7" cy="226.3" r="2.1"/><circle cx="162.1" cy="141.3" r="2.1"/><circle cx="150.2" cy="148.1" r="2.1"/><circle cx="116.6" cy="153.8" r="2.1"/><circle cx="115.0" cy="106.1" r="2.1"/><circle cx="118.2" cy="176.0" r="2.1"/><circle cx="127.5" cy="149.5" r="2.1"/><circle cx="122.9" cy="121.3" r="2.1"/><circle cx="115.3" cy="136.4" r="2.1"/><circle cx="256.8" cy="208.9" r="2.1"/><circle cx="108.1" cy="154.6" r="2.1"/><circle cx="113.4" cy="132.4" r="2.1"/><circle cx="190.8" cy="169.7" r="2.1"/><circle cx="187.6" cy="217.8" r="2.1"/><circle cx="131.4" cy="136.6" r="2.1"/><circle cx="128.5" cy="117.9" r="2.1"/><circle cx="149.7" cy="145.4" r="2.1"/><circle cx="117.2" cy="167.4" r="2.1"/><circle cx="310.2" cy="145.2" r="2.1"/><circle cx="144.8" cy="159.0" r="2.1"/><circle cx="154.9" cy="130.0" r="2.1"/><circle cx="209.0" cy="122.0" r="2.1"/><circle cx="249.4" cy="248.5" r="2.1"/><circle cx="349.8" cy="249.2" r="2.1"/><circle cx="145.8" cy="168.9" r="2.1"/><circle cx="316.6" cy="99.5" r="2.1"/><circle cx="149.5" cy="114.9" r="2.1"/><circle cx="150.1" cy="147.6" r="2.1"/><circle cx="161.1" cy="108.0" r="2.1"/><circle cx="201.3" cy="166.6" r="2.1"/><circle cx="237.5" cy="112.0" r="2.1"/><circle cx="116.0" cy="164.0" r="2.1"/><circle cx="106.2" cy="126.8" r="2.1"/><circle cx="134.9" cy="156.2" r="2.1"/><circle cx="187.6" cy="187.3" r="2.1"/><circle cx="125.9" cy="140.2" r="2.1"/><circle cx="101.3" cy="141.5" r="2.1"/><circle cx="326.4" cy="89.7" r="2.1"/><circle cx="356.2" cy="310.6" r="2.1"/><circle cx="137.6" cy="181.1" r="2.1"/><circle cx="154.7" cy="156.0" r="2.1"/><circle cx="261.0" cy="194.2" r="2.1"/><circle cx="113.8" cy="126.2" r="2.1"/><circle cx="127.1" cy="141.2" r="2.1"/><circle cx="195.4" cy="177.7" r="2.1"/><circle cx="254.0" cy="47.9" r="2.1"/><circle cx="148.9" cy="127.0" r="2.1"/><circle cx="115.3" cy="148.4" r="2.1"/><circle cx="141.4" cy="168.3" r="2.1"/><circle cx="258.1" cy="158.7" r="2.1"/><circle cx="161.2" cy="133.4" r="2.1"/><circle cx="119.1" cy="132.4" r="2.1"/><circle cx="132.8" cy="108.6" r="2.1"/><circle cx="101.5" cy="141.6" r="2.1"/><circle cx="94.0" cy="150.7" r="2.1"/><circle cx="109.4" cy="166.9" r="2.1"/><circle cx="97.1" cy="158.2" r="2.1"/><circle cx="141.3" cy="203.9" r="2.1"/><circle cx="362.5" cy="156.2" r="2.1"/><circle cx="249.1" cy="292.2" r="2.1"/><circle cx="130.5" cy="167.4" r="2.1"/><circle cx="110.8" cy="110.8" r="2.1"/><circle cx="337.1" cy="145.0" r="2.1"/><circle cx="93.7" cy="115.9" r="2.1"/><circle cx="229.0" cy="242.1" r="2.1"/><circle cx="113.7" cy="130.1" r="2.1"/><circle cx="191.6" cy="172.8" r="2.1"/><circle cx="115.6" cy="146.5" r="2.1"/><circle cx="170.7" cy="210.3" r="2.1"/><circle cx="317.3" cy="117.8" r="2.1"/><circle cx="133.9" cy="129.6" r="2.1"/><circle cx="257.6" cy="220.5" r="2.1"/><circle cx="212.4" cy="124.8" r="2.1"/><circle cx="246.9" cy="289.5" r="2.1"/><circle cx="181.8" cy="155.6" r="2.1"/><circle cx="112.5" cy="127.2" r="2.1"/><circle cx="341.5" cy="267.1" r="2.1"/><circle cx="203.8" cy="161.0" r="2.1"/><circle cx="111.6" cy="118.2" r="2.1"/><circle cx="131.9" cy="170.4" r="2.1"/><circle cx="128.8" cy="166.9" r="2.1"/><circle cx="116.0" cy="119.2" r="2.1"/><circle cx="179.9" cy="132.6" r="2.1"/><circle cx="217.7" cy="83.1" r="2.1"/><circle cx="184.0" cy="150.1" r="2.1"/><circle cx="266.6" cy="77.5" r="2.1"/><circle cx="228.7" cy="147.6" r="2.1"/><circle cx="212.7" cy="140.9" r="2.1"/><circle cx="157.7" cy="146.4" r="2.1"/><circle cx="127.1" cy="158.4" r="2.1"/><circle cx="213.8" cy="32.5" r="2.1"/><circle cx="133.9" cy="183.6" r="2.1"/><circle cx="208.6" cy="127.6" r="2.1"/><circle cx="330.9" cy="219.5" r="2.1"/><circle cx="240.3" cy="113.8" r="2.1"/><circle cx="122.5" cy="136.9" r="2.1"/><circle cx="312.6" cy="175.9" r="2.1"/><circle cx="114.7" cy="140.5" r="2.1"/><circle cx="99.2" cy="152.0" r="2.1"/><circle cx="93.8" cy="166.6" r="2.1"/><circle cx="123.5" cy="140.3" r="2.1"/><circle cx="105.8" cy="142.8" r="2.1"/><circle cx="246.1" cy="232.3" r="2.1"/><circle cx="316.2" cy="266.7" r="2.1"/><circle cx="203.8" cy="236.2" r="2.1"/><circle cx="140.4" cy="154.0" r="2.1"/><circle cx="366.6" cy="221.8" r="2.1"/><circle cx="114.6" cy="111.3" r="2.1"/><circle cx="166.7" cy="113.2" r="2.1"/><circle cx="308.7" cy="184.6" r="2.1"/><circle cx="232.7" cy="185.9" r="2.1"/><circle cx="211.5" cy="226.9" r="2.1"/><circle cx="122.5" cy="134.0" r="2.1"/><circle cx="123.2" cy="129.2" r="2.1"/><circle cx="136.4" cy="152.7" r="2.1"/><circle cx="240.3" cy="49.8" r="2.1"/><circle cx="84.5" cy="134.2" r="2.1"/><circle cx="101.0" cy="155.7" r="2.1"/><circle cx="110.7" cy="127.3" r="2.1"/><circle cx="277.7" cy="258.1" r="2.1"/><circle cx="119.3" cy="152.9" r="2.1"/><circle cx="281.8" cy="120.7" r="2.1"/><circle cx="200.9" cy="168.2" r="2.1"/><circle cx="151.7" cy="82.6" r="2.1"/><circle cx="125.1" cy="133.5" r="2.1"/><circle cx="109.9" cy="137.9" r="2.1"/><circle cx="210.6" cy="91.1" r="2.1"/><circle cx="339.5" cy="235.7" r="2.1"/><circle cx="118.1" cy="135.1" r="2.1"/><circle cx="104.9" cy="122.3" r="2.1"/><circle cx="248.5" cy="128.7" r="2.1"/><circle cx="151.1" cy="149.3" r="2.1"/><circle cx="229.2" cy="168.6" r="2.1"/><circle cx="118.9" cy="151.7" r="2.1"/><circle cx="288.7" cy="96.3" r="2.1"/><circle cx="337.1" cy="256.4" r="2.1"/><circle cx="275.5" cy="245.8" r="2.1"/><circle cx="242.0" cy="119.1" r="2.1"/><circle cx="100.0" cy="145.3" r="2.1"/><circle cx="144.6" cy="161.3" r="2.1"/><circle cx="266.6" cy="144.8" r="2.1"/><circle cx="180.1" cy="148.7" r="2.1"/><circle cx="115.1" cy="134.6" r="2.1"/><circle cx="397.3" cy="291.0" r="2.1"/><circle cx="186.0" cy="163.8" r="2.1"/><circle cx="267.1" cy="213.3" r="2.1"/><circle cx="135.2" cy="148.2" r="2.1"/><circle cx="147.1" cy="133.9" r="2.1"/><circle cx="102.7" cy="160.8" r="2.1"/><circle cx="173.2" cy="159.5" r="2.1"/><circle cx="147.0" cy="133.9" r="2.1"/><circle cx="107.9" cy="154.1" r="2.1"/><circle cx="106.2" cy="157.2" r="2.1"/><circle cx="243.5" cy="224.9" r="2.1"/><circle cx="165.4" cy="146.2" r="2.1"/><circle cx="148.3" cy="140.3" r="2.1"/><circle cx="228.0" cy="147.5" r="2.1"/><circle cx="275.2" cy="234.5" r="2.1"/><circle cx="118.3" cy="119.1" r="2.1"/><circle cx="249.7" cy="217.8" r="2.1"/><circle cx="335.2" cy="212.6" r="2.1"/><circle cx="158.6" cy="82.8" r="2.1"/><circle cx="119.9" cy="132.4" r="2.1"/><circle cx="126.3" cy="141.5" r="2.1"/><circle cx="286.3" cy="250.2" r="2.1"/><circle cx="180.1" cy="203.6" r="2.1"/><circle cx="383.2" cy="283.1" r="2.1"/><circle cx="146.9" cy="97.7" r="2.1"/><circle cx="174.6" cy="172.9" r="2.1"/><circle cx="267.6" cy="215.6" r="2.1"/><circle cx="184.3" cy="189.8" r="2.1"/><circle cx="291.7" cy="294.7" r="2.1"/><circle cx="307.4" cy="246.8" r="2.1"/><circle cx="203.8" cy="109.5" r="2.1"/><circle cx="112.4" cy="125.3" r="2.1"/><circle cx="249.6" cy="201.7" r="2.1"/><circle cx="358.6" cy="251.3" r="2.1"/><circle cx="240.7" cy="175.6" r="2.1"/><circle cx="132.3" cy="163.4" r="2.1"/><circle cx="99.8" cy="153.5" r="2.1"/><circle cx="107.1" cy="169.6" r="2.1"/><circle cx="148.5" cy="103.0" r="2.1"/><circle cx="127.2" cy="156.1" r="2.1"/><circle cx="268.7" cy="261.8" r="2.1"/></g>
+  <g class="fragment" data-fragment-index="1"><line x1="201.1" y1="14.0" x2="201.1" y2="382.0" stroke="#0d366b" stroke-width="3"/></g>
+  <g class="fragment" data-fragment-index="2"><line x1="175.7" y1="14.0" x2="175.7" y2="382.0" stroke="#0d366b" stroke-width="3"/></g>
+  <g class="fragment" data-fragment-index="3"><line x1="201.1" y1="290.8" x2="548.0" y2="290.8" stroke="#0d366b" stroke-width="3"/></g>
+  <g class="fragment fade-out" data-fragment-index="1"><text x="313.0" y="140.3" text-anchor="middle" font-size="24" font-family="Segoe UI, sans-serif" font-weight="700" fill="#ffffff" stroke="#bb5343" stroke-width="5" paint-order="stroke">0.98</text></g>
+  <g class="fragment fade-out" data-fragment-index="2"><g class="fragment" data-fragment-index="1"><text x="139.6" y="140.3" text-anchor="middle" font-size="24" font-family="Segoe UI, sans-serif" font-weight="700" fill="#141413" stroke="#d28678" stroke-width="5" paint-order="stroke">0.75</text></g></g>
+  <g class="fragment fade-out" data-fragment-index="3"><g class="fragment" data-fragment-index="1"><text x="374.6" y="140.3" text-anchor="middle" font-size="24" font-family="Segoe UI, sans-serif" font-weight="700" fill="#ffffff" stroke="#a63a2a" stroke-width="5" paint-order="stroke">1.35</text></g></g>
+  <g class="fragment" data-fragment-index="2"><text x="126.8" y="140.3" text-anchor="middle" font-size="24" font-family="Segoe UI, sans-serif" font-weight="700" fill="#141413" stroke="#d89587" stroke-width="5" paint-order="stroke">0.70</text></g>
+  <g class="fragment" data-fragment-index="3"><text x="374.6" y="344.4" text-anchor="middle" font-size="24" font-family="Segoe UI, sans-serif" font-weight="700" fill="#ffffff" stroke="#7d271b" stroke-width="5" paint-order="stroke">2.84</text><text x="374.6" y="160.4" text-anchor="middle" font-size="24" font-family="Segoe UI, sans-serif" font-weight="700" fill="#ffffff" stroke="#ab3c2c" stroke-width="5" paint-order="stroke">1.25</text></g>
+  <g><line x1="78" y1="382" x2="548" y2="382" stroke="#c3c2b7" stroke-width="1.4"/><line x1="78" y1="14" x2="78" y2="382" stroke="#c3c2b7" stroke-width="1.4"/><text x="125.0" y="406" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#898781">0.5</text><text x="203.3" y="406" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#898781">1.0</text><text x="281.7" y="406" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#898781">1.5</text><text x="360.0" y="406" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#898781">2.0</text><text x="438.3" y="406" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#898781">2.5</text><text x="516.7" y="406" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#898781">3.0</text><text x="69" y="388.0" text-anchor="end" font-size="17" font-family="Segoe UI, sans-serif" fill="#898781">−0.8</text><text x="69" y="282.9" text-anchor="end" font-size="17" font-family="Segoe UI, sans-serif" fill="#898781">−0.4</text><text x="69" y="177.7" text-anchor="end" font-size="17" font-family="Segoe UI, sans-serif" fill="#898781">0.0</text><text x="69" y="72.6" text-anchor="end" font-size="17" font-family="Segoe UI, sans-serif" fill="#898781">0.4</text><text x="313" y="436" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#52514e">vol_20d</text><text x="16" y="198" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#52514e" transform="rotate(-90 16 198)">ret_20d</text></g>
+  <g class="fragment fade-out" data-fragment-index="1"><rect x="787.0" y="5.0" width="116" height="62" rx="9" fill="#bb5343"/><text x="845" y="39" text-anchor="middle" font-size="23" font-family="Segoe UI, sans-serif" font-weight="700" fill="#ffffff">0.98</text><text x="845" y="59" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#ffffff">1,894 days</text></g>
+  <g class="fragment" data-fragment-index="1"><rect x="729.0" y="14.0" width="232" height="44" rx="9" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"/><text x="845" y="43" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" font-weight="600" fill="#0d366b">vol_20d above 0.99?</text><line x1="845" y1="58.0" x2="718" y2="119.0" stroke="#86b6ef" stroke-width="2"/><text x="766.1" y="91.6" text-anchor="end" font-size="16" font-family="Segoe UI, sans-serif" fill="#898781">no</text><line x1="845" y1="58.0" x2="972" y2="119.0" stroke="#86b6ef" stroke-width="2"/><text x="923.9" y="91.6" text-anchor="start" font-size="16" font-family="Segoe UI, sans-serif" fill="#898781">yes</text></g>
+  <g class="fragment fade-out" data-fragment-index="2"><g class="fragment" data-fragment-index="1"><rect x="660.0" y="119.0" width="116" height="62" rx="9" fill="#d28678"/><text x="718" y="153" text-anchor="middle" font-size="23" font-family="Segoe UI, sans-serif" font-weight="700" fill="#141413">0.75</text><text x="718" y="173" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#141413">1,154 days</text></g></g>
+  <g class="fragment fade-out" data-fragment-index="3"><g class="fragment" data-fragment-index="1"><rect x="914.0" y="119.0" width="116" height="62" rx="9" fill="#a63a2a"/><text x="972" y="153" text-anchor="middle" font-size="23" font-family="Segoe UI, sans-serif" font-weight="700" fill="#ffffff">1.35</text><text x="972" y="173" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#ffffff">740 days</text></g></g>
+  <g class="fragment" data-fragment-index="2"><rect x="602.0" y="128.0" width="232" height="44" rx="9" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"/><text x="718" y="157" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" font-weight="600" fill="#0d366b">vol_20d above 0.82?</text><line x1="718" y1="172.0" x2="657" y2="237.0" stroke="#86b6ef" stroke-width="2"/><text x="675.5" y="207.8" text-anchor="end" font-size="16" font-family="Segoe UI, sans-serif" fill="#898781">no</text><line x1="718" y1="172.0" x2="779" y2="237.0" stroke="#86b6ef" stroke-width="2"/><text x="760.5" y="207.8" text-anchor="start" font-size="16" font-family="Segoe UI, sans-serif" fill="#898781">yes</text><rect x="599.0" y="237.0" width="116" height="62" rx="9" fill="#d89587"/><text x="657" y="271" text-anchor="middle" font-size="23" font-family="Segoe UI, sans-serif" font-weight="700" fill="#141413">0.70</text><text x="657" y="291" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#141413">969 days</text><rect x="721.0" y="237.0" width="116" height="62" rx="9" fill="#bb5141"/><text x="779" y="271" text-anchor="middle" font-size="23" font-family="Segoe UI, sans-serif" font-weight="700" fill="#ffffff">0.99</text><text x="779" y="291" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#ffffff">185 days</text></g>
+  <g class="fragment" data-fragment-index="3"><rect x="856.0" y="128.0" width="232" height="44" rx="9" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"/><text x="972" y="157" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" font-weight="600" fill="#0d366b">ret_20d above −0.45?</text><line x1="972" y1="172.0" x2="911" y2="237.0" stroke="#86b6ef" stroke-width="2"/><text x="929.5" y="207.8" text-anchor="end" font-size="16" font-family="Segoe UI, sans-serif" fill="#898781">no</text><line x1="972" y1="172.0" x2="1033" y2="237.0" stroke="#86b6ef" stroke-width="2"/><text x="1014.5" y="207.8" text-anchor="start" font-size="16" font-family="Segoe UI, sans-serif" fill="#898781">yes</text><rect x="853.0" y="237.0" width="116" height="62" rx="9" fill="#7d271b"/><text x="911" y="271" text-anchor="middle" font-size="23" font-family="Segoe UI, sans-serif" font-weight="700" fill="#ffffff">2.84</text><text x="911" y="291" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#ffffff">47 days</text><rect x="975.0" y="237.0" width="116" height="62" rx="9" fill="#ab3c2c"/><text x="1033" y="271" text-anchor="middle" font-size="23" font-family="Segoe UI, sans-serif" font-weight="700" fill="#ffffff">1.25</text><text x="1033" y="291" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#ffffff">693 days</text></g>
+  <g class="fragment fade-out" data-fragment-index="1"><text x="845" y="376" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Start: all days in one box, forecast by the mean.</text><text x="845" y="414" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" font-weight="700" fill="#b3402f">1 box · RSS 908.5</text></g>
+  <g class="fragment fade-out" data-fragment-index="2"><g class="fragment" data-fragment-index="1"><text x="845" y="376" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Try every column and cut; keep the smallest RSS.</text><text x="845" y="414" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" font-weight="700" fill="#b3402f">2 boxes · RSS 742.2</text></g></g>
+  <g class="fragment fade-out" data-fragment-index="3"><g class="fragment" data-fragment-index="2"><text x="845" y="376" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Search again inside the calm box.</text><text x="845" y="414" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" font-weight="700" fill="#b3402f">3 boxes · RSS 728.6</text></g></g>
+  <g class="fragment" data-fragment-index="3"><text x="845" y="376" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">And inside the busy box: the direction matters.</text><text x="845" y="414" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" font-weight="700" fill="#b3402f">4 boxes · RSS 617.6</text></g>
+</svg>
+:::
+
+Each step keeps the cut with the smallest RSS inside one box, and earlier cuts
+are never revised: a greedy search. Three questions take the RSS from 908.5 to
+617.6.
+
+# 4 · Trees in scikit-learn {.divider}
+
+::: {.divider-kicker}
+Part 4
+:::
+
+::: {.divider-note}
+Fitting a tree, drawing it with plot_tree, and reading its forecasts.
+:::
+
+# The best cut, found by scikit-learn
+
+```{pyodide}
+from sklearn.tree import DecisionTreeRegressor, plot_tree
+pair = ["vol_20d", "ret_20d"]
+stump = DecisionTreeRegressor(max_depth=1, random_state=0)
+stump.fit(train[pair], train["vol_next"])
+plt.figure(figsize=(10, 3))
+plot_tree(stump, feature_names=pair, fontsize=10)
+plt.show()
+```
+
+A stump, a tree with one question, tries every cut on both columns.
+
+# Reading one box
+
+| line | in the top box | what it says |
+|:--|:--|:--|
+| the question | `vol_20d <= 0.986` | True goes left, False right; `vol_20d` beat `ret_20d` |
+| `squared_error` | 0.48 | the box's RSS divided by its days: the variance of `vol_next` |
+| `samples` | 1894 | the training days in the box |
+| `value` | 0.983 | the mean of `vol_next` in the box: its forecast |
+
+The two leaves forecast 0.745 for the 1,154 calmer days and 1.353 for the 740
+busier ones. Each leaf's `value` is its $c_m$.
+
+# Your turn [1]{.chip .chip-turn} {.your-turn}
+
+Keep only the busy days, with `vol_20d` above 0.986, and fit a stump to them.
+Which question does it ask?
+
+```{pyodide}
+#| autorun: false
+busy = ...
+busy_stump = DecisionTreeRegressor(max_depth=1, random_state=0)
+...
+plt.figure(figsize=(10, 3))
+plot_tree(busy_stump, feature_names=pair, fontsize=10)
+plt.show()
+```
+
+::: {.muted .small}
+A mask keeps the rows where a condition holds, as in the loop over cuts. Fit on
+`busy[pair]` and `busy["vol_next"]`.
+:::
+
+# Your turn 1: answer
+
+```python
+busy = train[train["vol_20d"] > 0.986]
+busy_stump.fit(busy[pair], busy["vol_next"])
+```
+
+Inside the busy box the best question is about `ret_20d`. After 20 days that
+fell 0.45 percent a day or more, the next 20 averaged 2.84; otherwise 1.25.
+
+::: {.keypoint}
+This is how a tree finds an interaction: each question is chosen for the rows
+of one box. A tree of depth 2 does it for every box.
+:::
+
+# A tree of depth 2
+
+```{pyodide}
+small = DecisionTreeRegressor(max_depth=2, random_state=0)
+small.fit(train[pair], train["vol_next"])
+plt.figure(figsize=(10, 3))
+plot_tree(small, feature_names=pair, filled=True, impurity=False, fontsize=10)
+plt.show()
+```
+
+Each box of the stump gets a second question of its own. `filled=True` shades a
+box by its forecast, and `impurity=False` leaves out the error line.
+
+# Forecasts from the leaves
+
+```{pyodide}
+p_small = small.predict(test[pair])
+
+print(np.unique(p_small).round(3))
+print(round(rmse(test["vol_next"], p_small), 4))
+```
+
+The 482 test days get only three different forecasts: none had high volatility
+after a steep fall. The error is 0.269, against 0.237 for linear regression.
+
+# A tree on all 19 columns
+
+```{pyodide}
+tree = DecisionTreeRegressor(max_depth=3, random_state=0)
+tree.fit(train[columns], train["vol_next"])
+
+print(round(rmse(test["vol_next"], tree.predict(test[columns])), 4))
+```
+
+There is no scaler, because a cut compares one column with one number. Three
+levels of questions on all 19 columns score 0.390, worse than guessing the
+training average, 0.291.
+
+# Your turn [2]{.chip .chip-turn} {.your-turn}
+
+Draw `tree` in the clearer style. Which columns does it ask about, and why might
+that go wrong on the test days?
+
+```{pyodide}
+#| autorun: false
+plt.figure(figsize=(12, 3.4))
+plot_tree(tree, ...)
+plt.show()
+```
+
+::: {.muted .small}
+The column names are in `columns`. `label="root"` names the fields in the top
+box only, and `precision=2` and `fontsize=9` keep the text small.
+:::
+
+# Your turn 2: answer
+
+```python
+plt.figure(figsize=(12, 3.4))
+plot_tree(tree, feature_names=columns, filled=True, impurity=False,
+          label="root", precision=2, fontsize=9)
+plt.show()
+```
+
+The second question is Disney's volatility above 1.26. It was on 330 of the 482
+test days, so they got 1.20, while the index's next 20 days averaged 0.80.
+
+::: {.keypoint}
+The first question sets aside the 27 most volatile training days, 26 of them in 2020:
+squared errors weigh the biggest misses most.
+:::
+
+# 5 · How deep to grow {.divider}
+
+::: {.divider-kicker}
+Part 5
+:::
+
+::: {.divider-note}
+A tree without a limit ends with a leaf for every training day.
+:::
+
+# The training days, scored [predict]{.chip .chip-predict}
+
+Grow a tree with no limit on `vol_20d` and `ret_20d`, and score it on the days
+it was grown on; the depth-2 tree scores 0.571 there. What will the error be?
+
+```{pyodide}
+#| autorun: false
+full = DecisionTreeRegressor(random_state=0)
+full.fit(train[pair], train["vol_next"])
+
+print(round(rmse(train["vol_next"], full.predict(train[pair])), 4))
+```
+
+# A tree without a limit
+
+```{pyodide}
+full = DecisionTreeRegressor(random_state=0)
+full.fit(train[pair], train["vol_next"])
+
+print(full.get_depth(), full.get_n_leaves())
+print(round(rmse(test["vol_next"], full.predict(test[pair])), 4))
+```
+
+The tree asks up to 32 questions and ends with 1,894 leaves, one for every
+training day. On the test days its error is 0.466, against 0.269 at depth 2.
+
+# Boxes around single days
+
+```{python}
+#| echo: false
+#| fig-align: center
+fig, axes = plt.subplots(1, 3, figsize=(11.6, 3.5), sharey=True)
+for ax, _depth in zip(axes, [2, 6, 15]):
+    _m = DecisionTreeRegressor(max_depth=_depth, random_state=0).fit(TRAIN[PAIR], TRAIN["vol_next"])
+    _tr = rmse(TRAIN["vol_next"], _m.predict(TRAIN[PAIR]))
+    _te = rmse(TEST["vol_next"], _m.predict(TEST[PAIR]))
+    draw_plane(ax, _m, labels=_depth <= 2)
+    ax.set_title(f"depth {_depth}: {_m.get_n_leaves():,} leaves", loc="left")
+    ax.set_xlabel(f"training RMSE {_tr:.3f}, test {_te:.3f}")
+axes[0].set_ylabel("ret_20d")
+fig.tight_layout()
+plt.show()
+```
+
+The same plane is cut at three depths. At depth 15 there are 1,261 boxes for
+1,894 days: the training error is 0.130, the test error 0.443.
+
+# Depth against RMSE
+
+```{python}
+#| echo: false
+#| fig-align: center
+_rows = []
+for _d in range(1, 21):
+    _m = DecisionTreeRegressor(max_depth=_d, random_state=0).fit(TRAIN[PAIR], TRAIN["vol_next"])
+    _rows.append((_d, rmse(TRAIN["vol_next"], _m.predict(TRAIN[PAIR])),
+                  rmse(TEST["vol_next"], _m.predict(TEST[PAIR]))))
+_dd, _trn, _tst = zip(*_rows)
+fig, ax = plt.subplots(figsize=(9.6, 2.9))
+ax.plot(_dd, _trn, "o-", color=AMBER, linewidth=2, markersize=4.5)
+ax.plot(_dd, _tst, "o-", color=BLUE, linewidth=2, markersize=4.5)
+ax.text(20.4, _trn[-1], "training days", color=AMBER, fontsize=11.5, va="center")
+ax.text(20.4, _tst[-1], "test days", color=BLUE, fontsize=11.5, va="center")
+_b = int(np.argmin(_tst))
+ax.annotate(f"depth {_dd[_b]}: {_tst[_b]:.3f}", (_dd[_b], _tst[_b]), textcoords="offset points",
+            xytext=(6, -16), ha="left", va="top", color=BLUE, fontsize=11)
+ax.set_xticks([1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20])
+ax.set_xlim(0.5, 23.2)
+ax.set_ylim(0, 0.68)
+ax.set_xlabel("max_depth")
+ax.set_ylabel("RMSE")
+ax.set_title("Trees on vol_20d and ret_20d, one per depth", loc="left")
+plt.show()
+```
+
+The test error is lowest at depth 1 or 2, 0.269, and climbs to 0.471 by depth
+20. The training error falls towards 0.
+
+::: {.keypoint}
+Depth moves a tree along the bias-variance trade-off: a shallow tree is biased,
+and a deep one changes with every sample of days.
+:::
+
+# Depth on the folds
+
+```{pyodide}
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+
+folds = TimeSeriesSplit(n_splits=5)
+grid = {"max_depth": [1, 2, 3, 4, 6, 8]}
+search = GridSearchCV(DecisionTreeRegressor(random_state=0), grid, cv=folds,
+                      scoring="neg_root_mean_squared_error")
+search.fit(train[pair], train["vol_next"])
+print(search.best_params_, round(-search.best_score_, 4))
+```
+
+`TimeSeriesSplit` scores each fold on later days, as it did for ridge's alpha;
+the folds include 2020, so their errors are larger. Depth 2 wins, at 0.637.
+
+# A minimum size for each leaf
+
+```{pyodide}
+grid = {"min_samples_leaf": [20, 50, 100, 200, 400]}
+search = GridSearchCV(DecisionTreeRegressor(random_state=0), grid, cv=folds,
+                      scoring="neg_root_mean_squared_error")
+search.fit(train[pair], train["vol_next"])
+print(search.best_params_, round(-search.best_score_, 4))
+print(search.best_estimator_.get_depth(), search.best_estimator_.get_n_leaves())
+```
+
+A cut is allowed only if both boxes keep at least `min_samples_leaf` days. At
+100 the folds' error is 0.612, and the tree has 14 leaves and depth 6.
+
+# Pruning: a price for every leaf
+
+::: {.formula}
+$$R_\alpha(T) = R(T) + \alpha\,|T|$$
+:::
+
+```{pyodide}
+grid = {"ccp_alpha": [0.001, 0.002, 0.005, 0.01, 0.02, 0.05]}
+search = GridSearchCV(DecisionTreeRegressor(random_state=0), grid, cv=folds,
+                      scoring="neg_root_mean_squared_error")
+search.fit(train[pair], train["vol_next"])
+print(search.best_params_, search.best_estimator_.get_n_leaves())
+```
+
+$R(T)$ is the mean squared error left in the leaves of tree $T$, and $|T|$
+counts them; as in ridge, $\alpha$ prices size. The folds choose 0.02: four
+leaves.
+
+# 6 · Bagging and random forests {.divider}
+
+::: {.divider-kicker}
+Part 6
+:::
+
+::: {.divider-note}
+Why one deep tree is not enough, and two ways of averaging many.
+:::
+
+# Two halves, two trees
+
+```{pyodide}
+half_a = train.sample(frac=0.5, random_state=0)
+half_b = train.drop(half_a.index)
+tree_a = DecisionTreeRegressor(random_state=0).fit(half_a[columns], half_a["vol_next"])
+tree_b = DecisionTreeRegressor(random_state=0).fit(half_b[columns], half_b["vol_next"])
+p_a, p_b = tree_a.predict(test[columns]), tree_b.predict(test[columns])
+print(round(np.abs(p_a - p_b).mean(), 3))
+print(round(rmse(test["vol_next"], p_a), 3), round(rmse(test["vol_next"], p_b), 3),
+      round(rmse(test["vol_next"], (p_a + p_b) / 2), 3))
+```
+
+Two full trees, each grown on a random half of the training days, differ by
+0.39 on the average test day. The average of the two scores 0.329, better than
+either.
+
+# Why averaging helps
+
+::: {.formula}
+$$\operatorname{Var}\Big(\frac{1}{B}\sum_{b=1}^{B}\hat f^{\,b}(\mathbf{x})\Big) = \frac{\sigma^2}{B}$$
+:::
+
+If $B$ trees grown on independent samples each forecast with variance
+$\sigma^2$, their average has variance $\sigma^2/B$. There is one training set,
+so the samples come from it.
+
+::: {.keypoint}
+A deep tree has low bias and high variance, and variance is the part an average
+removes.
+:::
+
+# A bootstrap sample
+
+```{pyodide}
+sample = train.sample(n=len(train), replace=True, random_state=0)
+
+print(len(sample), sample.index.nunique())
+print(round(sample.index.nunique() / len(train), 3))
+```
+
+`replace=True` puts each drawn day back, and `nunique` counts the distinct days.
+A day is missed by all $n$ draws with probability
+$(1 - 1/n)^n \approx e^{-1} = 0.37$, so about 63 percent are in.
+
+# Bagging by hand
+
+```{pyodide}
+total = np.zeros(len(test))
+for b in range(20):
+    sample = train.sample(n=len(train), replace=True, random_state=b)
+    grown = DecisionTreeRegressor(random_state=0).fit(sample[columns], sample["vol_next"])
+    total = total + grown.predict(test[columns])
+
+print(round(rmse(test["vol_next"], total / 20), 4))
+```
+
+Each tree grows fully on its own bootstrap sample, and the average is
+$\frac{1}{B}\sum_b \hat f^{\,b}(\mathbf{x})$ with $B = 20$. This is bagging, from
+bootstrap aggregating: 0.320, where one full tree scored 0.410.
+
+# The first question of each bagged tree
+
+```{pyodide}
+from sklearn.ensemble import BaggingRegressor
+bag = BaggingRegressor(DecisionTreeRegressor(), n_estimators=20, random_state=0)
+bag.fit(train[columns], train["vol_next"])
+first = []
+for t in bag.estimators_:
+    first.append(columns[t.tree_.feature[0]])
+print(pd.Series(first).value_counts())
+```
+
+`BaggingRegressor` grows and averages the trees and keeps them in `estimators_`.
+All 20 open with a volatility column, 11 with `vol_5d`.
+
+# Averaging trees that agree
+
+::: {.formula}
+$$\operatorname{Var}\Big(\frac{1}{B}\sum_{b=1}^{B}\hat f^{\,b}(\mathbf{x})\Big) = \rho\,\sigma^2 + \frac{1-\rho}{B}\,\sigma^2$$
+:::
+
+$\rho$ is the correlation between two trees' forecasts. More trees shrink only
+the second term; the first stays until the trees are made less alike.
+
+# A random forest
+
+```{pyodide}
+from sklearn.ensemble import RandomForestRegressor
+
+forest = RandomForestRegressor(n_estimators=100, max_features="sqrt",
+                               oob_score=True, random_state=0)
+forest.fit(train[columns], train["vol_next"])
+
+print(round(rmse(test["vol_next"], forest.predict(test[columns])), 4))
+```
+
+`max_features="sqrt"` lets each question choose among 4 of the 19 columns,
+drawn at random. Without it the regressor uses every column, which is bagging.
+
+# The first questions in a forest
+
+```{pyodide}
+first = []
+for t in forest.estimators_:
+    first.append(columns[t.tree_.feature[0]])
+counts = pd.Series(first).value_counts()
+print(len(counts))
+print(counts.head(4))
+```
+
+The 100 trees open with 12 different columns, and no column opens more than
+22. Each tree is weaker, and the trees differ more.
+
+# The number of trees
+
+```{python}
+#| echo: false
+#| fig-align: center
+_ns = [1, 2, 3, 5, 10, 20, 30, 50, 75, 100, 150, 200]
+_curves = {}
+for _name, _mf in [("bagging", 1.0), ("forest", "sqrt")]:
+    _f = RandomForestRegressor(n_estimators=200, max_features=_mf, random_state=0, n_jobs=-1)
+    _f.fit(TRAIN[COLS], TRAIN["vol_next"])
+    _pt = np.array([e.predict(TEST[COLS].to_numpy()) for e in _f.estimators_])
+    _cum = _pt.cumsum(axis=0) / np.arange(1, len(_pt) + 1)[:, None]
+    _curves[_name] = [rmse(TEST["vol_next"], _cum[n - 1]) for n in _ns]
+fig, ax = plt.subplots(figsize=(9.6, 3.2))
+ax.plot(_ns, _curves["bagging"], "o-", color=BLUE_LIGHT, linewidth=2, markersize=4.5)
+ax.plot(_ns, _curves["forest"], "o-", color=BLUE, linewidth=2, markersize=4.5)
+ax.text(215, _curves["bagging"][-1] + 0.006, "bagging", color="#5a8fd0", fontsize=11.5, va="center")
+ax.text(215, _curves["forest"][-1] - 0.006, "random forest", color=BLUE, fontsize=11.5, va="center")
+_lr = rmse(TEST["vol_next"], _line.predict(TEST[["vol_20d"]]))
+ax.axhline(_lr, color=MUTED, linewidth=1.2, linestyle="--")
+ax.text(1.0, _lr + 0.006, f"linear regression on vol_20d: {_lr:.3f}", color=MUTED, fontsize=10.5)
+ax.set_xscale("log")
+ax.set_xticks([1, 2, 5, 10, 20, 50, 100, 200])
+ax.set_xticklabels(["1", "2", "5", "10", "20", "50", "100", "200"])
+ax.minorticks_off()
+ax.set_xlim(0.8, 480)
+ax.set_ylim(0.2, 0.46)
+ax.set_xlabel("trees averaged")
+ax.set_ylabel("test RMSE")
+ax.set_title("Full trees on 19 columns; the forest draws 4 of them at each question", loc="left")
+plt.show()
+```
+
+The forest's average errs less than bagging's at every size: 0.284 against
+0.303 at 100 trees. Both flatten after about 50, above linear regression.
+
+# Out-of-bag rows on a time series
+
+```{pyodide}
+from sklearn.model_selection import cross_val_score
+print(round(rmse(train["vol_next"], forest.oob_prediction_), 4))
+scores = cross_val_score(forest, train[columns], train["vol_next"], cv=folds,
+                         scoring="neg_root_mean_squared_error")
+print(round(-scores.mean(), 4))
+```
+
+Each day is forecast by the trees whose sample left it out: an error of 0.252.
+On folds that score only later days it is 0.723, against 0.560 for ridge.
+
+::: {.keypoint}
+A day left out of a tree has its neighbours in the bag, and their next 20 days
+overlap its own by 19. On days, choose settings on `TimeSeriesSplit` folds.
+:::
+
+# Your turn [3]{.chip .chip-turn} {.your-turn}
+
+Build a forest like `forest`, but with leaves of at least 100 days, and print its
+test RMSE. Is it better than the forest of full trees?
+
+```{pyodide}
+#| autorun: false
+big_leaves = ...
+big_leaves.fit(train[columns], train["vol_next"])
+print(round(rmse(test["vol_next"], big_leaves.predict(test[columns])), 4))
+```
+
+::: {.muted .small}
+`min_samples_leaf` sets the smallest leaf, as it did for one tree. Keep the
+other settings of `forest`.
+:::
+
+# Your turn 3: answer
+
+```python
+big_leaves = RandomForestRegressor(n_estimators=100, max_features="sqrt",
+                                   min_samples_leaf=100, random_state=0)
+```
+
+Leaves of at least 100 days score 0.242, against 0.284 for full trees. Linear
+regression's 0.237 is still lower.
+
+# 7 · Tuning and its cost {.divider}
+
+::: {.divider-kicker}
+Part 7
+:::
+
+::: {.divider-note}
+Why settings matter more for trees, what a search costs, and model size.
+:::
+
+# Settings to choose, model by model {.smaller}
+
+| model | settings that change the fit | scikit-learn's default | test RMSE, default and tuned |
+|:--------|:----------------|:-------------|:----------|
+| linear regression | none | | 0.237 |
+| ridge | `alpha` | 1.0 | 0.248, then 0.218 |
+| a tree, on two columns | `max_depth`, `min_samples_leaf`, `ccp_alpha`, and more | no limit: one leaf per day | 0.466, then 0.241 |
+| a random forest | the tree's settings, plus `n_estimators` and `max_features` | 100 full trees on every column | 0.303, then 0.233 |
+
+Ridge has one setting, and tuning it moved the error by 0.030. A forest's
+defaults grow every tree down to single days, and tuning moved it by 0.070.
+
+# A grid over two forest settings
+
+```{python}
+#| echo: false
+#| fig-align: center
+_grid = {"max_features": [1, 2, 4, 8, 19], "min_samples_leaf": [5, 20, 50, 100, 200, 400]}
+_search = GridSearchCV(RandomForestRegressor(n_estimators=100, random_state=0, n_jobs=-1), _grid,
+                       cv=TimeSeriesSplit(n_splits=5), scoring="neg_root_mean_squared_error")
+_search.fit(TRAIN[COLS], TRAIN["vol_next"])
+_res = pd.DataFrame(_search.cv_results_)
+_tab = _res.pivot(index="param_max_features", columns="param_min_samples_leaf",
+                  values="mean_test_score").mul(-1)
+_lo, _hi = _tab.values.min(), _tab.values.max()
+_errmap = mpl.colors.LinearSegmentedColormap.from_list("err", ["#fcfcfb", "#e8b8ac", "#b3402f"])
+fig, ax = plt.subplots(figsize=(9.6, 3.4))
+ax.imshow(_tab.values, cmap=_errmap, aspect="auto", vmin=_lo, vmax=_hi)
+for _i in range(_tab.shape[0]):
+    for _j in range(_tab.shape[1]):
+        _v = _tab.values[_i, _j]
+        ax.text(_j, _i, f"{_v:.3f}", ha="center", va="center", fontsize=11,
+                color="white" if (_v - _lo) / (_hi - _lo) > 0.65 else INK)
+_bi, _bj = np.unravel_index(np.argmin(_tab.values), _tab.shape)
+ax.add_patch(Rectangle((_bj - 0.48, _bi - 0.46), 0.96, 0.92, fill=False, edgecolor=DEEP, linewidth=2.6))
+ax.set_xticks(range(_tab.shape[1]))
+ax.set_xticklabels([str(c) for c in _tab.columns])
+ax.set_yticks(range(_tab.shape[0]))
+ax.set_yticklabels([str(r) for r in _tab.index])
+ax.set_xlabel("min_samples_leaf")
+ax.set_ylabel("max_features")
+ax.grid(False)
+for _s in ax.spines.values():
+    _s.set_visible(False)
+ax.set_title("Mean RMSE on the five time-series folds; the outlined pair is the lowest", loc="left")
+plt.show()
+```
+
+`GridSearchCV` scored 30 pairs on the five folds, 150 forests. One column per
+question and leaves of 50 days win: 0.233 on the test days, below linear
+regression's 0.237.
+
+# What a search costs {.smaller}
+
+| search, on five time-series folds | combinations | fitted | time on one core |
+|:---------------------|-------:|:------------|---------:|
+| ridge: 7 values of `alpha` | 7 | 35 models | 0.1 s |
+| a tree: 6 depths | 6 | 30 trees | 0.2 s |
+| a tree: 6 depths, 5 leaf sizes, 6 values of `ccp_alpha` | 180 | 900 trees | 5 s |
+| a forest: 5 `max_features`, 6 leaf sizes, 100 trees each | 30 | 150 forests, 15,000 trees | 26 s |
+| the same, times 3 tree counts and 4 depths | 360 | 1,800 forests, 540,000 trees | 14 min |
+
+Every setting multiplies the grid, and the folds multiply it again. The last
+search took 32 times as long and chose 100 trees of depth 3: 0.226 on the test
+days.
+
+::: {.keypoint}
+`RandomizedSearchCV(model, grid, n_iter=20, ...)` tries 20 combinations drawn
+at random, when the whole grid would take too long.
+:::
+
+# Timing one fit
+
+```{pyodide}
+import time
+
+start = time.perf_counter()
+forest.fit(train[columns], train["vol_next"])
+seconds = time.perf_counter() - start
+
+print(round(seconds, 2))
+print(round(seconds * 150 / 60, 1))
+```
+
+`time.perf_counter()` reads a clock, so the difference is the seconds one forest
+took here. The grid of 30 pairs fits 150 forests; the last line is its minutes.
+
+# Model size against test error
+
+```{python}
+#| echo: false
+#| fig-align: center
+def _leaves(m):
+    return sum(e.get_n_leaves() for e in m.estimators_)
+_pts = []
+_pts.append(("guess the average", 1, rmse(TEST["vol_next"], np.full(len(TEST), TRAIN["vol_next"].mean())), GREY))
+_pts.append(("linear regression", 2, rmse(TEST["vol_next"], _line.predict(TEST[["vol_20d"]])), BLUE))
+_rg = Pipeline([("s", StandardScaler()), ("r", Ridge(alpha=1000))]).fit(TRAIN[COLS], TRAIN["vol_next"])
+_pts.append(("ridge, 19 columns", 20, rmse(TEST["vol_next"], _rg.predict(TEST[COLS])), BLUE))
+_t2 = DecisionTreeRegressor(max_depth=2, random_state=0).fit(TRAIN[PAIR], TRAIN["vol_next"])
+_pts.append(("tree, depth 2", _t2.get_n_leaves(), rmse(TEST["vol_next"], _t2.predict(TEST[PAIR])), AMBER))
+_t3 = DecisionTreeRegressor(max_depth=3, random_state=0).fit(TRAIN[COLS], TRAIN["vol_next"])
+_pts.append(("tree, depth 3, 19 columns", _t3.get_n_leaves(), rmse(TEST["vol_next"], _t3.predict(TEST[COLS])), AMBER))
+_tf = DecisionTreeRegressor(random_state=0).fit(TRAIN[COLS], TRAIN["vol_next"])
+_pts.append(("tree without a limit", _tf.get_n_leaves(), rmse(TEST["vol_next"], _tf.predict(TEST[COLS])), AMBER))
+_ft = RandomForestRegressor(n_estimators=100, max_features=1, min_samples_leaf=50, random_state=0, n_jobs=-1).fit(TRAIN[COLS], TRAIN["vol_next"])
+_pts.append(("forest, 30-pair grid", _leaves(_ft), rmse(TEST["vol_next"], _ft.predict(TEST[COLS])), BRICK))
+_fb = RandomForestRegressor(n_estimators=100, max_depth=3, max_features=2, min_samples_leaf=50, random_state=0, n_jobs=-1).fit(TRAIN[COLS], TRAIN["vol_next"])
+_pts.append(("forest, 360-combination grid", _leaves(_fb), rmse(TEST["vol_next"], _fb.predict(TEST[COLS])), BRICK))
+_f1 = RandomForestRegressor(n_estimators=100, max_features="sqrt", random_state=0, n_jobs=-1).fit(TRAIN[COLS], TRAIN["vol_next"])
+_pts.append(("forest, 100 full trees", _leaves(_f1), rmse(TEST["vol_next"], _f1.predict(TEST[COLS])), BRICK))
+_f5 = RandomForestRegressor(n_estimators=500, max_features="sqrt", random_state=0, n_jobs=-1).fit(TRAIN[COLS], TRAIN["vol_next"])
+_pts.append(("forest, 500 full trees", _leaves(_f5), rmse(TEST["vol_next"], _f5.predict(TEST[COLS])), BRICK))
+_off = {"guess the average": (8, 6, "left"), "linear regression": (8, 4, "left"),
+        "ridge, 19 columns": (8, -14, "left"), "tree, depth 2": (8, 4, "left"),
+        "tree, depth 3, 19 columns": (8, 4, "left"), "tree without a limit": (8, 4, "left"),
+        "forest, 30-pair grid": (8, 4, "left"), "forest, 360-combination grid": (8, -16, "left"),
+        "forest, 100 full trees": (-8, 8, "right"),
+        "forest, 500 full trees": (-8, -16, "right")}
+fig, ax = plt.subplots(figsize=(9.6, 3.35))
+for _name, _x, _y, _c in _pts:
+    ax.scatter([_x], [_y], s=70, color=_c, zorder=3)
+    _dx, _dy, _ha = _off[_name]
+    ax.annotate(f"{_name}: {_y:.3f}", (_x, _y), textcoords="offset points", xytext=(_dx, _dy),
+                ha=_ha, fontsize=11.5, color=MUTED)
+ax.set_xscale("log")
+ax.set_xticks([1, 10, 100, 1000, 10000, 100000, 1000000])
+ax.set_xticklabels(["1", "10", "100", "1,000", "10,000", "100,000", "1,000,000"])
+ax.minorticks_off()
+ax.set_xlim(0.6, 3e6)
+ax.set_ylim(0.19, 0.44)
+ax.set_xlabel("numbers the model stores: coefficients, or leaves over all its trees")
+ax.set_ylabel("test RMSE")
+ax.set_title("Blue: linear models, amber: single trees, brick: forests", loc="left")
+plt.show()
+```
+
+The largest model, 500 full trees with 598,735 leaves, took about 1,800 times
+longer to fit than ridge and forecasts worse than its 20 coefficients.
+
+# 8 · A tree for a label {.divider}
+
+::: {.divider-kicker}
+Part 8
+:::
+
+::: {.divider-note}
+The same questions on the credit table, with a share in each leaf.
+:::
+
+# The credit table
+
+```{pyodide}
+from sklearn.model_selection import train_test_split
+
+credit = pd.read_csv("data/credit.csv")
+c_train, c_test = train_test_split(credit, test_size=0.3, random_state=0,
+                                   stratify=credit["default"])
+c_columns = ["limit", "age", "late_now", "months_late", "bill", "paid", "utilisation"]
+print(len(c_train), len(c_test), round(c_train["default"].mean(), 3))
+```
+
+One row per card holder, and `default` is 1 for the 22 percent who defaulted the
+next month. On this split logistic regression scored an AUC of 0.748.
+
+# A classification tree
+
+```{pyodide}
+from sklearn.tree import DecisionTreeClassifier
+c_tree = DecisionTreeClassifier(max_depth=2, random_state=0)
+c_tree.fit(c_train[c_columns], c_train["default"])
+plt.figure(figsize=(10, 3))
+plot_tree(c_tree, feature_names=c_columns, filled=True, proportion=True,
+          impurity=False, fontsize=10)
+plt.show()
+```
+
+Each leaf's `value` is the two shares; the second is the probability of default.
+
+# Gini, for labels
+
+::: {.formula}
+$$G = \sum_{k} \hat p_k\,(1 - \hat p_k)$$
+:::
+
+For labels of 0 and 1, a box of $n$ rows with $k$ defaults has an RSS of
+$k(n-k)/n$. With two classes $G = 2p(1-p)$, twice that per row, so the same cuts
+win.
+
+::: {.keypoint}
+`DecisionTreeClassifier` measures a box with Gini by default, and
+`criterion="entropy"` switches to $D = -\sum_k \hat p_k \log \hat p_k$.
+:::
+
+# A forest on the credit table
+
+```{pyodide}
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import roc_auc_score
+
+c_forest = RandomForestClassifier(n_estimators=100, min_samples_leaf=100,
+                                  oob_score=True, random_state=0)
+c_forest.fit(c_train[c_columns], c_train["default"])
+oob = c_forest.oob_decision_function_[:, 1]
+p_forest = c_forest.predict_proba(c_test[c_columns])[:, 1]
+print(round(roc_auc_score(c_train["default"], oob), 4))
+print(round(roc_auc_score(c_test["default"], p_forest), 4))
+```
+
+The rows are separate borrowers, so the out-of-bag score can be trusted: 0.781.
+On the test rows the forest scores 0.777, against 0.748 for logistic regression.
+
+# When to reach for a tree
+
+<div class="compare">
+<div class="compare-col">
+<h3>The credit table</h3>
+<p>21,000 separate borrowers, a share of defaults that levels off, and a reversal that depends on another column. The forest beat logistic regression, 0.777 against 0.748.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>The volatility table</h3>
+<p>1,894 days whose windows overlap, a relationship close to a straight line, and calm test years. Ridge beat every tree, 0.218 against 0.226 for the best-tuned forest.</p>
+</div>
+</div>
+
+::: {.keypoint}
+Fit a linear model first, and make the tree beat it on folds that suit the rows.
+:::
+
+# When to change what
+
+::: {.why-grid}
+::: {.why-point}
+**Always** <span>the size of each tree: `max_depth` or `min_samples_leaf`, on `TimeSeriesSplit` folds for days, or out-of-bag for a forest of separate rows. `random_state`, which fixes the samples and the order in which columns are tried.</span>
+:::
+::: {.why-point}
+**Sometimes** <span>`ccp_alpha`, to prune a grown tree. `n_estimators`: more trees only cost time. `max_features`, the columns each question chooses among: `"sqrt"` makes a regressor a forest. `class_weight`, for labels. `n_jobs=-1`, to fit a forest's trees on every core.</span>
+:::
+::: {.why-point}
+**Rarely** <span>`criterion`, the error a cut is judged by. `max_leaf_nodes`, a cap on the number of leaves.</span>
+:::
+::: {.why-point}
+**Never needed** <span>A scaler. A cut compares one column with one number, so `StandardScaler` in front of a tree gives the same forecasts.</span>
+:::
+:::
+
+# What stays with you {.smaller}
+
+::: {.recap-grid}
+::: {.recap-item}
+**Linear regression has one slope**
+When volatility was high, linear regression on `vol_20d` was 0.18 too low after
+a fall and 0.14 too high after a rise.
+:::
+::: {.recap-item}
+**A tree is questions, boxes and a formula**
+$\hat f(\mathbf{x}) = \sum_m c_m \mathbf{1}\{\mathbf{x} \in R_m\}$: each leaf
+forecasts the mean of its training days.
+:::
+::: {.recap-item}
+**Grown greedily, one cut at a time**
+Every column and every cut, the smallest RSS, then again inside each box; a
+stump is one step. The best number for a box is its mean.
+:::
+::: {.recap-item}
+**plot_tree shows it**
+`plot_tree(model, feature_names=...)`, with `filled`, `impurity=False`,
+`precision` and `label="root"`. Each box shows its question, error, days and
+forecast.
+:::
+::: {.recap-item}
+**Depth is the setting**
+Without a limit: one leaf per training day, an error of 0 on them and 0.466 on
+the test days. Choose the size of a tree on `TimeSeriesSplit` folds.
+:::
+::: {.recap-item}
+**Bagging and forests, for variance**
+Averaging 20 bootstrap trees took the error from 0.410 to 0.320. Drawing columns
+at random makes the trees differ, and a tuned forest reached 0.226.
+:::
+::: {.recap-item}
+**Tuning, cost and size**
+Tuning moved the forest by 0.070 and ridge by 0.030. Each setting multiplies a
+grid, and 500 full trees forecast worse than ridge's 20 coefficients.
+:::
+::: {.recap-item}
+**A tree for a label**
+The same cuts, judged by Gini. On the credit table the forest beat logistic
+regression; on the volatility table linear regression and ridge beat every tree.
+:::
+:::
+
+# Where this goes next
+
+<div class="timeline">
+<div class="tl-row"><span class="tl-week">before</span><span class="tl-topic">linear regression, ridge and lasso for numbers; logistic regression and k-nearest neighbours for labels</span><span class="tl-who">formulas and neighbours</span></div>
+<div class="tl-row tl-now"><span class="tl-week">now</span><span class="tl-topic">trees, and forests that average them, for numbers and for labels</span><span class="tl-who">questions, averaged</span></div>
+<div class="tl-row tl-future"><span class="tl-week">next</span><span class="tl-topic">boosting: small trees grown one after another, each fitted to the errors so far, in scikit-learn, XGBoost and LightGBM; reading what a model has learned; the course as a whole</span><span class="tl-who">the wrap-up</span></div>
+</div>
+
+::: {.keypoint}
+Bagging and forests grow deep trees side by side and average away their
+variance. Boosting grows small trees in sequence, each correcting what the ones
+before it still get wrong, which removes bias.
+:::
+
+# Before the next session [case]{.chip .chip-case}
+
+- **Exercises**: cuts scored by hand, stumps and trees drawn with `plot_tree`, depth and pruning on the time-series folds, bootstrap samples, bagging and forests, grids counted and timed, and a tree for a label.
+- **Case Part 11**: the risk report's volatility forecast gets a tree and a forest, held to its one-column model and to ridge on Apple and across the desk; a last question tries the forest on Part 9's jump label.
+
+::: {.muted .small}
+Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email
+**jobo@econ.au.dk**.
+:::
