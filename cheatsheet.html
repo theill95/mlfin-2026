@@ -74,6 +74,7 @@
     <li><a href="#penalised-regression">Penalised regression</a></li>
     <li><a href="#classification">Classification</a></li>
     <li><a href="#k-nearest-neighbours">k-nearest neighbours</a></li>
+    <li><a href="#trees-and-forests">Trees and forests</a></li>
     <li><a href="#reading-error-messages">Reading error messages</a></li>
   </ul>
   <section class="cs-section" id="running-code">
@@ -99,6 +100,8 @@
       <div class="cs-desc">Round to a number of decimals.<span class="cs-since">Session 1</span></div>
       <div class="cs-sig"><code>abs(number)</code></div>
       <div class="cs-desc">Distance from zero, sign discarded.<span class="cs-since">Session 2</span></div>
+      <div class="cs-sig"><code>x // n <span class="cs-or">&middot;</span> x % n</code></div>
+      <div class="cs-desc">Whole division and the remainder: 7 // 5 is 1 and 7 % 5 is 2. They turn a position counted along a grid&#x27;s rows into its row and its column.<span class="cs-since">Session 11</span></div>
     </div>
   </section>
   <section class="cs-section" id="text">
@@ -164,6 +167,8 @@
       <div class="cs-desc">The position and the value together, so you need no counter of your own.<span class="cs-since">Session 2</span></div>
       <div class="cs-sig"><code>zip(a, b)</code></div>
       <div class="cs-desc">Walk two lists in step, with no indexing. Stops at the shorter one.<span class="cs-since">Session 2</span></div>
+      <div class="cs-sig"><code>set(items)</code></div>
+      <div class="cs-desc">Each distinct item once, in no fixed order. len(set(items)) counts the distinct items.<span class="cs-since">Session 9</span></div>
       <div class="cs-sig"><code>help(thing)</code></div>
       <div class="cs-desc">Print the documentation. Works offline.<span class="cs-since">Session 2</span></div>
       <div class="cs-sig"><code>dir(thing)</code></div>
@@ -307,6 +312,16 @@
       <div class="cs-desc">Values from start up to but not including stop, a fixed step apart. np.linspace fixes the count instead of the step.<span class="cs-since">Session 8</span></div>
       <div class="cs-sig"><code>np.logspace(0, 4, 5)</code></div>
       <div class="cs-desc">Values spaced by a constant factor: 1, 10, 100, 1000, 10000. The right shape for a grid of alphas.<span class="cs-since">Session 6</span></div>
+      <div class="cs-sig"><code>np.unique(values)</code></div>
+      <div class="cs-desc">The distinct values, sorted. A cut on a column can only fall between two neighbouring ones.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>np.quantile(values, np.linspace(0.02, 0.98, 60))</code></div>
+      <div class="cs-desc">Sixty cut points spread evenly through the data, from the 2nd to the 98th percentile. s.quantile does the same for a Series.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>np.asarray(values, dtype=float)</code></div>
+      <div class="cs-desc">An array of floats from a list, an array or a Series, so one function accepts all three.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>np.mean(arrays, axis=0)</code></div>
+      <div class="cs-desc">Average several arrays of the same length, position by position: many trees&#x27; forecasts made into one.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>values.cumsum(axis=0)</code></div>
+      <div class="cs-desc">Running totals down the rows of a 2-D array. Divide row n by n + 1 for the running average of the first rows: how a forest&#x27;s error moves as trees are added.<span class="cs-since">Session 11</span></div>
       <div class="cs-sig"><code>np.random.default_rng(0)</code></div>
       <div class="cs-desc">A random number generator with a fixed seed, so the same code gives the same numbers every time.<span class="cs-since">Session 4</span></div>
     </div>
@@ -360,6 +375,16 @@
       <div class="cs-desc">The share of each distinct value, largest first; leave normalize out for the counts. The largest share is what the majority rule scores.<span class="cs-since">Session 9</span></div>
       <div class="cs-sig"><code>s.dropna()</code></div>
       <div class="cs-desc">Throw away the missing values.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>s.unique()</code></div>
+      <div class="cs-desc">The distinct values, in the order they first appear. sorted() puts them in order.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>s.nunique()</code></div>
+      <div class="cs-desc">How many distinct values there are. On the index of a bootstrap sample: how many different days it drew.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>s.sort_index()</code></div>
+      <div class="cs-desc">Order by the labels instead of the values. After value_counts, the counts in order of the value counted.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>s.isin(values)</code></div>
+      <div class="cs-desc">True where the value appears in values. frame.index.isin(sample.index) marks the days a sample drew, and ~ the days it left out.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>s.value_counts().reindex(index, fill_value=0)</code></div>
+      <div class="cs-desc">A count for every label in index, with 0 for labels that never appeared: how many times a bootstrap sample drew each day.<span class="cs-since">Session 11</span></div>
       <div class="cs-sig"><code>s.abs()</code></div>
       <div class="cs-desc">The size of every value, sign dropped. abs() on its own does the same for one number.<span class="cs-since">Session 4</span></div>
     </div>
@@ -405,12 +430,16 @@ import pandas as pd</code></pre>
       <div class="cs-desc">Rows by label. With a date index you can slice with dates, and both ends are included.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>frame.iloc[0] <span class="cs-or">&middot;</span> frame.iloc[-1]</code></div>
       <div class="cs-desc">Rows by position: the first row, the last row.<span class="cs-since">Session 3</span></div>
-      <div class="cs-sig"><code>frame.values</code></div>
+      <div class="cs-sig"><code>frame.values <span class="cs-or">&middot;</span> frame.to_numpy()</code></div>
       <div class="cs-desc">The plain numbers underneath, as a NumPy array, labels dropped.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>frame.set_index(&quot;date&quot;)</code></div>
       <div class="cs-desc">Move a column into the index, so .loc can slice by it.<span class="cs-since">Session 4</span></div>
       <div class="cs-sig"><code>frame.loc[&quot;2023-11-14 13:00&quot;:&quot;2023-11-14 16:00&quot;, [&quot;a&quot;, &quot;b&quot;]]</code></div>
       <div class="cs-desc">Rows by date and hour on an hourly index, and columns by name, in one pair of brackets. Both ends of the slice are included.<span class="cs-since">Session 10</span></div>
+      <div class="cs-sig"><code>frame.sample(n=len(frame), replace=True, random_state=0)</code></div>
+      <div class="cs-desc">A bootstrap sample: as many rows as the table, drawn with replacement, so some rows come twice and about a third not at all.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>half = frame.sample(frac=0.5, random_state=0) <span class="cs-or">&middot;</span> frame.drop(half.index)</code></div>
+      <div class="cs-desc">A random half of the rows, drawn without replacement, and the other half: the table without the rows whose labels are given.<span class="cs-since">Session 11</span></div>
       <div class="cs-sig"><code>frame.dropna()</code></div>
       <div class="cs-desc">Drop every row with a missing value in any column, such as the first rows a shift leaves empty. Compare the number of rows before and after.<span class="cs-since">Session 10</span></div>
       <div class="cs-sig"><code>for col in frame:</code></div>
@@ -465,6 +494,8 @@ import pandas as pd</code></pre>
       <div class="cs-desc">A line: something over time.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>ax.barh(names, values)</code></div>
       <div class="cs-desc">Horizontal bars: comparing named things. Sort before you plot.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>ax.bar(names, values)</code></div>
+      <div class="cs-desc">Vertical bars, one per name: a count or a share for each group, side by side.<span class="cs-since">Session 5</span></div>
       <div class="cs-sig"><code>ax.hist(values, bins=40)</code></div>
       <div class="cs-desc">A histogram: the shape of one variable.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>ax.scatter(x, y)</code></div>
@@ -479,10 +510,14 @@ import pandas as pd</code></pre>
       <div class="cs-desc">Fix the vertical range. For bars, always start at zero.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>ax.axhline(y)</code></div>
       <div class="cs-desc">A horizontal reference line: zero on an error plot, or an average across bars. ax.axvline(x) is the vertical one.<span class="cs-since">Session 4</span></div>
+      <div class="cs-sig"><code>ax.plot(x, y, drawstyle=&quot;steps-post&quot;)</code></div>
+      <div class="cs-desc">A staircase: each value held flat until the next one. How a forecast that takes only a few values looks over time.<span class="cs-since">Session 11</span></div>
       <div class="cs-sig"><code>ax.set_xscale(&quot;log&quot;)</code></div>
       <div class="cs-desc">A logarithmic axis, so factors of ten are evenly spaced. For a validation curve over alpha or C.<span class="cs-since">Session 6</span></div>
       <div class="cs-sig"><code>plt.show()</code></div>
       <div class="cs-desc">Display the figure. The last line of a plotting cell.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>plt.figure(figsize=(11, 3))</code></div>
+      <div class="cs-desc">A figure with no axes of your own. plot_tree draws on the current figure, so make one of the right size first.<span class="cs-since">Session 11</span></div>
       <div class="cs-sig"><code>fig.savefig(&quot;name.png&quot;, dpi=200)</code></div>
       <div class="cs-desc">Save it to a file. Use .pdf for something that stays sharp at any size.<span class="cs-since">Session 3</span></div>
     </div>
@@ -792,6 +827,55 @@ from sklearn.model_selection import GridSearchCV</code></pre>
       <div class="cs-desc">k-NN can take a category as one plain number: once the columns are scaled, the nearest rows to a Monday at 18:00 are Mondays near 18:00. A logistic regression needs the weekday as columns instead.<span class="cs-since">Session 10</span></div>
     </div>
   </section>
+  <section class="cs-section" id="trees-and-forests">
+    <h2>Trees and forests</h2>
+    <p class="lede">Models that ask questions of one column at a time instead of fitting slopes: one tree, many trees averaged, and the settings that decide how big they grow.</p>
+    <pre class="cs-imports"><code>import time
+from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier, plot_tree
+from sklearn.ensemble import BaggingRegressor, RandomForestRegressor, RandomForestClassifier
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV</code></pre>
+    <p class="cs-names">On this card: X is the feature table, y the target, columns the list of feature names, tree a fitted tree, forest a fitted forest, model the model a search tunes, grid a dictionary of settings to try, folds a TimeSeriesSplit.</p>
+    <div class="cs-ref">
+      <div class="cs-sig"><code>DecisionTreeRegressor(max_depth=2, random_state=0)</code></div>
+      <div class="cs-desc">A tree for a number. Each question compares one column with a cut, and each leaf forecasts the mean of its training rows. max_depth caps the questions on any path; without it the tree splits until it fits the training rows almost exactly.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>DecisionTreeRegressor(min_samples_leaf=100)</code></div>
+      <div class="cs-desc">Another way to keep a tree small: no leaf may hold fewer training rows than this. Choose it, or max_depth, on the folds.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>DecisionTreeRegressor(ccp_alpha=0.02)</code></div>
+      <div class="cs-desc">Grow the tree, then prune it: a question stays only if it lowers the training error by at least ccp_alpha for each leaf it adds. The default, 0, keeps every question.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>DecisionTreeClassifier(max_depth=2, random_state=0)</code></div>
+      <div class="cs-desc">A tree for a label. The same cuts, chosen by Gini, 2p(1 - p) for two classes, which is twice the squared error of the 0s and 1s per row. Each leaf holds the share of each class, which predict_proba returns.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>plot_tree(tree, feature_names=columns, filled=True, impurity=False, precision=3, fontsize=9)</code></div>
+      <div class="cs-desc">Draw a fitted tree with matplotlib: every box shows its question, the rows that reached it and its forecast. filled shades the boxes by their forecast, impurity=False drops the error line, and label=&quot;root&quot; names the fields in the top box only.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>plot_tree(tree, class_names=[&quot;repaid&quot;, &quot;defaulted&quot;], proportion=True)</code></div>
+      <div class="cs-desc">For a classification tree: name the classes in the order of classes_, and show each box&#x27;s shares instead of its counts.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>tree.get_depth() <span class="cs-or">&middot;</span> tree.get_n_leaves()</code></div>
+      <div class="cs-desc">The questions on the longest path, and the number of leaves. A tree grown without a limit ends with about one leaf per training row.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>tree.tree_.feature[0] <span class="cs-or">&middot;</span> tree.tree_.threshold[0]</code></div>
+      <div class="cs-desc">Inside a fitted tree: the column number and the cut of the first question, so columns[tree.tree_.feature[0]] is its name. The boxes are numbered depth first, and a leaf has feature -2.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>tree.apply(X)</code></div>
+      <div class="cs-desc">The number of the leaf each row lands in. Group any column by it to see what each leaf holds.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>BaggingRegressor(DecisionTreeRegressor(), n_estimators=25, random_state=0)</code></div>
+      <div class="cs-desc">Bagging: grow a deep tree on each of 25 bootstrap samples of the training rows and average their forecasts, which cancels much of what one tree gets wrong by chance.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>forest.estimators_</code></div>
+      <div class="cs-desc">The fitted trees inside a bagging model or a forest, as a list, each a tree like any other. They were fitted on plain arrays, so give their predict X.to_numpy().<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>RandomForestRegressor(n_estimators=100, max_features=&quot;sqrt&quot;, min_samples_leaf=50, random_state=0)</code></div>
+      <div class="cs-desc">A forest: bagging in which each question chooses among a few columns drawn at random, here the square root of their number, so the trees differ. The default for a number, max_features=1.0, is plain bagging; RandomForestClassifier&#x27;s default is already &quot;sqrt&quot;.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>RandomForestRegressor(oob_score=True) <span class="cs-or">&middot;</span> forest.oob_prediction_</code></div>
+      <div class="cs-desc">Out-of-bag: each training row is forecast by the trees whose sample left it out, so the forest scores itself without folds. Fair on rows that are separate cases; too kind on days, whose neighbours were in the sample.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>RandomForestClassifier(n_estimators=100, min_samples_leaf=50, oob_score=True)</code></div>
+      <div class="cs-desc">The forest for a label. forest.oob_decision_function_[:, 1] is each training row&#x27;s out-of-bag probability of a 1.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>RandomForestRegressor(n_jobs=-1)</code></div>
+      <div class="cs-desc">Grow the trees on every core at once. GridSearchCV takes n_jobs too, and then fits the folds side by side instead.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>{&quot;max_depth&quot;: [1, 2, 3, 4, 6, 8]}</code></div>
+      <div class="cs-desc">A grid for a model on its own, outside a pipeline: the argument name with no step name in front. GridSearchCV(DecisionTreeRegressor(random_state=0), grid, cv=folds, ...) as before.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>RandomizedSearchCV(model, grid, n_iter=10, cv=folds, scoring=&quot;neg_root_mean_squared_error&quot;, random_state=0)</code></div>
+      <div class="cs-desc">Try n_iter combinations drawn at random from the grid instead of every one; best_params_ and best_score_ as for GridSearchCV. For grids too big to run in full.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>len(grid[&quot;a&quot;]) * len(grid[&quot;b&quot;]) * 5 + 1</code></div>
+      <div class="cs-desc">The fits a search will make: one per combination on each of five folds, and one refit on all the training rows. Time one fit and multiply before you press run.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>start = time.perf_counter()</code></div>
+      <div class="cs-desc">Read a clock, in seconds. time.perf_counter() - start after a fit is how long it took.<span class="cs-since">Session 11</span></div>
+    </div>
+  </section>
   <section class="cs-section" id="reading-error-messages">
     <h2>Reading error messages</h2>
     <p class="lede">The last line names the problem. Read it before you change anything: it is almost always telling you the truth.</p>
@@ -816,6 +900,8 @@ from sklearn.model_selection import GridSearchCV</code></pre>
       <div class="cs-desc">Two arrays whose dimensions do not fit. Check .shape on both.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>LinAlgError</code></div>
       <div class="cs-desc">A matrix with no inverse: one column carries nothing the others do not. Perfect multicollinearity.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>ValueError, on feature names</code></div>
+      <div class="cs-desc">The columns given to predict are not the ones fit saw, in the same order. Select them with the same list both times.<span class="cs-since">Session 11</span></div>
       <div class="cs-sig"><code>ConvergenceWarning</code></div>
       <div class="cs-desc">Not an error: the solver ran out of steps before the coefficients settled. Raise max_iter, or standardise the columns first.<span class="cs-since">Session 6</span></div>
     </div>

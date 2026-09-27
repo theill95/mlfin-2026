@@ -14,7 +14,7 @@ library. A misspelt name fails the build rather than reaching a student.
 The previous format, with an executed example under every entry, is archived
 in tools/archive/ together with its rendered page and CSS.
 
-Adding a session: append rows below with since="S11" and add it to SINCE_LABEL.
+Adding a session: append rows below with since="S12" and add it to SINCE_LABEL.
 Rows belong with their topic (a NumPy function under NumPy, whichever session
 introduced it); the session tag at the edge of the row says when it arrived.
 """
@@ -55,6 +55,7 @@ r("+  -  *  /", "The usual arithmetic. Division always gives a float.")
 r("x ** n", "To the power of. Compound growth, and square roots as ** 0.5.")
 r("round(number, ndigits)", "Round to a number of decimals.")
 r("abs(number)", "Distance from zero, sign discarded.", "S2")
+r("x // n  x % n", "Whole division and the remainder: 7 // 5 is 1 and 7 % 5 is 2. They turn a position counted along a grid's rows into its row and its column.", "S11")
 
 section("Text")
 r('"text"', "A string. Single or double quotes, as long as they match.")
@@ -85,6 +86,7 @@ r("sorted(values)", "A new list, in order. The original is untouched.", "S2")
 r("range(start, stop)", "Whole numbers from start up to but NOT including stop.", "S2")
 r("enumerate(items)", "The position and the value together, so you need no counter of your own.", "S2")
 r("zip(a, b)", "Walk two lists in step, with no indexing. Stops at the shorter one.", "S2")
+r("set(items)", "Each distinct item once, in no fixed order. len(set(items)) counts the distinct items.", "S9")
 r("help(thing)", "Print the documentation. Works offline.", "S2")
 r("dir(thing)", "List everything an object can do. Useful when you half-remember a name.", "S3")
 
@@ -155,6 +157,11 @@ r("np.where(mask, a, b)", "An array that takes a where the mask is True and b el
 r("np.zeros(n, dtype=int)", "An array of n zeros, as integers; without dtype, as floats. A prediction of 0 on every row is np.zeros(len(test), dtype=int).", "S8")
 r("np.arange(start, stop, step)", "Values from start up to but not including stop, a fixed step apart. np.linspace fixes the count instead of the step.", "S8")
 r("np.logspace(0, 4, 5)", "Values spaced by a constant factor: 1, 10, 100, 1000, 10000. The right shape for a grid of alphas.", "S6")
+r("np.unique(values)", "The distinct values, sorted. A cut on a column can only fall between two neighbouring ones.", "S11")
+r("np.quantile(values, np.linspace(0.02, 0.98, 60))", "Sixty cut points spread evenly through the data, from the 2nd to the 98th percentile. s.quantile does the same for a Series.", "S11")
+r("np.asarray(values, dtype=float)", "An array of floats from a list, an array or a Series, so one function accepts all three.", "S11")
+r("np.mean(arrays, axis=0)", "Average several arrays of the same length, position by position: many trees' forecasts made into one.", "S11")
+r("values.cumsum(axis=0)", "Running totals down the rows of a 2-D array. Divide row n by n + 1 for the running average of the first rows: how a forest's error moves as trees are added.", "S11")
 r("np.random.default_rng(0)", "A random number generator with a fixed seed, so the same code gives the same numbers every time.", "S4")
 
 section("NumPy matrices", "A matrix is a 2-D array: rows first, then columns.",
@@ -183,6 +190,11 @@ r("s.median()", "The middle value. Compare it with the mean: a gap between them 
 r("s.sort_values(ascending=False)", "In order. Leave ascending out for smallest first.", "S3")
 r("s.value_counts(normalize=True)", "The share of each distinct value, largest first; leave normalize out for the counts. The largest share is what the majority rule scores.", "S9")
 r("s.dropna()", "Throw away the missing values.", "S3")
+r("s.unique()", "The distinct values, in the order they first appear. sorted() puts them in order.", "S3")
+r("s.nunique()", "How many distinct values there are. On the index of a bootstrap sample: how many different days it drew.", "S11")
+r("s.sort_index()", "Order by the labels instead of the values. After value_counts, the counts in order of the value counted.", "S3")
+r("s.isin(values)", "True where the value appears in values. frame.index.isin(sample.index) marks the days a sample drew, and ~ the days it left out.", "S11")
+r("s.value_counts().reindex(index, fill_value=0)", "A count for every label in index, with 0 for labels that never appeared: how many times a bootstrap sample drew each day.", "S11")
 r("s.abs()", "The size of every value, sign dropped. abs() on its own does the same for one number.", "S4")
 
 section("pandas: a table", "A DataFrame is several Series side by side, sharing one index.",
@@ -205,9 +217,11 @@ r("s.pct_change()", "The percentage change from each row to the next. The first 
 r('frame.sort_values("col")', "Sort the rows by a column.", "S3")
 r('frame.loc["2024-01-02":"2024-01-31"]', "Rows by label. With a date index you can slice with dates, and both ends are included.", "S3")
 r("frame.iloc[0]  frame.iloc[-1]", "Rows by position: the first row, the last row.", "S3")
-r("frame.values", "The plain numbers underneath, as a NumPy array, labels dropped.", "S3")
+r("frame.values  frame.to_numpy()", "The plain numbers underneath, as a NumPy array, labels dropped.", "S3")
 r('frame.set_index("date")', "Move a column into the index, so .loc can slice by it.", "S4")
 r('frame.loc["2023-11-14 13:00":"2023-11-14 16:00", ["a", "b"]]', "Rows by date and hour on an hourly index, and columns by name, in one pair of brackets. Both ends of the slice are included.", "S10")
+r("frame.sample(n=len(frame), replace=True, random_state=0)", "A bootstrap sample: as many rows as the table, drawn with replacement, so some rows come twice and about a third not at all.", "S11")
+r("half = frame.sample(frac=0.5, random_state=0)  frame.drop(half.index)", "A random half of the rows, drawn without replacement, and the other half: the table without the rows whose labels are given.", "S11")
 r("frame.dropna()", "Drop every row with a missing value in any column, such as the first rows a shift leaves empty. Compare the number of rows before and after.", "S10")
 r("for col in frame:", "Looping over a table gives its column names, one at a time: this is how the columns from get_dummies are copied into another table.", "S10")
 r('pd.cut(s, [0, 0.2, 0.4, 1.0])', "Sort every value into one of the ranges given, and return the range it fell in. Group by the result to summarise each range.", "S9")
@@ -237,6 +251,7 @@ section("matplotlib",
 r("fig, ax = plt.subplots(figsize=(9, 3))", "Make a figure and one axes to draw on. Every plot starts here.", "S3")
 r("ax.plot(x, y)", "A line: something over time.", "S3")
 r("ax.barh(names, values)", "Horizontal bars: comparing named things. Sort before you plot.", "S3")
+r("ax.bar(names, values)", "Vertical bars, one per name: a count or a share for each group, side by side.", "S5")
 r("ax.hist(values, bins=40)", "A histogram: the shape of one variable.", "S3")
 r("ax.scatter(x, y)", "A scatter: one thing against another. s=6 makes the dots small.", "S3")
 r('ax.set_title(text, loc="left")', "Say what the reader is looking at.", "S3")
@@ -244,8 +259,10 @@ r("ax.set_ylabel(text)  ax.set_xlabel(text)", 'Label the axes, with units. "pric
 r('ax.plot(x, y, label="AAPL")  ax.legend()', "Name each line, then show the key. Needed as soon as there are two.", "S3")
 r("ax.set_ylim(a, b)", "Fix the vertical range. For bars, always start at zero.", "S3")
 r("ax.axhline(y)", "A horizontal reference line: zero on an error plot, or an average across bars. ax.axvline(x) is the vertical one.", "S4")
+r('ax.plot(x, y, drawstyle="steps-post")', "A staircase: each value held flat until the next one. How a forecast that takes only a few values looks over time.", "S11")
 r('ax.set_xscale("log")', "A logarithmic axis, so factors of ten are evenly spaced. For a validation curve over alpha or C.", "S6")
 r("plt.show()", "Display the figure. The last line of a plotting cell.", "S3")
+r("plt.figure(figsize=(11, 3))", "A figure with no axes of your own. plot_tree draws on the current figure, so make one of the right size first.", "S11")
 r('fig.savefig("name.png", dpi=200)', "Save it to a file. Use .pdf for something that stays sharp at any size.", "S3")
 
 # ======================================================================
@@ -416,6 +433,34 @@ r("model.predict_proba(X)", "The share of the k neighbours in each class, so the
 r('["wind_change", "weekday", "hour"]', "k-NN can take a category as one plain number: once the columns are scaled, the nearest rows to a Monday at 18:00 are Mondays near 18:00. A logistic regression needs the weekday as columns instead.", "S10")
 
 # ======================================================================
+section("Trees and forests",
+        "Models that ask questions of one column at a time instead of fitting slopes: one tree, many trees "
+        "averaged, and the settings that decide how big they grow.",
+        imports="import time\nfrom sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier, plot_tree\nfrom sklearn.ensemble import BaggingRegressor, RandomForestRegressor, RandomForestClassifier\nfrom sklearn.model_selection import GridSearchCV, RandomizedSearchCV",
+        names="On this card: X is the feature table, y the target, columns the list of feature names, tree a "
+              "fitted tree, forest a fitted forest, model the model a search tunes, grid a dictionary of "
+              "settings to try, folds a TimeSeriesSplit.")
+r("DecisionTreeRegressor(max_depth=2, random_state=0)", "A tree for a number. Each question compares one column with a cut, and each leaf forecasts the mean of its training rows. max_depth caps the questions on any path; without it the tree splits until it fits the training rows almost exactly.", "S11")
+r("DecisionTreeRegressor(min_samples_leaf=100)", "Another way to keep a tree small: no leaf may hold fewer training rows than this. Choose it, or max_depth, on the folds.", "S11")
+r("DecisionTreeRegressor(ccp_alpha=0.02)", "Grow the tree, then prune it: a question stays only if it lowers the training error by at least ccp_alpha for each leaf it adds. The default, 0, keeps every question.", "S11")
+r("DecisionTreeClassifier(max_depth=2, random_state=0)", "A tree for a label. The same cuts, chosen by Gini, 2p(1 - p) for two classes, which is twice the squared error of the 0s and 1s per row. Each leaf holds the share of each class, which predict_proba returns.", "S11")
+r("plot_tree(tree, feature_names=columns, filled=True, impurity=False, precision=3, fontsize=9)", "Draw a fitted tree with matplotlib: every box shows its question, the rows that reached it and its forecast. filled shades the boxes by their forecast, impurity=False drops the error line, and label=\"root\" names the fields in the top box only.", "S11")
+r('plot_tree(tree, class_names=["repaid", "defaulted"], proportion=True)', "For a classification tree: name the classes in the order of classes_, and show each box's shares instead of its counts.", "S11")
+r("tree.get_depth()  tree.get_n_leaves()", "The questions on the longest path, and the number of leaves. A tree grown without a limit ends with about one leaf per training row.", "S11")
+r("tree.tree_.feature[0]  tree.tree_.threshold[0]", "Inside a fitted tree: the column number and the cut of the first question, so columns[tree.tree_.feature[0]] is its name. The boxes are numbered depth first, and a leaf has feature -2.", "S11")
+r("tree.apply(X)", "The number of the leaf each row lands in. Group any column by it to see what each leaf holds.", "S11")
+r("BaggingRegressor(DecisionTreeRegressor(), n_estimators=25, random_state=0)", "Bagging: grow a deep tree on each of 25 bootstrap samples of the training rows and average their forecasts, which cancels much of what one tree gets wrong by chance.", "S11")
+r("forest.estimators_", "The fitted trees inside a bagging model or a forest, as a list, each a tree like any other. They were fitted on plain arrays, so give their predict X.to_numpy().", "S11")
+r('RandomForestRegressor(n_estimators=100, max_features="sqrt", min_samples_leaf=50, random_state=0)', "A forest: bagging in which each question chooses among a few columns drawn at random, here the square root of their number, so the trees differ. The default for a number, max_features=1.0, is plain bagging; RandomForestClassifier's default is already \"sqrt\".", "S11")
+r("RandomForestRegressor(oob_score=True)  forest.oob_prediction_", "Out-of-bag: each training row is forecast by the trees whose sample left it out, so the forest scores itself without folds. Fair on rows that are separate cases; too kind on days, whose neighbours were in the sample.", "S11")
+r("RandomForestClassifier(n_estimators=100, min_samples_leaf=50, oob_score=True)", "The forest for a label. forest.oob_decision_function_[:, 1] is each training row's out-of-bag probability of a 1.", "S11")
+r("RandomForestRegressor(n_jobs=-1)", "Grow the trees on every core at once. GridSearchCV takes n_jobs too, and then fits the folds side by side instead.", "S11")
+r('{"max_depth": [1, 2, 3, 4, 6, 8]}', "A grid for a model on its own, outside a pipeline: the argument name with no step name in front. GridSearchCV(DecisionTreeRegressor(random_state=0), grid, cv=folds, ...) as before.", "S11")
+r('RandomizedSearchCV(model, grid, n_iter=10, cv=folds, scoring="neg_root_mean_squared_error", random_state=0)', "Try n_iter combinations drawn at random from the grid instead of every one; best_params_ and best_score_ as for GridSearchCV. For grids too big to run in full.", "S11")
+r('len(grid["a"]) * len(grid["b"]) * 5 + 1', "The fits a search will make: one per combination on each of five folds, and one refit on all the training rows. Time one fit and multiply before you press run.", "S11")
+r("start = time.perf_counter()", "Read a clock, in seconds. time.perf_counter() - start after a fit is how long it took.", "S11")
+
+# ======================================================================
 section("Reading error messages",
         "The last line names the problem. Read it before you change anything: it is almost "
         "always telling you the truth.")
@@ -429,12 +474,14 @@ r("ModuleNotFoundError", "The package is not installed, or you are running a dif
 r("FileNotFoundError", "The path is wrong relative to where you are running from.", "S3")
 r("ValueError, on shapes", "Two arrays whose dimensions do not fit. Check .shape on both.", "S3")
 r("LinAlgError", "A matrix with no inverse: one column carries nothing the others do not. Perfect multicollinearity.", "S3")
+r("ValueError, on feature names", "The columns given to predict are not the ones fit saw, in the same order. Select them with the same list both times.", "S11")
 r("ConvergenceWarning", "Not an error: the solver ran out of steps before the coefficients settled. Raise max_iter, or standardise the columns first.", "S6")
 
 # ======================================================================
 SINCE_LABEL = {"S1": "Session 1", "S2": "Session 2", "S3": "Session 3",
                "S4": "Session 4", "S5": "Session 5", "S6": "Session 6",
-               "S8": "Session 8", "S9": "Session 9", "S10": "Session 10"}
+               "S8": "Session 8", "S9": "Session 9", "S10": "Session 10",
+               "S11": "Session 11"}
 
 
 # --------------------------------------------------------------- checks
