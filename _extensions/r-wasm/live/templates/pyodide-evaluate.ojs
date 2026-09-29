@@ -12,7 +12,7 @@ _pyodide_value_{{block_id}} = {
   }, block.attr);
 
   // Evaluate the provided Python code
-  const result = pyodideOjs.process({code: block.code, options}, {{block_input}});
+  const result = pyodideOjs.process({code: block.code, options}, {{block_input}}, {{block_id}});
 
   // Early yield while we wait for the first evaluation and render
   if (options.output && !("{{block_id}}" in pyodideOjs.renderedOjs)) {

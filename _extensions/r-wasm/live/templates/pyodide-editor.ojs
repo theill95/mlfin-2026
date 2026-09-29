@@ -13,4 +13,4 @@ viewof _pyodide_editor_{{block_id}} = {
 
   return editor.container;
 }
-_pyodide_value_{{block_id}} = pyodideOjs.process(_pyodide_editor_{{block_id}}, {{block_input}});
+_pyodide_value_{{block_id}} = pyodideOjs.process(_pyodide_editor_{{block_id}}, {{block_input}}, {{block_id}});

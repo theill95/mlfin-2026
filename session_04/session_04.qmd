@@ -2434,7 +2434,6 @@ without cheating.
 # Turn the dial yourself
 
 ```{pyodide}
-#| autorun: false
 degree = 3                          # try 1, then 4, then 15
 coef = np.polyfit(x_train, y_train, degree)
 

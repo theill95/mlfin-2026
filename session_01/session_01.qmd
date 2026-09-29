@@ -580,7 +580,6 @@ Does Python guess a value? Refuse? Something else?
 Give `bonus` a value, and the very same expression works:
 
 ```{pyodide}
-#| autorun: false
 bonus = 1200
 bonus * 2
 ```

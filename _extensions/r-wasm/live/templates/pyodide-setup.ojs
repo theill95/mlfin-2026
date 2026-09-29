@@ -114,11 +114,32 @@ pyodideOjs = {
   // Keep track of initial OJS block render
   const renderedOjs = {};
 
-  const process = async (context, inputs) => {
-    const pyodide = await pyodidePromise;
-    const evaluator = new PyodideEvaluator(pyodide, context);
-    await evaluator.process(inputs);
-    return evaluator.container;
+  // OJS can start independent cells in any order. On the first run, wait for
+  // the preceding cell so later slides can use the names it defined. Edits
+  // after that first run remain independent.
+  const initialDone = [Promise.resolve()];
+  const finishInitial = [null];
+  const initialCellCount = document.querySelectorAll('script[type^="pyodide-"][type$="-contents"]').length;
+  for (let id = 1; id <= initialCellCount; id++) {
+    initialDone[id] = new Promise((resolve) => { finishInitial[id] = resolve; });
+  }
+  const started = new Set();
+
+  const process = async (context, inputs, blockId) => {
+    const firstRun = !started.has(blockId);
+    if (firstRun) {
+      started.add(blockId);
+      await initialDone[blockId - 1];
+    }
+    try {
+      const pyodide = await pyodidePromise;
+      const evaluator = new PyodideEvaluator(pyodide, context);
+      await evaluator.process(inputs);
+      return evaluator.container;
+    } finally {
+      // A cell that errors must not prevent later cells from running.
+      if (firstRun) finishInitial[blockId]();
+    }
   }
 
   return {

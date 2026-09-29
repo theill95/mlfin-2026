@@ -18,7 +18,7 @@ viewof _pyodide_editor_{{block_id}} = {
   const editor = new PyodideExerciseEditor(pyodideOjs.pyodidePromise, block.code, options);
   return editor.container;
 }
-viewof _pyodide_value_{{block_id}} = pyodideOjs.process(_pyodide_editor_{{block_id}}, {{block_input}});
+viewof _pyodide_value_{{block_id}} = pyodideOjs.process(_pyodide_editor_{{block_id}}, {{block_input}}, {{block_id}});
 _pyodide_feedback_{{block_id}} = {
   const { PyodideGrader } = window._exercise_ojs_runtime;
   const emptyFeedback = document.createElement('div');
