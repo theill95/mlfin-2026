@@ -45,6 +45,7 @@ BUILD = [
 
 CHECK = [
     ("published lecture autorun", "tools/verify/lecture_autorun.py"),
+    ("earlier lecture cell state", "tools/verify/lecture_cell_state.py"),
     ("data loads the way Colab will", "tools/verify/colab_data_access.py"),
     ("the exercise ladder",           "tools/verify/exercise_ladder.py"),
     ("blank Run-all is safe",        "tools/verify/blank_safety.py"),

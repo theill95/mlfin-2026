@@ -1,7 +1,7 @@
 pyodideOjs = {
   const {
     PyodideEvaluator,
-    PyodideEnvironmentManager,
+    PyodideEnvironment,
     setupPython,
     startPyodideWorker,
     b64Decode,
@@ -124,16 +124,35 @@ pyodideOjs = {
     initialDone[id] = new Promise((resolve) => { finishInitial[id] = resolve; });
   }
   const started = new Set();
+  const environments = new Set();
 
   const process = async (context, inputs, blockId) => {
     const firstRun = !started.has(blockId);
     if (firstRun) {
       started.add(blockId);
       await initialDone[blockId - 1];
+    } else {
+      await initialDone[blockId];
     }
     try {
       const pyodide = await pyodidePromise;
-      const evaluator = new PyodideEvaluator(pyodide, context);
+      let scopedContext = context;
+      if (blockId && !context.options.exercise) {
+        // Give each cell the names defined before it, then keep that snapshot.
+        // Later slides may reuse names such as `test` for another dataset;
+        // revisiting an earlier cell must still see its original dataset.
+        const name = `lecture-cell-${blockId}`;
+        if (!environments.has(blockId)) {
+          const parent = blockId === 1 ? "global" : `lecture-cell-${blockId - 1}`;
+          await PyodideEnvironment.instance(pyodide).create(name, parent, false);
+          environments.add(blockId);
+        }
+        scopedContext = {
+          ...context,
+          options: { ...context.options, envir: name },
+        };
+      }
+      const evaluator = new PyodideEvaluator(pyodide, scopedContext);
       await evaluator.process(inputs);
       return evaluator.container;
     } finally {
