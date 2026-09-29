@@ -147,6 +147,12 @@ p { margin: 0 0 0.9rem; }
 .actions { display: grid; grid-template-columns: 1fr; gap: 0.7rem; }
 @media (min-width: 620px) { .actions { grid-template-columns: 1.3fr 1fr 1fr; } }
 .actions.single-action { grid-template-columns: 1fr; }
+.actions.mock-actions { grid-template-columns: 1fr; }
+@media (min-width: 620px) {
+  .actions.mock-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mock-actions .label { white-space: nowrap; }
+}
+.mock-actions .btn { align-items: center; text-align: center; min-height: 5rem; }
 
 a.btn {
   display: flex; flex-direction: column; justify-content: center;
