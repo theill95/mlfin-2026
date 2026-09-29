@@ -37,7 +37,7 @@ This repository is published:
   <https://theill95.github.io/mlfin-2026/session_11/session_11.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
-The site has six pages, linked from the sidebar:
+The site has seven pages, linked from the sidebar:
 
 | page | what it is |
 |:--|:--|
@@ -47,6 +47,7 @@ The site has six pages, linked from the sidebar:
 | `setup.html` | installing Python and VS Code, and the extras (scripts vs notebooks, virtual environments, Git), each marked needed or optional |
 | `resources.html` | official docs, ISLP, Kaggle, and the AI-use policy |
 | `downloads.html` | every notebook and CSV, plus `downloads/mlfin-course.zip` |
+| `exam_info.html` | exam preparation guide and three mock exam student bundles |
 
 Shared styling lives in `assets/site.css` and the sidebar in `assets/nav.html`,
 which `tools/build_nav.py` stamps into every page. The student ZIP is built from

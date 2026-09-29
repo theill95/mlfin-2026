@@ -1,5 +1,5 @@
 /* Machine Learning in Finance - course site.
-   Shared by index, cheatsheet, setup, resources and downloads.
+   Shared by the course information pages.
    The lecture decks are Reveal.js and are styled by theme/mlfin.scss instead. */
 
 :root {
@@ -146,6 +146,7 @@ p { margin: 0 0 0.9rem; }
 
 .actions { display: grid; grid-template-columns: 1fr; gap: 0.7rem; }
 @media (min-width: 620px) { .actions { grid-template-columns: 1.3fr 1fr 1fr; } }
+.actions.single-action { grid-template-columns: 1fr; }
 
 a.btn {
   display: flex; flex-direction: column; justify-content: center;
