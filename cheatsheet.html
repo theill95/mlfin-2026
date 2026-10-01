@@ -76,6 +76,7 @@
     <li><a href="#classification">Classification</a></li>
     <li><a href="#k-nearest-neighbours">k-nearest neighbours</a></li>
     <li><a href="#trees-and-forests">Trees and forests</a></li>
+    <li><a href="#boosted-trees">Boosted trees</a></li>
     <li><a href="#reading-error-messages">Reading error messages</a></li>
   </ul>
   <section class="cs-section" id="running-code">
@@ -126,6 +127,8 @@
       <div class="cs-desc">A copy with the spaces at each end removed. The first thing you do to text from a file.<span class="cs-since">Session 2</span></div>
       <div class="cs-sig"><code>text.count(part)</code></div>
       <div class="cs-desc">How many times a piece of text appears inside a string.<span class="cs-since">Session 1</span></div>
+      <div class="cs-sig"><code>text.startswith(part) <span class="cs-or">&middot;</span> text.endswith(part)</code></div>
+      <div class="cs-desc">True when the text begins, or ends, with that piece. [c for c in columns if c.startswith(&quot;vol_&quot;)] keeps the columns whose names begin with vol_.<span class="cs-since">Session 3</span></div>
     </div>
   </section>
   <section class="cs-section" id="true-and-false">
@@ -196,6 +199,8 @@
       <div class="cs-desc">The position of the first x.<span class="cs-since">Session 1</span></div>
       <div class="cs-sig"><code>[]</code></div>
       <div class="cs-desc">An empty list, ready for a loop to fill.<span class="cs-since">Session 1</span></div>
+      <div class="cs-sig"><code>[x for x in items if condition]</code></div>
+      <div class="cs-desc">A list built in one line: every item for which the condition holds. [c for c in frame.columns if c != &quot;price&quot;] is every column but the target. Without the if it keeps them all, and x * 2 in place of the first x changes each one.<span class="cs-since">Session 3</span></div>
     </div>
   </section>
   <section class="cs-section" id="loops">
@@ -258,6 +263,10 @@
       <div class="cs-desc">The KEY with the smallest value, not the value itself. max works the same way.<span class="cs-since">Session 5</span></div>
       <div class="cs-sig"><code>sorted(data, key=data.get)</code></div>
       <div class="cs-desc">All the keys, ordered by their values. Largest first with reverse=True.<span class="cs-since">Session 5</span></div>
+      <div class="cs-sig"><code>{key: round(value, 3) for key, value in data.items()}</code></div>
+      <div class="cs-desc">A dictionary built in one line, one entry per item: here the same keys with every value rounded.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>name(**settings)</code></div>
+      <div class="cs-desc">Call a function, or create a model, with the keys of a dictionary as the argument names: XGBRegressor(**{&quot;max_depth&quot;: 3}) is XGBRegressor(max_depth=3). One dictionary of settings then reaches every fit that needs it.<span class="cs-since">Session 12</span></div>
     </div>
   </section>
   <section class="cs-section" id="packages">
@@ -305,6 +314,12 @@
       <div class="cs-desc">The POSITION of the largest or smallest element. Feed it to an index to get the label.<span class="cs-since">Session 5</span></div>
       <div class="cs-sig"><code>(a == b).all()</code></div>
       <div class="cs-desc">True only when every element of a comparison is True: the vectorised way to check that two arrays or columns agree everywhere.<span class="cs-since">Session 8</span></div>
+      <div class="cs-sig"><code>np.allclose(a, b) <span class="cs-or">&middot;</span> np.isclose(a, b)</code></div>
+      <div class="cs-desc">Equal up to rounding error: one True or False for the whole array, or one per element. Two computations of the same number rarely agree to the last decimal, so == is the wrong test for floats.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>float(values.mean())</code></div>
+      <div class="cs-desc">A plain Python number from a NumPy one. From NumPy 2 on, a NumPy number stored in a list or a dictionary prints as np.float64(0.2); after float() it prints as 0.2.<span class="cs-since">Session 5</span></div>
+      <div class="cs-sig"><code>np.diff(values)</code></div>
+      <div class="cs-desc">The change from each element to the next, so n values give n - 1 changes. (np.diff(values) &lt; 0).all() is True when the values fall at every step.<span class="cs-since">Session 12</span></div>
       <div class="cs-sig"><code>np.where(mask, a, b)</code></div>
       <div class="cs-desc">An array that takes a where the mask is True and b elsewhere. Keeps one group&#x27;s values and blanks the rest before argmin or argmax.<span class="cs-since">Session 8</span></div>
       <div class="cs-sig"><code>np.zeros(n, dtype=int)</code></div>
@@ -325,6 +340,10 @@
       <div class="cs-desc">Running totals down the rows of a 2-D array. Divide row n by n + 1 for the running average of the first rows: how a forest&#x27;s error moves as trees are added.<span class="cs-since">Session 11</span></div>
       <div class="cs-sig"><code>np.random.default_rng(0)</code></div>
       <div class="cs-desc">A random number generator with a fixed seed, so the same code gives the same numbers every time.<span class="cs-since">Session 4</span></div>
+      <div class="cs-sig"><code>rng.normal(0, 1, size=n)</code></div>
+      <div class="cs-desc">n draws from a normal distribution with mean 0 and standard deviation 1, from rng = np.random.default_rng(0). As a column of a table: pure noise.<span class="cs-since">Session 4</span></div>
+      <div class="cs-sig"><code>rng.integers(0, 2, size=n) <span class="cs-or">&middot;</span> rng.permutation(values)</code></div>
+      <div class="cs-desc">n whole numbers from 0 up to but not including 2, a coin for each row; and the values given, in a random order. Shuffling one column of the test rows is how permutation importance breaks it.<span class="cs-since">Session 12</span></div>
     </div>
   </section>
   <section class="cs-section" id="numpy-matrices">
@@ -388,6 +407,10 @@
       <div class="cs-desc">A count for every label in index, with 0 for labels that never appeared: how many times a bootstrap sample drew each day.<span class="cs-since">Session 11</span></div>
       <div class="cs-sig"><code>s.abs()</code></div>
       <div class="cs-desc">The size of every value, sign dropped. abs() on its own does the same for one number.<span class="cs-since">Session 4</span></div>
+      <div class="cs-sig"><code>s.idxmin() <span class="cs-or">&middot;</span> s.idxmax()</code></div>
+      <div class="cs-desc">The LABEL of the smallest or largest value, where argmin gives its position: on a Series of errors indexed by alpha, the alpha with the lowest error.<span class="cs-since">Session 4</span></div>
+      <div class="cs-sig"><code>s.to_dict()</code></div>
+      <div class="cs-desc">The Series as a plain dictionary, label to value. s.value_counts().to_dict() keeps the counts in a form any report can store.<span class="cs-since">Session 3</span></div>
     </div>
   </section>
   <section class="cs-section" id="pandas-a-table">
@@ -431,6 +454,8 @@ import pandas as pd</code></pre>
       <div class="cs-desc">Rows by label. With a date index you can slice with dates, and both ends are included.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>frame.iloc[0] <span class="cs-or">&middot;</span> frame.iloc[-1]</code></div>
       <div class="cs-desc">Rows by position: the first row, the last row.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>frame.iloc[[-1]]</code></div>
+      <div class="cs-desc">The last row, kept as a one-row table by the second pair of brackets, so a model&#x27;s predict accepts it.<span class="cs-since">Session 12</span></div>
       <div class="cs-sig"><code>frame.values <span class="cs-or">&middot;</span> frame.to_numpy()</code></div>
       <div class="cs-desc">The plain numbers underneath, as a NumPy array, labels dropped.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>frame.set_index(&quot;date&quot;)</code></div>
@@ -443,6 +468,12 @@ import pandas as pd</code></pre>
       <div class="cs-desc">A random half of the rows, drawn without replacement, and the other half: the table without the rows whose labels are given.<span class="cs-since">Session 11</span></div>
       <div class="cs-sig"><code>frame.dropna()</code></div>
       <div class="cs-desc">Drop every row with a missing value in any column, such as the first rows a shift leaves empty. Compare the number of rows before and after.<span class="cs-since">Session 10</span></div>
+      <div class="cs-sig"><code>frame.dropna(subset=columns)</code></div>
+      <div class="cs-desc">Drop a row only where one of these columns is missing. Rows missing nothing but the target, such as the latest days, stay in.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>frame.join(other)</code></div>
+      <div class="cs-desc">Add the columns of another table with the same index, each row matched by its label. frame.join(pd.get_dummies(frame[&quot;weekday&quot;], prefix=&quot;weekday&quot;, dtype=int)) adds the weekday columns in one step.<span class="cs-since">Session 13</span></div>
+      <div class="cs-sig"><code>frame.idxmin(axis=1)</code></div>
+      <div class="cs-desc">For every row, the name of the column holding the smallest value: on a table of errors with one column per model, the best model on each row.<span class="cs-since">Session 12</span></div>
       <div class="cs-sig"><code>for col in frame:</code></div>
       <div class="cs-desc">Looping over a table gives its column names, one at a time: this is how the columns from get_dummies are copied into another table.<span class="cs-since">Session 10</span></div>
       <div class="cs-sig"><code>pd.cut(s, [0, 0.2, 0.4, 1.0])</code></div>
@@ -482,6 +513,8 @@ import pandas as pd</code></pre>
       <div class="cs-desc">Count, mean, standard deviation and the quartiles, in one call.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>s.nlargest(n)</code></div>
       <div class="cs-desc">The n largest values, largest first.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>frame.nlargest(n, &quot;col&quot;) <span class="cs-or">&middot;</span> frame.nsmallest(n, &quot;col&quot;)</code></div>
+      <div class="cs-desc">The n rows with the largest, or smallest, values in one column, in that order.<span class="cs-since">Session 12</span></div>
     </div>
   </section>
   <section class="cs-section" id="matplotlib">
@@ -491,16 +524,24 @@ import pandas as pd</code></pre>
     <div class="cs-ref">
       <div class="cs-sig"><code>fig, ax = plt.subplots(figsize=(9, 3))</code></div>
       <div class="cs-desc">Make a figure and one axes to draw on. Every plot starts here.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>fig, axes = plt.subplots(1, 2, figsize=(11, 3), sharey=True)</code></div>
+      <div class="cs-desc">Two axes side by side: draw on axes[0] and axes[1]. sharey=True gives both one vertical scale, so the two can be compared by eye.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>ax.plot(x, y)</code></div>
       <div class="cs-desc">A line: something over time.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>ax.barh(names, values)</code></div>
       <div class="cs-desc">Horizontal bars: comparing named things. Sort before you plot.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>ax.invert_yaxis()</code></div>
+      <div class="cs-desc">Turn the vertical axis upside down, so barh draws the first name at the top instead of at the bottom.<span class="cs-since">Session 6</span></div>
       <div class="cs-sig"><code>ax.bar(names, values)</code></div>
       <div class="cs-desc">Vertical bars, one per name: a count or a share for each group, side by side.<span class="cs-since">Session 5</span></div>
       <div class="cs-sig"><code>ax.hist(values, bins=40)</code></div>
       <div class="cs-desc">A histogram: the shape of one variable.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>ax.scatter(x, y)</code></div>
       <div class="cs-desc">A scatter: one thing against another. s=6 makes the dots small.<span class="cs-since">Session 3</span></div>
+      <div class="cs-sig"><code>ax.plot(x, y, marker=&quot;o&quot;)</code></div>
+      <div class="cs-desc">A dot on every point as well as the line, for a curve with only a few points.<span class="cs-since">Session 4</span></div>
+      <div class="cs-sig"><code>ax.annotate(text, (x, y), textcoords=&quot;offset points&quot;, xytext=(5, 4))</code></div>
+      <div class="cs-desc">Write text next to a point, 5 points to the right of it and 4 above, so the text does not cover the marker.<span class="cs-since">Session 12</span></div>
       <div class="cs-sig"><code>ax.set_title(text, loc=&quot;left&quot;)</code></div>
       <div class="cs-desc">Say what the reader is looking at.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>ax.set_ylabel(text) <span class="cs-or">&middot;</span> ax.set_xlabel(text)</code></div>
@@ -515,6 +556,8 @@ import pandas as pd</code></pre>
       <div class="cs-desc">A staircase: each value held flat until the next one. How a forecast that takes only a few values looks over time.<span class="cs-since">Session 11</span></div>
       <div class="cs-sig"><code>ax.set_xscale(&quot;log&quot;)</code></div>
       <div class="cs-desc">A logarithmic axis, so factors of ten are evenly spaced. For a validation curve over alpha or C.<span class="cs-since">Session 6</span></div>
+      <div class="cs-sig"><code>fig.tight_layout()</code></div>
+      <div class="cs-desc">Shrink the gaps so the titles and labels of several axes do not overlap. The line before plt.show().<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>plt.show()</code></div>
       <div class="cs-desc">Display the figure. The last line of a plotting cell.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>plt.figure(figsize=(11, 3))</code></div>
@@ -578,6 +621,8 @@ import pandas as pd</code></pre>
       <div class="cs-desc">The IQR rule, with iqr = q3 - q1: flag anything outside Q1 - 1.5 IQR to Q3 + 1.5 IQR. On returns it flags far more than it should.<span class="cs-since">Session 4</span></div>
       <div class="cs-sig"><code>np.log(values)</code></div>
       <div class="cs-desc">The natural log. Log returns add up over time, and a log tames a long right tail.<span class="cs-since">Session 4</span></div>
+      <div class="cs-sig"><code>np.exp(model.predict(X))</code></div>
+      <div class="cs-desc">A model fitted to np.log(price) forecasts the log of the price; np.exp turns the forecast back into kroner. np.exp of the difference between two such forecasts is the factor between them: 1.147 is 14.7 percent more.<span class="cs-since">Session 7</span></div>
       <div class="cs-sig"><code>(s - s.mean()) / s.std()</code></div>
       <div class="cs-desc">Standardise: mean 0, standard deviation 1. Compute those two numbers on the training rows only.<span class="cs-since">Session 4</span></div>
       <div class="cs-sig"><code>pd.get_dummies(frame, columns=[&quot;sector&quot;], dtype=int)</code></div>
@@ -877,6 +922,62 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV</code></pre
       <div class="cs-desc">Read a clock, in seconds. time.perf_counter() - start after a fit is how long it took.<span class="cs-since">Session 11</span></div>
     </div>
   </section>
+  <section class="cs-section" id="boosted-trees">
+    <h2>Boosted trees</h2>
+    <p class="lede">Small trees added one at a time, each fitted to what the trees before it still get wrong, the libraries that do this fast, and two ways to read which columns a model uses.</p>
+    <pre class="cs-imports"><code>from sklearn.ensemble import (GradientBoostingRegressor, GradientBoostingClassifier,
+    HistGradientBoostingRegressor, HistGradientBoostingClassifier)
+from sklearn.inspection import permutation_importance
+from xgboost import XGBRegressor, XGBClassifier
+from lightgbm import LGBMRegressor, LGBMClassifier, early_stopping</code></pre>
+    <p class="cs-names">On this card: X and y are the rows a model is fitted on, X_stop and y_stop later rows held back to stop it, X_test and y_test the test rows, columns the list of feature names, boost a fitted boosting model, result what permutation_importance returns.</p>
+    <div class="cs-ref">
+      <div class="cs-sig"><code>GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0)</code></div>
+      <div class="cs-desc">Boosting: start from the mean of y, then add n_estimators small trees one at a time, each fitted to the residuals of the forecast so far and shrunk by learning_rate. max_depth=1 makes every tree a stump; the default is 3. A smaller learning_rate needs more trees for the same fit.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=3)</code></div>
+      <div class="cs-desc">The same for a label. The trees are added on the log-odds scale, each fitted to y minus the probability so far, and predict_proba turns the sum into probabilities.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>list(boost.staged_predict(X))</code></div>
+      <div class="cs-desc">The forecast after 1, 2, 3, ... trees, up to n_estimators. staged_predict hands them out one at a time, so list() collects them: [49] is the forecast after 50 trees.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>GradientBoostingRegressor(n_estimators=5000, validation_fraction=0.1, n_iter_no_change=10)</code></div>
+      <div class="cs-desc">Early stopping inside scikit-learn: hold back a random tenth of the training rows and stop once 10 more trees have not helped on them. boost.n_estimators_ is the number of trees it grew. A random tenth suits separate cases and is too kind on days.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>HistGradientBoostingRegressor(max_iter=200, max_depth=2) <span class="cs-or">&middot;</span> HistGradientBoostingClassifier()</code></div>
+      <div class="cs-desc">scikit-learn&#x27;s fast boosting: each column is first sorted into at most 255 bins, and cuts fall only between bins. max_iter is the number of trees. Above 10,000 rows it stops early on its own, on a random tenth of them, unless early_stopping=False. It has no feature_importances_.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>XGBRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0)</code></div>
+      <div class="cs-desc">XGBoost, with the methods every scikit-learn model has: fit, predict, and predict_proba on XGBClassifier. It cuts each column only between 256 bins and puts a light ridge penalty on the leaf values. Its own defaults are learning_rate=0.3 and max_depth=6, so set both.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>XGBRegressor(n_estimators=3000, learning_rate=0.1, early_stopping_rounds=50)</code></div>
+      <div class="cs-desc">Early stopping in XGBoost: score every new tree on the rows given to fit as eval_set, and stop 50 trees after the best score. n_estimators is then only a ceiling.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>boost.fit(X, y, eval_set=[(X_stop, y_stop)], verbose=False)</code></div>
+      <div class="cs-desc">The rows that stop it, as a list of (columns, target) pairs: rows later than those fitted on, never the test rows. verbose=False keeps it from printing the score of every tree.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>boost.best_iteration <span class="cs-or">&middot;</span> boost.best_score</code></div>
+      <div class="cs-desc">Where the score on eval_set was best, counting the first tree as 0, and that score. predict then uses the first best_iteration + 1 trees.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>XGBRegressor(n_estimators=boost.best_iteration + 1, learning_rate=0.1, max_depth=3)</code></div>
+      <div class="cs-desc">The number of trees early stopping found, refitted on all the training rows, the block that chose it included. The refit takes no eval_set and no early_stopping_rounds.<span class="cs-since">Session 13</span></div>
+      <div class="cs-sig"><code>boost.evals_result()[&quot;validation_0&quot;][&quot;rmse&quot;]</code></div>
+      <div class="cs-desc">XGBoost&#x27;s record of the score after every tree, for each eval_set entry, under validation_0, validation_1, ... in the order given. Plot it against the number of trees to see the curve early stopping read.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>XGBClassifier(eval_metric=&quot;auc&quot;, early_stopping_rounds=50)</code></div>
+      <div class="cs-desc">The score early stopping watches. The default is the log loss for a label and the RMSE for a number; &quot;auc&quot; stops at the best AUC instead.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>XGBRegressor(reg_lambda=1, subsample=0.8, colsample_bytree=0.8)</code></div>
+      <div class="cs-desc">reg_lambda is the ridge penalty on the leaf values. subsample and colsample_bytree give each tree a random share of the rows and of the columns, as a forest does. Settings to try after the depth and the number of trees, not before.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>boost.predict(X, output_margin=True)</code></div>
+      <div class="cs-desc">XGBClassifier: the sum of the trees before the sigmoid, on the log-odds scale. 1 / (1 + np.exp(-margin)) gives back predict_proba(X)[:, 1].<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>XGBRegressor(monotone_constraints={&quot;area&quot;: 1})</code></div>
+      <div class="cs-desc">Never let the forecast fall as a column rises, everything else unchanged: 1 for a column that may only raise the forecast, -1 for one that may only lower it, by its name in the table given to fit.<span class="cs-since">Session 13</span></div>
+      <div class="cs-sig"><code>LGBMRegressor(n_estimators=100, learning_rate=0.1, num_leaves=2, verbose=-1)</code></div>
+      <div class="cs-desc">LightGBM. It grows each tree leaf by leaf, splitting whichever leaf lowers the error most, so num_leaves sets the size of a tree: 2 makes a stump, and the default is 31. verbose=-1 silences its messages.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>boost.fit(X, y, eval_set=[(X_stop, y_stop)], eval_metric=&quot;auc&quot;, callbacks=[early_stopping(50, verbose=False)])</code></div>
+      <div class="cs-desc">Early stopping in LightGBM: a callback passed to fit rather than a setting of the model. boost.best_iteration_ counts the first tree as 1, where XGBoost&#x27;s best_iteration counts it as 0.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>boost.best_score_[&quot;valid_0&quot;][&quot;l2&quot;] ** 0.5</code></div>
+      <div class="cs-desc">LightGBM&#x27;s best score, by data set and metric. For a number the metric is the squared error, l2, so its square root is the RMSE.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>pd.Series(boost.feature_importances_, index=columns)</code></div>
+      <div class="cs-desc">How much the model used each column, one number per column in column order. scikit-learn&#x27;s trees sum each column&#x27;s fall in the error and scale the total to one, XGBoost averages the fall per cut, and LightGBM counts the cuts. Measured on the training rows, so a column of noise can still collect many cuts.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>LGBMClassifier(importance_type=&quot;gain&quot;)</code></div>
+      <div class="cs-desc">Make LightGBM sum the fall in the loss on each column instead of counting its cuts. XGBoost takes importance_type too, where &quot;weight&quot; counts the cuts.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>permutation_importance(boost, X_test, y_test, scoring=&quot;roc_auc&quot;, n_repeats=10, random_state=0)</code></div>
+      <div class="cs-desc">For any model: shuffle one column at a time on rows the model did not fit, and record how far the score falls, n_repeats times for each column. A column of noise falls by about zero.<span class="cs-since">Session 12</span></div>
+      <div class="cs-sig"><code>result.importances_mean <span class="cs-or">&middot;</span> result.importances_std</code></div>
+      <div class="cs-desc">Per column, in column order: the mean fall in the score over the repeats, and its spread. pd.Series(result.importances_mean, index=columns) names them.<span class="cs-since">Session 12</span></div>
+    </div>
+  </section>
   <section class="cs-section" id="reading-error-messages">
     <h2>Reading error messages</h2>
     <p class="lede">The last line names the problem. Read it before you change anything: it is almost always telling you the truth.</p>
@@ -903,6 +1004,8 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV</code></pre
       <div class="cs-desc">A matrix with no inverse: one column carries nothing the others do not. Perfect multicollinearity.<span class="cs-since">Session 3</span></div>
       <div class="cs-sig"><code>ValueError, on feature names</code></div>
       <div class="cs-desc">The columns given to predict are not the ones fit saw, in the same order. Select them with the same list both times.<span class="cs-since">Session 11</span></div>
+      <div class="cs-sig"><code>ValueError, on early stopping</code></div>
+      <div class="cs-desc">Must have at least 1 validation dataset: XGBoost was given early_stopping_rounds but no eval_set to score the trees on. Pass eval_set to fit, or leave early_stopping_rounds out of a refit.<span class="cs-since">Session 12</span></div>
       <div class="cs-sig"><code>ConvergenceWarning</code></div>
       <div class="cs-desc">Not an error: the solver ran out of steps before the coefficients settled. Raise max_iter, or standardise the columns first.<span class="cs-since">Session 6</span></div>
     </div>

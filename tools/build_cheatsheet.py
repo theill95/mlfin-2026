@@ -14,8 +14,8 @@ library. A misspelt name fails the build rather than reaching a student.
 The previous format, with an executed example under every entry, is archived
 in tools/archive/ together with its rendered page and CSS.
 
-Adding a session: append rows below with since="S12" and add it to SINCE_LABEL.
-Rows belong with their topic (a NumPy function under NumPy, whichever session
+Adding rows: tag each with the session that introduced it, since="S13", and
+keep SINCE_LABEL in step. Rows belong with their topic (a NumPy function under NumPy, whichever session
 introduced it); the session tag at the edge of the row says when it arrived.
 """
 import builtins
@@ -67,6 +67,7 @@ r('f"{name:<6}"  f"{x:>7.1%}"', "A field width: pad left-aligned text, or right-
 r("text.upper()  text.lower()", "A copy of the string in one case. Tickers arrive in every mixture of both.")
 r("text.strip()", "A copy with the spaces at each end removed. The first thing you do to text from a file.", "S2")
 r("text.count(part)", "How many times a piece of text appears inside a string.")
+r("text.startswith(part)  text.endswith(part)", 'True when the text begins, or ends, with that piece. [c for c in columns if c.startswith("vol_")] keeps the columns whose names begin with vol_.', "S3")
 
 section("True and false")
 r("==  !=", "Equal, and not equal. Two equals signs, because one assigns.")
@@ -99,6 +100,7 @@ r("items[:n]  items[n:]", "Everything before n, everything from n.")
 r("items.append(x)", "Add to the end. Changes the list itself.")
 r("items.index(x)", "The position of the first x.")
 r("[]", "An empty list, ready for a loop to fill.")
+r("[x for x in items if condition]", 'A list built in one line: every item for which the condition holds. [c for c in frame.columns if c != "price"] is every column but the target. Without the if it keeps them all, and x * 2 in place of the first x changes each one.', "S3")
 
 section("Loops", "Doing something once per item.")
 r("for item in items:", "Run the indented body once for every item.", "S2")
@@ -127,6 +129,8 @@ r("for key, value in data.items():", "The key and the value together, so you nee
 r("{}", "An empty dictionary, ready for a loop to fill. The counterpart of [].", "S2")
 r("min(data, key=data.get)", "The KEY with the smallest value, not the value itself. max works the same way.", "S5")
 r("sorted(data, key=data.get)", "All the keys, ordered by their values. Largest first with reverse=True.", "S5")
+r("{key: round(value, 3) for key, value in data.items()}", "A dictionary built in one line, one entry per item: here the same keys with every value rounded.", "S3")
+r("name(**settings)", 'Call a function, or create a model, with the keys of a dictionary as the argument names: XGBRegressor(**{"max_depth": 3}) is XGBRegressor(max_depth=3). One dictionary of settings then reaches every fit that needs it.', "S12")
 
 section("Packages")
 r("import numpy as np", "Bring a package in under a short name. np, pd and plt are conventions everybody uses.", "S3")
@@ -153,6 +157,9 @@ r("values[values > 0]", "Keep only the elements where the condition holds.", "S3
 r("values.shape", "How big it is. For a 1-D array it prints as (n,).", "S3")
 r("values.argmax()  values.argmin()", "The POSITION of the largest or smallest element. Feed it to an index to get the label.", "S5")
 r("(a == b).all()", "True only when every element of a comparison is True: the vectorised way to check that two arrays or columns agree everywhere.", "S8")
+r("np.allclose(a, b)  np.isclose(a, b)", "Equal up to rounding error: one True or False for the whole array, or one per element. Two computations of the same number rarely agree to the last decimal, so == is the wrong test for floats.", "S3")
+r("float(values.mean())", "A plain Python number from a NumPy one. From NumPy 2 on, a NumPy number stored in a list or a dictionary prints as np.float64(0.2); after float() it prints as 0.2.", "S5")
+r("np.diff(values)", "The change from each element to the next, so n values give n - 1 changes. (np.diff(values) < 0).all() is True when the values fall at every step.", "S12")
 r("np.where(mask, a, b)", "An array that takes a where the mask is True and b elsewhere. Keeps one group's values and blanks the rest before argmin or argmax.", "S8")
 r("np.zeros(n, dtype=int)", "An array of n zeros, as integers; without dtype, as floats. A prediction of 0 on every row is np.zeros(len(test), dtype=int).", "S8")
 r("np.arange(start, stop, step)", "Values from start up to but not including stop, a fixed step apart. np.linspace fixes the count instead of the step.", "S8")
@@ -163,6 +170,8 @@ r("np.asarray(values, dtype=float)", "An array of floats from a list, an array o
 r("np.mean(arrays, axis=0)", "Average several arrays of the same length, position by position: many trees' forecasts made into one.", "S11")
 r("values.cumsum(axis=0)", "Running totals down the rows of a 2-D array. Divide row n by n + 1 for the running average of the first rows: how a forest's error moves as trees are added.", "S11")
 r("np.random.default_rng(0)", "A random number generator with a fixed seed, so the same code gives the same numbers every time.", "S4")
+r("rng.normal(0, 1, size=n)", "n draws from a normal distribution with mean 0 and standard deviation 1, from rng = np.random.default_rng(0). As a column of a table: pure noise.", "S4")
+r("rng.integers(0, 2, size=n)  rng.permutation(values)", "n whole numbers from 0 up to but not including 2, a coin for each row; and the values given, in a random order. Shuffling one column of the test rows is how permutation importance breaks it.", "S12")
 
 section("NumPy matrices", "A matrix is a 2-D array: rows first, then columns.",
         imports="import numpy as np")
@@ -196,6 +205,8 @@ r("s.sort_index()", "Order by the labels instead of the values. After value_coun
 r("s.isin(values)", "True where the value appears in values. frame.index.isin(sample.index) marks the days a sample drew, and ~ the days it left out.", "S11")
 r("s.value_counts().reindex(index, fill_value=0)", "A count for every label in index, with 0 for labels that never appeared: how many times a bootstrap sample drew each day.", "S11")
 r("s.abs()", "The size of every value, sign dropped. abs() on its own does the same for one number.", "S4")
+r("s.idxmin()  s.idxmax()", "The LABEL of the smallest or largest value, where argmin gives its position: on a Series of errors indexed by alpha, the alpha with the lowest error.", "S4")
+r("s.to_dict()", "The Series as a plain dictionary, label to value. s.value_counts().to_dict() keeps the counts in a form any report can store.", "S3")
 
 section("pandas: a table", "A DataFrame is several Series side by side, sharing one index.",
         imports="import numpy as np\nimport pandas as pd",
@@ -217,12 +228,16 @@ r("s.pct_change()", "The percentage change from each row to the next. The first 
 r('frame.sort_values("col")', "Sort the rows by a column.", "S3")
 r('frame.loc["2024-01-02":"2024-01-31"]', "Rows by label. With a date index you can slice with dates, and both ends are included.", "S3")
 r("frame.iloc[0]  frame.iloc[-1]", "Rows by position: the first row, the last row.", "S3")
+r("frame.iloc[[-1]]", "The last row, kept as a one-row table by the second pair of brackets, so a model's predict accepts it.", "S12")
 r("frame.values  frame.to_numpy()", "The plain numbers underneath, as a NumPy array, labels dropped.", "S3")
 r('frame.set_index("date")', "Move a column into the index, so .loc can slice by it.", "S4")
 r('frame.loc["2023-11-14 13:00":"2023-11-14 16:00", ["a", "b"]]', "Rows by date and hour on an hourly index, and columns by name, in one pair of brackets. Both ends of the slice are included.", "S10")
 r("frame.sample(n=len(frame), replace=True, random_state=0)", "A bootstrap sample: as many rows as the table, drawn with replacement, so some rows come twice and about a third not at all.", "S11")
 r("half = frame.sample(frac=0.5, random_state=0)  frame.drop(half.index)", "A random half of the rows, drawn without replacement, and the other half: the table without the rows whose labels are given.", "S11")
 r("frame.dropna()", "Drop every row with a missing value in any column, such as the first rows a shift leaves empty. Compare the number of rows before and after.", "S10")
+r("frame.dropna(subset=columns)", "Drop a row only where one of these columns is missing. Rows missing nothing but the target, such as the latest days, stay in.", "S12")
+r("frame.join(other)", 'Add the columns of another table with the same index, each row matched by its label. frame.join(pd.get_dummies(frame["weekday"], prefix="weekday", dtype=int)) adds the weekday columns in one step.', "S13")
+r("frame.idxmin(axis=1)", "For every row, the name of the column holding the smallest value: on a table of errors with one column per model, the best model on each row.", "S12")
 r("for col in frame:", "Looping over a table gives its column names, one at a time: this is how the columns from get_dummies are copied into another table.", "S10")
 r('pd.cut(s, [0, 0.2, 0.4, 1.0])', "Sort every value into one of the ranges given, and return the range it fell in. Group by the result to summarise each range.", "S9")
 r('pd.cut(s, edges, labels=["low", "mid", "high"])', "The same, with a name for each range instead of the range itself. This is how a number becomes a label with more than two values.", "S9")
@@ -242,6 +257,7 @@ r("s.rolling(window).std()", "A statistic over a sliding window of rows. Where m
 r("s.groupby(s.index.year).mean()", "A dated Series grouped by the year in its index, one mean per year. From a Series of True and False, one share per year.", "S8")
 r("s.describe()", "Count, mean, standard deviation and the quartiles, in one call.", "S3")
 r("s.nlargest(n)", "The n largest values, largest first.", "S3")
+r('frame.nlargest(n, "col")  frame.nsmallest(n, "col")', "The n rows with the largest, or smallest, values in one column, in that order.", "S12")
 
 # ======================================================================
 section("matplotlib",
@@ -249,11 +265,15 @@ section("matplotlib",
         "the reader is looking at.",
         imports="import matplotlib.pyplot as plt")
 r("fig, ax = plt.subplots(figsize=(9, 3))", "Make a figure and one axes to draw on. Every plot starts here.", "S3")
+r("fig, axes = plt.subplots(1, 2, figsize=(11, 3), sharey=True)", "Two axes side by side: draw on axes[0] and axes[1]. sharey=True gives both one vertical scale, so the two can be compared by eye.", "S3")
 r("ax.plot(x, y)", "A line: something over time.", "S3")
 r("ax.barh(names, values)", "Horizontal bars: comparing named things. Sort before you plot.", "S3")
+r("ax.invert_yaxis()", "Turn the vertical axis upside down, so barh draws the first name at the top instead of at the bottom.", "S6")
 r("ax.bar(names, values)", "Vertical bars, one per name: a count or a share for each group, side by side.", "S5")
 r("ax.hist(values, bins=40)", "A histogram: the shape of one variable.", "S3")
 r("ax.scatter(x, y)", "A scatter: one thing against another. s=6 makes the dots small.", "S3")
+r('ax.plot(x, y, marker="o")', "A dot on every point as well as the line, for a curve with only a few points.", "S4")
+r('ax.annotate(text, (x, y), textcoords="offset points", xytext=(5, 4))', "Write text next to a point, 5 points to the right of it and 4 above, so the text does not cover the marker.", "S12")
 r('ax.set_title(text, loc="left")', "Say what the reader is looking at.", "S3")
 r("ax.set_ylabel(text)  ax.set_xlabel(text)", 'Label the axes, with units. "price (USD)", not "price".', "S3")
 r('ax.plot(x, y, label="AAPL")  ax.legend()', "Name each line, then show the key. Needed as soon as there are two.", "S3")
@@ -261,6 +281,7 @@ r("ax.set_ylim(a, b)", "Fix the vertical range. For bars, always start at zero."
 r("ax.axhline(y)", "A horizontal reference line: zero on an error plot, or an average across bars. ax.axvline(x) is the vertical one.", "S4")
 r('ax.plot(x, y, drawstyle="steps-post")', "A staircase: each value held flat until the next one. How a forecast that takes only a few values looks over time.", "S11")
 r('ax.set_xscale("log")', "A logarithmic axis, so factors of ten are evenly spaced. For a validation curve over alpha or C.", "S6")
+r("fig.tight_layout()", "Shrink the gaps so the titles and labels of several axes do not overlap. The line before plt.show().", "S3")
 r("plt.show()", "Display the figure. The last line of a plotting cell.", "S3")
 r("plt.figure(figsize=(11, 3))", "A figure with no axes of your own. plot_tree draws on the current figure, so make one of the right size first.", "S11")
 r('fig.savefig("name.png", dpi=200)', "Save it to a file. Use .pdf for something that stays sharp at any size.", "S3")
@@ -296,6 +317,7 @@ section("Extremes, and changing the scale",
 r("s.quantile([0.25, 0.75])", "The percentiles. Q1 and Q3 are the edges of the middle half of the data.", "S4")
 r("(s < q1 - 1.5 * iqr) | (s > q3 + 1.5 * iqr)", "The IQR rule, with iqr = q3 - q1: flag anything outside Q1 - 1.5 IQR to Q3 + 1.5 IQR. On returns it flags far more than it should.", "S4")
 r("np.log(values)", "The natural log. Log returns add up over time, and a log tames a long right tail.", "S4")
+r("np.exp(model.predict(X))", "A model fitted to np.log(price) forecasts the log of the price; np.exp turns the forecast back into kroner. np.exp of the difference between two such forecasts is the factor between them: 1.147 is 14.7 percent more.", "S7")
 r("(s - s.mean()) / s.std()", "Standardise: mean 0, standard deviation 1. Compute those two numbers on the training rows only.", "S4")
 r('pd.get_dummies(frame, columns=["sector"], dtype=int)', "One 0/1 column per category. This is how text gets into a feature table.", "S4")
 r('pd.get_dummies(s, prefix="weekday", dtype=int)', "One 0/1 column per value of a single column, named weekday_0, weekday_1 and so on. A logistic regression then gives each weekday its own level, where the weekday as one number could only give it one slope across the week.", "S10")
@@ -461,6 +483,37 @@ r('len(grid["a"]) * len(grid["b"]) * 5 + 1', "The fits a search will make: one p
 r("start = time.perf_counter()", "Read a clock, in seconds. time.perf_counter() - start after a fit is how long it took.", "S11")
 
 # ======================================================================
+section("Boosted trees",
+        "Small trees added one at a time, each fitted to what the trees before it still get wrong, "
+        "the libraries that do this fast, and two ways to read which columns a model uses.",
+        imports="from sklearn.ensemble import (GradientBoostingRegressor, GradientBoostingClassifier,\n    HistGradientBoostingRegressor, HistGradientBoostingClassifier)\nfrom sklearn.inspection import permutation_importance\nfrom xgboost import XGBRegressor, XGBClassifier\nfrom lightgbm import LGBMRegressor, LGBMClassifier, early_stopping",
+        names="On this card: X and y are the rows a model is fitted on, X_stop and y_stop later rows held back "
+              "to stop it, X_test and y_test the test rows, columns the list of feature names, boost a "
+              "fitted boosting model, result what permutation_importance returns.")
+r("GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0)", "Boosting: start from the mean of y, then add n_estimators small trees one at a time, each fitted to the residuals of the forecast so far and shrunk by learning_rate. max_depth=1 makes every tree a stump; the default is 3. A smaller learning_rate needs more trees for the same fit.", "S12")
+r("GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=3)", "The same for a label. The trees are added on the log-odds scale, each fitted to y minus the probability so far, and predict_proba turns the sum into probabilities.", "S12")
+r("list(boost.staged_predict(X))", "The forecast after 1, 2, 3, ... trees, up to n_estimators. staged_predict hands them out one at a time, so list() collects them: [49] is the forecast after 50 trees.", "S12")
+r("GradientBoostingRegressor(n_estimators=5000, validation_fraction=0.1, n_iter_no_change=10)", "Early stopping inside scikit-learn: hold back a random tenth of the training rows and stop once 10 more trees have not helped on them. boost.n_estimators_ is the number of trees it grew. A random tenth suits separate cases and is too kind on days.", "S12")
+r("HistGradientBoostingRegressor(max_iter=200, max_depth=2)  HistGradientBoostingClassifier()", "scikit-learn's fast boosting: each column is first sorted into at most 255 bins, and cuts fall only between bins. max_iter is the number of trees. Above 10,000 rows it stops early on its own, on a random tenth of them, unless early_stopping=False. It has no feature_importances_.", "S12")
+r("XGBRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0)", "XGBoost, with the methods every scikit-learn model has: fit, predict, and predict_proba on XGBClassifier. It cuts each column only between 256 bins and puts a light ridge penalty on the leaf values. Its own defaults are learning_rate=0.3 and max_depth=6, so set both.", "S12")
+r("XGBRegressor(n_estimators=3000, learning_rate=0.1, early_stopping_rounds=50)", "Early stopping in XGBoost: score every new tree on the rows given to fit as eval_set, and stop 50 trees after the best score. n_estimators is then only a ceiling.", "S12")
+r("boost.fit(X, y, eval_set=[(X_stop, y_stop)], verbose=False)", "The rows that stop it, as a list of (columns, target) pairs: rows later than those fitted on, never the test rows. verbose=False keeps it from printing the score of every tree.", "S12")
+r("boost.best_iteration  boost.best_score", "Where the score on eval_set was best, counting the first tree as 0, and that score. predict then uses the first best_iteration + 1 trees.", "S12")
+r("XGBRegressor(n_estimators=boost.best_iteration + 1, learning_rate=0.1, max_depth=3)", "The number of trees early stopping found, refitted on all the training rows, the block that chose it included. The refit takes no eval_set and no early_stopping_rounds.", "S13")
+r('boost.evals_result()["validation_0"]["rmse"]', "XGBoost's record of the score after every tree, for each eval_set entry, under validation_0, validation_1, ... in the order given. Plot it against the number of trees to see the curve early stopping read.", "S12")
+r('XGBClassifier(eval_metric="auc", early_stopping_rounds=50)', 'The score early stopping watches. The default is the log loss for a label and the RMSE for a number; "auc" stops at the best AUC instead.', "S12")
+r("XGBRegressor(reg_lambda=1, subsample=0.8, colsample_bytree=0.8)", "reg_lambda is the ridge penalty on the leaf values. subsample and colsample_bytree give each tree a random share of the rows and of the columns, as a forest does. Settings to try after the depth and the number of trees, not before.", "S12")
+r("boost.predict(X, output_margin=True)", "XGBClassifier: the sum of the trees before the sigmoid, on the log-odds scale. 1 / (1 + np.exp(-margin)) gives back predict_proba(X)[:, 1].", "S12")
+r('XGBRegressor(monotone_constraints={"area": 1})', "Never let the forecast fall as a column rises, everything else unchanged: 1 for a column that may only raise the forecast, -1 for one that may only lower it, by its name in the table given to fit.", "S13")
+r("LGBMRegressor(n_estimators=100, learning_rate=0.1, num_leaves=2, verbose=-1)", "LightGBM. It grows each tree leaf by leaf, splitting whichever leaf lowers the error most, so num_leaves sets the size of a tree: 2 makes a stump, and the default is 31. verbose=-1 silences its messages.", "S12")
+r('boost.fit(X, y, eval_set=[(X_stop, y_stop)], eval_metric="auc", callbacks=[early_stopping(50, verbose=False)])', "Early stopping in LightGBM: a callback passed to fit rather than a setting of the model. boost.best_iteration_ counts the first tree as 1, where XGBoost's best_iteration counts it as 0.", "S12")
+r('boost.best_score_["valid_0"]["l2"] ** 0.5', "LightGBM's best score, by data set and metric. For a number the metric is the squared error, l2, so its square root is the RMSE.", "S12")
+r("pd.Series(boost.feature_importances_, index=columns)", "How much the model used each column, one number per column in column order. scikit-learn's trees sum each column's fall in the error and scale the total to one, XGBoost averages the fall per cut, and LightGBM counts the cuts. Measured on the training rows, so a column of noise can still collect many cuts.", "S12")
+r('LGBMClassifier(importance_type="gain")', 'Make LightGBM sum the fall in the loss on each column instead of counting its cuts. XGBoost takes importance_type too, where "weight" counts the cuts.', "S12")
+r('permutation_importance(boost, X_test, y_test, scoring="roc_auc", n_repeats=10, random_state=0)', "For any model: shuffle one column at a time on rows the model did not fit, and record how far the score falls, n_repeats times for each column. A column of noise falls by about zero.", "S12")
+r("result.importances_mean  result.importances_std", "Per column, in column order: the mean fall in the score over the repeats, and its spread. pd.Series(result.importances_mean, index=columns) names them.", "S12")
+
+# ======================================================================
 section("Reading error messages",
         "The last line names the problem. Read it before you change anything: it is almost "
         "always telling you the truth.")
@@ -475,13 +528,15 @@ r("FileNotFoundError", "The path is wrong relative to where you are running from
 r("ValueError, on shapes", "Two arrays whose dimensions do not fit. Check .shape on both.", "S3")
 r("LinAlgError", "A matrix with no inverse: one column carries nothing the others do not. Perfect multicollinearity.", "S3")
 r("ValueError, on feature names", "The columns given to predict are not the ones fit saw, in the same order. Select them with the same list both times.", "S11")
+r("ValueError, on early stopping", "Must have at least 1 validation dataset: XGBoost was given early_stopping_rounds but no eval_set to score the trees on. Pass eval_set to fit, or leave early_stopping_rounds out of a refit.", "S12")
 r("ConvergenceWarning", "Not an error: the solver ran out of steps before the coefficients settled. Raise max_iter, or standardise the columns first.", "S6")
 
 # ======================================================================
 SINCE_LABEL = {"S1": "Session 1", "S2": "Session 2", "S3": "Session 3",
                "S4": "Session 4", "S5": "Session 5", "S6": "Session 6",
-               "S8": "Session 8", "S9": "Session 9", "S10": "Session 10",
-               "S11": "Session 11"}
+               "S7": "Session 7", "S8": "Session 8", "S9": "Session 9",
+               "S10": "Session 10", "S11": "Session 11", "S12": "Session 12",
+               "S13": "Session 13"}
 
 
 # --------------------------------------------------------------- checks
@@ -500,7 +555,7 @@ def check_names():
              "s": pd.Series, "frame": pd.DataFrame, "g": pd.core.groupby.DataFrameGroupBy,
              "values": np.ndarray, "text": str, "items": list, "data": dict,
              "scaler": StandardScaler, "pipe": Pipeline, "search": GridSearchCV,
-             "folds": TimeSeriesSplit}
+             "folds": TimeSeriesSplit, "rng": np.random.Generator}
     placeholders = {"name"}                  # def name(...): a name the reader chooses
     problems = []
     for sec in SECTIONS:
