@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Check the exercise ladder across all four sessions.
+"""Check the exercise ladder across every session with exercises.
 
 The badges are the student's map of the notebook, and they rot quietly: a level
 typed as 6, an id used twice, a `revisits` tag pointing at a session that has

@@ -108,7 +108,7 @@ DD_YEARS = _drawdown_years()
 # ---------------------------------------------------------------- top matter
 md(
 "# \U0001f4d3 Session 2 · Exercises\n"
-"### Functions, Loops, and Dictionaries\n\n"
+"### Functions, loops and dictionaries\n\n"
 "Last session you did everything one value at a time. These exercises are about "
 "getting the computer to do the repeating for you, and about packaging your work "
 "so you can reuse it.\n\n"

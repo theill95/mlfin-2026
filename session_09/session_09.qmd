@@ -33,6 +33,11 @@ format:
     code-line-numbers: false
     highlight-style: github
     auto-stretch: false
+    menu:
+      custom:
+        - title: "Course"
+          icon: '<i class="fas fa-graduation-cap"></i>'
+          content: '<ul class="slide-menu-items"><li class="slide-menu-item"><a href="../index.html">All sessions</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_09/session_09_exercises.ipynb" target="_blank" rel="noopener">The exercises, in Colab</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_09/session_09_case.ipynb" target="_blank" rel="noopener">Case Part 9, in Colab</a></li><li class="slide-menu-item"><a href="../downloads/lectures/session_09.pdf">This lecture as a PDF</a></li><li class="slide-menu-item"><a href="../cheatsheet.html">The cheatsheet</a></li><li class="slide-menu-item"><a href="../exam_info.html">Exam info</a></li></ul>'
 html-math-method: katex
 engine: jupyter
 pyodide:
@@ -1340,8 +1345,8 @@ probability is produced; the threshold, the costs and the scores stay the same.
 
 # Before the next session [case]{.chip .chip-case}
 
-- **Exercises**: rare classes, thresholds and costs, `class_weight`, calibration buckets, three-class labels and their scores, and k-NN against logistic regression.
-- **Case Part 9**: the risk report gets a threshold, a cost, and a check on its probabilities.
+- [**Exercises**](https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_09/session_09_exercises.ipynb){target="_blank"}: rare classes, thresholds and costs, `class_weight`, calibration buckets, three-class labels and their scores, and k-NN against logistic regression.
+- [**Case Part 9**](https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_09/session_09_case.ipynb){target="_blank"}: the risk report gets a threshold, a cost, and a check on its probabilities.
 
 ::: {.muted .small}
 Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email

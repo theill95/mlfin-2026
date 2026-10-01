@@ -69,7 +69,7 @@ def checkpoint(text):
 # ---------------------------------------------------------------- top matter
 md(
 "# \U0001f4d3 Session 1 · Exercises\n"
-"### Beginning Python for Financial Data\n\n"
+"### Beginning Python for financial data\n\n"
 "These exercises put the ideas from the lecture into practice. Programming is "
 "learned by doing, so most of the tasks ask you to write or complete a short "
 "piece of code yourself.\n\n"

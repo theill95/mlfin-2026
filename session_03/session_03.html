@@ -11,7 +11,7 @@
 <link href="session_03_files/libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.9.38">
 
-  <title>Packages: NumPy, pandas, and matplotlib</title>
+  <title>Packages: NumPy, pandas and matplotlib</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -99,7 +99,7 @@
     code span.vs { color: #032f62; } /* VerbatimString */
     code span.wa { color: #ff5555; } /* Warning */
   </style>
-  <link rel="stylesheet" href="session_03_files/libs/revealjs/dist/theme/quarto-6111bc620332b17cf5d5ecdb3c24ce47.css">
+  <link rel="stylesheet" href="session_03_files/libs/revealjs/dist/theme/quarto-2a682e55b20b5f2587904c73bb07cf6f.css">
   <link href="session_03_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="session_03_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="session_03_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
@@ -199,7 +199,7 @@
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">Packages: NumPy, pandas, and matplotlib</h1>
+  <h1 class="title">Packages: NumPy, pandas and matplotlib</h1>
   <p class="subtitle">Machine Learning in Finance · Session 3</p>
 
 <div class="quarto-title-authors">
@@ -243,7 +243,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="" aria-hidden="true" tabindex="-1"></a>prices <span class="op">=</span> pd.read_csv(<span class="st">"data/prices.csv"</span>, parse_dates<span class="op">=</span>[<span class="st">"date"</span>])</span>
 <span id="cb2-2"><a href="" aria-hidden="true" tabindex="-1"></a>daily <span class="op">=</span> prices.pivot(index<span class="op">=</span><span class="st">"date"</span>, columns<span class="op">=</span><span class="st">"ticker"</span>, values<span class="op">=</span><span class="st">"close"</span>).pct_change()</span>
 <span id="cb2-3"><a href="" aria-hidden="true" tabindex="-1"></a>daily.std().sort_values(ascending<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="58f3b3b5" class="cell" data-execution_count="2">
+<div id="279742b1" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-stdout">
 <pre><code>ticker
 NVDA    0.0306
@@ -799,7 +799,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <section id="why-arrays-are-worth-it" class="title-slide slide level1 smaller center">
 <h1>Why arrays are worth it</h1>
 <p>Squaring a million numbers, first with a loop and then with an array:</p>
-<div id="ff4e0071" class="cell" data-execution_count="3">
+<div id="95616589" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb13-2"><a href="" aria-hidden="true" tabindex="-1"></a>xs, arr <span class="op">=</span> <span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">1_000_000</span>)), np.arange(<span class="dv">1_000_000</span>)</span>
 <span id="cb13-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
@@ -815,7 +815,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <span id="cb13-13"><a href="" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-14"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"loop: </span><span class="sc">{</span>loop<span class="sc">:.3f}</span><span class="ss"> s     numpy: </span><span class="sc">{</span>vec<span class="sc">:.4f}</span><span class="ss"> s     </span><span class="sc">{</span>loop <span class="op">/</span> vec<span class="sc">:.0f}</span><span class="ss"> times faster"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>loop: 0.079 s     numpy: 0.0021 s     37 times faster</code></pre>
+<pre><code>loop: 0.084 s     numpy: 0.0026 s     32 times faster</code></pre>
 </div>
 </div>
 <div class="muted small">
@@ -1155,7 +1155,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <section id="a-figure-is-made-of-two-things" class="title-slide slide level1 center">
 <h1>A figure is made of two things</h1>
 <div class="diagram">
-<div id="29dbd712" class="cell" data-execution_count="4">
+<div id="32a075b0" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1240,7 +1240,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIi
 
 <section id="four-kinds-of-plot" class="title-slide slide level1 center">
 <h1>Four kinds of plot</h1>
-<div id="1983097a" class="cell" data-execution_count="5">
+<div id="3e75ff9a" class="cell" data-execution_count="5">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1300,7 +1300,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="the-chart-everybody-makes-first" class="title-slide slide level1 center">
 <h1>The chart everybody makes first</h1>
-<div id="f7262a89" class="cell" data-execution_count="6">
+<div id="c5b9b31e" class="cell" data-execution_count="6">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1317,7 +1317,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="say-one-thing-instead" class="title-slide slide level1 center">
 <h1>Say one thing instead</h1>
-<div id="fd189bfc" class="cell" data-execution_count="7">
+<div id="78da8461" class="cell" data-execution_count="7">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1359,7 +1359,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="it-can-look-much-better-than-this" class="title-slide slide level1 center">
 <h1>It can look much better than this</h1>
-<div id="0e6ce156" class="cell" data-execution_count="8">
+<div id="6724a13a" class="cell" data-execution_count="8">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1414,7 +1414,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="the-whole-ranking-in-four-lines" class="title-slide slide level1 center">
 <h1>The whole ranking, in four lines</h1>
-<div id="72085588" class="cell" data-execution_count="9">
+<div id="86ebf5f9" class="cell" data-execution_count="9">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1477,8 +1477,8 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 </div>
 </section>
 
-<section id="before-session-4" class="title-slide slide level1 center">
-<h1>Before Session 4</h1>
+<section id="before-the-next-session" class="title-slide slide level1 center">
+<h1>Before the next session</h1>
 <div class="pillars">
 <div class="pillar">
 <div class="pillar-tag">
@@ -1488,7 +1488,7 @@ Homework
 Exercises
 </div>
 <div class="pillar-body">
-<code>session_03_exercises.ipynb</code>: NumPy, pandas and matplotlib, plus practice at looking things up. Hints and solutions folded in.
+<a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_03/session_03_exercises.ipynb" target="_blank" rel="noopener"><code>session_03_exercises.ipynb</code></a>: NumPy, pandas and matplotlib, plus practice at looking things up. Hints and solutions folded in.
 </div>
 </div>
 <div class="pillar">
@@ -1499,7 +1499,7 @@ Homework
 Case Part 3
 </div>
 <div class="pillar-body">
-<code>session_03_case.ipynb</code>: the risk report, all eleven stocks, with figures.
+<a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_03/session_03_case.ipynb" target="_blank" rel="noopener"><code>session_03_case.ipynb</code></a>: the risk report, all eleven stocks, with figures.
 </div>
 </div>
 <div class="pillar">
@@ -1571,7 +1571,7 @@ WyJkYXRhL3ByaWNlcy5jc3YiLCJkYXRhL2FhcGxfMjAyNF9jbG9zZXMuY3N2Il0=
 'autoAnimateDuration': 1,
 'autoAnimateUnmatched': true,
 'jumpToSlide': true,
-'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"},{"title":"Course","icon":"<i class=\"fas fa-graduation-cap\"></i>","content":"<ul class=\"slide-menu-items\"><li class=\"slide-menu-item\"><a href=\"../index.html\">All sessions</a></li><li class=\"slide-menu-item\"><a href=\"https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_03/session_03_exercises.ipynb\" target=\"_blank\" rel=\"noopener\">The exercises, in Colab</a></li><li class=\"slide-menu-item\"><a href=\"https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_03/session_03_case.ipynb\" target=\"_blank\" rel=\"noopener\">Case Part 3, in Colab</a></li><li class=\"slide-menu-item\"><a href=\"../downloads/lectures/session_03.pdf\">This lecture as a PDF</a></li><li class=\"slide-menu-item\"><a href=\"../cheatsheet.html\">The cheatsheet</a></li><li class=\"slide-menu-item\"><a href=\"../exam_info.html\">Exam info</a></li></ul>"}],"openButton":true},
 'smaller': false,
  
         // Display controls in the bottom right corner

@@ -33,6 +33,11 @@ format:
     code-line-numbers: false
     highlight-style: github
     auto-stretch: false
+    menu:
+      custom:
+        - title: "Course"
+          icon: '<i class="fas fa-graduation-cap"></i>'
+          content: '<ul class="slide-menu-items"><li class="slide-menu-item"><a href="../index.html">All sessions</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_08/session_08_exercises.ipynb" target="_blank" rel="noopener">The exercises, in Colab</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_08/session_08_case.ipynb" target="_blank" rel="noopener">Case Part 8, in Colab</a></li><li class="slide-menu-item"><a href="../downloads/lectures/session_08.pdf">This lecture as a PDF</a></li><li class="slide-menu-item"><a href="../cheatsheet.html">The cheatsheet</a></li><li class="slide-menu-item"><a href="../exam_info.html">Exam info</a></li></ul>'
 html-math-method: katex
 engine: jupyter
 pyodide:
@@ -1588,8 +1593,8 @@ and on the test rows once.
 
 # Before the next session [case]{.chip .chip-case}
 
-- **Exercises**: making labels, fitting and reading logistic regression, thresholds and the confusion matrix, cross-validated AUC, and a grid over `C`.
-- **Case Part 8**: the risk report gets its first classifier, on Apple and then on all 11 instruments.
+- [**Exercises**](https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_08/session_08_exercises.ipynb){target="_blank"}: making labels, fitting and reading logistic regression, thresholds and the confusion matrix, cross-validated AUC, and a grid over `C`.
+- [**Case Part 8**](https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_08/session_08_case.ipynb){target="_blank"}: the risk report gets its first classifier, on Apple and then on all 11 instruments.
 
 ::: {.muted .small}
 Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email

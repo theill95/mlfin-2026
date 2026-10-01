@@ -1,5 +1,5 @@
 ---
-title: "Functions, Loops, and Dictionaries"
+title: "Functions, loops and dictionaries"
 subtitle: "Machine Learning in Finance · Session 2"
 # Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
 # from a data: URI, so embed-resources is off. Ship session_02.html together
@@ -23,6 +23,11 @@ format:
     code-line-numbers: false
     highlight-style: github
     auto-stretch: false
+    menu:
+      custom:
+        - title: "Course"
+          icon: '<i class="fas fa-graduation-cap"></i>'
+          content: '<ul class="slide-menu-items"><li class="slide-menu-item"><a href="../index.html">All sessions</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_02/session_02_exercises.ipynb" target="_blank" rel="noopener">The exercises, in Colab</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_02/session_02_case.ipynb" target="_blank" rel="noopener">Case Part 2, in Colab</a></li><li class="slide-menu-item"><a href="../downloads/lectures/session_02.pdf">This lecture as a PDF</a></li><li class="slide-menu-item"><a href="../cheatsheet.html">The cheatsheet</a></li><li class="slide-menu-item"><a href="../exam_info.html">Exam info</a></li></ul>'
 engine: jupyter
 pyodide:
   cell-options:
@@ -1170,11 +1175,11 @@ Hints and full solutions are folded into the notebook. Work first, then check.
 :::
 
 
-# Before Session 3
+# Before the next session
 
 <div class="pillars">
-<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Exercises</div><div class="pillar-body"><code>session_02_exercises.ipynb</code>: loops, if, while, functions, and dictionaries. Hints and solutions folded in.</div></div>
-<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Case Part 2</div><div class="pillar-body"><code>session_02_case.ipynb</code>: the volatility of Apple versus Coca-Cola.</div></div>
+<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Exercises</div><div class="pillar-body"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_02/session_02_exercises.ipynb" target="_blank" rel="noopener"><code>session_02_exercises.ipynb</code></a>: loops, if, while, functions, and dictionaries. Hints and solutions folded in.</div></div>
+<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Case Part 2</div><div class="pillar-body"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_02/session_02_case.ipynb" target="_blank" rel="noopener"><code>session_02_case.ipynb</code></a>: the volatility of Apple versus Coca-Cola.</div></div>
 <div class="pillar"><div class="pillar-tag">If stuck</div><div class="pillar-title">Get help</div><div class="pillar-body">Ask a friend, ask an AI for a hint, or email me at <code>jobo@econ.au.dk</code>. Stuck over 15 minutes? Note it and bring it next session.</div></div>
 </div>
 

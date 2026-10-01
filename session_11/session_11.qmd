@@ -35,6 +35,11 @@ format:
     code-line-numbers: false
     highlight-style: github
     auto-stretch: false
+    menu:
+      custom:
+        - title: "Course"
+          icon: '<i class="fas fa-graduation-cap"></i>'
+          content: '<ul class="slide-menu-items"><li class="slide-menu-item"><a href="../index.html">All sessions</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_11/session_11_exercises.ipynb" target="_blank" rel="noopener">The exercises, in Colab</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_11/session_11_case.ipynb" target="_blank" rel="noopener">Case Part 11, in Colab</a></li><li class="slide-menu-item"><a href="../downloads/lectures/session_11.pdf">This lecture as a PDF</a></li><li class="slide-menu-item"><a href="../cheatsheet.html">The cheatsheet</a></li><li class="slide-menu-item"><a href="../exam_info.html">Exam info</a></li></ul>'
 html-math-method: katex
 engine: jupyter
 pyodide:
@@ -1409,8 +1414,8 @@ before it still get wrong, which removes bias.
 
 # Before the next session [case]{.chip .chip-case}
 
-- **Exercises**: cuts scored by hand, stumps and trees drawn with `plot_tree`, depth and pruning on the time-series folds, bootstrap samples, bagging and forests, grids counted and timed, and a tree for a label.
-- **Case Part 11**: the risk report's volatility forecast gets a tree and a forest, held to its one-column model and to ridge on Apple and across the desk; a last question tries the forest on Part 9's jump label.
+- [**Exercises**](https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_11/session_11_exercises.ipynb){target="_blank"}: cuts scored by hand, stumps and trees drawn with `plot_tree`, depth and pruning on the time-series folds, bootstrap samples, bagging and forests, grids counted and timed, and a tree for a label.
+- [**Case Part 11**](https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_11/session_11_case.ipynb){target="_blank"}: the risk report's volatility forecast gets a tree and a forest, held to its one-column model and to ridge on Apple and across the desk; a last question tries the forest on Part 9's jump label.
 
 ::: {.muted .small}
 Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email

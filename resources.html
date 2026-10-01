@@ -68,7 +68,30 @@
         &nbsp;a wall of example charts, each with the code that made it. Find the picture
         closest to what you want and read how it was done. This is how everybody learns
         plotting, including people who do it for a living.</li>
+    <li><a href="https://scikit-learn.org/stable/user_guide.html" target="_blank" rel="noopener">The scikit-learn user guide</a>
+        &nbsp;every model from Session 5 on, each with a page that explains the idea, shows
+        the maths and links to worked examples. The pages the course leans on:</li>
   </ul>
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th>Session</th><th>Page of the scikit-learn user guide</th></tr></thead>
+    <tbody>
+      <tr><td>5</td><td><a href="https://scikit-learn.org/stable/modules/cross_validation.html" target="_blank" rel="noopener">Cross-validation</a>, including <code>TimeSeriesSplit</code></td></tr>
+      <tr><td>6</td><td><a href="https://scikit-learn.org/stable/modules/linear_model.html" target="_blank" rel="noopener">Linear models</a> (ridge, lasso, elastic net),
+          <a href="https://scikit-learn.org/stable/modules/compose.html" target="_blank" rel="noopener">pipelines</a> and
+          <a href="https://scikit-learn.org/stable/modules/grid_search.html" target="_blank" rel="noopener">grid search</a></td></tr>
+      <tr><td>8 and 9</td><td><a href="https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression" target="_blank" rel="noopener">Logistic regression</a>,
+          <a href="https://scikit-learn.org/stable/modules/neighbors.html" target="_blank" rel="noopener">nearest neighbours</a> and
+          <a href="https://scikit-learn.org/stable/modules/model_evaluation.html" target="_blank" rel="noopener">the scores of a model</a></td></tr>
+      <tr><td>11</td><td><a href="https://scikit-learn.org/stable/modules/tree.html" target="_blank" rel="noopener">Decision trees</a> and
+          <a href="https://scikit-learn.org/stable/modules/ensemble.html" target="_blank" rel="noopener">ensembles</a> (bagging, random forests)</td></tr>
+      <tr><td>12</td><td><a href="https://scikit-learn.org/stable/modules/ensemble.html" target="_blank" rel="noopener">Gradient boosting</a>,
+          <a href="https://scikit-learn.org/stable/modules/permutation_importance.html" target="_blank" rel="noopener">permutation importance</a>, and the
+          <a href="https://xgboost.readthedocs.io/en/stable/" target="_blank" rel="noopener">XGBoost</a> and
+          <a href="https://lightgbm.readthedocs.io/en/stable/" target="_blank" rel="noopener">LightGBM</a> documentation</td></tr>
+    </tbody>
+  </table>
+  </div>
 
   <h2 id="offline">Taking the documentation offline <span class="tag tag-need">needed</span></h2>
   <p>Two things are worth knowing, because there are times you will not have a search box.</p>
@@ -90,17 +113,33 @@
   <h2 id="books">Books, free and legal <span class="tag tag-need">needed</span></h2>
   <ul class="plain">
     <li><a href="https://www.statlearning.com/" target="_blank" rel="noopener"><strong>An Introduction to Statistical Learning, with Applications in Python</strong></a>
-        (James, Witten, Hastie, Tibshirani, Taylor). Free PDF from the authors. This is the
-        conceptual reference for the machine-learning half of the course. Session 4 follows
-        <strong>chapter 2</strong> closely: sections 2.1 and 2.2 cover the statistical
-        learning framework, the reducible and irreducible error, the assessment of model
-        accuracy and the bias-variance trade-off, in the same order the lecture does. If you
-        read one thing beyond the slides, read that chapter. The same site carries the
-        book's <strong>Python labs</strong>, which are the worked code behind each
-        chapter and a good second look at anything the lecture went past quickly.</li>
+        (James, Witten, Hastie, Tibshirani, Taylor). Free PDF from the authors, and the
+        conceptual reference for the machine-learning half of the course. The same site
+        carries the book's <strong>Python labs</strong>, the worked code behind each chapter
+        and a good second look at anything a lecture went past quickly. If you read one
+        thing beyond the slides, read the section for the session:</li>
+  </ul>
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th>Session</th><th>In the book</th></tr></thead>
+    <tbody>
+      <tr><td>4</td><td>Sections 2.1 and 2.2: the statistical learning framework, the reducible and irreducible error, assessing accuracy, the bias-variance trade-off. Session 4 follows them in the same order.</td></tr>
+      <tr><td>5</td><td>Chapter 3 for linear regression, and section 5.1, cross-validation</td></tr>
+      <tr><td>6</td><td>Section 6.2: shrinkage methods, ridge and the lasso, and how to choose their strength</td></tr>
+      <tr><td>8 and 9</td><td>Sections 4.1 to 4.3: classification and logistic regression; section 2.2.3 for the classification setting and k-nearest neighbours</td></tr>
+      <tr><td>11</td><td>Section 8.1, decision trees, and sections 8.2.1 and 8.2.2: bagging and random forests (section 5.2 explains the bootstrap)</td></tr>
+      <tr><td>12</td><td>Section 8.2.3: boosting</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <ul class="plain">
     <li><a href="https://wesmckinney.com/book/" target="_blank" rel="noopener"><strong>Python for Data Analysis</strong></a>
         (Wes McKinney, who wrote pandas). Free to read online. The chapters on NumPy and
         pandas are the natural next step after Session 3.
+        <span class="tag tag-extra">extra</span></li>
+    <li><a href="https://hastie.su.domains/ElemStatLearn/" target="_blank" rel="noopener"><strong>The Elements of Statistical Learning</strong></a>
+        (Hastie, Tibshirani, Friedman). The same ideas as the book above, with the maths
+        written out in full; free PDF from the authors. Only if you want the derivations.
         <span class="tag tag-extra">extra</span></li>
   </ul>
 
@@ -117,6 +156,13 @@
     <li><strong><code>print</code> is the other debugger.</strong> When a loop gives the
         wrong answer, put a <code>print</code> inside it and run it once. Seeing the wrong
         value appear on the pass where it first goes wrong is usually the whole diagnosis.</li>
+    <li><strong>For a model that has not clicked</strong>, read the book's section for the
+        session (the table above), then the scikit-learn page for the method. Change one
+        setting in the lecture's code cell and run it again: the slide shows what moved.</li>
+    <li><a href="https://statquest.org/video-index/" target="_blank" rel="noopener"><strong>StatQuest</strong></a>
+        &nbsp;short videos by Josh Starmer that explain cross-validation, ridge and the lasso,
+        logistic regression, trees, random forests and gradient boosting step by step, with
+        pictures. A good second explanation. <span class="tag tag-extra">extra</span></li>
   </ul>
 
   <h2 id="offline-revision">Revising away from a screen <span class="tag tag-extra">extra</span></h2>
@@ -137,9 +183,10 @@
   <ul class="plain">
     <li><a href="https://www.kaggle.com/learn" target="_blank" rel="noopener"><strong>Kaggle Learn</strong></a>
         &nbsp;short free micro-courses, each a few hours, that run in your browser with
-        nothing to install. The Python, Pandas, Data Visualization and Intro to Machine
-        Learning ones overlap this course closely and are a good second explanation if
-        something has not clicked.</li>
+        nothing to install. Python, Pandas, Data Visualization, Intro to Machine Learning
+        and Intermediate Machine Learning (pipelines, cross-validation and XGBoost) overlap
+        this course closely and are a good second explanation if something has not
+        clicked.</li>
     <li><a href="https://www.kaggle.com/datasets" target="_blank" rel="noopener"><strong>Kaggle datasets</strong></a>
         &nbsp;thousands of real datasets to practise on. Pick something you are actually
         curious about: you will learn more from a question you care about than from
@@ -149,15 +196,41 @@
         making the language itself feel automatic.</li>
   </ul>
 
+  <h2 id="finance">Machine learning in finance, further <span class="tag tag-extra">extra</span></h2>
+  <p>Where the methods of this course meet research in finance. Both are long, and both
+     are free working-paper versions.</p>
+  <ul class="plain">
+    <li><a href="https://www.nber.org/papers/w25398" target="_blank" rel="noopener"><strong>Empirical Asset Pricing via Machine Learning</strong></a>
+        (Gu, Kelly and Xiu, published in the Review of Financial Studies, 2020). Penalised
+        regression, forests, boosted trees and neural networks set against each other on
+        forecasting stock returns: the course's model comparison, at research scale.</li>
+    <li><a href="https://www.nber.org/papers/w31502" target="_blank" rel="noopener"><strong>Financial Machine Learning</strong></a>
+        (Kelly and Xiu, 2023). A survey of what machine learning has been used for in
+        finance and what it has found, written for economists.</li>
+  </ul>
+
   <h2 id="data">The data this course uses <span class="tag tag-extra">extra</span></h2>
-  <p>Daily closing prices for eleven US instruments (AAPL, MSFT, NVDA, JPM, KO, PG, XOM,
-     JNJ, WMT, DIS, and the S&amp;P 500 ETF SPY) from 2015 to 2024, split- and
-     dividend-adjusted. They were downloaded once from Yahoo Finance and committed to the
-     repository, so the materials never depend on a live connection and everyone works
-     with exactly the same numbers.</p>
-  <p>The files themselves are on the <a href="downloads.html">downloads page</a>, and
-     they are the same ones the lectures and the case use, so any number you compute at
-     home should match a number from class exactly.</p>
+  <p>Every file was downloaded once and is part of the course, so the materials never
+     depend on a live connection and everyone works with exactly the same numbers: any
+     number you compute at home should match a number from class. The files are on the
+     <a href="downloads.html">downloads page</a>.</p>
+  <div class="scroll-x">
+  <table>
+    <thead><tr><th>File</th><th>What it is</th><th>Sessions</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td><code>prices.csv</code></td><td>Daily closing prices of AAPL, MSFT, NVDA, JPM, KO, PG, XOM, JNJ, WMT, DIS and the S&amp;P 500 ETF SPY, 2015 to 2024, split- and dividend-adjusted; Sessions 1 and 2 use small 2024 extracts of it</td>
+          <td>1 to 6, 8, 9, 11, 12</td><td>Yahoo Finance, through the yfinance package. Yahoo's terms are for personal use, so these files are here for teaching only.</td></tr>
+      <tr><td><code>market_features.csv</code></td><td>The nineteen-column table for the index: past volatilities and returns, and next month's volatility as the target</td>
+          <td>6, 8, 9, 11, 12</td><td>Built by the course from <code>prices.csv</code></td></tr>
+      <tr><td><code>aarhus_houses.csv</code></td><td>7,621 ordinary sales of villas and townhouses in the Aarhus postcodes, January 2021 to September 2024; no addresses, locations to about 100 metres</td>
+          <td>7, 13</td><td>"Danish Residential Housing Prices 1992-2024", compiled by Martin Frederiksen from boliga.dk (public land-registry records) for educational use; located with the Danish address register (DAWA)</td></tr>
+      <tr><td><code>credit.csv</code></td><td>30,000 credit card holders at a Taiwanese bank in 2005, seven columns, and whether each defaulted the month after</td>
+          <td>9, 11, 12</td><td>Yeh, I-C. (2009), Default of Credit Card Clients, <a href="https://doi.org/10.24432/C55S3H" target="_blank" rel="noopener">UCI Machine Learning Repository</a>, CC BY 4.0</td></tr>
+      <tr><td><code>power.csv</code></td><td>26,133 hours of day-ahead prices for West Denmark (DK1), 2022 to 2024, with the day-ahead wind and sun forecasts</td>
+          <td>10, 13</td><td>Source: Energinet (<a href="https://www.energidataservice.dk/" target="_blank" rel="noopener">www.energidataservice.dk</a>), CC BY 4.0</td></tr>
+    </tbody>
+  </table>
+  </div>
 
   <h2 id="ai">Using AI on this course <span class="tag tag-need">needed</span></h2>
   <p>You may use it, and you should learn to. The distinction that matters is between

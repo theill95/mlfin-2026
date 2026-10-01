@@ -11,7 +11,7 @@
 <link href="session_01_files/libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.9.38">
 
-  <title>Beginning Python for Financial Data</title>
+  <title>Beginning Python for financial data</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -99,7 +99,7 @@
     code span.vs { color: #032f62; } /* VerbatimString */
     code span.wa { color: #ff5555; } /* Warning */
   </style>
-  <link rel="stylesheet" href="session_01_files/libs/revealjs/dist/theme/quarto-6111bc620332b17cf5d5ecdb3c24ce47.css">
+  <link rel="stylesheet" href="session_01_files/libs/revealjs/dist/theme/quarto-2a682e55b20b5f2587904c73bb07cf6f.css">
   <link href="session_01_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="session_01_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="session_01_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
@@ -199,7 +199,7 @@
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">Beginning Python for Financial Data</h1>
+  <h1 class="title">Beginning Python for financial data</h1>
   <p class="subtitle">Machine Learning in Finance · Session 1</p>
 
 <div class="quarto-title-authors">
@@ -256,7 +256,7 @@ Becoming a <strong>dad in December</strong>
 </div>
 </div>
 <div class="who-contact">
-Questions any time — in class, or by email at <code>jobo@econ.au.dk</code>. The second lecturer, <strong>Bezirgen Veliyev</strong>, teaches the later weeks.
+Questions any time, in class or by email to <code>jobo@econ.au.dk</code>, whoever is lecturing. <strong>Bezirgen Veliyev</strong> lectures some of the sessions.
 </div>
 </section>
 
@@ -267,7 +267,7 @@ Questions any time — in class, or by email at <code>jobo@econ.au.dk</code>. Th
 <strong>Everyone uses it</strong><span>The dominant language in data science and quantitative finance. What you learn transfers to a real job.</span>
 </div>
 <div class="why-point">
-<strong>Batteries included</strong><span>Free libraries for data, statistics, and machine learning — pandas, scikit-learn, and many more.</span>
+<strong>Batteries included</strong><span>Free libraries for data, statistics, and machine learning: pandas, scikit-learn, and many more.</span>
 </div>
 <div class="why-point">
 <strong>Readable</strong><span>Python code reads close to plain English. That matters enormously when you are starting out.</span>
@@ -277,7 +277,7 @@ Questions any time — in class, or by email at <code>jobo@econ.au.dk</code>. Th
 </div>
 </div>
 <div class="tagline">
-Free, open, and runs anywhere — including, later in the course, on your own laptop with no internet.
+Free, open, and runs anywhere: later in the course, also on your own laptop with no internet.
 </div>
 </section>
 
@@ -285,7 +285,7 @@ Free, open, and runs anywhere — including, later in the course, on your own la
 <h1>Why learn machine learning?</h1>
 <p>Finance has become a <strong>data discipline</strong>.</p>
 <ul>
-<li>Asset management, risk, trading, credit, fintech — all increasingly run on models fit to data.</li>
+<li>Asset management, risk, trading, credit, fintech: all increasingly run on models fit to data.</li>
 <li>Job postings that used to ask for “econometrics” now ask for <strong>machine learning</strong>.</li>
 <li>You already know one such model: <strong>ordinary least squares</strong>. This course extends that instinct to more flexible tools.</li>
 </ul>
@@ -310,29 +310,32 @@ Free, open, and runs anywhere — including, later in the course, on your own la
 <h1>Where this course is going</h1>
 <div class="timeline">
 <div class="tl-row tl-now">
-<span class="tl-week">Week 36</span><span class="tl-topic">Programming in Python</span><span class="tl-who">JTB</span>
-</div>
-<div class="tl-row tl-now">
-<span class="tl-week">Week 37</span><span class="tl-topic">Foundations of machine learning</span><span class="tl-who">JTB</span>
+<span class="tl-week">1 to 3</span><span class="tl-topic">Python: variables, loops, functions and dictionaries; NumPy, pandas and matplotlib</span><span class="tl-who">from today</span>
 </div>
 <div class="tl-row tl-future">
-<span class="tl-week">Week 38</span><span class="tl-topic">Model selection and cross-validation</span><span class="tl-who">BV</span>
+<span class="tl-week">4</span><span class="tl-topic">foundations of machine learning: features, targets, splits and scores</span><span class="tl-who">no model yet</span>
 </div>
 <div class="tl-row tl-future">
-<span class="tl-week">Week 39</span><span class="tl-topic">Shrinkage methods</span><span class="tl-who">BV</span>
+<span class="tl-week">5 and 6</span><span class="tl-topic">model selection and cross-validation; ridge and lasso</span><span class="tl-who">the first models</span>
 </div>
 <div class="tl-row tl-future">
-<span class="tl-week">Week 40</span><span class="tl-topic">Classification methods</span><span class="tl-who">BV</span>
+<span class="tl-week">7</span><span class="tl-topic">a house in Aarhus, with every tool so far</span><span class="tl-who">a case lecture</span>
 </div>
 <div class="tl-row tl-future">
-<span class="tl-week">Week 41</span><span class="tl-topic">Tree-based methods</span><span class="tl-who">BV</span>
+<span class="tl-week">8 and 9</span><span class="tl-topic">classification: logistic regression, thresholds and k-NN</span><span class="tl-who">labels</span>
 </div>
 <div class="tl-row tl-future">
-<span class="tl-week">Week 42</span><span class="tl-topic">Tree-based methods · course wrap-up</span><span class="tl-who">BV</span>
+<span class="tl-week">10</span><span class="tl-topic">tomorrow’s power price in West Denmark</span><span class="tl-who">a case lecture</span>
+</div>
+<div class="tl-row tl-future">
+<span class="tl-week">11 and 12</span><span class="tl-topic">trees, forests and boosted trees</span><span class="tl-who">flexible models</span>
+</div>
+<div class="tl-row tl-future">
+<span class="tl-week">13</span><span class="tl-topic">the two cases with trees, and the exam</span><span class="tl-who">the wrap-up</span>
 </div>
 </div>
 <div class="muted small">
-<p>Teaching begins the week of <strong>31 August 2026</strong> (week 36). I take the first two weeks — Python and the foundations of ML; Bezirgen takes the methods that follow. <strong>Later topics may still change.</strong></p>
+<p>Thirteen sessions, from the week of <strong>31 August 2026</strong> (week 36) to week 42.</p>
 </div>
 </section>
 
@@ -369,7 +372,7 @@ At home
 The case
 </div>
 <div class="pillar-body">
-One financial investigation that grows across the four sessions. You carry it forward each week.
+One financial investigation that grows through the course, a part after most sessions. You carry it forward each week.
 </div>
 </div>
 </div>
@@ -393,7 +396,7 @@ One financial investigation that grows across the four sessions. You carry it fo
 </div>
 <p>Going from <strong>no programming</strong> to machine learning in seven weeks is a steep climb. Be ready for it.</p>
 <ul>
-<li>I can explain ideas and show code — but <strong>watching is not learning to code</strong>.</li>
+<li>I can explain ideas and show code, but <strong>watching is not learning to code</strong>.</li>
 <li>You become fluent by <strong>doing it yourself</strong>. The exercises and case are where that happens.</li>
 </ul>
 <div class="keypoint">
@@ -439,7 +442,7 @@ Submitting code you do not understand
 Leaning on it instead of building skill
 </li>
 <li>
-Relying on it for the exam — you cannot
+Relying on it for the exam: you cannot
 </li>
 </ul>
 </div>
@@ -471,7 +474,7 @@ Python running locally
 </div>
 </div>
 </div>
-<p>The exam runs <strong>on your own machine, offline</strong>. We begin in Google Colab because it is the easiest place to start, and later move to a local setup — a <strong>VS Code tutorial comes in a later session</strong>.</p>
+<p>The exam runs <strong>on your own machine, offline</strong>. We begin in Google Colab because it is the easiest place to start, and later move to a local setup: a <strong>VS Code tutorial comes in Session 3</strong>.</p>
 <div class="keypoint">
 <p>Because the exam is offline, the skill has to be <strong>yours</strong>. That is the whole reason the exercises matter.</p>
 </div>
@@ -530,11 +533,11 @@ Compute this week’s return
 <section id="two-kinds-of-cell" class="title-slide slide level1 center">
 <h1>Two kinds of cell</h1>
 <ul>
-<li><strong>Text cells</strong> hold explanation — headings, sentences, the story.</li>
+<li><strong>Text cells</strong> hold explanation: headings, sentences, the story.</li>
 <li><strong>Code cells</strong> hold Python, and can be <strong>run</strong>. Their output appears below.</li>
 </ul>
 <p><br></p>
-<p>That is the whole idea. A lecture, a calculation, and its result can live in one scrollable document — which is exactly what these slides are.</p>
+<p>That is the whole idea. A lecture, a calculation, and its result can live in one scrollable document, which is exactly what these slides are.</p>
 <div class="muted small">
 <p>We begin in <strong>Google Colab</strong>, which runs notebooks in your browser with nothing to install. You need only a Google account.</p>
 </div>
@@ -610,7 +613,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJwcmludCgxODMuNTYpXG5wcmludCgyNDguODMpIn0=
 </script>
 </div>
-<p><code>print</code> is our first <strong>function</strong>: a named tool you use by writing its name and round brackets. It displays whatever you put inside — each on its own line. We will lean on it constantly.</p>
+<p><code>print</code> is our first <strong>function</strong>: a named tool you use by writing its name and round brackets. It displays whatever you put inside, each on its own line. We will lean on it constantly.</p>
 </section>
 
 <section id="python-as-a-calculator" class="title-slide slide level1 divider center">
@@ -625,7 +628,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="expressions" class="title-slide slide level1 center">
 <h1>Expressions</h1>
-<p>An <strong>expression</strong> is code that produces a value. The text after a <code>#</code> is a <strong>comment</strong> — Python ignores it; it is a note for humans.</p>
+<p>An <strong>expression</strong> is code that produces a value. The text after a <code>#</code> is a <strong>comment</strong>: Python ignores it; it is a note for humans.</p>
 <div>
 <div id="pyodide-3" class="exercise-cell">
 
@@ -695,7 +698,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="variables-naming-a-value" class="title-slide slide level1 center">
 <h1>Variables: naming a value</h1>
-<p>A <strong>variable</strong> gives a value a name. The <code>=</code> sign means <strong>assign</strong> — “store this under that name” — not “equals”.</p>
+<p>A <strong>variable</strong> gives a value a name. The <code>=</code> sign means <strong>assign</strong>: “store this under that name”, not “equals”.</p>
 <div>
 <div id="pyodide-5" class="exercise-cell">
 
@@ -723,7 +726,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 </script>
 </div>
 <div class="muted small">
-<p><code>holding_value</code> now holds the result, ready to reuse — no need to retype the multiplication.</p>
+<p><code>holding_value</code> now holds the result, ready to reuse, with no need to retype the multiplication.</p>
 </div>
 </section>
 
@@ -738,7 +741,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="overwrite-in-action-predict" class="title-slide slide level1 center">
 <h1>Overwrite in action <span class="chip chip-predict">predict</span></h1>
-<p>Line 2 uses <code>price</code> on <strong>both sides</strong> at once. What do you think that does — and what is <code>price</code> at the end? Reason it out before you run.</p>
+<p>Line 2 uses <code>price</code> on <strong>both sides</strong> at once. What do you think that does, and what is <code>price</code> at the end? Reason it out before you run.</p>
 <div>
 <div id="pyodide-7" class="exercise-cell">
 
@@ -795,12 +798,12 @@ eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIi
 <p>Part 4</p>
 </div>
 <div class="divider-note">
-<p>Now that you can make variables — the notebook remembers them between cells.</p>
+<p>Now that you can make variables: the notebook remembers them between cells.</p>
 </div>
 </section>
 
 <section id="the-runtime-remembers-1" class="title-slide slide level1 center">
-<h1>The runtime remembers — 1</h1>
+<h1>The runtime remembers (1)</h1>
 <p>Run this cell. It stores a value in memory under the name <code>portfolio_value</code>:</p>
 <div>
 <div id="pyodide-9" class="exercise-cell">
@@ -814,8 +817,8 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 </section>
 
 <section id="the-runtime-remembers-2" class="title-slide slide level1 center">
-<h1>The runtime remembers — 2</h1>
-<p>A <em>later</em> cell can use what an earlier cell defined — without repeating it:</p>
+<h1>The runtime remembers (2)</h1>
+<p>A <em>later</em> cell can use what an earlier cell defined, without repeating it:</p>
 <div>
 <div id="pyodide-10" class="exercise-cell">
 
@@ -832,13 +835,13 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="order-of-execution-matters" class="title-slide slide level1 center">
 <h1>Order of execution matters</h1>
-<p>Cells can be run in <strong>any order</strong> you click them — and the runtime only knows what it has been <em>told so far</em>.</p>
+<p>Cells can be run in <strong>any order</strong> you click them, and the runtime only knows what it has been <em>told so far</em>.</p>
 <p>Run a page top to bottom and all is well. Jump around, and a cell may look for something that does not exist <strong>yet</strong>. The next two cells show it.</p>
 </section>
 
 <section id="a-cell-that-runs-too-early-predict" class="title-slide slide level1 center">
 <h1>A cell that runs too early <span class="chip chip-predict">predict</span></h1>
-<p>Fresh runtime — nothing has defined <code>bonus</code> yet. <strong>What do you think happens when you run this?</strong> Talk it through before you press Run.</p>
+<p>Fresh runtime: nothing has defined <code>bonus</code> yet. <strong>What do you think happens when you run this?</strong> Talk it through before you press Run.</p>
 <div>
 <div id="pyodide-11" class="exercise-cell">
 
@@ -863,7 +866,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIi
 eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJib251cyA9IDEyMDBcbmJvbnVzICogMiJ9
 </script>
 </div>
-<p>The error before was not a fault in the code — the runtime simply had <strong>nothing stored</strong> under that name. Define it first, and all is well.</p>
+<p>The error before was not a fault in the code: the runtime simply had <strong>nothing stored</strong> under that name. Define it first, and all is well.</p>
 </section>
 
 <section id="the-safe-habit" class="title-slide slide level1 center">
@@ -888,7 +891,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <p>Part 5</p>
 </div>
 <div class="divider-note">
-<p>Numbers, text, and true/false — and why the difference costs money.</p>
+<p>Numbers, text, and true/false, and why the difference costs money.</p>
 </div>
 </section>
 
@@ -904,8 +907,8 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 </script>
 </div>
 <ul>
-<li><code>int</code> — whole numbers: share counts, trading days</li>
-<li><code>float</code> — numbers with a decimal point: prices, returns, rates</li>
+<li><code>int</code> for whole numbers: share counts, trading days</li>
+<li><code>float</code> for numbers with a decimal point: prices, returns, rates</li>
 </ul>
 </section>
 
@@ -921,13 +924,13 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 </script>
 </div>
 <div class="muted small">
-<p>The result is <code>25.0</code>, a float — not <code>25</code>. Division in Python always produces a decimal number.</p>
+<p>The result is <code>25.0</code>, a float, not <code>25</code>. Division in Python always produces a decimal number.</p>
 </div>
 </section>
 
 <section id="text-strings" class="title-slide slide level1 center">
 <h1>Text: strings</h1>
-<p>A <strong>string</strong> is text inside quotes — tickers, names, dates:</p>
+<p>A <strong>string</strong> is text inside quotes, such as tickers, names and dates:</p>
 <div>
 <div id="pyodide-15" class="exercise-cell">
 
@@ -955,7 +958,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <i class="callout-icon"></i>
 </div>
 <div class="callout-content">
-<p><code>"150"</code> in quotes is <em>text that looks like a number</em>. It is not a number — and that difference causes real bugs, because prices read from files often arrive as text.</p>
+<p><code>"150"</code> in quotes is <em>text that looks like a number</em>. It is not a number, and that difference causes real bugs, because prices read from files often arrive as text.</p>
 </div>
 </div>
 </div>
@@ -963,7 +966,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="numbers-in-disguise-predict" class="title-slide slide level1 center">
 <h1>Numbers in disguise <span class="chip chip-predict">predict</span></h1>
-<p>Both values are wrapped in quotes. <strong>What will <code>+</code> do here</strong> — and is it what you would want? Decide before you run.</p>
+<p>Both values are wrapped in quotes. <strong>What will <code>+</code> do here</strong>, and is it what you would want? Decide before you run.</p>
 <div>
 <div id="pyodide-17" class="exercise-cell">
 
@@ -978,7 +981,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIi
 </section>
 
 <section id="numbers-in-disguise-the-fix" class="title-slide slide level1 center">
-<h1>Numbers in disguise — the fix</h1>
+<h1>Numbers in disguise: the fix</h1>
 <p><code>float(...)</code> turns text into a number. Now it really adds:</p>
 <div>
 <div id="pyodide-18" class="exercise-cell">
@@ -989,7 +992,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 </script>
 </div>
 <div class="keypoint">
-<p>No error is <strong>not</strong> the same as no mistake. <code>"10" + "5"</code> gave <code>"105"</code> with no complaint — a silently wrong answer is the dangerous kind.</p>
+<p>No error is <strong>not</strong> the same as no mistake. <code>"10" + "5"</code> gave <code>"105"</code> with no complaint, and a silently wrong answer is the dangerous kind.</p>
 </div>
 </section>
 
@@ -1021,8 +1024,8 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 </script>
 </div>
 <ul>
-<li><code>:.2f</code> — a plain number, 2 decimals</li>
-<li><code>:.2%</code> — a percentage, 2 decimals</li>
+<li><code>:.2f</code> gives a plain number, 2 decimals</li>
+<li><code>:.2%</code> gives a percentage, 2 decimals</li>
 </ul>
 <div class="muted small">
 <p>These two cover almost everything we need all course.</p>
@@ -1055,7 +1058,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <tbody>
 <tr class="odd">
 <td>equal?</td>
-<td><code>==</code> (two signs — a single <code>=</code> <em>assigns</em>)</td>
+<td><code>==</code> (two signs: a single <code>=</code> <em>assigns</em>)</td>
 </tr>
 <tr class="even">
 <td>not equal?</td>
@@ -1082,7 +1085,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="your-turn-2" class="title-slide slide level1 your-turn center">
 <h1>Your turn <span class="chip chip-turn">2</span></h1>
-<p>This cell runs with <strong>no error</strong> — and gives nonsense. Run it, look closely, then fix it so <code>total_cost</code> is a real number.</p>
+<p>This cell runs with <strong>no error</strong>, and gives nonsense. Run it, look closely, then fix it so <code>total_cost</code> is a real number.</p>
 <div>
 <div id="pyodide-23" class="exercise-cell">
 
@@ -1227,7 +1230,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="why-lists-matter" class="title-slide slide level1 center">
 <h1>Why lists matter</h1>
-<p>One variable per day would be absurd — a year has about <strong>252 trading days</strong>. A list holds them all together.</p>
+<p>One variable per day would be absurd: a year has about <strong>252 trading days</strong>. A list holds them all together.</p>
 <div class="keypoint">
 <p>Later in the course a data table will hold ten years of eleven stocks at once. It is built directly on this idea: many values, in order, under one name.</p>
 </div>
@@ -1235,7 +1238,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="indexing-pick-one-day" class="title-slide slide level1 center">
 <h1>Indexing: pick one day</h1>
-<p>Positions count <strong>from zero</strong> — the index is the distance from the start.</p>
+<p>Positions count <strong>from zero</strong>: the index is the distance from the start.</p>
 <div class="diagram">
 <svg width="900" height="200" viewbox="0 0 900 200" role="img" aria-label="A list of five prices with indices 0 to 4 above and -5 to -1 below">
 <text x="55" y="50" font-size="18" fill="#1c5cab" font-weight="600">index</text> <text x="45" y="182" font-size="18" fill="#898781">from the end</text> <g font-family="Cascadia Mono, monospace"> <text x="230" y="50" text-anchor="middle" font-size="21" fill="#1c5cab">0</text> <text x="370" y="50" text-anchor="middle" font-size="21" fill="#1c5cab">1</text> <text x="510" y="50" text-anchor="middle" font-size="21" fill="#1c5cab">2</text> <text x="650" y="50" text-anchor="middle" font-size="21" fill="#1c5cab">3</text> <text x="790" y="50" text-anchor="middle" font-size="21" fill="#1c5cab">4</text> <rect x="168" y="66" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect> <rect x="308" y="66" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect> <rect x="448" y="66" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect> <rect x="588" y="66" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect> <rect x="728" y="66" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect> <text x="231" y="103" text-anchor="middle" font-size="20" fill="#141413">183.56</text> <text x="371" y="103" text-anchor="middle" font-size="20" fill="#141413">182.19</text> <text x="511" y="103" text-anchor="middle" font-size="20" fill="#141413">179.87</text> <text x="651" y="103" text-anchor="middle" font-size="20" fill="#141413">179.15</text> <text x="791" y="103" text-anchor="middle" font-size="20" fill="#141413">183.48</text> <text x="231" y="172" text-anchor="middle" font-size="20" fill="#898781">-5</text> <text x="371" y="172" text-anchor="middle" font-size="20" fill="#898781">-4</text> <text x="511" y="172" text-anchor="middle" font-size="20" fill="#898781">-3</text> <text x="651" y="172" text-anchor="middle" font-size="20" fill="#898781">-2</text> <text x="791" y="172" text-anchor="middle" font-size="20" fill="#898781">-1</text> </g>
@@ -1258,7 +1261,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="counting-from-the-end" class="title-slide slide level1 center">
 <h1>Counting from the end</h1>
-<p><code>[-1]</code> is the last item — whatever the list’s length:</p>
+<p><code>[-1]</code> is the last item, whatever the list’s length:</p>
 <div>
 <div id="pyodide-30" class="exercise-cell">
 
@@ -1284,13 +1287,13 @@ eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIi
 </script>
 </div>
 <div class="muted small">
-<p>Positions run 0 to 4 — so what lives at position 5?</p>
+<p>Positions run 0 to 4, so what lives at position 5?</p>
 </div>
 </section>
 
 <section id="slicing-pick-a-window" class="title-slide slide level1 center">
 <h1>Slicing: pick a window</h1>
-<p><code>list[start:stop]</code> — <strong>start included, stop excluded.</strong></p>
+<p><code>list[start:stop]</code>: <strong>start included, stop excluded.</strong></p>
 <div class="diagram">
 <svg width="900" height="190" viewbox="0 0 900 190" role="img" aria-label="Slice 0 to 3 selects the first three cells; index 3 is excluded">
 <g font-family="Cascadia Mono, monospace"> <text x="231" y="36" text-anchor="middle" font-size="20" fill="#1c5cab">0</text> <text x="371" y="36" text-anchor="middle" font-size="20" fill="#1c5cab">1</text> <text x="511" y="36" text-anchor="middle" font-size="20" fill="#1c5cab">2</text> <text x="651" y="36" text-anchor="middle" font-size="20" fill="#898781">3</text> <text x="791" y="36" text-anchor="middle" font-size="20" fill="#898781">4</text> <rect x="168" y="52" width="126" height="58" rx="4" fill="#dcebfd" stroke="#1c5cab" stroke-width="2"></rect> <rect x="308" y="52" width="126" height="58" rx="4" fill="#dcebfd" stroke="#1c5cab" stroke-width="2"></rect> <rect x="448" y="52" width="126" height="58" rx="4" fill="#dcebfd" stroke="#1c5cab" stroke-width="2"></rect> <rect x="588" y="52" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect> <rect x="728" y="52" width="126" height="58" rx="4" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect> <text x="231" y="89" text-anchor="middle" font-size="20" fill="#141413">183.56</text> <text x="371" y="89" text-anchor="middle" font-size="20" fill="#141413">182.19</text> <text x="511" y="89" text-anchor="middle" font-size="20" fill="#141413">179.87</text> <text x="651" y="89" text-anchor="middle" font-size="20" fill="#898781">179.15</text> <text x="791" y="89" text-anchor="middle" font-size="20" fill="#898781">183.48</text> </g> <text x="450" y="152" text-anchor="middle" font-size="22" fill="#0d366b" font-family="Cascadia Mono, monospace">closes[0:3]</text> <text x="450" y="178" text-anchor="middle" font-size="16" fill="#898781">three items: 3 − 0 = 3 · the stop index is not included</text>
@@ -1308,7 +1311,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIi
 eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJjbG9zZXMgPSBbMTgzLjU2LCAxODIuMTksIDE3OS44NywgMTc5LjE1LCAxODMuNDhdXG5jbG9zZXNbMDozXSJ9
 </script>
 </div>
-<p>Three items — positions 0, 1, 2. Position 3 is left out.</p>
+<p>Three items: positions 0, 1, 2. Position 3 is left out.</p>
 </section>
 
 <section id="open-ended-slices" class="title-slide slide level1 center">
@@ -1336,7 +1339,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 </script>
 </div>
 <div class="muted small">
-<p><code>.append</code> is a <strong>method</strong> — <code>closes.append(...)</code>, the dot-grammar again.</p>
+<p><code>.append</code> is a <strong>method</strong>: <code>closes.append(...)</code>, the dot-grammar again.</p>
 </div>
 </section>
 
@@ -1368,7 +1371,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 </script>
 </div>
 <div class="muted small">
-<p><code>sum(...) / len(...)</code> is the average price of the week — your first statistic, from raw parts.</p>
+<p><code>sum(...) / len(...)</code> is the average price of the week: your first statistic, from raw parts.</p>
 </div>
 </section>
 
@@ -1491,7 +1494,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIi
 <p>Part 9</p>
 </div>
 <div class="divider-note">
-<p>Everything from today, on real market data — and the course case begins.</p>
+<p>Everything from today, on real market data, and the course case begins.</p>
 </div>
 </section>
 
@@ -1499,7 +1502,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIi
 <h1>The simple return</h1>
 <p>Yesterday’s close <span class="math inline">\(p_0\)</span>, today’s close <span class="math inline">\(p_1\)</span>. The <strong>simple return</strong> is</p>
 <p><span class="math display">\[ r = \frac{p_1 - p_0}{p_0} \]</span></p>
-<p>the percentage change in price — what one unit invested earned in a day. It is the basic object of this whole course.</p>
+<p>the percentage change in price: what one unit invested earned in a day. It is the basic object of this whole course.</p>
 <div class="muted small">
 <p>Deliberately familiar: the same percentage change you know from econometrics growth rates.</p>
 </div>
@@ -1507,7 +1510,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIi
 
 <section id="apples-first-week-of-2024" class="title-slide slide level1 center">
 <h1>Apple’s first week of 2024</h1>
-<p>Two lists, kept in step — a date and a price at each position:</p>
+<p>Two lists kept in step, with a date and a price at each position:</p>
 <div>
 <div id="pyodide-40" class="exercise-cell">
 
@@ -1549,7 +1552,7 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="the-whole-week-combined" class="title-slide slide level1 center">
 <h1>The whole week, combined</h1>
-<p>Return over the week, plus the lowest day — using indexing, <code>min</code>, and <code>.index</code> together:</p>
+<p>Return over the week, plus the lowest day, using indexing, <code>min</code>, and <code>.index</code> together:</p>
 <div>
 <div id="pyodide-43" class="exercise-cell">
 
@@ -1568,12 +1571,12 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <div class="keypoint">
 <p>Dates in one list, prices in another, connected only by position. In Session 3 a data <strong>table</strong> keeps them in one object, so they can never drift apart.</p>
 </div>
-<p>That single idea — many aligned columns in one structure — is what makes pandas, and everything after it, possible.</p>
+<p>That single idea, many aligned columns in one structure, is what makes pandas, and everything after it, possible.</p>
 </section>
 
 <section id="the-year-that-week-came-from" class="title-slide slide level1 center">
 <h1>The year that week came from</h1>
-<div id="2b95f26b" class="cell" data-execution_count="1">
+<div id="dc3678b4" class="cell" data-execution_count="1">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1587,16 +1590,16 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 
 <section id="the-course-case-case" class="title-slide slide level1 center">
 <h1>The course case <span class="chip chip-case">case</span></h1>
-<p><strong>The Analyst’s Notebook</strong> — one investigation, four chapters, done at home.</p>
+<p><strong>The Analyst’s Notebook</strong>: one investigation, a part after most sessions, done at home.</p>
 <p>You are a junior analyst building a <strong>risk report</strong> on a small universe of US stocks. The running question:</p>
 <div class="keypoint">
-<p>How much do these stocks move, how does that differ across them — and could that movement be <strong>predicted</strong> at all?</p>
+<p>How much do these stocks move, how does that differ across them, and could that movement be <strong>predicted</strong> at all?</p>
 </div>
-<p>By the end of these four sessions you will have framed that question precisely, with real data. The actual model-building comes in the weeks after.</p>
+<p>By Session 4 you will have framed that question precisely, with real data. From Session 5 on, you build the models that answer it.</p>
 </section>
 
-<section id="the-case-four-chapters" class="title-slide slide level1 center">
-<h1>The case: four chapters</h1>
+<section id="the-case-part-by-part" class="title-slide slide level1 smaller center">
+<h1>The case, part by part</h1>
 <table class="caption-top">
 <colgroup>
 <col style="width: 33%">
@@ -1631,22 +1634,37 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <td>the same, as a prediction problem</td>
 <td>features, targets, evaluation</td>
 </tr>
+<tr class="odd">
+<td>Parts 5 and 6</td>
+<td>next month’s volatility, forecast</td>
+<td>cross-validation, ridge and lasso</td>
+</tr>
+<tr class="even">
+<td>Parts 8 and 9</td>
+<td>a warning before a big move</td>
+<td>classification, thresholds</td>
+</tr>
+<tr class="odd">
+<td>Parts 11 and 12</td>
+<td>the forecast and the warning again</td>
+<td>trees, forests, boosting</td>
+</tr>
 </tbody>
 </table>
 <div class="muted small">
-<p>No live downloads: every price ships with the course. Results are identical for everyone. Descriptive analysis first; the language of prediction comes in carefully, later.</p>
+<p>No live downloads: every price ships with the course. Results are identical for everyone. Sessions 7, 10 and 13 are case lectures of their own, with no part.</p>
 </div>
 </section>
 
 <section id="case-part-1-this-week" class="title-slide slide level1 center">
 <h1>Case Part 1: this week</h1>
-<p><code>session_01_case.ipynb</code>, about 10 questions — done at home, before Session 2:</p>
+<p><code>session_01_case.ipynb</code>, 10 questions, done at home before Session 2:</p>
 <ul>
 <li>load Apple’s 252 closing prices of 2024 <em>(loader provided)</em></li>
 <li>first close, last close, best day, worst day</li>
 <li>slice January and measure its return</li>
 <li>one broken cell to diagnose and fix</li>
-<li>the finish: the same measurements for Coca-Cola, and a first judgment — <strong>which of the two moved more in 2024?</strong></li>
+<li>the finish: the same measurements for Coca-Cola, and a first judgment: <strong>which of the two moved more in 2024?</strong></li>
 </ul>
 <div class="muted small">
 <p>Hints and full solutions are folded into the notebook. Work first, then check.</p>
@@ -1663,13 +1681,13 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <p><strong>Variables</strong> <code>=</code> assigns a name to a value; assigning again overwrites.</p>
 </div>
 <div class="recap-item">
-<p><strong>Types</strong> <code>int</code>, <code>float</code>, <code>str</code>, <code>bool</code> — and <code>"150"</code> is not 150.</p>
+<p><strong>Types</strong> <code>int</code>, <code>float</code>, <code>str</code>, <code>bool</code>; and <code>"150"</code> is not 150.</p>
 </div>
 <div class="recap-item">
-<p><strong>Formatting</strong> <code>f"{r:.2%}"</code> and <code>f"{p:.2f}"</code> — the two recipes we reuse.</p>
+<p><strong>Formatting</strong> <code>f"{r:.2%}"</code> and <code>f"{p:.2f}"</code>: the two recipes we reuse.</p>
 </div>
 <div class="recap-item">
-<p><strong>Functions &amp; methods</strong> <code>round(x, 2)</code> versus <code>ticker.upper()</code> — the dot-grammar runs the course.</p>
+<p><strong>Functions &amp; methods</strong> <code>round(x, 2)</code> versus <code>ticker.upper()</code>: the dot-grammar runs the course.</p>
 </div>
 <div class="recap-item">
 <p><strong>Lists</strong> Index from 0, <code>[-1]</code> is the end, slice <code>[a:b]</code> excludes <code>b</code>.</p>
@@ -1678,14 +1696,14 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <p><strong>Errors</strong> Read the last line first. Nothing is broken.</p>
 </div>
 <div class="recap-item">
-<p><strong>Simple return</strong> <code>(p1 - p0) / p0</code> — the object this course is about.</p>
+<p><strong>Simple return</strong> <code>(p1 - p0) / p0</code>: the object this course is about.</p>
 </div>
 </div>
 </section>
 
 <section id="quick-check-optional" class="title-slide slide level1 smaller center">
 <h1>Quick check <span class="chip chip-optional">optional</span></h1>
-<p>Without running anything — what does each line produce? <em>(a value, or which error?)</em></p>
+<p>Without running anything, what does each line produce? <em>(a value, or which error?)</em></p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> [<span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">30</span>]</span>
 <span id="cb4-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="" aria-hidden="true" tabindex="-1"></a>a[<span class="dv">3</span>]                <span class="co"># 1</span></span>
@@ -1694,12 +1712,12 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <span id="cb4-6"><a href="" aria-hidden="true" tabindex="-1"></a>share_count         <span class="co"># 4    (never assigned)</span></span>
 <span id="cb4-7"><a href="" aria-hidden="true" tabindex="-1"></a>a[<span class="dv">1</span>:<span class="dv">3</span>]              <span class="co"># 5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="muted small">
-<p>Answers on the next slide — argue with your neighbour first.</p>
+<p>Answers on the next slide; argue with your neighbour first.</p>
 </div>
 </section>
 
 <section id="quick-check-answers" class="title-slide slide level1 smaller center">
-<h1>Quick check — answers</h1>
+<h1>Quick check: answers</h1>
 <table class="caption-top">
 <thead>
 <tr class="header">
@@ -1712,34 +1730,34 @@ eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6
 <tr class="odd">
 <td>1</td>
 <td><code>a[3]</code></td>
-<td><code>IndexError</code> — positions are 0, 1, 2</td>
+<td><code>IndexError</code>: positions are 0, 1, 2</td>
 </tr>
 <tr class="even">
 <td>2</td>
 <td><code>"5" + "5"</code></td>
-<td><code>"55"</code> — strings glue</td>
+<td><code>"55"</code>: strings glue</td>
 </tr>
 <tr class="odd">
 <td>3</td>
 <td><code>a[-1] &gt; 25</code></td>
-<td><code>True</code> — 30 &gt; 25</td>
+<td><code>True</code>: 30 &gt; 25</td>
 </tr>
 <tr class="even">
 <td>4</td>
 <td><code>share_count</code></td>
-<td><code>NameError</code> — never assigned</td>
+<td><code>NameError</code>: never assigned</td>
 </tr>
 <tr class="odd">
 <td>5</td>
 <td><code>a[1:3]</code></td>
-<td><code>[20, 30]</code> — stop excluded</td>
+<td><code>[20, 30]</code>: stop excluded</td>
 </tr>
 </tbody>
 </table>
 </section>
 
-<section id="before-session-2" class="title-slide slide level1 center">
-<h1>Before Session 2</h1>
+<section id="before-the-next-session" class="title-slide slide level1 center">
+<h1>Before the next session</h1>
 <div class="pillars">
 <div class="pillar">
 <div class="pillar-tag">
@@ -1749,7 +1767,7 @@ Homework
 Exercises
 </div>
 <div class="pillar-body">
-<code>session_01_exercises.ipynb</code> — about 50 short tasks. Hints and solutions folded in.
+<a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_01/session_01_exercises.ipynb" target="_blank" rel="noopener"><code>session_01_exercises.ipynb</code></a>: 55 short tasks. Hints and solutions folded in.
 </div>
 </div>
 <div class="pillar">
@@ -1760,7 +1778,7 @@ Homework
 Case Part 1
 </div>
 <div class="pillar-body">
-<code>session_01_case.ipynb</code> — the Apple versus Coca-Cola report.
+<a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_01/session_01_case.ipynb" target="_blank" rel="noopener"><code>session_01_case.ipynb</code></a>: the Apple versus Coca-Cola report.
 </div>
 </div>
 <div class="pillar">
@@ -1786,7 +1804,7 @@ Ask a friend, ask an AI for a hint, or email me at <code>jobo@econ.au.dk</code>.
 <p>Now, together</p>
 </div>
 <div class="divider-note">
-<p>Opening Google Colab, saving your own copy, and running your first cells — live.</p>
+<p>Opening Google Colab, saving your own copy, and running your first cells, live.</p>
 </div>
 
 <script type="pyodide-data">
@@ -1842,7 +1860,7 @@ W10=
 'autoAnimateDuration': 1,
 'autoAnimateUnmatched': true,
 'jumpToSlide': true,
-'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"},{"title":"Course","icon":"<i class=\"fas fa-graduation-cap\"></i>","content":"<ul class=\"slide-menu-items\"><li class=\"slide-menu-item\"><a href=\"../index.html\">All sessions</a></li><li class=\"slide-menu-item\"><a href=\"https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_01/session_01_exercises.ipynb\" target=\"_blank\" rel=\"noopener\">The exercises, in Colab</a></li><li class=\"slide-menu-item\"><a href=\"https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_01/session_01_case.ipynb\" target=\"_blank\" rel=\"noopener\">Case Part 1, in Colab</a></li><li class=\"slide-menu-item\"><a href=\"../downloads/lectures/session_01.pdf\">This lecture as a PDF</a></li><li class=\"slide-menu-item\"><a href=\"../cheatsheet.html\">The cheatsheet</a></li><li class=\"slide-menu-item\"><a href=\"../exam_info.html\">Exam info</a></li></ul>"}],"openButton":true},
 'smaller': false,
  
         // Display controls in the bottom right corner

@@ -36,6 +36,11 @@ format:
     code-line-numbers: false
     highlight-style: github
     auto-stretch: false
+    menu:
+      custom:
+        - title: "Course"
+          icon: '<i class="fas fa-graduation-cap"></i>'
+          content: '<ul class="slide-menu-items"><li class="slide-menu-item"><a href="../index.html">All sessions</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_12/session_12_exercises.ipynb" target="_blank" rel="noopener">The exercises, in Colab</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_12/session_12_case.ipynb" target="_blank" rel="noopener">Case Part 12, in Colab</a></li><li class="slide-menu-item"><a href="../downloads/lectures/session_12.pdf">This lecture as a PDF</a></li><li class="slide-menu-item"><a href="../cheatsheet.html">The cheatsheet</a></li><li class="slide-menu-item"><a href="../exam_info.html">Exam info</a></li></ul>'
 html-math-method: katex
 engine: jupyter
 pyodide:
@@ -1147,8 +1152,8 @@ rows that suit the data, and a test set opened once.
 
 # After this session [case]{.chip .chip-case}
 
-- **Exercises**: the six days boosted by hand, the gradient behind the residuals, the number of trees chosen on 2022 and on the folds, XGBoost and LightGBM, importance measured four ways, and a target with nothing in it.
-- **Case Part 12**, the last part: boosting for the risk report's forecast and warning, then every model fitted since Part 4 side by side, and the report as it would go out.
+- [**Exercises**](https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_12/session_12_exercises.ipynb){target="_blank"}: the six days boosted by hand, the gradient behind the residuals, the number of trees chosen on 2022 and on the folds, XGBoost and LightGBM, importance measured four ways, and a target with nothing in it.
+- [**Case Part 12**](https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_12/session_12_case.ipynb){target="_blank"}, the last part: boosting for the risk report's forecast and warning, then every model fitted since Part 4 side by side, and the report as it would go out.
 
 ::: {.muted .small}
 Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email

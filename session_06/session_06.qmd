@@ -32,6 +32,11 @@ format:
     code-line-numbers: false
     highlight-style: github
     auto-stretch: false
+    menu:
+      custom:
+        - title: "Course"
+          icon: '<i class="fas fa-graduation-cap"></i>'
+          content: '<ul class="slide-menu-items"><li class="slide-menu-item"><a href="../index.html">All sessions</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_06/session_06_exercises.ipynb" target="_blank" rel="noopener">The exercises, in Colab</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_06/session_06_case.ipynb" target="_blank" rel="noopener">Case Part 6, in Colab</a></li><li class="slide-menu-item"><a href="../downloads/lectures/session_06.pdf">This lecture as a PDF</a></li><li class="slide-menu-item"><a href="../cheatsheet.html">The cheatsheet</a></li><li class="slide-menu-item"><a href="../exam_info.html">Exam info</a></li></ul>'
 html-math-method: katex
 engine: jupyter
 pyodide:
@@ -1461,10 +1466,10 @@ pipeline, a grid, the folds, and the test rows opened once at the end.
 :::
 
 
-# Before next time [case]{.chip .chip-case}
+# Before the next session [case]{.chip .chip-case}
 
-- **Exercises**: building the wide table from the price file, ridge and lasso, standardising inside a pipeline, and reading a grid search.
-- **Case Part 6**: the risk report's model gets every column the desk can offer, and a penalty chosen by cross-validation.
+- [**Exercises**](https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_06/session_06_exercises.ipynb){target="_blank"}: building the wide table from the price file, ridge and lasso, standardising inside a pipeline, and reading a grid search.
+- [**Case Part 6**](https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_06/session_06_case.ipynb){target="_blank"}: the risk report's model gets every column the desk can offer, and a penalty chosen by cross-validation.
 
 ::: {.muted .small}
 Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email

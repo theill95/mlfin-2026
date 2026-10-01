@@ -1,5 +1,5 @@
 ---
-title: "Packages: NumPy, pandas, and matplotlib"
+title: "Packages: NumPy, pandas and matplotlib"
 subtitle: "Machine Learning in Finance · Session 3"
 # Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
 # from a data: URI, so embed-resources is off. Ship session_03.html together
@@ -28,6 +28,11 @@ format:
     code-line-numbers: false
     highlight-style: github
     auto-stretch: false
+    menu:
+      custom:
+        - title: "Course"
+          icon: '<i class="fas fa-graduation-cap"></i>'
+          content: '<ul class="slide-menu-items"><li class="slide-menu-item"><a href="../index.html">All sessions</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_03/session_03_exercises.ipynb" target="_blank" rel="noopener">The exercises, in Colab</a></li><li class="slide-menu-item"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_03/session_03_case.ipynb" target="_blank" rel="noopener">Case Part 3, in Colab</a></li><li class="slide-menu-item"><a href="../downloads/lectures/session_03.pdf">This lecture as a PDF</a></li><li class="slide-menu-item"><a href="../cheatsheet.html">The cheatsheet</a></li><li class="slide-menu-item"><a href="../exam_info.html">Exam info</a></li></ul>'
 engine: jupyter
 pyodide:
   packages:
@@ -1731,11 +1736,11 @@ Hints and full solutions are folded into the notebook. Work first, then check.
 :::
 
 
-# Before Session 4
+# Before the next session
 
 <div class="pillars">
-<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Exercises</div><div class="pillar-body"><code>session_03_exercises.ipynb</code>: NumPy, pandas and matplotlib, plus practice at looking things up. Hints and solutions folded in.</div></div>
-<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Case Part 3</div><div class="pillar-body"><code>session_03_case.ipynb</code>: the risk report, all eleven stocks, with figures.</div></div>
+<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Exercises</div><div class="pillar-body"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_03/session_03_exercises.ipynb" target="_blank" rel="noopener"><code>session_03_exercises.ipynb</code></a>: NumPy, pandas and matplotlib, plus practice at looking things up. Hints and solutions folded in.</div></div>
+<div class="pillar"><div class="pillar-tag">Homework</div><div class="pillar-title">Case Part 3</div><div class="pillar-body"><a href="https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_03/session_03_case.ipynb" target="_blank" rel="noopener"><code>session_03_case.ipynb</code></a>: the risk report, all eleven stocks, with figures.</div></div>
 <div class="pillar"><div class="pillar-tag">Do it once</div><div class="pillar-title">Set up locally</div><div class="pillar-body">Python, VS Code and the three packages. The links are on the course page. Bring any error you get.</div></div>
 </div>
 

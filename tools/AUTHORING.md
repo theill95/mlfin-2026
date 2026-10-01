@@ -102,8 +102,18 @@ matplotlib, in the new session's context. The skills are meant to accumulate.
   `#`), roughly 60 to 70 slides. Many small slides, one idea each. Nothing
   may go past 720 px; audit every deck for overflow.
 - Divider slides between parts, "Today" up front, and at the end a recap
-  grid, a "where this goes next" timeline and a "before next time" slide with
-  the exercises, the case and the help line (`jobo@econ.au.dk`).
+  grid, a "where this goes next" timeline and a closing slide titled
+  **"Before the next session"** with the exercises, the case and the help line
+  (`jobo@econ.au.dk`). Its Exercises and Case Part lines link to the notebooks in
+  Colab (`https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/session_NN/session_NN_exercises.ipynb`,
+  and `_case`), with `{target="_blank"}`.
+- The front matter carries the **Course** panel of the slide menu (`menu: custom:`
+  after `auto-stretch: false`, copied from any deck): all sessions, the exercises
+  and the case in Colab, this lecture as a PDF, the cheatsheet and Exam info. Its
+  icon is drawn by `theme/mlfin.scss`.
+- After rendering, run `python tools/release.py`: it prints the deck's PDF for
+  the Downloads and Exam info pages (`tools/build_handouts.py`), and the check
+  fails until it has.
 - Every "Your turn" is followed by an answer slide with static code and the
   result, so nothing has to be typed live. Your-turn and predict cells have
   `autorun: false`; demonstration cells autorun.

@@ -190,5 +190,8 @@ nb = new_notebook(cells=cells, metadata={
     "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
     "language_info": {"name": "python"},
 })
+# Deterministic cell ids, as in the other generators, so a rebuild is not a rewrite.
+for i, cell in enumerate(nb.cells):
+    cell["id"] = f"c{i:04d}"
 nbf.write(nb, OUT)
 print(f"wrote {OUT.name} ({len(cells)} cells; pins: {', '.join(f'{k} {v}' for k, v in PINS.items())})")

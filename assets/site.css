@@ -109,6 +109,7 @@ header h1 {
   letter-spacing: -0.01em;
 }
 header p { color: var(--ink-soft); margin: 0; }
+header p.byline { font-size: 0.86rem; margin-top: 0.55rem; }
 /* Scoped to the header on purpose: KaTeX also uses a class called `accent`,
    for the hat over a symbol, and an unscoped rule paints a blue block over
    every beta-hat on the maths page. */

@@ -46,6 +46,11 @@ format:
     code-line-numbers: false
     highlight-style: github
     auto-stretch: false
+    menu:
+      custom:
+        - title: "Course"
+          icon: '<i class="fas fa-graduation-cap"></i>'
+          content: '<ul class="slide-menu-items"><li class="slide-menu-item"><a href="../index.html">All sessions</a></li><li class="slide-menu-item"><a href="../downloads/lectures/session_10.pdf">This lecture as a PDF</a></li><li class="slide-menu-item"><a href="../cheatsheet.html">The cheatsheet</a></li><li class="slide-menu-item"><a href="../exam_info.html">Exam info</a></li></ul>'
 html-math-method: katex
 engine: jupyter
 pyodide:
@@ -1228,7 +1233,7 @@ they were today. Only the model inside them changes.
 :::
 
 
-# Before next time
+# Before the next session
 
 - There are no exercises and no case this time. Open the deck at home: beat the models on the slides in the feature lab, and change the live cells, with 2023 as the test year or another k.
 - Finish any earlier exercise set you skipped. The loops, functions and masks in the early sets carried every step today.

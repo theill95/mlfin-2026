@@ -518,7 +518,7 @@ f"2. **Ask whether it lasts.** You measured {NAMES[RISKIEST]} as the most volati
 "you are predicting (a target) and what you would use to predict it (features), and about never "
 "letting information from the future leak into either. That framing is the foundation of machine "
 "learning. *(Session 4.)*\n\n"
-"No model is fitted in these four sessions. The work here is the honest groundwork: measure "
+"No model is fitted before Session 5. The work here is the honest groundwork: measure "
 "carefully, then state exactly what question you would ask next."
 )
 md("---")

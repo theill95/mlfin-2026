@@ -114,16 +114,17 @@ session_01/
 └── data/                     # the small CSV files this session uses
 ```
 
-Sessions 2 to 6 have the same shape. Current contents:
+Sessions 2 to 12 have the same shape, except 7 and 10, which like 13 are case
+lectures with no notebooks. Current contents:
 
 | session | lecture | exercises | case |
 |:--|:--|:--|:--|
-| 1 · Beginning Python for Financial Data | `session_01.qmd` | 55 | Part 1, 10 questions |
-| 2 · Functions, Loops, and Dictionaries | `session_02.qmd` | 64 | Part 2, 11 questions |
-| 3 · Packages: NumPy, pandas, matplotlib | `session_03.qmd` | 76 | Part 3, 15 questions |
-| 4 · Foundations of Machine Learning | `session_04.qmd` | 73 | Part 4, 17 questions |
-| 5 · Model Selection and Cross-Validation | `session_05.qmd` | 63 | Part 5, 18 questions |
-| 6 · Penalised Regression | `session_06.qmd` | 58 | Part 6, 16 questions |
+| 1 · Beginning Python for financial data | `session_01.qmd` | 55 | Part 1, 10 questions |
+| 2 · Functions, loops and dictionaries | `session_02.qmd` | 64 | Part 2, 11 questions |
+| 3 · Packages: NumPy, pandas and matplotlib | `session_03.qmd` | 76 | Part 3, 15 questions |
+| 4 · Foundations of machine learning | `session_04.qmd` | 73 | Part 4, 17 questions |
+| 5 · Model selection and cross-validation | `session_05.qmd` | 63 | Part 5, 18 questions |
+| 6 · Penalised regression | `session_06.qmd` | 58 | Part 6, 16 questions |
 | 7 · Pricing a house in Aarhus (recap) | `session_07.qmd` | none | none |
 | 8 · Classification with logistic regression | `session_08.qmd` | 64 | Part 8, 15 questions |
 | 9 · Classification in practice | `session_09.qmd` | 68 | Part 9, 16 questions |
@@ -284,14 +285,29 @@ you start, so your work is your own.
   even before you fill anything in, so "Run all" never floods you with errors.
 - Hints and full solutions are folded under each task (click to expand). Try
   first; expand to check.
-- The case notebook's first cell loads the data. It looks for the `data/`
-  folder next to the notebook first. In Colab, either upload the two CSV files
-  or set `REPO_RAW_URL` in that cell to the repository's raw data URL.
+- Every notebook's first cell loads the data. It looks for a `data/` folder
+  next to the notebook first and otherwise reads the files from this
+  repository, so in Colab nothing needs uploading.
+- From Part 2 on, each case part opens with a **quick load** cell that restores
+  what the earlier parts worked out, so a part can be started on its own.
 
 ## Data
 
-Daily closing prices for eleven US instruments (AAPL, MSFT, NVDA, JPM, KO, PG,
-XOM, JNJ, WMT, DIS, and the S&P 500 ETF SPY), 2015–2024.
+Five tables, each downloaded or built once and committed, so the materials never
+depend on a live connection. `resources.html` lists them for students, with
+their sources and terms.
+
+| file | what | sessions | source |
+|:--|:--|:--|:--|
+| `prices.csv` (+ 2024 extracts) | daily closes of eleven US instruments, 2015–2024 | 1–6, 8, 9, 11, 12 | Yahoo Finance via yfinance (personal-use terms: kept for teaching) |
+| `market_features.csv` | the nineteen-column index table | 6, 8, 9, 11, 12 | built from the prices by `tools/build_session06_table.py` |
+| `aarhus_houses.csv` | 7,621 Aarhus house sales, 2021–2024 | 7, 13 | Martin Frederiksen's boliga.dk compilation (Kaggle, educational use), geocoded with DAWA, by `tools/build_session07_table.py` |
+| `credit.csv` | 30,000 credit card holders, Taiwan 2005 | 9, 11, 12 | Yeh (2009), UCI Machine Learning Repository, CC BY 4.0 |
+| `power.csv` | 26,133 hours of West Denmark day-ahead prices and forecasts, 2022–2024 | 10, 13 | Energinet's Energi Data Service, CC BY 4.0, by `tools/build_session10_table.py` |
+
+The price files in more detail: daily closing prices for eleven US instruments
+(AAPL, MSFT, NVDA, JPM, KO, PG, XOM, JNJ, WMT, DIS, and the S&P 500 ETF SPY),
+2015–2024.
 
 - `data/prices.csv` - all eleven, tidy long format (`date, ticker, close,
   volume`); used from Session 3 onward, once pandas is introduced. Session 3's
@@ -320,5 +336,11 @@ plain Python lists; uses functions and loops to measure volatility properly
 (Session 2); scales up to all eleven stocks with pandas tables and plots
 (Session 3); is reframed as a machine-learning prediction problem, with
 features and a target, in Session 4; gets its first model, chosen by
-cross-validation, in Session 5; and in Session 6 is given every column the
-desk can offer, with a penalty chosen on the folds to keep it honest.
+cross-validation, in Session 5; in Session 6 is given every column the desk
+can offer, with a penalty chosen on the folds to keep it honest; gains a
+classifier in Sessions 8 and 9, a warning before a big move with a threshold
+set by what each mistake costs; and in Sessions 11 and 12 holds the forecast
+and the warning to trees, forests and boosted trees, before Part 12 sets every
+model the report has fitted side by side. Sessions 7, 10 and 13 are case
+lectures of their own (house prices in Aarhus, power prices in West Denmark,
+and both again with trees) and have no part.
