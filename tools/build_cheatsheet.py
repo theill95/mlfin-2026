@@ -619,9 +619,11 @@ parts.append("""<!doctype html>
        session that introduced each row at its edge.</p>
   </header>
 
-  <div class="note">
-    <strong>Ctrl+P saves this as a PDF.</strong> The menu and the page furniture drop out
-    when printing, so you get the reference on its own.
+  <div class="note no-print">
+    <strong>Allowed at the exam, as a copy saved on your laptop.</strong>
+    <a href="downloads/cheatsheet.pdf" download="MLFIN-cheatsheet.pdf">Download it as a PDF</a>
+    before the exam, since the site cannot be opened during it. Ctrl+P also works: the menu
+    and the page furniture drop out when printing.
   </div>
 """)
 

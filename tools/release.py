@@ -54,8 +54,10 @@ BUILD = [
     ("notebooks: session 11 case",     "tools/generators/session_11_case.py"),
     ("notebooks: session 12 exercises", "tools/generators/session_12_exercises.py"),
     ("notebooks: session 12 case",     "tools/generators/session_12_case.py"),
+    ("notebook: setup check",          "tools/generators/setup_check.py"),
     ("site: sidebar",                  "tools/build_nav.py"),
     ("site: cheatsheet",               "tools/build_cheatsheet.py"),
+    ("site: PDFs of the lectures and pages", "tools/build_handouts.py"),
     ("site: download bundle",          "tools/build_download_bundle.py"),
 ]
 
@@ -98,6 +100,8 @@ CHECK = [
     ("session 12 case solutions",     "tools/verify/session_12_case.py"),
     ("session 12 deck cells",         "tools/verify/session_12_deck.py"),
     ("session 13 deck cells",         "tools/verify/session_13_deck.py"),
+    ("the setup check says ready",    "tools/verify/setup_check.py"),
+    ("the PDFs match their sources", "tools/verify/handouts.py"),
 ]
 
 

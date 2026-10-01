@@ -26,6 +26,7 @@ INCLUDE_GLOBS = [
     "session_*/data/*.csv",
     "data/*.csv",
     "requirements.txt",
+    "setup_check.ipynb",
 ]
 
 # Anything matching these must never reach a student, whatever the globs say.
@@ -44,6 +45,7 @@ they use, and the list of package versions the course was checked with.
                                   it uses (Sessions 7, 10 and 13 have data only)
     data/                         every data file of the course, together
     requirements.txt              the package versions the course was checked with
+    setup_check.ipynb             run it once before the exam, with Wi-Fi off
 
 Getting started
 ---------------
@@ -66,9 +68,12 @@ Colab straight from the course page, and loads its data by itself:
 
     https://theill95.github.io/mlfin-2026/
 
-The lectures are not in this archive. They are interactive pages whose code
-cells only run when served over the web, so they are best used online, from the
-course page above.
+The interactive lectures are not in this archive: their code cells only run
+when served over the web, so they are best used online, from the course page
+above. For reading offline, every lecture is also a PDF with the result of every
+code cell, on the Exam info page:
+
+    https://theill95.github.io/mlfin-2026/exam_info.html
 
 Questions: jobo@econ.au.dk
 

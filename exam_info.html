@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Exam Info · Machine Learning in Finance</title>
+<title>Exam info · Machine Learning in Finance</title>
 <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
@@ -20,7 +20,7 @@
       <li><a href="setup.html">Setup &amp; tools</a></li>
       <li><a href="resources.html">Resources</a></li>
       <li><a href="downloads.html">Downloads</a></li>
-      <li><a href="exam_info.html" aria-current="page">Exam Info</a></li>
+      <li><a href="exam_info.html" aria-current="page">Exam info</a></li>
     </ul>
     <div class="nav-foot">
       <div class="nav-owner">Jonas Theill Bøjstrup</div>
@@ -34,13 +34,92 @@
   <header>
     <div class="accent"></div>
     <div class="eyebrow">Prepare and practise</div>
-    <h1>Exam Info</h1>
-    <p class="lede">Prepare your laptop for the offline notebook exam, then practise with three complete mock exams. The official exam cover gives the rules for the actual sitting.</p>
+    <h1>Exam info</h1>
+    <p class="lede">Get your laptop ready for the offline notebook exam, save a copy of
+       everything you want with you, and practise with three complete mock exams. The
+       official exam cover gives the rules for the sitting itself.</p>
   </header>
 
   <section class="card">
+    <h2>The exam at a glance</h2>
+    <div class="facts">
+      <div class="fact"><strong>180 minutes</strong><span>on site, offline, in VS Code</span></div>
+      <div class="fact"><strong>Two parts</strong><span>50 points each</span></div>
+      <div class="fact"><strong>No AI</strong><span>the exam cover sets the other rules</span></div>
+      <div class="fact"><strong>Two files</strong><span>your answer notebook and the blank PDF</span></div>
+    </div>
+    <p class="card-foot"><strong>The cheatsheet is allowed</strong>, as a copy saved on your
+       laptop: the course site cannot be opened during the exam, so download the PDF below
+       beforehand.</p>
+  </section>
+
+  <section class="card">
+    <h2>Get ready, in this order</h2>
+    <ol class="checklist">
+      <li><strong>Save your offline copies</strong> while you have internet: the course ZIP,
+          the lecture PDFs and the cheatsheet, all below.</li>
+      <li><strong>Install Python 3.14 and the course's packages</strong> with the one install
+          line on the <a href="setup.html#install">setup page</a>, so your numbers match the
+          materials.</li>
+      <li><strong>Run the setup check with Wi-Fi off.</strong> <code>setup_check.ipynb</code> is
+          in the course ZIP: open the unzipped folder in VS Code and press Run All. It ends
+          with <em>ready</em>, or a list of what to fix.</li>
+      <li><strong>Switch off AI and code completion in VS Code</strong>, as page 2 of the
+          practicalities guide shows.</li>
+      <li><strong>Sit one mock exam</strong> in three uninterrupted hours on that laptop, then
+          read its code solutions.</li>
+    </ol>
+  </section>
+
+  <section class="card" id="offline">
+    <h2>Offline copies</h2>
+    <p class="sub">Everything the course has, as files. Save them before the exam: the site
+       itself will not be reachable.</p>
+    <div class="actions">
+      <a class="btn primary" href="downloads/mlfin-course.zip" download>
+        <span class="label">The course ZIP</span>
+        <span class="hint">every notebook, the data, the setup check</span>
+      </a>
+      <a class="btn" href="downloads/cheatsheet.pdf" download="MLFIN-cheatsheet.pdf">
+        <span class="label">Cheatsheet (PDF)</span>
+        <span class="hint">allowed at the exam</span>
+      </a>
+      <a class="btn" href="downloads/maths.pdf" download="MLFIN-maths-brush-up.pdf">
+        <span class="label">Maths brush-up (PDF)</span>
+        <span class="hint">the notation page</span>
+      </a>
+    </div>
+    <h3>The lectures, as PDFs</h3>
+    <p class="sub">Every slide, with the result of every code cell. Printing a lecture from
+       the browser leaves those results out, so use these.</p>
+    <div class="actions single-action">
+      <button class="btn" id="all-lectures" type="button">
+        <span class="label">Download all 13 lectures (ZIP)</span>
+        <span class="hint">packed in your browser from the files below</span>
+      </button>
+    </div>
+    <ul class="pdf-grid">
+      <li><a href="downloads/lectures/session_01.pdf" download="MLFIN-S01-beginning-python-for-financial-data.pdf"><span class="n">1</span>Beginning Python for financial data</a></li>
+      <li><a href="downloads/lectures/session_02.pdf" download="MLFIN-S02-functions-loops-and-dictionaries.pdf"><span class="n">2</span>Functions, loops and dictionaries</a></li>
+      <li><a href="downloads/lectures/session_03.pdf" download="MLFIN-S03-packages-numpy-pandas-and-matplotlib.pdf"><span class="n">3</span>Packages: NumPy, pandas and matplotlib</a></li>
+      <li><a href="downloads/lectures/session_04.pdf" download="MLFIN-S04-foundations-of-machine-learning.pdf"><span class="n">4</span>Foundations of machine learning</a></li>
+      <li><a href="downloads/lectures/session_05.pdf" download="MLFIN-S05-model-selection-and-cross-validation.pdf"><span class="n">5</span>Model selection and cross-validation</a></li>
+      <li><a href="downloads/lectures/session_06.pdf" download="MLFIN-S06-penalised-regression.pdf"><span class="n">6</span>Penalised regression</a></li>
+      <li><a href="downloads/lectures/session_07.pdf" download="MLFIN-S07-pricing-a-house-in-aarhus.pdf"><span class="n">7</span>Pricing a house in Aarhus</a></li>
+      <li><a href="downloads/lectures/session_08.pdf" download="MLFIN-S08-classification-with-logistic-regression.pdf"><span class="n">8</span>Classification with logistic regression</a></li>
+      <li><a href="downloads/lectures/session_09.pdf" download="MLFIN-S09-classification-in-practice.pdf"><span class="n">9</span>Classification in practice</a></li>
+      <li><a href="downloads/lectures/session_10.pdf" download="MLFIN-S10-electricity-prices-in-west-denmark.pdf"><span class="n">10</span>Electricity prices in West Denmark</a></li>
+      <li><a href="downloads/lectures/session_11.pdf" download="MLFIN-S11-trees-and-forests.pdf"><span class="n">11</span>Trees and forests</a></li>
+      <li><a href="downloads/lectures/session_12.pdf" download="MLFIN-S12-boosting-and-reading-a-model.pdf"><span class="n">12</span>Boosting and reading a model</a></li>
+      <li><a href="downloads/lectures/session_13.pdf" download="MLFIN-S13-the-two-cases-with-trees.pdf"><span class="n">13</span>The two cases with trees</a></li>
+    </ul>
+  </section>
+
+  <section class="card">
     <h2>Practicalities and preparation</h2>
-    <p class="sub">A two-page guide to preparing offline materials, checking VS Code's AI and code-completion settings, practising under exam conditions, and handing in your work.</p>
+    <p class="sub">A two-page guide to preparing offline materials, checking VS Code's AI and
+       code-completion settings, practising under exam conditions, and handing in your
+       work.</p>
     <div class="actions single-action">
       <a class="btn primary" href="downloads/exams/exam_practicalities.pdf" download>
         <span class="label">Download the practicalities guide (PDF)</span>
@@ -51,7 +130,10 @@
 
   <section class="card">
     <h2>Mock exams</h2>
-    <p class="sub">Each ZIP contains the question paper, answer notebook, CSV data, blank PDF for the two-file hand-in, and a separate notebook with code solutions. Try one in an uninterrupted three-hour block without aids. Open the code solutions only after your attempt; they do not contain written explanations.</p>
+    <p class="sub">Each ZIP contains the question paper, answer notebook, CSV data, blank PDF
+       for the two-file hand-in, and a separate notebook with code solutions. Try one in an
+       uninterrupted three-hour block without aids. Open the code solutions only after your
+       attempt; they do not contain written explanations.</p>
     <div class="actions mock-actions">
       <a class="btn" href="downloads/exams/MLFIN_MOCK_2026_1_student_bundle.zip" download>
         <span class="label">Mock exam 1</span>
@@ -68,7 +150,42 @@
     </div>
   </section>
 
+  <footer>
+    Questions about the exam or the course: <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
+  </footer>
   </main>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+<script>
+  // Zip the lecture PDFs in the browser, so the site does not keep a second copy of them.
+  document.getElementById("all-lectures").addEventListener("click", async (event) => {
+    const button = event.currentTarget, hint = button.querySelector(".hint");
+    if (!window.JSZip) { hint.textContent = "Could not load the zip tool: use the links below."; return; }
+    const links = [...document.querySelectorAll(".pdf-grid a")];
+    button.disabled = true;
+    try {
+      const zip = new JSZip();
+      for (let i = 0; i < links.length; i++) {
+        hint.textContent = "Fetching lecture " + (i + 1) + " of " + links.length + "...";
+        const response = await fetch(links[i].href);
+        if (!response.ok) throw new Error(response.status);
+        zip.file(links[i].getAttribute("download"), await response.blob());
+      }
+      hint.textContent = "Packing the ZIP...";
+      const blob = await zip.generateAsync({ type: "blob", compression: "STORE" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "MLFIN-lectures.zip";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      hint.textContent = "Done: MLFIN-lectures.zip is in your downloads.";
+    } catch (error) {
+      hint.textContent = "That did not work: use the links below.";
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>
 </body>
 </html>

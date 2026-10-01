@@ -858,10 +858,10 @@ Three mock exams and a two-page guide to preparing are on the
 
 # Before the exam
 
-- Download the notebooks, the data, the cheatsheet and the lectures while you are online. Press `e` on a lecture, then print it to PDF.
-- Open a course notebook in VS Code and read a local CSV, so the setup works before the day.
-- Sit one mock exam in three uninterrupted hours, with Wi-Fi and AI switched off.
+- While you are online, save the course ZIP, the lecture PDFs and the cheatsheet from the Exam info page.
+- Install the course's packages with the setup page's one line, then run `setup_check.ipynb` from the ZIP with Wi-Fi off: it should say ready.
 - Switch off AI and code completion in VS Code, as the guide shows.
+- Sit one mock exam in three uninterrupted hours, with Wi-Fi and AI switched off.
 
 
 # Questions

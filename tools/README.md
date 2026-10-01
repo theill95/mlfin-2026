@@ -24,7 +24,10 @@ between library versions. Create the environment once with
 `python -m venv .venv` and `.venv\Scripts\python -m pip install -r tools/requirements-dev.txt`.
 
 It deliberately does **not** render the Quarto decks (slow, and needs Quarto)
-and does not commit anything.
+and does not commit anything. After rendering a deck, run it again: its
+`tools/build_handouts.py` step prints the deck's PDF (with every live cell's
+output) for the Downloads and Exam info pages, and `tools/verify/handouts.py`
+fails until it has.
 
 ## Adding a session
 

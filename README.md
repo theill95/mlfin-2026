@@ -50,8 +50,15 @@ The site has seven pages, linked from the sidebar:
 | `math.html` | the maths the course assumes: matrix and vector notation, dimensions, vectorisation, inverses and multicollinearity, and how to read the objective functions behind OLS, ridge, lasso, logistic regression and trees. Hand-written; maths renders through KaTeX from a CDN |
 | `setup.html` | installing Python and VS Code, and the extras (scripts vs notebooks, virtual environments, Git), each marked needed or optional |
 | `resources.html` | official docs, ISLP, Kaggle, and the AI-use policy |
-| `downloads.html` | every notebook and CSV, plus `downloads/mlfin-course.zip` |
-| `exam_info.html` | exam preparation guide and three mock exam student bundles |
+| `downloads.html` | every notebook and CSV, every lecture as a PDF, plus `downloads/mlfin-course.zip` |
+| `exam_info.html` | the exam at a glance, a get-ready checklist, the offline copies (course ZIP, the 13 lecture PDFs, cheatsheet and maths PDFs, `setup_check.ipynb` in the ZIP), the practicalities guide and three mock exam student bundles |
+
+The PDFs are built by `tools/build_handouts.py` (Playwright drives Edge): it opens
+each deck in Reveal's PDF view, scrolls every slide into view until every live cell
+has run, prints the deck once, and splices in one page per step for the few slides
+that build up in replacing steps. Printing from the browser would lose the live
+cells' output. `release.py` runs it and rebuilds only what changed;
+`tools/verify/handouts.py` fails if a deck was rendered again without its PDF.
 
 Shared styling lives in `assets/site.css` and the sidebar in `assets/nav.html`,
 which `tools/build_nav.py` stamps into every page. The student ZIP is built from

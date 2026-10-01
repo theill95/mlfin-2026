@@ -414,7 +414,7 @@ td .katex-display > .katex { text-align: left; font-size: 0.95em; }
 @media print {
   body { background: #fff; }
   .shell { display: block; }
-  .sidenav, .banner, .skip, .cs-toc, footer { display: none; }
+  .sidenav, .banner, .skip, .cs-toc, footer, .no-print { display: none; }
   .wrap { max-width: none; padding: 0; }
   .card { break-inside: avoid; box-shadow: none; }
   /* A4 is narrower than the 720px breakpoint, so the two columns are set here too,
@@ -432,3 +432,43 @@ td .katex-display > .katex { text-align: left; font-size: 0.95em; }
   /* Print the answers: a folded question is no use on paper. */
   details.m-check > * { display: block !important; }
 }
+
+/* ------------------------------------------------------------ exam info */
+
+/* The exam at a glance: four facts side by side, two on a phone. */
+.facts {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.7rem;
+  margin: 0.4rem 0 1rem;
+}
+@media (min-width: 720px) { .facts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.fact {
+  background: var(--blue-pale); border: 1px solid #b9d2f0; border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+}
+.fact strong { display: block; color: var(--blue-deep); font-size: 1.15rem; line-height: 1.25; }
+.fact span { display: block; color: var(--ink-soft); font-size: 0.84rem; margin-top: 0.2rem; }
+
+/* A compact grid of download links, one per lecture. */
+.pdf-grid {
+  list-style: none; margin: 0.6rem 0 0; padding: 0;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.35rem 1.2rem;
+}
+@media (min-width: 620px) { .pdf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.pdf-grid a { text-decoration: none; font-size: 0.9rem; }
+.pdf-grid a:hover { text-decoration: underline; }
+.pdf-grid .n { display: inline-block; min-width: 1.6rem; color: var(--faint); font-variant-numeric: tabular-nums; }
+
+/* A button that runs a script rather than following a link. */
+button.btn {
+  display: flex; flex-direction: column; justify-content: center; text-align: left;
+  font: inherit; cursor: pointer; border-radius: 9px; padding: 0.9rem 1rem;
+  border: 1px solid #b9d2f0; background: var(--blue-pale); color: var(--ink); width: 100%;
+}
+button.btn:hover { border-color: #8db8ea; }
+button.btn .label { font-weight: 650; color: var(--blue-deep); font-size: 1rem; }
+button.btn .hint { font-size: 0.78rem; color: var(--faint); margin-top: 0.15rem; }
+button.btn[disabled] { opacity: 0.6; cursor: progress; }
+
+ol.checklist { margin: 0.2rem 0 0; padding-left: 1.3rem; color: var(--ink-soft); font-size: 0.93rem; }
+ol.checklist li { margin-bottom: 0.65rem; padding-left: 0.2rem; }
+ol.checklist strong { color: var(--ink); }

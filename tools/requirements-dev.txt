@@ -19,5 +19,9 @@ ipykernel>=6.29
 pillow>=11.0
 pymupdf>=1.25
 
+# tools/build_handouts.py prints the lecture PDFs with the installed Microsoft Edge
+# (no `playwright install` needed).
+playwright>=1.48
+
 # Only needed to REBUILD the price data from source (tools/build_dataset.py).
 # yfinance>=0.2
