@@ -44,6 +44,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import nbformat as nbf
+from _shared import XGB_GUARD
 from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge, Lasso, ElasticNet
 from sklearn.preprocessing import StandardScaler
@@ -503,7 +504,8 @@ _desk_lines = ",\n".join(f"    '{t}': ({DESK[t][0]:.5f}, {DESK[t][1]:.5f})" for 
 _forest_lines = ",\n".join(f"    '{t}': {DESK_FOREST[t]:.5f}" for t in TICKERS)
 
 code(
-'''import os
+XGB_GUARD + '''
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -516,7 +518,7 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error, roc_auc_score
 from sklearn.model_selection import cross_val_score, TimeSeriesSplit
 from sklearn.inspection import permutation_importance
-from xgboost import XGBRegressor, XGBClassifier             # comes with Colab; elsewhere: pip install xgboost
+from xgboost import XGBRegressor, XGBClassifier             # the setup guide's install line includes it
 
 CANDIDATE_DIRS = ["data", os.path.join("..", "data"), "."]
 REPO_RAW_URL = "https://raw.githubusercontent.com/theill95/mlfin-2026/main/data/"   # used when the CSV files are not next to the notebook

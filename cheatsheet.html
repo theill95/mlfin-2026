@@ -823,7 +823,7 @@ from sklearn.metrics import (accuracy_score, confusion_matrix, precision_score,
       <div class="cs-sig"><code>{&quot;logit__C&quot;: [0.0001, 0.001, 0.01, 0.1, 1, 10]}</code></div>
       <div class="cs-desc">A grid for GridSearchCV: the step name, two underscores, the argument. Then GridSearchCV(pipe, grid, cv=folds, scoring=&quot;roc_auc&quot;).fit(X, y), and best_params_, best_score_, predict_proba as before.<span class="cs-since">Session 8</span></div>
       <div class="cs-sig"><code>LogisticRegression(penalty=&quot;l1&quot;, solver=&quot;liblinear&quot;, C=0.01)</code></div>
-      <div class="cs-desc">The lasso&#x27;s penalty on a classifier, which sets coefficients to exactly zero. It needs a solver that can handle absolute values; the default lbfgs cannot.<span class="cs-since">Session 8</span></div>
+      <div class="cs-desc">The lasso&#x27;s penalty on a classifier, which sets coefficients to exactly zero. It needs a solver that can handle absolute values; the default lbfgs cannot. scikit-learn 1.8 and later retire penalty: there it is LogisticRegression(l1_ratio=1, solver=&quot;liblinear&quot;, C=0.01).<span class="cs-since">Session 8</span></div>
       <div class="cs-sig"><code>confusion_matrix(y, predicted).ravel()</code></div>
       <div class="cs-desc">The 2 by 2 array flattened into tn, fp, fn, tp, in reading order. The four counts every other score is built from.<span class="cs-since">Session 9</span></div>
       <div class="cs-sig"><code>LogisticRegression(class_weight=&quot;balanced&quot;)</code></div>

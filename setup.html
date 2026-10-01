@@ -37,8 +37,8 @@
     <h1>Setup &amp; tools</h1>
     <p class="lede">Colab keeps working for everything on this course, so none of this is
        urgent. But the exam is written on your own laptop, in VS Code, with no internet,
-       and that should not be the first time you use it. Session 3 opens by walking
-       through the four steps below, so come with them done if you can.</p>
+       and that should not be the first time you use it. Session 3 walked through the
+       four steps below; have them done well before the exam.</p>
   </header>
 
   <p class="legend">
@@ -51,10 +51,12 @@
      rotted.</p>
 
   <ol class="setup-steps">
-    <li><strong>Install Python.</strong> Download the latest release for your system. On
-        Windows, tick <em>Add python.exe to PATH</em> in the installer: it is easy to miss
-        and awkward to fix later.
-        <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">python.org/downloads</a></li>
+    <li><strong>Install Python 3.14.</strong> Take the newest 3.14 release, not 3.15:
+        Python 3.15 came out on 1 October 2026, and the package versions this course uses
+        have no installer for it yet. Python 3.12 and 3.13 work too. On Windows, choose the
+        64-bit Windows installer and tick <em>Add python.exe to PATH</em>: it is easy to
+        miss and awkward to fix later.
+        <a href="https://www.python.org/downloads/latest/python3.14/" target="_blank" rel="noopener">python.org: the newest Python 3.14</a></li>
     <li><strong>Install VS Code.</strong> The editor itself. It is not Python, and
         installing one does not install the other.
         <a href="https://code.visualstudio.com/download" target="_blank" rel="noopener">code.visualstudio.com/download</a></li>
@@ -64,10 +66,12 @@
         · then
         <a href="https://code.visualstudio.com/docs/datascience/jupyter-notebooks" target="_blank" rel="noopener">notebooks in VS Code</a></li>
     <li><strong>Install the packages.</strong> Open a new notebook and run this in a cell:
-        <br><code>%pip install numpy pandas matplotlib scikit-learn</code><br>
-        You do this once, ever. Session 12 adds two libraries for boosted trees, so run
-        <code>%pip install xgboost lightgbm</code> once as well. If you would rather use a
-        terminal, <code>pip install</code> with the same names does exactly the same thing.</li>
+        <pre class="wrap"><code>%pip install -r https://theill95.github.io/mlfin-2026/requirements.txt</code></pre>
+        It installs the versions every notebook, lecture and mock exam was checked with
+        (NumPy 2.3, pandas 2.3, matplotlib 3.10, scikit-learn 1.7, XGBoost 2.1.4 and
+        LightGBM 4.6), so your numbers match the ones in the materials. Run it once now,
+        even if you installed packages earlier in the course; it replaces other versions.
+        From a terminal, <code>pip install -r</code> with the same address does the same.</li>
   </ol>
 
   <div class="note">
@@ -96,7 +100,7 @@
   </div>
 
   <h2 id="files">Where your data file has to sit <span class="tag tag-need">needed</span></h2>
-  <p>In Colab you uploaded a file. Locally you just put it next to your code:</p>
+  <p>Locally, a data file sits next to your code:</p>
 <pre><code>mlfin/
 ├── analysis.ipynb
 └── data/
@@ -123,6 +127,26 @@
         <td>Python looked for the package and it is not there.</td>
         <td>Run <code>%pip install pandas</code> in a cell. If it was already installed,
             you are running a different Python: check the interpreter.</td>
+      </tr>
+      <tr>
+        <td><code>ModuleNotFoundError: No module named 'sklearn'</code></td>
+        <td>scikit-learn installs as <code>scikit-learn</code> and imports as
+            <code>sklearn</code>; <code>%pip install sklearn</code> fails on purpose.</td>
+        <td>Run the install line from step 4, which spells it right.</td>
+      </tr>
+      <tr>
+        <td>The install line says it is <em>building</em> pandas or scikit-learn, then
+            fails with a long error</td>
+        <td>Your Python is 3.15, and the course's versions have no installer for it yet,
+            so pip tries to compile them and cannot.</td>
+        <td>Install Python 3.14 as well (step 1), pick it as the notebook's kernel, and
+            run the install line again.</td>
+      </tr>
+      <tr>
+        <td>Your number differs from the one in a notebook, from the third decimal on</td>
+        <td>Other package versions: a few results move a little between versions.</td>
+        <td>Run the install line from step 4. In Colab, Session 12's notebooks install
+            the XGBoost they need by themselves.</td>
       </tr>
       <tr>
         <td><code>FileNotFoundError: 'data/prices.csv'</code></td>
@@ -183,7 +207,7 @@
      whole machine, each project gets its own. That way upgrading a package for one
      project cannot quietly break another, and you can record exactly which versions a
      project needs.</p>
-  <p><strong>For this course you do not need one.</strong> One Python with the four
+  <p><strong>For this course you do not need one.</strong> One Python with the course's
      packages installed is completely fine. If your setup created a <code>.venv</code>
      folder, that is what it was: select it as your interpreter and carry on.</p>
   <p>If you want to understand them:

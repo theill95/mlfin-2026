@@ -51,6 +51,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import nbformat as nbf
+from _shared import XGB_GUARD
 from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.preprocessing import StandardScaler
@@ -665,7 +666,8 @@ md("---")
 md("## ⚙️ Setup · run me first")
 
 code(
-'''import os
+XGB_GUARD + '''
+import os
 import time
 import numpy as np
 import pandas as pd
@@ -681,7 +683,7 @@ from sklearn.ensemble import (RandomForestClassifier, GradientBoostingRegressor,
 from sklearn.metrics import mean_squared_error, roc_auc_score, roc_curve
 from sklearn.model_selection import train_test_split, cross_val_score, TimeSeriesSplit
 from sklearn.inspection import permutation_importance
-from xgboost import XGBRegressor, XGBClassifier             # both come with Colab; elsewhere: pip install xgboost lightgbm
+from xgboost import XGBRegressor, XGBClassifier             # the setup guide's install line includes both
 from lightgbm import LGBMRegressor, LGBMClassifier, early_stopping
 
 CANDIDATE_DIRS = ["data", os.path.join("..", "data"), "."]

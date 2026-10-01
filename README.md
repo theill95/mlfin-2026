@@ -223,14 +223,32 @@ follow when adding a session. In short: edit the generator, not the notebook.
 
 ## Python environment
 
+`requirements.txt` pins the versions students install (the setup page tells
+them to run `%pip install -r https://theill95.github.io/mlfin-2026/requirements.txt`):
+NumPy 2.3, pandas 2.3, matplotlib 3.10, scikit-learn 1.7, SciPy 1.16, XGBoost
+2.1.4 and LightGBM 4.6, on Python 3.12 to 3.14 (3.15 has no installers for
+these yet). Build with exactly that environment:
+
 ```bash
-pip install -r requirements.txt
+python -m venv .venv
+.venv\Scripts\python -m pip install -r tools/requirements-dev.txt
+python tools/release.py        # re-runs itself under .venv
 ```
 
-Built and tested with Python 3.12, pandas 2.2, numpy 1.26, matplotlib 3.9,
-scikit-learn 1.5, xgboost 2.1 and lightgbm 4.6. Sessions 5 to 13 use
-scikit-learn in the materials themselves, in the deck, the exercises and the
-case, and Sessions 12 and 13 the two boosting libraries. Session 6 also reads
+The generators measure numbers while they write the notebooks, and a few move
+between versions (scikit-learn 1.6 changed some forest results in the fourth
+decimal; XGBoost 3 grows different trees from 2.1), so `release.py` starts by
+checking the environment against the pins and stops if they differ. Colab has
+its own versions, recorded in its public `pip-freeze.txt`
+(github.com/googlecolab/backend-info); on 28 September 2026 it ran scikit-learn
+1.6.1, pandas 2.2.3, NumPy 2.1.3 and XGBoost 3.4.1, with which every notebook
+gives the same numbers except Session 12's XGBoost results, so Session 12's
+setup cells install XGBoost 2.1.4 in Colab first. The lectures run Pyodide
+0.28.1 in the browser (scikit-learn 1.7, XGBoost 2.1.4).
+
+Sessions 5 to 13 use scikit-learn in the materials themselves, in the deck,
+the exercises and the case, and Sessions 12 and 13 the two boosting libraries.
+Session 6 also reads
 `data/market_features.csv`, a nineteen-column table built from the prices by
 `tools/build_session06_table.py`, and Session 7 reads `data/aarhus_houses.csv`,
 7,621 Aarhus house sales from January 2021 to September 2024, built once by

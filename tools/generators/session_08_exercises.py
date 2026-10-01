@@ -1389,7 +1389,10 @@ ex("H3", "What the defaults are", 1,
    f"`{DEFAULTS['penalty']}`, `{DEFAULTS['C']}`, `{DEFAULTS['solver']}` and "
    f"`{DEFAULTS['max_iter']}`. Every logistic regression in this notebook that "
    "did not say otherwise had a ridge penalty of strength 1 on, solved by lbfgs "
-   "in at most 100 steps.")
+   "in at most 100 steps. From scikit-learn 1.8 on, `penalty` is being retired: "
+   "those versions print `deprecated` here and ask for `l1_ratio=1` instead of "
+   "`penalty='l1'`. The course's install line keeps you on 1.7, where everything "
+   "in this notebook runs as written.")
 
 md(f"### H4 · The error you will meet  {badge(3, REVISITS['H4'])}\n\n"
    "The cell below asks the default solver for the l1 penalty, and it raises. "

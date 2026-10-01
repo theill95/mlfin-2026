@@ -8,14 +8,28 @@ the cheatsheet, the sidebar and the download bundle in step with each other.
     python tools/release.py            build, then check
     python tools/release.py --check    check only, change nothing
 
+It runs under the repository's .venv when that folder exists (see
+tools/requirements-dev.txt), so the notebooks are generated with exactly the
+package versions students install from requirements.txt. Generated text quotes
+measured numbers, and a few of them move between library versions; the first
+check stops the run if the environment does not match the pins.
+
 What it does NOT do: render the Quarto decks (that needs Quarto, and is slow),
 or commit anything. Both are deliberate.
 """
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+VENV_PY = ROOT / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+
+# Re-run under the course environment if it exists and this is not it.
+if VENV_PY.exists() and Path(sys.executable).resolve() != VENV_PY.resolve() and not os.environ.get("MLFIN_NO_VENV"):
+    print(f"using {VENV_PY.relative_to(ROOT)}")
+    sys.exit(subprocess.run([str(VENV_PY), __file__, *sys.argv[1:]]).returncode)
+
 PY = sys.executable
 
 BUILD = [
@@ -46,6 +60,7 @@ BUILD = [
 ]
 
 CHECK = [
+    ("environment matches requirements.txt", "tools/verify/environment.py"),
     ("published lecture autorun", "tools/verify/lecture_autorun.py"),
     ("earlier lecture cell state", "tools/verify/lecture_cell_state.py"),
     ("data loads the way Colab will", "tools/verify/colab_data_access.py"),
@@ -97,7 +112,9 @@ def run(label, script):
 
 def main():
     check_only = "--check" in sys.argv
-    steps = (CHECK if check_only else BUILD + CHECK)
+    # The environment check comes first either way: building with other library
+    # versions would quietly change the numbers the notebooks quote.
+    steps = (CHECK if check_only else CHECK[:1] + BUILD + CHECK[1:])
 
     for label, script in steps:
         if not run(label, script):

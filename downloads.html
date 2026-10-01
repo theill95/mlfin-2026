@@ -43,8 +43,9 @@
 
   <section class="card">
     <h2>All the notebooks and data, in one file</h2>
-    <p class="sub">Every exercise notebook, every case notebook, and all the price files,
-       arranged so they work as soon as you unzip them. Always the current version.</p>
+    <p class="sub">Every exercise notebook, every case notebook and every data file,
+       arranged so they work as soon as you unzip them, with the list of package versions
+       the course was checked with. Always the current version.</p>
     <div class="actions">
       <a class="btn primary" href="downloads/mlfin-course.zip" download>
         <span class="label">↓ Download the course materials (ZIP)</span>
@@ -272,9 +273,9 @@
 
   <h2 id="running">Running the notebooks locally</h2>
   <ol class="setup-steps">
-    <li>Follow the <a href="setup.html">setup guide</a> once: Python, VS Code, the Python
-        extension, and <code>%pip install numpy pandas matplotlib scikit-learn</code>.
-        Session 12 also needs <code>%pip install xgboost lightgbm</code>.</li>
+    <li>Follow the <a href="setup.html">setup guide</a> once: Python 3.14, VS Code, the
+        Python extension, and the course's packages, installed from a notebook cell with
+        <code>%pip install -r https://theill95.github.io/mlfin-2026/requirements.txt</code>.</li>
     <li>Put the notebook and a <code>data/</code> folder in the same place, exactly as in
         the ZIP.</li>
     <li>In VS Code, <em>File → Open Folder</em> and choose that folder. Not the file: the

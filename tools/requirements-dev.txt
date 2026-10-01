@@ -1,0 +1,23 @@
+# What building and checking the materials needs, on top of the course packages.
+#
+#     python -m venv .venv
+#     .venv\Scripts\python -m pip install -r tools/requirements-dev.txt
+#
+# tools/release.py runs itself under .venv when that folder exists, so the
+# notebooks are always generated with the versions students install
+# (requirements.txt). Generated text quotes measured numbers, and some of them
+# move between scikit-learn or XGBoost versions.
+#
+# Rendering the lectures uses Quarto and its own Python, not this environment.
+
+-r ../requirements.txt
+
+nbformat>=5.10
+nbclient>=0.10
+nbconvert>=7.16
+ipykernel>=6.29
+pillow>=11.0
+pymupdf>=1.25
+
+# Only needed to REBUILD the price data from source (tools/build_dataset.py).
+# yfinance>=0.2

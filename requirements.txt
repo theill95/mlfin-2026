@@ -1,23 +1,24 @@
-# Machine Learning in Finance - Python environment
-# Install with:  pip install -r requirements.txt
+# Machine Learning in Finance - the Python packages for the course
 #
-# Versions are those the materials were built and tested against. Later
-# patch releases are normally fine; these are pinned loosely on the minor
-# version so a fresh install stays reproducible.
+# Install them from a notebook cell (VS Code or Jupyter):
+#
+#     %pip install -r https://theill95.github.io/mlfin-2026/requirements.txt
+#
+# or, from a terminal in the course folder:  pip install -r requirements.txt
+#
+# Use Python 3.12, 3.13 or 3.14. Every version below has a ready-made installer
+# for those on Windows and macOS; pandas 2.3 and scikit-learn 1.7 have none for
+# Python 3.15 yet, and pip would then try to build them from source and fail.
+#
+# These are the versions every notebook, lecture and mock exam was checked
+# against, so your numbers match the ones in the materials. The notebooks also
+# run in Colab, which has its own versions; Session 12 installs the XGBoost
+# below there by itself.
 
-pandas>=2.2,<2.3
-numpy>=1.26,<2.0
-matplotlib>=3.9,<3.10
-scikit-learn>=1.5,<1.6
-
-# Session 12: the two boosting libraries (both come with Colab).
-xgboost>=2.1,<2.2
-lightgbm>=4.6,<4.7
-
-# Needed to build and run the notebooks and to render the Quarto lecture.
-jupyter>=1.0
-nbformat>=5.10
-
-# Only needed to REBUILD the dataset from source (tools/build_dataset.py).
-# Students never need this; the CSVs are already in data/.
-# yfinance>=0.2
+numpy~=2.3.0
+pandas~=2.3.0
+matplotlib~=3.10.0
+scikit-learn~=1.7.0
+scipy~=1.16.0
+xgboost==2.1.4
+lightgbm~=4.6.0

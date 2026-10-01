@@ -13,9 +13,15 @@ python tools/release.py           # rebuild everything generated, then check it
 python tools/release.py --check   # check only, change nothing
 ```
 
-Run this before every push. It regenerates the six notebooks, the cheatsheet,
+Run this before every push. It regenerates the notebooks, the cheatsheet,
 the sidebar and the download bundle, then runs the verifiers. If you only ever
 remember one thing on this page, remember this command.
+
+It runs under the repository's `.venv` when that folder exists, and its first
+check stops the run if the environment differs from `requirements.txt`: the
+generators write measured numbers into the notebooks, and a few of those move
+between library versions. Create the environment once with
+`python -m venv .venv` and `.venv\Scripts\python -m pip install -r tools/requirements-dev.txt`.
 
 It deliberately does **not** render the Quarto decks (slow, and needs Quarto)
 and does not commit anything.
@@ -210,9 +216,12 @@ in its `NOTEBOOKS` list is a failure. Sessions 1 and 2 keep their prices in
 literal lists and so are absent on purpose; without the check, adding a loader
 to one of them would go unnoticed until a student hit it in Colab.
 
-Nothing else is needed at runtime: across all eight notebooks the only
-third-party imports are numpy, pandas and matplotlib, which Colab preinstalls,
-so no notebook needs a `pip install` cell.
+At runtime the notebooks import numpy, pandas, matplotlib and scikit-learn,
+and Session 12 also XGBoost and LightGBM; Colab preinstalls all of them. The one
+`pip install` is in Session 12's setup cells (`XGB_GUARD` in
+`tools/generators/_shared.py`): Colab ships XGBoost 3, which grows different
+trees from the 2.1.4 the numbers were measured with, so those cells install
+2.1.4 there first.
 
 The `session_0N_exercises.py` and `session_0N_case.py` verifiers extract each
 folded solution and run it, so the stated answers cannot drift away from the

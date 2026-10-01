@@ -25,23 +25,25 @@ INCLUDE_GLOBS = [
     "session_*/session_*_case.ipynb",
     "session_*/data/*.csv",
     "data/*.csv",
+    "requirements.txt",
 ]
 
 # Anything matching these must never reach a student, whatever the globs say.
-NEVER = ("tools/", "_extensions/", ".quarto/", ".git", "README.md",
-         "requirements.txt", "serve.cmd", "_quarto.yml", "theme/")
+NEVER = ("tools/", "_extensions/", ".quarto/", ".git", ".venv", "README.md",
+         "serve.cmd", "_quarto.yml", "theme/")
 
 FIXED_TIME = (2026, 1, 1, 0, 0, 0)     # so the zip is byte-stable
 
 STUDENT_README = """Machine Learning in Finance
 Aarhus University
 
-This archive holds the exercise and case notebooks for every session, and the
-price data they use.
+This archive holds the exercise and case notebooks of every session, the data
+they use, and the list of package versions the course was checked with.
 
-    session_01/ ... session_04/               the notebooks, and a copy of the
-                                              data each one needs
-    data/                                     all of the price files together
+    session_01/ ... session_13/   each session's notebooks and a copy of the data
+                                  it uses (Sessions 7, 10 and 13 have data only)
+    data/                         every data file of the course, together
+    requirements.txt              the package versions the course was checked with
 
 Getting started
 ---------------
@@ -50,7 +52,12 @@ Getting started
    folder, not a single file: that is what makes data/prices.csv resolve.
 3. Open a notebook, choose your Python when asked, and run the first cell.
 
-You need Python, VS Code and a few packages. The setup guide walks through it:
+You need Python 3.14 (3.12 and 3.13 work too; 3.15 not yet), VS Code, and the
+course's packages. Install the packages once, from any notebook cell:
+
+    %pip install -r https://theill95.github.io/mlfin-2026/requirements.txt
+
+The setup guide walks through all of it:
 
     https://theill95.github.io/mlfin-2026/setup.html
 
