@@ -10,6 +10,10 @@ numpy>=1.26,<2.0
 matplotlib>=3.9,<3.10
 scikit-learn>=1.5,<1.6
 
+# Session 12: the two boosting libraries (both come with Colab).
+xgboost>=2.1,<2.2
+lightgbm>=4.6,<4.7
+
 # Needed to build and run the notebooks and to render the Quarto lecture.
 jupyter>=1.0
 nbformat>=5.10

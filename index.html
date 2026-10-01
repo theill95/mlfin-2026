@@ -365,6 +365,50 @@
        <a href="downloads.html#session-11">Download this session's notebooks and data</a>.</p>
   </section>
 
+  <section class="card">
+    <h2>Session 12 · Boosting and reading a model</h2>
+    <p class="sub">Small trees added one at a time, each fitted to what the
+       trees before it still get wrong. How many to add, chosen on later days
+       instead of the test days; XGBoost and LightGBM, the libraries used in
+       practice; and two ways to read which columns a model relies on. The
+       case ends here, with every model of the report side by side.</p>
+    <div class="actions">
+      <a class="btn primary" href="session_12/session_12.html">
+        <span class="label">▶ Interactive lecture</span>
+        <span class="hint">slides with runnable code, no install</span>
+      </a>
+      <a class="btn" id="ex-link-12" href="#" target="_blank" rel="noopener">
+        <span class="label">Exercises</span>
+        <span class="hint">59 tasks · open in Colab</span>
+      </a>
+      <a class="btn" id="case-link-12" href="#" target="_blank" rel="noopener">
+        <span class="label">The case</span>
+        <span class="hint">Part 12 · open in Colab</span>
+      </a>
+    </div>
+    <p class="card-foot">Prefer to work offline?
+       <a href="downloads.html#session-12">Download this session's notebooks and data</a>.</p>
+  </section>
+
+  <section class="card">
+    <h2>Session 13 · The two cases with trees</h2>
+    <p class="sub">The last session. The houses of Session 7 and the hours of
+       Session 10 again, now with trees, forests and boosted trees: do the
+       stronger models win, and by how much? Then what to weigh when choosing
+       a model, from the time a fit takes to whether its answers can be
+       explained, a short look back over the course, and time for questions
+       about the exam.</p>
+    <div class="actions">
+      <a class="btn primary" href="session_13/session_13.html">
+        <span class="label">▶ Interactive lecture</span>
+        <span class="hint">slides with runnable code and controls, no install</span>
+      </a>
+    </div>
+    <p class="card-foot">There are no exercises and no case for this session.
+       The data is on the
+       <a href="downloads.html#session-13">downloads page</a>.</p>
+  </section>
+
   <div class="how">
     <h3>How to use these materials</h3>
     <ul>
@@ -377,7 +421,6 @@
 
   <footer>
     Questions: <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
-    Later sessions appear here as the course progresses.
   </footer>
   </main>
 </div>
@@ -407,12 +450,14 @@
     "case-link-9": "session_09/session_09_case.ipynb",
     "ex-link-11":   "session_11/session_11_exercises.ipynb",
     "case-link-11": "session_11/session_11_case.ipynb",
+    "ex-link-12":   "session_12/session_12_exercises.ipynb",
+    "case-link-12": "session_12/session_12_case.ipynb",
   };
 
   const CONTENT_DIRS = ["session_01", "session_02", "session_03", "session_04",
                         "session_05", "session_06", "session_07", "session_08",
-                        "session_09", "session_10", "session_11",
-                        "data", "theme", "tools", "assets", "index.html",
+                        "session_09", "session_10", "session_11", "session_12",
+                        "session_13", "data", "theme", "tools", "assets", "index.html",
                         "cheatsheet.html", "setup.html", "resources.html",
                         "downloads.html"];
 

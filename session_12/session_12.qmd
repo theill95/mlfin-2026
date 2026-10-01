@@ -1,0 +1,1156 @@
+---
+title: "Boosting and reading a model"
+subtitle: "Machine Learning in Finance · Session 12"
+# Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
+# from a data: URI, so embed-resources is off. Ship session_12.html together
+# with session_12_files/ and data/, and SERVE OVER HTTP (double-click
+# serve.cmd, or publish to a URL). Opened from a file:// path the live code
+# cells do not merely fail to run, they do not appear at all.
+#
+# This deck loads numpy, pandas, matplotlib, scikit-learn, xgboost and
+# lightgbm into the browser runtime (about 47 MB on a cold load; the two
+# boosting libraries add about 2 MB). Open the deck and run one cell several
+# minutes before class so it is warm.
+#
+# The two tables of Session 11: data/market_features.csv (Session 6, split at
+# 2022-12-31) carries the session, and data/credit.csv (Session 9, the UCI
+# "default of credit card clients" data, CC BY 4.0, same split) carries the
+# parts on labels and on reading a model. Every number on these slides was
+# measured from those two files; re-measure with tools/verify/session_12_deck.py
+# if either changes. Notation follows the ensembles section of math.html.
+format:
+  live-revealjs:
+    theme: [default, ../theme/mlfin.scss]
+    width: 1280
+    height: 720
+    margin: 0.06
+    center: false
+    transition: fade
+    transition-speed: fast
+    background-transition: none
+    slide-number: c/t
+    controls: false
+    progress: true
+    hash: true
+    history: false
+    code-line-numbers: false
+    highlight-style: github
+    auto-stretch: false
+html-math-method: katex
+engine: jupyter
+pyodide:
+  packages:
+    - numpy
+    - pandas
+    - matplotlib
+    - scikit-learn
+    - xgboost
+    - lightgbm
+  resources:
+    - data/market_features.csv
+    - data/credit.csv
+  cell-options:
+    autorun: true
+    startover: true
+execute:
+  echo: true
+  warning: false
+---
+
+
+# The models so far {.smaller}
+
+```{python}
+#| include: false
+# House style for every precomputed figure in this deck, plus both tables,
+# split as the live cells split them.
+import warnings
+warnings.filterwarnings("ignore")
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+MLFIN_STYLE = {
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "savefig.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"],
+    "font.size": 12, "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+}
+plt.rcParams.update(MLFIN_STYLE)
+
+from pathlib import Path
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import Ridge
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import BaggingRegressor, GradientBoostingRegressor
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+from sklearn.inspection import permutation_importance
+from lightgbm import LGBMClassifier
+
+for _name in ("data/market_features.csv", "data/credit.csv"):
+    if not Path(_name).exists():
+        raise FileNotFoundError(f"Missing {_name} - copy it from data/ at the repository root.")
+
+TBL = pd.read_csv("data/market_features.csv", parse_dates=["date"]).set_index("date")
+TRAIN, TEST = TBL.loc[:"2022-12-31"], TBL.loc["2023-01-01":]
+COLS = list(TBL.columns[:-1])
+CREDIT = pd.read_csv("data/credit.csv")
+C_TRAIN, C_TEST = train_test_split(CREDIT, test_size=0.3, random_state=0, stratify=CREDIT["default"])
+C_COLS = ["limit", "age", "late_now", "months_late", "bill", "paid", "utilisation"]
+
+BLUE = "#1c5cab"
+BLUE_LIGHT = "#86b6ef"
+DEEP = "#0d366b"
+AMBER = "#b8860b"
+BRICK = "#b3402f"
+GREY = "#c3c2b7"
+INK = "#141413"
+MUTED = "#52514e"
+
+
+def rmse(actual, predicted):
+    return float(np.sqrt(mean_squared_error(actual, predicted)))
+
+
+_ridge = Pipeline([("s", StandardScaler()), ("r", Ridge(alpha=1000))]).fit(TRAIN[COLS], TRAIN["vol_next"])
+RIDGE = rmse(TEST["vol_next"], _ridge.predict(TEST[COLS]))
+X1 = TRAIN[["vol_20d"]]
+GX = pd.DataFrame({"vol_20d": np.linspace(0, 6.2, 1241)})
+```
+
+```{pyodide}
+#| include: false
+# House style for the live figures, so they match the printed ones.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings("ignore")
+plt.rcParams.update({
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"], "font.size": 12,
+    "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+    "figure.dpi": 100,
+})
+```
+
+|  | model | defined by | test score |
+|:-------|:----------|:--------------|:-----------------|
+| **a number** | linear regression | $\min_{\beta}\ \sum_i \big(y_i - \beta_0 - \sum_j \beta_j x_{ij}\big)^2$ | RMSE 0.237 on `vol_20d` |
+|  | ridge | $\min_{\beta}\ \text{RSS} + \alpha \sum_j \beta_j^2$ | RMSE 0.218 |
+|  | lasso | $\min_{\beta}\ \text{RSS} + \alpha \sum_j \lvert \beta_j \rvert$ | RMSE 0.217 |
+| **a label** | logistic regression | $P(y = 1) = \sigma\big(\beta_0 + \sum_j \beta_j x_j\big)$ | AUC 0.748 |
+|  | k-nearest neighbours | $\hat p = \frac{1}{k} \sum_{k\ \text{nearest}} y_i$ | AUC 0.749 |
+| **both** | a tree | $\hat f(\mathbf{x}) = \sum_m c_m \,\mathbf{1}\{\mathbf{x} \in R_m\}$ | RMSE 0.241, AUC 0.722 |
+|  | a random forest | $\hat f(\mathbf{x}) = \frac{1}{B}\sum_b \hat f^{\,b}(\mathbf{x})$ | RMSE 0.226, AUC 0.777 |
+
+A forest grows deep trees side by side and averages them. Today's model grows
+small trees one after another, each fitted to what the ones before still get
+wrong.
+
+# The volatility table
+
+```{pyodide}
+from sklearn.metrics import mean_squared_error
+
+table = pd.read_csv("data/market_features.csv", parse_dates=["date"]).set_index("date")
+train, test = table.loc[:"2022-12-31"], table.loc["2023-01-01":]
+columns = list(table.columns[:-1])
+print(len(train), len(test), len(columns))
+
+def rmse(actual, predicted):
+    return np.sqrt(mean_squared_error(actual, predicted))
+```
+
+The table and split that ridge and the forest were scored on: one row per
+trading day, 19 columns, and `vol_next`, the index's volatility over the next
+20 days.
+
+# Today
+
+- what **averaging** cannot fix, and **adding** trees instead
+- **boosting**: the definition, the procedure, and the procedure by hand
+- how many **trees**, and stopping **early**
+- **XGBoost** and **LightGBM**, the libraries used in practice
+- boosting a **label**, on the credit table
+- **reading** a model: which columns it uses
+- the course's models, **side by side**
+
+The exercises and the case are where you practise each of these.
+
+# 1 · What averaging cannot fix {.divider}
+
+::: {.divider-kicker}
+Part 1
+:::
+
+::: {.divider-note}
+A forest removes the variance of deep trees. Small trees make a different error.
+:::
+
+# One stump, and 100 averaged
+
+```{pyodide}
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import BaggingRegressor
+
+stump = DecisionTreeRegressor(max_depth=1, random_state=0).fit(train[columns], train["vol_next"])
+bagged = BaggingRegressor(DecisionTreeRegressor(max_depth=1), n_estimators=100, random_state=0)
+bagged.fit(train[columns], train["vol_next"])
+for model in [stump, bagged]:
+    print(round(rmse(train["vol_next"], model.predict(train[columns])), 4),
+          round(rmse(test["vol_next"], model.predict(test[columns])), 4))
+```
+
+One stump errs 0.600 on the training days and 0.262 on the test days. The
+average of 100 stumps, each grown on a bootstrap sample, barely improves either.
+
+# Averaging stumps, and adding them
+
+```{python}
+#| echo: false
+#| fig-align: center
+_bag1 = BaggingRegressor(DecisionTreeRegressor(max_depth=1), n_estimators=100, random_state=0).fit(X1, TRAIN["vol_next"])
+_add1 = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0).fit(X1, TRAIN["vol_next"])
+_pb, _pa = _bag1.predict(GX), _add1.predict(GX)
+fig, ax = plt.subplots(figsize=(9.6, 3.4))
+ax.scatter(TRAIN["vol_20d"], TRAIN["vol_next"], s=6, color=BLUE_LIGHT, alpha=0.6, linewidths=0)
+ax.plot(GX["vol_20d"], _pb, color=BLUE, linewidth=2.6)
+ax.plot(GX["vol_20d"], _pa, color=BRICK, linewidth=2.6)
+_mid = pd.DataFrame({"vol_20d": [4.1]})
+ax.text(4.1, _bag1.predict(_mid)[0] - 0.14, "100 stumps, averaged", color=BLUE, fontsize=12, ha="center", va="top")
+ax.text(4.1, _add1.predict(_mid)[0] + 0.14, "100 stumps, added", color=BRICK, fontsize=12, ha="center", va="bottom")
+ax.set_xlim(0, 6.2)
+ax.set_ylim(0, 6.2)
+ax.set_xlabel("vol_20d: the last 20 days")
+ax.set_ylabel("vol_next: the next 20 days")
+ax.set_title("Training days, 2015 to 2022, and two forecasts from vol_20d alone", loc="left")
+plt.show()
+```
+
+On `vol_20d` alone, 100 averaged stumps blur one step into a ramp from 0.79 to
+1.80. Added one after another, 100 stumps build a staircase from 0.53 to 2.86.
+
+# Two ways to combine trees
+
+<div class="compare">
+<div class="compare-col">
+<h3>Averaging: a forest</h3>
+<p>Deep trees, grown side by side on bootstrap samples, then averaged. Each tree fits its sample closely, so what the average removes is variance.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>Adding: boosting</h3>
+<p>Small trees, grown one after another, each fitted to what the trees before it still get wrong. Each tree is too simple, so what the sum removes is bias.</p>
+</div>
+</div>
+
+::: {.keypoint}
+An average of stumps is about as simple as one stump. A sum of stumps can bend
+wherever the data does.
+:::
+
+# 2 · Boosting {.divider}
+
+::: {.divider-kicker}
+Part 2
+:::
+
+::: {.divider-note}
+The definition, the procedure, and the procedure run by hand on six days.
+:::
+
+# Boosting as a formula
+
+::: {.formula}
+$$\hat f_M(\mathbf{x}) \;=\; \bar y \;+\; \nu \sum_{m=1}^{M} h_m(\mathbf{x})$$
+:::
+
+Each $h_m$ is a small tree and $M$ is the number of trees; $\nu$, between 0 and
+1, is the learning rate. The trees are added, so there is no $1/B$.
+
+::: {.keypoint}
+Tree $m$ is fitted to what the first $m - 1$ trees left: the residuals
+$y_i - \hat f_{m-1}(\mathbf{x}_i)$.
+:::
+
+# The procedure
+
+1. Start every row at the mean: $\hat f_0(\mathbf{x}) = \bar y$.
+2. For each $m = 1, \dots, M$:
+    - compute the residuals on the training rows, $r_i = y_i - \hat f_{m-1}(\mathbf{x}_i)$;
+    - fit a small tree $h_m$ to the pairs $(\mathbf{x}_i, r_i)$;
+    - add a step of it: $\hat f_m(\mathbf{x}) = \hat f_{m-1}(\mathbf{x}) + \nu\, h_m(\mathbf{x})$.
+3. Forecast new rows with $\hat f_M$.
+
+Three settings shape the result: the number of trees $M$, the learning rate
+$\nu$, and the size of each tree.
+
+# Boosting the six days, step by step
+
+::: {.diagram}
+<svg width="1100" height="450" viewBox="0 0 1100 450" role="img" aria-label="Boosting the six days in six steps at a learning rate of 0.5: on the left the forecast starts at the mean, 0.95, with a dashed distance to every day; on the right the same distances, measured from zero, and the stump fitted to them. Each step adds half of that stump, the distances shrink, and the RSS falls from 0.815 to 0.038">
+<text x="293.0" y="22.0" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">the forecast, and its distance to each day</text>
+<text x="837.0" y="22.0" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">the distances, and the stump fitted to them</text>
+<line x1="78" y1="324" x2="508" y2="324" stroke="#c3c2b7" stroke-width="1.4"/>
+<line x1="78" y1="44" x2="78" y2="324" stroke="#c3c2b7" stroke-width="1.4"/>
+<text x="70.0" y="289.0" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">0.5</text>
+<text x="70.0" y="189.0" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">1.0</text>
+<text x="70.0" y="89.0" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">1.5</text>
+<text x="131.8" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">0.5</text>
+<text x="221.3" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">1.0</text>
+<text x="310.9" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">1.5</text>
+<text x="400.5" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">2.0</text>
+<text x="490.1" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">2.5</text>
+<text x="293.0" y="368.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#52514e">vol_20d</text>
+<text x="22.0" y="184.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#52514e" transform="rotate(-90 22 184.0)">vol_next</text>
+<line x1="622" y1="196.7" x2="1052" y2="196.7" stroke="#c3c2b7" stroke-width="1.4"/>
+<line x1="622" y1="44" x2="622" y2="324" stroke="#c3c2b7" stroke-width="1.4"/>
+<text x="614.0" y="303.5" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">−0.4</text>
+<text x="614.0" y="201.7" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">0</text>
+<text x="614.0" y="99.9" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">+0.4</text>
+<text x="675.8" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">0.5</text>
+<text x="765.3" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">1.0</text>
+<text x="854.9" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">1.5</text>
+<text x="944.5" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">2.0</text>
+<text x="1034.1" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">2.5</text>
+<text x="837.0" y="368.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#52514e">vol_20d</text>
+<text x="572.0" y="184.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#52514e" transform="rotate(-90 572 184.0)">distance</text>
+<g class="fragment fade-out" data-fragment-index="1"><line x1="113.8" y1="194.0" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="149.7" y1="194.0" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="185.5" y1="194.0" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="257.2" y1="194.0" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="328.8" y1="194.0" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="472.2" y1="194.0" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><path d="M78.0,194.0H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"/><line x1="657.8" y1="196.7" x2="657.8" y2="311.3" stroke="#b8860b" stroke-width="3"/><circle cx="657.8" cy="311.3" r="5.5" fill="#b8860b"/><line x1="693.7" y1="196.7" x2="693.7" y2="285.8" stroke="#b8860b" stroke-width="3"/><circle cx="693.7" cy="285.8" r="5.5" fill="#b8860b"/><line x1="729.5" y1="196.7" x2="729.5" y2="260.4" stroke="#b8860b" stroke-width="3"/><circle cx="729.5" cy="260.4" r="5.5" fill="#b8860b"/><line x1="801.2" y1="196.7" x2="801.2" y2="133.1" stroke="#b8860b" stroke-width="3"/><circle cx="801.2" cy="133.1" r="5.5" fill="#b8860b"/><line x1="872.8" y1="196.7" x2="872.8" y2="56.7" stroke="#b8860b" stroke-width="3"/><circle cx="872.8" cy="56.7" r="5.5" fill="#b8860b"/><line x1="1016.2" y1="196.7" x2="1016.2" y2="133.1" stroke="#b8860b" stroke-width="3"/><circle cx="1016.2" cy="133.1" r="5.5" fill="#b8860b"/><path d="M622.0,285.8H765.3V107.6H1052.0" fill="none" stroke="#0d366b" stroke-width="2.6" stroke-dasharray="8 5"/><text x="636.0" y="50.0" text-anchor="start" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">its values: −0.35 and +0.35</text><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Start: every day gets the mean, 0.95. A stump fitted to the distances cuts after 0.8.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">RSS 0.815</text></g>
+<g class="fragment fade-out" data-fragment-index="2"><g class="fragment" data-fragment-index="1"><line x1="113.8" y1="229.0" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="149.7" y1="229.0" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="185.5" y1="229.0" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="257.2" y1="159.0" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="328.8" y1="159.0" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="472.2" y1="159.0" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><path d="M78.0,229.0H221.3V159.0H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"/><line x1="657.8" y1="196.7" x2="657.8" y2="266.7" stroke="#b8860b" stroke-width="3"/><circle cx="657.8" cy="266.7" r="5.5" fill="#b8860b"/><line x1="693.7" y1="196.7" x2="693.7" y2="241.3" stroke="#b8860b" stroke-width="3"/><circle cx="693.7" cy="241.3" r="5.5" fill="#b8860b"/><line x1="729.5" y1="196.7" x2="729.5" y2="215.8" stroke="#b8860b" stroke-width="3"/><circle cx="729.5" cy="215.8" r="5.5" fill="#b8860b"/><line x1="801.2" y1="196.7" x2="801.2" y2="177.6" stroke="#b8860b" stroke-width="3"/><circle cx="801.2" cy="177.6" r="5.5" fill="#b8860b"/><line x1="872.8" y1="196.7" x2="872.8" y2="101.3" stroke="#b8860b" stroke-width="3"/><circle cx="872.8" cy="101.3" r="5.5" fill="#b8860b"/><line x1="1016.2" y1="196.7" x2="1016.2" y2="177.6" stroke="#b8860b" stroke-width="3"/><circle cx="1016.2" cy="177.6" r="5.5" fill="#b8860b"/><path d="M622.0,241.3H765.3V152.2H1052.0" fill="none" stroke="#0d366b" stroke-width="2.6" stroke-dasharray="8 5"/><text x="636.0" y="50.0" text-anchor="start" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">its values: −0.175 and +0.175</text><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Half of that stump is added. Half of each gap is left, so the next stump cuts after 0.8 again.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">1 stump · RSS 0.264</text></g></g>
+<g class="fragment fade-out" data-fragment-index="3"><g class="fragment" data-fragment-index="2"><line x1="113.8" y1="246.5" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="149.7" y1="246.5" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="185.5" y1="246.5" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="257.2" y1="141.5" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="328.8" y1="141.5" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="472.2" y1="141.5" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><path d="M78.0,246.5H221.3V141.5H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"/><line x1="657.8" y1="196.7" x2="657.8" y2="244.5" stroke="#b8860b" stroke-width="3"/><circle cx="657.8" cy="244.5" r="5.5" fill="#b8860b"/><line x1="693.7" y1="196.7" x2="693.7" y2="219.0" stroke="#b8860b" stroke-width="3"/><circle cx="693.7" cy="219.0" r="5.5" fill="#b8860b"/><line x1="729.5" y1="196.7" x2="729.5" y2="193.5" stroke="#b8860b" stroke-width="3"/><circle cx="729.5" cy="193.5" r="5.5" fill="#b8860b"/><line x1="801.2" y1="196.7" x2="801.2" y2="199.9" stroke="#b8860b" stroke-width="3"/><circle cx="801.2" cy="199.9" r="5.5" fill="#b8860b"/><line x1="872.8" y1="196.7" x2="872.8" y2="123.5" stroke="#b8860b" stroke-width="3"/><circle cx="872.8" cy="123.5" r="5.5" fill="#b8860b"/><line x1="1016.2" y1="196.7" x2="1016.2" y2="199.9" stroke="#b8860b" stroke-width="3"/><circle cx="1016.2" cy="199.9" r="5.5" fill="#b8860b"/><path d="M622.0,214.2H837.0V161.7H1052.0" fill="none" stroke="#0d366b" stroke-width="2.6" stroke-dasharray="8 5"/><text x="636.0" y="50.0" text-anchor="start" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">its values: −0.069 and +0.138</text><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">The day at 1.6 is now furthest off, and the next stump cuts after 1.2.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">2 stumps · RSS 0.126</text></g></g>
+<g class="fragment fade-out" data-fragment-index="4"><g class="fragment" data-fragment-index="3"><line x1="113.8" y1="253.4" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="149.7" y1="253.4" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="185.5" y1="253.4" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="257.2" y1="148.4" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="328.8" y1="127.7" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="472.2" y1="127.7" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><path d="M78.0,253.4H221.3V148.4H293.0V127.7H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"/><line x1="657.8" y1="196.7" x2="657.8" y2="235.7" stroke="#b8860b" stroke-width="3"/><circle cx="657.8" cy="235.7" r="5.5" fill="#b8860b"/><line x1="693.7" y1="196.7" x2="693.7" y2="210.2" stroke="#b8860b" stroke-width="3"/><circle cx="693.7" cy="210.2" r="5.5" fill="#b8860b"/><line x1="729.5" y1="196.7" x2="729.5" y2="184.8" stroke="#b8860b" stroke-width="3"/><circle cx="729.5" cy="184.8" r="5.5" fill="#b8860b"/><line x1="801.2" y1="196.7" x2="801.2" y2="191.2" stroke="#b8860b" stroke-width="3"/><circle cx="801.2" cy="191.2" r="5.5" fill="#b8860b"/><line x1="872.8" y1="196.7" x2="872.8" y2="141.0" stroke="#b8860b" stroke-width="3"/><circle cx="872.8" cy="141.0" r="5.5" fill="#b8860b"/><line x1="1016.2" y1="196.7" x2="1016.2" y2="217.4" stroke="#b8860b" stroke-width="3"/><circle cx="1016.2" cy="217.4" r="5.5" fill="#b8860b"/><path d="M622.0,223.0H711.6V183.6H1052.0" fill="none" stroke="#0d366b" stroke-width="2.6" stroke-dasharray="8 5"/><text x="636.0" y="50.0" text-anchor="start" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">its values: −0.103 and +0.052</text><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">The two calmest days are too high, and the next stump cuts after 0.6.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">3 stumps · RSS 0.083</text></g></g>
+<g class="fragment fade-out" data-fragment-index="5"><g class="fragment" data-fragment-index="4"><line x1="113.8" y1="263.7" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="149.7" y1="263.7" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="185.5" y1="248.2" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="257.2" y1="143.2" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="328.8" y1="122.6" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="472.2" y1="122.6" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><path d="M78.0,263.7H167.6V248.2H221.3V143.2H293.0V122.6H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"/><line x1="657.8" y1="196.7" x2="657.8" y2="222.6" stroke="#b8860b" stroke-width="3"/><circle cx="657.8" cy="222.6" r="5.5" fill="#b8860b"/><line x1="693.7" y1="196.7" x2="693.7" y2="197.1" stroke="#b8860b" stroke-width="3"/><circle cx="693.7" cy="197.1" r="5.5" fill="#b8860b"/><line x1="729.5" y1="196.7" x2="729.5" y2="191.4" stroke="#b8860b" stroke-width="3"/><circle cx="729.5" cy="191.4" r="5.5" fill="#b8860b"/><line x1="801.2" y1="196.7" x2="801.2" y2="197.7" stroke="#b8860b" stroke-width="3"/><circle cx="801.2" cy="197.7" r="5.5" fill="#b8860b"/><line x1="872.8" y1="196.7" x2="872.8" y2="147.6" stroke="#b8860b" stroke-width="3"/><circle cx="872.8" cy="147.6" r="5.5" fill="#b8860b"/><line x1="1016.2" y1="196.7" x2="1016.2" y2="224.0" stroke="#b8860b" stroke-width="3"/><circle cx="1016.2" cy="224.0" r="5.5" fill="#b8860b"/><path d="M622.0,191.3H944.5V224.0H1052.0" fill="none" stroke="#0d366b" stroke-width="2.6" stroke-dasharray="8 5"/><text x="636.0" y="50.0" text-anchor="start" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">its values: +0.021 and −0.107</text><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">The day at 2.4 is too high, and the next stump cuts after 1.6.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">4 stumps · RSS 0.059</text></g></g>
+<g class="fragment fade-out" data-fragment-index="6"><g class="fragment" data-fragment-index="5"><line x1="113.8" y1="261.5" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="149.7" y1="261.5" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="185.5" y1="246.1" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="257.2" y1="141.1" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="328.8" y1="120.5" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="472.2" y1="133.3" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><path d="M78.0,261.5H167.6V246.1H221.3V141.1H293.0V120.5H400.5V133.3H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"/><line x1="657.8" y1="196.7" x2="657.8" y2="225.3" stroke="#b8860b" stroke-width="3"/><circle cx="657.8" cy="225.3" r="5.5" fill="#b8860b"/><line x1="693.7" y1="196.7" x2="693.7" y2="199.8" stroke="#b8860b" stroke-width="3"/><circle cx="693.7" cy="199.8" r="5.5" fill="#b8860b"/><line x1="729.5" y1="196.7" x2="729.5" y2="194.1" stroke="#b8860b" stroke-width="3"/><circle cx="729.5" cy="194.1" r="5.5" fill="#b8860b"/><line x1="801.2" y1="196.7" x2="801.2" y2="200.4" stroke="#b8860b" stroke-width="3"/><circle cx="801.2" cy="200.4" r="5.5" fill="#b8860b"/><line x1="872.8" y1="196.7" x2="872.8" y2="150.3" stroke="#b8860b" stroke-width="3"/><circle cx="872.8" cy="150.3" r="5.5" fill="#b8860b"/><line x1="1016.2" y1="196.7" x2="1016.2" y2="210.3" stroke="#b8860b" stroke-width="3"/><circle cx="1016.2" cy="210.3" r="5.5" fill="#b8860b"/><path d="M622.0,225.3H675.8V191.0H1052.0" fill="none" stroke="#0d366b" stroke-width="2.6" stroke-dasharray="8 5"/><text x="636.0" y="50.0" text-anchor="start" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">its values: −0.112 and +0.022</text><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">The calmest day is too high, and the next stump cuts after 0.4.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">5 stumps · RSS 0.049</text></g></g>
+<g class="fragment" data-fragment-index="6"><line x1="113.8" y1="272.8" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="149.7" y1="259.3" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="185.5" y1="243.8" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="257.2" y1="138.8" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="328.8" y1="118.2" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><line x1="472.2" y1="131.1" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"/><path d="M78.0,272.8H131.8V259.3H167.6V243.8H221.3V138.8H293.0V118.2H400.5V131.1H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"/><line x1="657.8" y1="196.7" x2="657.8" y2="211.0" stroke="#b8860b" stroke-width="3"/><circle cx="657.8" cy="211.0" r="5.5" fill="#b8860b"/><line x1="693.7" y1="196.7" x2="693.7" y2="202.7" stroke="#b8860b" stroke-width="3"/><circle cx="693.7" cy="202.7" r="5.5" fill="#b8860b"/><line x1="729.5" y1="196.7" x2="729.5" y2="196.9" stroke="#b8860b" stroke-width="3"/><circle cx="729.5" cy="196.9" r="5.5" fill="#b8860b"/><line x1="801.2" y1="196.7" x2="801.2" y2="203.3" stroke="#b8860b" stroke-width="3"/><circle cx="801.2" cy="203.3" r="5.5" fill="#b8860b"/><line x1="872.8" y1="196.7" x2="872.8" y2="153.2" stroke="#b8860b" stroke-width="3"/><circle cx="872.8" cy="153.2" r="5.5" fill="#b8860b"/><line x1="1016.2" y1="196.7" x2="1016.2" y2="213.2" stroke="#b8860b" stroke-width="3"/><circle cx="1016.2" cy="213.2" r="5.5" fill="#b8860b"/><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">After six stumps every forecast is within 0.17 of its day.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">6 stumps · RSS 0.038</text></g>
+<circle cx="113.8" cy="284.0" r="7" fill="#1c5cab"/><circle cx="149.7" cy="264.0" r="7" fill="#1c5cab"/><circle cx="185.5" cy="244.0" r="7" fill="#1c5cab"/><circle cx="257.2" cy="144.0" r="7" fill="#1c5cab"/><circle cx="328.8" cy="84.0" r="7" fill="#1c5cab"/><circle cx="472.2" cy="144.0" r="7" fill="#1c5cab"/>
+</svg>
+:::
+
+The six days from last time, with $\nu = 0.5$: each step fits a stump to the
+dashed distances and adds half of it. Six stumps take the RSS from 0.815 to 0.038.
+
+# The six, in code
+
+```{pyodide}
+six = pd.DataFrame({"vol_20d": [0.4, 0.6, 0.8, 1.2, 1.6, 2.4],
+                    "vol_next": [0.5, 0.6, 0.7, 1.2, 1.5, 1.2]})
+forecast = np.full(6, six["vol_next"].mean())
+for step in range(6):
+    h = DecisionTreeRegressor(max_depth=1).fit(six[["vol_20d"]], six["vol_next"] - forecast)
+    forecast = forecast + 0.5 * h.predict(six[["vol_20d"]])
+    print(round(((six["vol_next"] - forecast) ** 2).sum(), 4))
+```
+
+`h` is fitted to the residuals, not to `vol_next`, and half of its forecast is
+added on. The six RSS values are the diagram's.
+
+# Your turn [1]{.chip .chip-turn} {.your-turn}
+
+Run the loop for 50 steps instead of 6. What happens to the RSS, and to the
+forecast?
+
+```{pyodide}
+#| autorun: false
+forecast = np.full(6, six["vol_next"].mean())
+for step in range(...):
+    h = DecisionTreeRegressor(max_depth=1).fit(six[["vol_20d"]], six["vol_next"] - forecast)
+    forecast = forecast + 0.5 * h.predict(six[["vol_20d"]])
+print(round(((six["vol_next"] - forecast) ** 2).sum(), 6))
+print(forecast.round(3))
+```
+
+::: {.muted .small}
+The number of steps goes inside `range`. Compare the forecast with `six["vol_next"]`.
+:::
+
+# Your turn 1: answer
+
+```python
+for step in range(50):
+```
+
+The RSS falls to 0.0001, and every forecast is within 0.006 of its day: 50
+stumps have learned the six days. On new days, that is overfitting.
+
+::: {.keypoint}
+Adding trees can always lower the training error, so the number of trees has to
+be chosen on other rows.
+:::
+
+# Residuals as a gradient
+
+::: {.formula}
+$$L_i = \tfrac{1}{2}\big(y_i - \hat f(\mathbf{x}_i)\big)^2 \quad\Longrightarrow\quad -\frac{\partial L_i}{\partial \hat f(\mathbf{x}_i)} = y_i - \hat f(\mathbf{x}_i)$$
+:::
+
+The residual is the negative gradient of the squared error with respect to the
+forecast. Each tree is one step of gradient descent on the forecasts, hence the
+name gradient boosting.
+
+::: {.keypoint}
+With another loss, each tree is fitted to that loss's negative gradient
+instead: for log-loss, $y_i - \hat p_i$.
+:::
+
+# Boosting by hand, on the table
+
+```{pyodide}
+forecast = np.full(len(train), train["vol_next"].mean())
+test_forecast = np.full(len(test), train["vol_next"].mean())
+for m in range(100):
+    h = DecisionTreeRegressor(max_depth=1, random_state=0)
+    h.fit(train[columns], train["vol_next"] - forecast)
+    forecast = forecast + 0.1 * h.predict(train[columns])
+    test_forecast = test_forecast + 0.1 * h.predict(test[columns])
+print(round(rmse(test["vol_next"], test_forecast), 4))
+```
+
+100 stumps on the 19 columns, each fitted to what is left and added at
+$\nu = 0.1$. The test error is 0.222, where 100 averaged stumps scored 0.255.
+
+# Gradient boosting in scikit-learn
+
+```{pyodide}
+from sklearn.ensemble import GradientBoostingRegressor
+
+boost = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0)
+boost.fit(train[columns], train["vol_next"])
+print(round(rmse(train["vol_next"], boost.predict(train[columns])), 4),
+      round(rmse(test["vol_next"], boost.predict(test[columns])), 4))
+print(np.allclose(boost.predict(test[columns]), test_forecast))
+```
+
+`n_estimators` is $M$, `learning_rate` is $\nu$, and `max_depth=1` makes each
+tree a stump. The forecasts are the loop's: 0.457 on the training days, 0.222 on
+the test days.
+
+# The forecast after 1, 10 and 100 stumps
+
+```{python}
+#| echo: false
+#| fig-align: center
+_staged = list(GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0)
+               .fit(X1, TRAIN["vol_next"]).staged_predict(GX))
+fig, axes = plt.subplots(1, 3, figsize=(11.6, 3.3), sharey=True)
+for ax, _m in zip(axes, [1, 10, 100]):
+    ax.scatter(TRAIN["vol_20d"], TRAIN["vol_next"], s=4, color=BLUE_LIGHT, alpha=0.5, linewidths=0)
+    ax.plot(GX["vol_20d"], _staged[_m - 1], color=BRICK, linewidth=2.4)
+    ax.set_title("after 1 stump" if _m == 1 else f"after {_m} stumps", loc="left")
+    ax.set_xlim(0, 6.2)
+    ax.set_ylim(0, 6.2)
+    ax.set_xlabel("vol_20d")
+axes[0].set_ylabel("vol_next")
+fig.tight_layout()
+plt.show()
+```
+
+The first stump moves the forecast a tenth of the way: 0.96 to 1.02. After 10
+stumps it spans 0.86 to 1.74, and after 100, 0.53 to 2.86.
+
+# 3 · How many trees {.divider}
+
+::: {.divider-kicker}
+Part 3
+:::
+
+::: {.divider-note}
+Every tree lowers the training error. On new days, too many trees do harm.
+:::
+
+# 1,000 stumps [predict]{.chip .chip-predict}
+
+A forest's test error only flattened as trees were added. Fit ten times as many
+stumps as `boost`: what will the test error do?
+
+```{pyodide}
+#| autorun: false
+many = GradientBoostingRegressor(n_estimators=1000, learning_rate=0.1, max_depth=1, random_state=0)
+many.fit(train[columns], train["vol_next"])
+
+print(round(rmse(train["vol_next"], many.predict(train[columns])), 4))
+print(round(rmse(test["vol_next"], many.predict(test[columns])), 4))
+```
+
+# Test error against the number of trees
+
+```{python}
+#| echo: false
+#| fig-align: center
+CURVES = {}
+for _nu in [1.0, 0.3, 0.1, 0.03]:
+    _g = GradientBoostingRegressor(n_estimators=3000, learning_rate=_nu, max_depth=1, random_state=0)
+    _g.fit(TRAIN[COLS], TRAIN["vol_next"])
+    CURVES[_nu] = np.array([rmse(TEST["vol_next"], _p) for _p in _g.staged_predict(TEST[COLS])])
+_ms = np.arange(1, 3001)
+_shade = {1.0: "#9dbfe9", 0.3: "#5f93d6", 0.1: BLUE, 0.03: DEEP}
+fig, ax = plt.subplots(figsize=(9.6, 3.3))
+for _nu, _c in CURVES.items():
+    ax.plot(_ms, _c, color=_shade[_nu], linewidth=2.2)
+    ax.text(3400, _c[-1], f"ν = {_nu:g}", color=_shade[_nu], fontsize=11.5, va="center")
+ax.axhline(RIDGE, color=MUTED, linestyle="--", linewidth=1.2)
+ax.text(1.05, RIDGE - 0.013, f"ridge: {RIDGE:.3f}", color=MUTED, fontsize=10.5)
+_b = int(np.argmin(CURVES[0.1]))
+ax.scatter([_b + 1], [CURVES[0.1][_b]], s=42, color=BLUE, zorder=3)
+ax.text(_b + 1, 0.2045, f"ν = 0.1: {CURVES[0.1][_b]:.3f} at {_b + 1} stumps", ha="center", va="center",
+        color=BLUE, fontsize=11)
+ax.set_xscale("log")
+ax.set_xticks([1, 10, 100, 1000, 3000])
+ax.set_xticklabels(["1", "10", "100", "1,000", "3,000"])
+ax.minorticks_off()
+ax.set_xlim(0.8, 9000)
+ax.set_ylim(0.185, 0.42)
+ax.set_xlabel("stumps added")
+ax.set_ylabel("test RMSE")
+ax.set_title("Boosted stumps on the 19 columns, one line per learning rate", loc="left")
+plt.show()
+```
+
+1,000 stumps err 0.350 on the training days and 0.248 on the test days. At every
+learning rate the test error falls, then rises; at 0.1 it is lowest near 144.
+
+# Your turn [2]{.chip .chip-turn} {.your-turn}
+
+Grow trees of depth 2 instead of stumps, with everything else as in `boost`.
+Better or worse on the test days?
+
+```{pyodide}
+#| autorun: false
+deeper = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=..., random_state=0)
+deeper.fit(train[columns], train["vol_next"])
+print(round(rmse(train["vol_next"], deeper.predict(train[columns])), 4))
+print(round(rmse(test["vol_next"], deeper.predict(test[columns])), 4))
+```
+
+::: {.muted .small}
+`max_depth` sets the questions on each path, as for one tree. Stumps scored
+0.457 and 0.222.
+:::
+
+# Your turn 2: answer
+
+```python
+deeper = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=2, random_state=0)
+```
+
+Trees of depth 2 fit the training days more closely, 0.299 against 0.457, and
+the test days worse, 0.269 against 0.222.
+
+::: {.keypoint}
+A tree of depth 2 can fit how two columns interact, and 100 of them also fit
+the noise in the training days.
+:::
+
+# The depth of each tree
+
+```{python}
+#| echo: false
+#| fig-align: center
+DEPTH_CURVES = {1: CURVES[0.1]}
+for _d in [2, 3]:
+    _g = GradientBoostingRegressor(n_estimators=3000, learning_rate=0.1, max_depth=_d, random_state=0)
+    _g.fit(TRAIN[COLS], TRAIN["vol_next"])
+    DEPTH_CURVES[_d] = np.array([rmse(TEST["vol_next"], _p) for _p in _g.staged_predict(TEST[COLS])])
+_col = {1: BLUE, 2: AMBER, 3: BRICK}
+_lab = {1: "stumps", 2: "depth 2", 3: "depth 3"}
+_dy = {1: 0.0, 2: 0.008, 3: -0.008}
+fig, ax = plt.subplots(figsize=(9.6, 3.3))
+for _d, _c in DEPTH_CURVES.items():
+    ax.plot(_ms, _c, color=_col[_d], linewidth=2.2)
+    ax.text(3400, _c[-1] + _dy[_d], _lab[_d], color=_col[_d], fontsize=11.5, va="center")
+    _i = int(np.argmin(_c))
+    ax.scatter([_i + 1], [_c[_i]], s=42, color=_col[_d], zorder=3)
+ax.axhline(RIDGE, color=MUTED, linestyle="--", linewidth=1.2)
+ax.text(1.05, RIDGE - 0.013, f"ridge: {RIDGE:.3f}", color=MUTED, fontsize=10.5)
+ax.set_xscale("log")
+ax.set_xticks([1, 10, 100, 1000, 3000])
+ax.set_xticklabels(["1", "10", "100", "1,000", "3,000"])
+ax.minorticks_off()
+ax.set_xlim(0.8, 9000)
+ax.set_ylim(0.19, 0.42)
+ax.set_xlabel("trees added")
+ax.set_ylabel("test RMSE")
+ax.set_title("Learning rate 0.1; the dot marks each line's lowest point", loc="left")
+plt.show()
+```
+
+Deeper trees reach their lowest test error sooner and then climb faster: after
+15 trees at depth 3, 34 at depth 2 and 144 with stumps.
+
+# Stopping early
+
+```{python}
+#| echo: false
+#| fig-align: center
+_fit, _stop = TRAIN.loc[:"2021-12-31"], TRAIN.loc["2022-01-01":]
+_g = GradientBoostingRegressor(n_estimators=1000, learning_rate=0.1, max_depth=1, random_state=0)
+_g.fit(_fit[COLS], _fit["vol_next"])
+_val = np.array([rmse(_stop["vol_next"], _p) for _p in _g.staged_predict(_stop[COLS])])
+STOP_AT = int(np.argmin(_val)) + 1
+STOP_TEST = rmse(TEST["vol_next"], list(_g.staged_predict(TEST[COLS]))[STOP_AT - 1])
+fig, ax = plt.subplots(figsize=(9.6, 3.2))
+ax.plot(np.arange(1, 1001), _val, color=BLUE, linewidth=2.2)
+ax.axvline(STOP_AT, color=GREY, linewidth=1.2, linestyle="--")
+ax.scatter([STOP_AT], [_val[STOP_AT - 1]], s=46, color=BRICK, zorder=3)
+ax.annotate(f"lowest: {_val[STOP_AT - 1]:.3f} at {STOP_AT} stumps", (STOP_AT, _val[STOP_AT - 1]),
+            textcoords="offset points", xytext=(10, -16), ha="left", va="top", color=BRICK, fontsize=11)
+ax.set_xlim(0, 1000)
+ax.set_ylim(0.42, 0.72)
+ax.set_xlabel("stumps added, fitted on 2015 to 2021")
+ax.set_ylabel("RMSE on 2022")
+ax.set_title("Boosted stumps at a learning rate of 0.1, scored on the year after the fitting rows", loc="left")
+plt.show()
+```
+
+Fitted on 2015 to 2021 and scored on 2022 after every stump, the error is lowest
+at 219. That model scores 0.217 on the test days; ridge scored 0.218.
+
+# Early stopping on random days
+
+```{pyodide}
+early = GradientBoostingRegressor(n_estimators=5000, learning_rate=0.1, max_depth=1,
+                                  validation_fraction=0.1, n_iter_no_change=10, random_state=0)
+early.fit(train[columns], train["vol_next"])
+print(early.n_estimators_, round(rmse(test["vol_next"], early.predict(test[columns])), 4))
+```
+
+`n_iter_no_change=10` stops once 10 more trees have not helped on a random
+tenth of the training days: at 342 trees, with 0.226 on the test days.
+
+::: {.keypoint}
+A random day has its neighbours among the fitting rows, as out-of-bag days did,
+so the search stops late. On days, stop on a later block.
+:::
+
+# 4 · XGBoost and LightGBM {.divider}
+
+::: {.divider-kicker}
+Part 4
+:::
+
+::: {.divider-note}
+The two libraries most used for boosting in practice.
+:::
+
+# Two libraries built for boosting
+
+<div class="compare">
+<div class="compare-col">
+<h3>XGBoost</h3>
+<p>Chen and Guestrin (2016). Bins each column, puts a penalty on every tree, handles missing values and uses every core. In 2015, 17 of the 29 winning solutions on Kaggle's blog used it.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>LightGBM</h3>
+<p>Ke and others, at Microsoft (2017). Bins each column and grows each tree leaf by leaf, to be fast on large tables. Both libraries follow scikit-learn's pattern: create, fit, predict.</p>
+</div>
+</div>
+
+::: {.keypoint}
+On 45 tables, tree-based models stayed ahead of deep learning on medium-sized
+data, about 10,000 rows (Grinsztajn, Oyallon and Varoquaux, 2022).
+:::
+
+# XGBoost in code
+
+```{pyodide}
+from xgboost import XGBRegressor
+
+xgb = XGBRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0)
+xgb.fit(train[columns], train["vol_next"])
+print(round(rmse(test["vol_next"], xgb.predict(test[columns])), 4))
+```
+
+The same 100 stumps score 0.219, since XGBoost searches for cuts among 256 bins
+per column. Its defaults, 100 trees of depth 6 at a rate of 0.3, score 0.349.
+
+# A penalty on each tree
+
+::: {.formula}
+$$\sum_{i=1}^{n} L\big(y_i, \hat f(\mathbf{x}_i)\big) \;+\; \sum_{m=1}^{M} \Big(\gamma\, T_m + \tfrac{1}{2}\,\lambda \sum_{j=1}^{T_m} w_{mj}^2\Big)$$
+:::
+
+$T_m$ counts the leaves of tree $m$ and $w_{mj}$ are their values. `reg_lambda`
+is $\lambda$, a ridge penalty on the values; `gamma` is $\gamma$, a price per
+leaf, as in pruning.
+
+::: {.keypoint}
+The defaults are `reg_lambda=1` and `gamma=0`: a light ridge penalty on the
+leaves, and no price for adding one.
+:::
+
+# LightGBM in code
+
+```{pyodide}
+from lightgbm import LGBMRegressor
+
+lgbm = LGBMRegressor(n_estimators=100, learning_rate=0.1, num_leaves=2, random_state=0, verbose=-1)
+lgbm.fit(train[columns], train["vol_next"])
+print(round(rmse(test["vol_next"], lgbm.predict(test[columns])), 4))
+```
+
+LightGBM sizes a tree by its leaves, so `num_leaves=2` makes a stump: 0.226.
+Its default of 31 leaves scores 0.346, and `verbose=-1` silences its messages.
+
+# Depth by depth, or leaf by leaf
+
+::: {.diagram}
+<svg width="1100" height="440" viewBox="0 0 1100 440" role="img" aria-label="Two trees grown with three questions each: depth by depth, as XGBoost does, splits both boxes of depth 1 and ends with four leaves at depth 2; leaf by leaf, as LightGBM does, splits the leaf that lowers the error most and ends with a branch of depth 3">
+<text x="275.0" y="26.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="700">depth by depth</text>
+<text x="275.0" y="50.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">XGBoost, scikit-learn's GradientBoosting</text>
+<text x="825.0" y="26.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="700">leaf by leaf</text>
+<text x="825.0" y="50.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">LightGBM, scikit-learn's HistGradientBoosting</text>
+<rect x="233.0" y="72.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="275.0" y="97.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text>
+<g class="fragment" data-fragment-index="1"><rect x="213.0" y="70.0" width="124" height="42" fill="#fcfcfb"/></g>
+<g class="fragment" data-fragment-index="1"><rect x="215.0" y="72.0" width="120" height="38" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"/><text x="275.0" y="97.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">question 1</text><line x1="275.0" y1="110.0" x2="165.0" y2="150.0" stroke="#86b6ef" stroke-width="2"/><rect x="123.0" y="150.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="165.0" y="175.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text><line x1="275.0" y1="110.0" x2="385.0" y2="150.0" stroke="#86b6ef" stroke-width="2"/><rect x="343.0" y="150.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="385.0" y="175.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text></g>
+<g class="fragment" data-fragment-index="2"><rect x="103.0" y="148.0" width="124" height="42" fill="#fcfcfb"/></g>
+<g class="fragment" data-fragment-index="2"><rect x="105.0" y="150.0" width="120" height="38" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"/><text x="165.0" y="175.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">question 2</text><line x1="165.0" y1="188.0" x2="105.0" y2="228.0" stroke="#86b6ef" stroke-width="2"/><rect x="63.0" y="228.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="105.0" y="253.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text><line x1="165.0" y1="188.0" x2="225.0" y2="228.0" stroke="#86b6ef" stroke-width="2"/><rect x="183.0" y="228.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="225.0" y="253.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text></g>
+<g class="fragment" data-fragment-index="3"><rect x="323.0" y="148.0" width="124" height="42" fill="#fcfcfb"/></g>
+<g class="fragment" data-fragment-index="3"><rect x="325.0" y="150.0" width="120" height="38" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"/><text x="385.0" y="175.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">question 3</text><line x1="385.0" y1="188.0" x2="325.0" y2="228.0" stroke="#86b6ef" stroke-width="2"/><rect x="283.0" y="228.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="325.0" y="253.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text><line x1="385.0" y1="188.0" x2="445.0" y2="228.0" stroke="#86b6ef" stroke-width="2"/><rect x="403.0" y="228.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="445.0" y="253.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text></g>
+<rect x="783.0" y="72.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="825.0" y="97.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text>
+<g class="fragment" data-fragment-index="1"><rect x="763.0" y="70.0" width="124" height="42" fill="#fcfcfb"/></g>
+<g class="fragment" data-fragment-index="1"><rect x="765.0" y="72.0" width="120" height="38" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"/><text x="825.0" y="97.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">question 1</text><line x1="825.0" y1="110.0" x2="715.0" y2="150.0" stroke="#86b6ef" stroke-width="2"/><rect x="673.0" y="150.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="715.0" y="175.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text><line x1="825.0" y1="110.0" x2="935.0" y2="150.0" stroke="#86b6ef" stroke-width="2"/><rect x="893.0" y="150.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="935.0" y="175.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text></g>
+<g class="fragment" data-fragment-index="2"><rect x="653.0" y="148.0" width="124" height="42" fill="#fcfcfb"/></g>
+<g class="fragment" data-fragment-index="2"><rect x="655.0" y="150.0" width="120" height="38" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"/><text x="715.0" y="175.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">question 2</text><line x1="715.0" y1="188.0" x2="655.0" y2="228.0" stroke="#86b6ef" stroke-width="2"/><rect x="613.0" y="228.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="655.0" y="253.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text><line x1="715.0" y1="188.0" x2="775.0" y2="228.0" stroke="#86b6ef" stroke-width="2"/><rect x="733.0" y="228.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="775.0" y="253.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text></g>
+<g class="fragment" data-fragment-index="3"><rect x="713.0" y="226.0" width="124" height="42" fill="#fcfcfb"/></g>
+<g class="fragment" data-fragment-index="3"><rect x="715.0" y="228.0" width="120" height="38" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"/><text x="775.0" y="253.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">question 3</text><line x1="775.0" y1="266.0" x2="715.0" y2="306.0" stroke="#86b6ef" stroke-width="2"/><rect x="673.0" y="306.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="715.0" y="331.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text><line x1="775.0" y1="266.0" x2="835.0" y2="306.0" stroke="#86b6ef" stroke-width="2"/><rect x="793.0" y="306.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/><text x="835.0" y="331.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text></g>
+<g class="fragment fade-out" data-fragment-index="1"><text x="550.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Both start with every row in one box.</text></g>
+<g class="fragment fade-out" data-fragment-index="2"><g class="fragment" data-fragment-index="1"><text x="550.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Step 1: both ask a first question.</text></g></g>
+<g class="fragment fade-out" data-fragment-index="3"><g class="fragment" data-fragment-index="2"><text x="550.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Step 2: both split the left box.</text></g></g>
+<g class="fragment" data-fragment-index="3"><text x="550.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Step 3: depth by depth splits the right box to finish depth 2.</text><text x="550.0" y="430.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Leaf by leaf splits whichever leaf lowers the error most, here one level deeper.</text></g>
+</svg>
+:::
+
+`max_depth` limits a tree grown depth by depth, and `num_leaves` one grown leaf
+by leaf. With the same leaves, a leaf-by-leaf tree goes deeper where the error
+is.
+
+# Early stopping in XGBoost
+
+```{pyodide}
+fit_rows, stop_rows = train.loc[:"2021-12-31"], train.loc["2022-01-01":]
+xgb_stop = XGBRegressor(n_estimators=3000, learning_rate=0.1, max_depth=1,
+                        early_stopping_rounds=50, random_state=0)
+xgb_stop.fit(fit_rows[columns], fit_rows["vol_next"],
+             eval_set=[(stop_rows[columns], stop_rows["vol_next"])], verbose=False)
+print(xgb_stop.best_iteration, round(rmse(test["vol_next"], xgb_stop.predict(test[columns])), 4))
+```
+
+XGBoost scores every new tree on 2022 and stops 50 trees after the best.
+`best_iteration` counts from 0, so `predict` uses the first 244 stumps: 0.225.
+
+# Your turn [3]{.chip .chip-turn} {.your-turn}
+
+Suppose early stopping watched the test days instead of 2022. Pass them as
+`eval_set`: which score does it report, and is that a test score?
+
+```{pyodide}
+#| autorun: false
+xgb_peek = XGBRegressor(n_estimators=3000, learning_rate=0.1, max_depth=1,
+                        early_stopping_rounds=50, random_state=0)
+xgb_peek.fit(fit_rows[columns], fit_rows["vol_next"],
+             eval_set=[(..., ...)], verbose=False)
+print(xgb_peek.best_iteration, round(xgb_peek.best_score, 4))
+```
+
+::: {.muted .small}
+`eval_set` takes a list of (columns, target) pairs, as in `xgb_stop`. `best_score` is the lowest RMSE early stopping saw.
+:::
+
+# Your turn 3: answer
+
+```python
+xgb_peek.fit(fit_rows[columns], fit_rows["vol_next"],
+             eval_set=[(test[columns], test["vol_next"])], verbose=False)
+```
+
+It keeps 30 stumps and reports 0.204, which would beat ridge's 0.218. It is not
+a test score: the test days chose when to stop, out of 80 scores computed on them.
+
+::: {.keypoint}
+Rows that help choose a setting become validation rows. The test days report
+once, for a model chosen without them: here 0.225.
+:::
+
+# 5 · Boosting a label {.divider}
+
+::: {.divider-kicker}
+Part 5
+:::
+
+::: {.divider-note}
+The credit table, where trees beat logistic regression.
+:::
+
+# The credit table
+
+```{pyodide}
+from sklearn.model_selection import train_test_split
+
+credit = pd.read_csv("data/credit.csv")
+c_train, c_test = train_test_split(credit, test_size=0.3, random_state=0,
+                                   stratify=credit["default"])
+c_columns = ["limit", "age", "late_now", "months_late", "bill", "paid", "utilisation"]
+print(len(c_train), len(c_test), round(c_train["default"].mean(), 3))
+```
+
+One row per card holder; `default` is 1 for the 22 percent who defaulted the
+next month. On this split logistic regression scored 0.748 and the forest 0.777.
+
+# Boosting a label
+
+::: {.formula}
+$$\hat p_i = \sigma\big(\hat f(\mathbf{x}_i)\big), \qquad -\frac{\partial\, \text{log-loss}_i}{\partial \hat f(\mathbf{x}_i)} = y_i - \hat p_i$$
+:::
+
+The trees are added on the log-odds scale, and each is fitted to $y_i - \hat p_i$,
+the gap between the label and the probability. The sigmoid turns the sum into a
+probability.
+
+# XGBoost on the credit table
+
+```{pyodide}
+from xgboost import XGBClassifier
+from sklearn.metrics import roc_auc_score
+
+xgb_c = XGBClassifier(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=0)
+xgb_c.fit(c_train[c_columns], c_train["default"])
+p_xgb = xgb_c.predict_proba(c_test[c_columns])[:, 1]
+print(round(roc_auc_score(c_test["default"], p_xgb), 4))
+```
+
+100 trees of depth 3 at a learning rate of 0.1: an AUC of 0.777, the forest's
+score, against 0.748 for logistic regression.
+
+# Four implementations of boosting {.smaller}
+
+| model | how a cut is searched | fit, on one core | test AUC |
+|:--------|:--------------|------:|------:|
+| `GradientBoostingClassifier` | every value of every column | 1.91 s | 0.776 |
+| `HistGradientBoostingClassifier` | 255 bins per column | 0.14 s | 0.776 |
+| `XGBClassifier` | 256 bins per column | 0.08 s | 0.777 |
+| `LGBMClassifier` | 255 bins, leaf by leaf | 0.08 s | 0.777 |
+
+100 trees of depth 3, or of 8 leaves, at a learning rate of 0.1, on the 21,000
+training rows. With bins, the same trees fit about 25 times faster.
+
+# Early stopping on separate borrowers
+
+```{pyodide}
+from lightgbm import LGBMClassifier, early_stopping
+
+fit_c, stop_c = train_test_split(c_train, test_size=0.2, random_state=0, stratify=c_train["default"])
+lgbm_c = LGBMClassifier(n_estimators=3000, learning_rate=0.05, num_leaves=15, random_state=0, verbose=-1)
+lgbm_c.fit(fit_c[c_columns], fit_c["default"], eval_set=[(stop_c[c_columns], stop_c["default"])],
+           eval_metric="auc", callbacks=[early_stopping(50, verbose=False)])
+p_lgbm = lgbm_c.predict_proba(c_test[c_columns])[:, 1]
+print(lgbm_c.best_iteration_, round(roc_auc_score(c_test["default"], p_lgbm), 4))
+```
+
+Borrowers are separate cases, so a random fifth of the training rows can decide
+when to stop: 91 trees of 15 leaves, and an AUC of 0.776.
+
+# When to change what
+
+::: {.why-grid}
+::: {.why-point}
+**Always** <span>`n_estimators`, found by early stopping, with `learning_rate`: a smaller rate needs more trees. The size of each tree: `max_depth`, or `num_leaves` in LightGBM.</span>
+:::
+::: {.why-point}
+**Sometimes** <span>`subsample` and `colsample_bytree`, a random share of the rows and columns for each tree, as in a forest; LightGBM also needs `subsample_freq=1`. The smallest leaf, `min_child_weight` or `min_child_samples`. `reg_lambda`.</span>
+:::
+::: {.why-point}
+**Rarely** <span>`gamma`, a price per leaf. `max_bin`, the number of bins per column. `objective`, the loss that is boosted.</span>
+:::
+::: {.why-point}
+**Never needed** <span>A scaler. A cut compares one column with one number, so scaling changes no forecast.</span>
+:::
+:::
+
+# 6 · Reading a model {.divider}
+
+::: {.divider-kicker}
+Part 6
+:::
+
+::: {.divider-note}
+Which columns a model of many trees uses, measured two ways.
+:::
+
+# Importance from the cuts
+
+```{pyodide}
+importance = pd.Series(xgb_c.feature_importances_, index=c_columns)
+print(importance.sort_values(ascending=False).round(3))
+```
+
+XGBoost averages the fall in the loss over the cuts on each column and scales
+the results to sum to one. The two lateness columns take 87 percent.
+
+# A column of random numbers
+
+```{pyodide}
+noisy_train = c_train.copy()
+noisy_train["noise"] = np.random.default_rng(0).normal(size=len(noisy_train))
+n_columns = c_columns + ["noise"]
+noisy_model = LGBMClassifier(random_state=0, verbose=-1)
+noisy_model.fit(noisy_train[n_columns], noisy_train["default"])
+cuts = pd.Series(noisy_model.feature_importances_, index=n_columns)
+print(cuts.sort_values(ascending=False).to_dict())
+```
+
+LightGBM counts the cuts on each column. The noise gets the most, 582: each of
+its 21,000 values is a possible cut, where `late_now` has 9 values and gets 83.
+
+# What each library counts {.smaller}
+
+| model | what `feature_importances_` measures |
+|:----------|:-----------------------|
+| scikit-learn: trees, forests, `GradientBoosting` | the fall in squared error or Gini from each column's cuts, summed and scaled to one |
+| XGBoost | the average fall in the loss per cut on the column, scaled to one |
+| LightGBM | the number of cuts on the column; `importance_type="gain"` sums the fall instead |
+| scikit-learn: `HistGradientBoosting` | it has no `feature_importances_` |
+
+All four measure on the training rows, where a flexible model has fitted noise
+too. LightGBM's gain still gives the random column 8 percent, more than `age`.
+
+# Permutation importance
+
+::: {.formula}
+$$I_j = s - \frac{1}{K}\sum_{k=1}^{K} s_{k,j}$$
+:::
+
+$s$ is the model's score on the test rows and $s_{k,j}$ its score after the
+$k$-th shuffle of column $j$. Shuffling breaks the column's link to the label
+and keeps its values.
+
+::: {.keypoint}
+It asks what the model loses without the column, on rows it did not fit.
+:::
+
+# Permutation importance in code
+
+```{pyodide}
+from sklearn.inspection import permutation_importance
+
+noisy_test = c_test.copy()
+noisy_test["noise"] = np.random.default_rng(1).normal(size=len(noisy_test))
+result = permutation_importance(noisy_model, noisy_test[n_columns], noisy_test["default"],
+                                scoring="roc_auc", n_repeats=10, random_state=0)
+shuffled = pd.Series(result.importances_mean, index=n_columns)
+print(shuffled.sort_values(ascending=False).round(4).to_dict())
+```
+
+Shuffling `months_late` costs 0.112 of AUC, and shuffling the noise costs
+nothing. The column the cut counts ranked first comes last.
+
+# Two rankings of one model
+
+```{python}
+#| echo: false
+#| fig-align: center
+_nt = C_TRAIN.copy()
+_nt["noise"] = np.random.default_rng(0).normal(size=len(_nt))
+_ne = C_TEST.copy()
+_ne["noise"] = np.random.default_rng(1).normal(size=len(_ne))
+_nc = C_COLS + ["noise"]
+_model = LGBMClassifier(random_state=0, verbose=-1).fit(_nt[_nc], _nt["default"])
+_split = pd.Series(_model.feature_importances_, index=_nc).sort_values()
+_perm = pd.Series(permutation_importance(_model, _ne[_nc], _ne["default"], scoring="roc_auc", n_repeats=10,
+                                         random_state=0).importances_mean, index=_nc).sort_values()
+fig, axes = plt.subplots(1, 2, figsize=(10.8, 3.4))
+for ax, _s, _title, _fmt in [(axes[0], _split, "Cuts on each column, training rows", "{:.0f}"),
+                             (axes[1], _perm, "AUC lost when shuffled, test rows", "{:.3f}")]:
+    ax.barh(_s.index, _s.values, color=[BRICK if _c == "noise" else BLUE for _c in _s.index], height=0.62)
+    for _k, _v in enumerate(_s.values):
+        ax.text(max(_v, 0) + _s.max() * 0.02, _k, _fmt.format(_v).replace("-0.000", "0.000"), va="center",
+                fontsize=10.5, color=MUTED)
+    ax.set_xlim(min(_s.min(), 0), _s.max() * 1.2)
+    ax.grid(axis="y", visible=False)
+    ax.set_title(_title, loc="left")
+fig.tight_layout()
+plt.show()
+```
+
+The noise is shown in brick. Counts of cuts reward columns with many possible
+cuts on the rows the model fitted; the shuffles are scored on the test rows.
+
+# Two correlated columns
+
+| column | AUC lost when shuffled | AUC lost by a refit without it |
+|:----------|-------:|-------:|
+| `late_now` | 0.031 | 0.012 |
+| `months_late` | 0.112 | 0.018 |
+| both, together | 0.206 | 0.109 |
+
+The two columns have a correlation of 0.72. A refit without either one loses
+little, because the other carries much of the same information.
+
+::: {.keypoint}
+Importance is what this model loses without a column, given the others. It is
+not the column's effect on default.
+:::
+
+# 7 · Choosing a model {.divider}
+
+::: {.divider-kicker}
+Part 7
+:::
+
+::: {.divider-note}
+Every model of the course on both tables, what each is for, and the routine they share.
+:::
+
+# Both tables, every model {.smaller}
+
+| model | volatility: test RMSE | credit: test AUC |
+|:------------|---------:|---------:|
+| linear regression on `vol_20d`; logistic regression | 0.237 | 0.748 |
+| ridge | 0.218 | |
+| lasso | 0.217 | |
+| k-nearest neighbours | | 0.749 |
+| a tree | 0.241 | 0.722 |
+| a random forest | 0.226 | 0.777 |
+| boosted trees, stopped early | 0.217 and 0.225 | 0.777 and 0.776 |
+
+On the volatility table, ridge, lasso and boosted stumps lie within 0.008 of
+each other. On the credit table, boosting and the forest tie, 0.029 above
+logistic regression.
+
+# The models of the course {.smaller}
+
+| model | a forecast is | settings to choose | reach for it when |
+|:-----------|:---------------|:-----------|:----------------|
+| linear regression | a weighted sum of the columns | none | the relationship is close to straight, and always as a baseline |
+| ridge, lasso | the same sum, with the weights shrunk | `alpha` | there are many columns for the rows |
+| logistic regression | a probability from a weighted sum | `C` | the target is a label and the weights should be read |
+| k-nearest neighbours | the average of the closest rows | `n_neighbors` | there are few columns, all scaled |
+| a tree | the mean of the box a row lands in | `max_depth`, `min_samples_leaf` | the rules themselves are wanted |
+| a random forest | the average of many deep trees | `max_features`, `min_samples_leaf` | a strong model is needed with little tuning |
+| boosted trees | the sum of many small trees | `learning_rate`, `n_estimators`, depth | there are many rows, interactions and missing values |
+
+All seven follow the same pattern in code: create, fit, predict, with the
+settings chosen on validation rows.
+
+# When to reach for boosting
+
+<div class="compare">
+<div class="compare-col">
+<h3>Boosted trees first</h3>
+<p>Many rows, columns that bend or interact, missing values, a mix of types. On the credit table boosting and the forest reached an AUC of 0.777, logistic regression 0.748.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>A linear model first</h3>
+<p>Few rows, a noisy target, a relationship close to a straight line. On the volatility table ridge scored 0.218, and boosting stopped early 0.217 and 0.225.</p>
+</div>
+</div>
+
+::: {.keypoint}
+Fit a baseline and a linear model first. Keep a boosted model only if it wins
+on validation rows that suit the data.
+:::
+
+# The workflow, start to finish
+
+1. Load the table and look at it: shapes, types, missing values.
+2. Build the target and the features from the past only.
+3. Split by date, or at random when the rows are separate cases.
+4. Score a baseline: the average, or the majority class.
+5. Fit, and choose the settings on folds or on a later block.
+6. Open the test rows once, for the model you chose.
+7. Read the model: its coefficients, or its importance on the test rows.
+8. Report the score beside the baseline's.
+
+# What you can now do
+
+<div class="pillars">
+<div class="pillar"><div class="pillar-tag">Sessions 1 to 3</div><div class="pillar-title">Work with data</div><div class="pillar-body">Load, clean, reshape and plot a table with pandas and matplotlib, using loops, functions and dictionaries.</div></div>
+<div class="pillar"><div class="pillar-tag">Session 4</div><div class="pillar-title">Frame a prediction</div><div class="pillar-body">Build features and a target from the past only, split by date, and pick a metric and a baseline first.</div></div>
+<div class="pillar"><div class="pillar-tag">Sessions 5 and 6</div><div class="pillar-title">Fit and choose</div><div class="pillar-body">Fit linear models, ridge and lasso, choose their settings on folds that suit the rows, and open the test rows once.</div></div>
+<div class="pillar"><div class="pillar-tag">Sessions 8 and 9</div><div class="pillar-title">Classify</div><div class="pillar-body">Logistic regression and k-nearest neighbours; AUC, precision and recall, thresholds set from costs, and calibration.</div></div>
+<div class="pillar"><div class="pillar-tag">Sessions 11 and 12</div><div class="pillar-title">Grow trees</div><div class="pillar-body">Trees, forests and boosted trees, tuned on the right rows, timed, and read through their importance.</div></div>
+<div class="pillar"><div class="pillar-tag">Sessions 7 and 10</div><div class="pillar-title">Run the whole workflow</div><div class="pillar-body">From a raw table to a scored forecast, on house prices in Aarhus and on power prices in West Denmark.</div></div>
+</div>
+
+# What stays with you {.smaller}
+
+::: {.recap-grid}
+::: {.recap-item}
+**Averaging cannot remove bias**
+100 averaged stumps err 0.577 on the training days, against 0.600 for one.
+100 stumps added one after another err 0.457.
+:::
+::: {.recap-item}
+**Boosting fits what is left**
+$\hat f_m = \hat f_{m-1} + \nu\, h_m$: each small tree $h_m$ is fitted to the
+residuals, the negative gradient of the loss.
+:::
+::: {.recap-item}
+**More trees can overfit**
+At $\nu = 0.1$ the test error is lowest near 144 stumps, 0.221, and 0.265 at
+3,000. Deeper trees turn up sooner.
+:::
+::: {.recap-item}
+**Stop on a later block**
+XGBoost stopped on 2022 at 244 stumps: 0.225. Stopped on the test days, it
+reported 0.204, a score those days chose.
+:::
+::: {.recap-item}
+**XGBoost and LightGBM**
+Bins, a penalty on each tree, growth leaf by leaf: on the credit table the
+same trees fit about 25 times faster than in `GradientBoosting`.
+:::
+::: {.recap-item}
+**Boosting a label**
+Each tree is fitted to $y_i - \hat p_i$ on the log-odds scale. On the credit
+table, 0.777: level with the forest.
+:::
+::: {.recap-item}
+**Importance, two ways**
+Counts of cuts ranked a column of random numbers first. Shuffles on the test
+rows ranked it last, at zero.
+:::
+::: {.recap-item}
+**Correlated columns share importance**
+Shuffled together, `late_now` and `months_late` cost 0.206 of AUC; a refit
+without either one loses under 0.02.
+:::
+:::
+
+# Where this goes next
+
+<div class="timeline">
+<div class="tl-row"><span class="tl-week">before</span><span class="tl-topic">Python and pandas; linear regression, ridge and lasso; logistic regression and k-nearest neighbours; trees and forests</span><span class="tl-who">Sessions 1 to 11</span></div>
+<div class="tl-row tl-now"><span class="tl-week">now</span><span class="tl-topic">boosting, XGBoost and LightGBM, and reading a model</span><span class="tl-who">trees, added</span></div>
+<div class="tl-row tl-future"><span class="tl-week">next</span><span class="tl-topic">a final case lecture, and the wrap-up of the course</span><span class="tl-who">to finish</span></div>
+</div>
+
+::: {.keypoint}
+Every model came with the same routine: a baseline to beat, settings chosen on
+rows that suit the data, and a test set opened once.
+:::
+
+# After this session [case]{.chip .chip-case}
+
+- **Exercises**: the six days boosted by hand, the gradient behind the residuals, the number of trees chosen on 2022 and on the folds, XGBoost and LightGBM, importance measured four ways, and a target with nothing in it.
+- **Case Part 12**, the last part: boosting for the risk report's forecast and warning, then every model fitted since Part 4 side by side, and the report as it would go out.
+
+::: {.muted .small}
+Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email
+**jobo@econ.au.dk**.
+:::

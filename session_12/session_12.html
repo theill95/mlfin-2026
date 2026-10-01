@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="session_12_files/libs/clipboard/clipboard.min.js"></script>
+<script src="session_12_files/libs/quarto-html/tabby.min.js"></script>
+<script src="session_12_files/libs/quarto-html/popper.min.js"></script>
+<script src="session_12_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="session_12_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="session_12_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="session_12_files/libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="session_12_files/libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="session_12_files/libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.9.38">
+
+  <title>Boosting and reading a model</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="session_12_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="session_12_files/libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+      }
+    pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+    div.sourceCode
+      { color: #24292e;  }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #24292e; } /* Normal */
+    code span.al { color: #ff5555; font-weight: bold; } /* Alert */
+    code span.an { color: #6a737d; } /* Annotation */
+    code span.at { color: #d73a49; } /* Attribute */
+    code span.bn { color: #005cc5; } /* BaseN */
+    code span.bu { color: #d73a49; } /* BuiltIn */
+    code span.cf { color: #d73a49; } /* ControlFlow */
+    code span.ch { color: #032f62; } /* Char */
+    code span.cn { color: #005cc5; } /* Constant */
+    code span.co { color: #6a737d; } /* Comment */
+    code span.cv { color: #6a737d; } /* CommentVar */
+    code span.do { color: #6a737d; } /* Documentation */
+    code span.dt { color: #d73a49; } /* DataType */
+    code span.dv { color: #005cc5; } /* DecVal */
+    code span.er { color: #ff5555; text-decoration: underline; } /* Error */
+    code span.ex { color: #d73a49; font-weight: bold; } /* Extension */
+    code span.fl { color: #005cc5; } /* Float */
+    code span.fu { color: #6f42c1; } /* Function */
+    code span.im { color: #032f62; } /* Import */
+    code span.in { color: #6a737d; } /* Information */
+    code span.kw { color: #d73a49; } /* Keyword */
+    code span.op { color: #24292e; } /* Operator */
+    code span.ot { color: #6f42c1; } /* Other */
+    code span.pp { color: #d73a49; } /* Preprocessor */
+    code span.re { color: #6a737d; } /* RegionMarker */
+    code span.sc { color: #005cc5; } /* SpecialChar */
+    code span.ss { color: #032f62; } /* SpecialString */
+    code span.st { color: #032f62; } /* String */
+    code span.va { color: #e36209; } /* Variable */
+    code span.vs { color: #032f62; } /* VerbatimString */
+    code span.wa { color: #ff5555; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="session_12_files/libs/revealjs/dist/theme/quarto-6111bc620332b17cf5d5ecdb3c24ce47.css">
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+  <link href="session_12_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="session_12_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="session_12_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="session_12_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+  <script type="module" src="session_12_files/libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+  <link href="session_12_files/libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">Boosting and reading a model</h1>
+  <p class="subtitle">Machine Learning in Finance · Session 12</p>
+
+<div class="quarto-title-authors">
+</div>
+
+</section>
+<section id="the-models-so-far" class="title-slide slide level1 smaller center">
+<h1>The models so far</h1>
+<div>
+<div id="pyodide-1" class="exercise-cell">
+
+</div>
+<script type="pyodide-1-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVjaG8iOmZhbHNlLCJlZGl0IjpmYWxzZSwiZXZhbCI6dHJ1ZSwiaW5jbHVkZSI6ZmFsc2UsIm91dHB1dCI6ZmFsc2UsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiIjIEhvdXNlIHN0eWxlIGZvciB0aGUgbGl2ZSBmaWd1cmVzLCBzbyB0aGV5IG1hdGNoIHRoZSBwcmludGVkIG9uZXMuXG5pbXBvcnQgbnVtcHkgYXMgbnBcbmltcG9ydCBwYW5kYXMgYXMgcGRcbmltcG9ydCBtYXRwbG90bGliLnB5cGxvdCBhcyBwbHRcbmltcG9ydCB3YXJuaW5nc1xud2FybmluZ3MuZmlsdGVyd2FybmluZ3MoXCJpZ25vcmVcIilcbnBsdC5yY1BhcmFtcy51cGRhdGUoe1xuICAgIFwiZmlndXJlLmZhY2Vjb2xvclwiOiBcIiNmY2ZjZmJcIiwgXCJheGVzLmZhY2Vjb2xvclwiOiBcIiNmY2ZjZmJcIixcbiAgICBcImZvbnQuZmFtaWx5XCI6IFtcIlNlZ29lIFVJXCIsIFwiQXJpYWxcIiwgXCJzYW5zLXNlcmlmXCJdLCBcImZvbnQuc2l6ZVwiOiAxMixcbiAgICBcInRleHQuY29sb3JcIjogXCIjMTQxNDEzXCIsIFwiYXhlcy5lZGdlY29sb3JcIjogXCIjYzNjMmI3XCIsXG4gICAgXCJheGVzLmxhYmVsY29sb3JcIjogXCIjNTI1MTRlXCIsIFwiYXhlcy50aXRsZWNvbG9yXCI6IFwiIzE0MTQxM1wiLFxuICAgIFwiYXhlcy50aXRsZXNpemVcIjogMTMsIFwiYXhlcy5zcGluZXMudG9wXCI6IEZhbHNlLCBcImF4ZXMuc3BpbmVzLnJpZ2h0XCI6IEZhbHNlLFxuICAgIFwiYXhlcy5ncmlkXCI6IFRydWUsIFwiZ3JpZC5jb2xvclwiOiBcIiNlNmU1ZGZcIiwgXCJncmlkLmxpbmV3aWR0aFwiOiAwLjgsXG4gICAgXCJheGVzLmF4aXNiZWxvd1wiOiBUcnVlLFxuICAgIFwieHRpY2suY29sb3JcIjogXCIjODk4NzgxXCIsIFwieXRpY2suY29sb3JcIjogXCIjODk4NzgxXCIsXG4gICAgXCJ4dGljay5sYWJlbHNpemVcIjogMTAuNSwgXCJ5dGljay5sYWJlbHNpemVcIjogMTAuNSxcbiAgICBcImxlZ2VuZC5mcmFtZW9uXCI6IEZhbHNlLCBcImxlZ2VuZC5mb250c2l6ZVwiOiAxMC41LFxuICAgIFwiZmlndXJlLmRwaVwiOiAxMDAsXG59KSJ9
+</script>
+</div>
+<table class="caption-top">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 21%">
+<col style="width: 28%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">model</th>
+<th style="text-align: left;">defined by</th>
+<th style="text-align: left;">test score</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>a number</strong></td>
+<td style="text-align: left;">linear regression</td>
+<td style="text-align: left;"><span class="math inline">\min_{\beta}\ \sum_i \big(y_i - \beta_0 - \sum_j \beta_j x_{ij}\big)^2</span></td>
+<td style="text-align: left;">RMSE 0.237 on <code>vol_20d</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">ridge</td>
+<td style="text-align: left;"><span class="math inline">\min_{\beta}\ \text{RSS} + \alpha \sum_j \beta_j^2</span></td>
+<td style="text-align: left;">RMSE 0.218</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">lasso</td>
+<td style="text-align: left;"><span class="math inline">\min_{\beta}\ \text{RSS} + \alpha \sum_j \lvert \beta_j \rvert</span></td>
+<td style="text-align: left;">RMSE 0.217</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>a label</strong></td>
+<td style="text-align: left;">logistic regression</td>
+<td style="text-align: left;"><span class="math inline">P(y = 1) = \sigma\big(\beta_0 + \sum_j \beta_j x_j\big)</span></td>
+<td style="text-align: left;">AUC 0.748</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">k-nearest neighbours</td>
+<td style="text-align: left;"><span class="math inline">\hat p = \frac{1}{k} \sum_{k\ \text{nearest}} y_i</span></td>
+<td style="text-align: left;">AUC 0.749</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>both</strong></td>
+<td style="text-align: left;">a tree</td>
+<td style="text-align: left;"><span class="math inline">\hat f(\mathbf{x}) = \sum_m c_m \,\mathbf{1}\{\mathbf{x} \in R_m\}</span></td>
+<td style="text-align: left;">RMSE 0.241, AUC 0.722</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">a random forest</td>
+<td style="text-align: left;"><span class="math inline">\hat f(\mathbf{x}) = \frac{1}{B}\sum_b \hat f^{\,b}(\mathbf{x})</span></td>
+<td style="text-align: left;">RMSE 0.226, AUC 0.777</td>
+</tr>
+</tbody>
+</table>
+<p>A forest grows deep trees side by side and averages them. Today’s model grows small trees one after another, each fitted to what the ones before still get wrong.</p>
+</section>
+
+<section id="the-volatility-table" class="title-slide slide level1 center">
+<h1>The volatility table</h1>
+<div>
+<div id="pyodide-2" class="exercise-cell">
+
+</div>
+<script type="pyodide-2-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4ubWV0cmljcyBpbXBvcnQgbWVhbl9zcXVhcmVkX2Vycm9yXG5cbnRhYmxlID0gcGQucmVhZF9jc3YoXCJkYXRhL21hcmtldF9mZWF0dXJlcy5jc3ZcIiwgcGFyc2VfZGF0ZXM9W1wiZGF0ZVwiXSkuc2V0X2luZGV4KFwiZGF0ZVwiKVxudHJhaW4sIHRlc3QgPSB0YWJsZS5sb2NbOlwiMjAyMi0xMi0zMVwiXSwgdGFibGUubG9jW1wiMjAyMy0wMS0wMVwiOl1cbmNvbHVtbnMgPSBsaXN0KHRhYmxlLmNvbHVtbnNbOi0xXSlcbnByaW50KGxlbih0cmFpbiksIGxlbih0ZXN0KSwgbGVuKGNvbHVtbnMpKVxuXG5kZWYgcm1zZShhY3R1YWwsIHByZWRpY3RlZCk6XG4gICAgcmV0dXJuIG5wLnNxcnQobWVhbl9zcXVhcmVkX2Vycm9yKGFjdHVhbCwgcHJlZGljdGVkKSkifQ==
+</script>
+</div>
+<p>The table and split that ridge and the forest were scored on: one row per trading day, 19 columns, and <code>vol_next</code>, the index’s volatility over the next 20 days.</p>
+</section>
+
+<section id="today" class="title-slide slide level1 center">
+<h1>Today</h1>
+<ul>
+<li>what <strong>averaging</strong> cannot fix, and <strong>adding</strong> trees instead</li>
+<li><strong>boosting</strong>: the definition, the procedure, and the procedure by hand</li>
+<li>how many <strong>trees</strong>, and stopping <strong>early</strong></li>
+<li><strong>XGBoost</strong> and <strong>LightGBM</strong>, the libraries used in practice</li>
+<li>boosting a <strong>label</strong>, on the credit table</li>
+<li><strong>reading</strong> a model: which columns it uses</li>
+<li>the course’s models, <strong>side by side</strong></li>
+</ul>
+<p>The exercises and the case are where you practise each of these.</p>
+</section>
+
+<section id="what-averaging-cannot-fix" class="title-slide slide level1 divider center">
+<h1>1 · What averaging cannot fix</h1>
+<div class="divider-kicker">
+<p>Part 1</p>
+</div>
+<div class="divider-note">
+<p>A forest removes the variance of deep trees. Small trees make a different error.</p>
+</div>
+</section>
+
+<section id="one-stump-and-100-averaged" class="title-slide slide level1 center">
+<h1>One stump, and 100 averaged</h1>
+<div>
+<div id="pyodide-3" class="exercise-cell">
+
+</div>
+<script type="pyodide-3-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4udHJlZSBpbXBvcnQgRGVjaXNpb25UcmVlUmVncmVzc29yXG5mcm9tIHNrbGVhcm4uZW5zZW1ibGUgaW1wb3J0IEJhZ2dpbmdSZWdyZXNzb3Jcblxuc3R1bXAgPSBEZWNpc2lvblRyZWVSZWdyZXNzb3IobWF4X2RlcHRoPTEsIHJhbmRvbV9zdGF0ZT0wKS5maXQodHJhaW5bY29sdW1uc10sIHRyYWluW1widm9sX25leHRcIl0pXG5iYWdnZWQgPSBCYWdnaW5nUmVncmVzc29yKERlY2lzaW9uVHJlZVJlZ3Jlc3NvcihtYXhfZGVwdGg9MSksIG5fZXN0aW1hdG9ycz0xMDAsIHJhbmRvbV9zdGF0ZT0wKVxuYmFnZ2VkLmZpdCh0cmFpbltjb2x1bW5zXSwgdHJhaW5bXCJ2b2xfbmV4dFwiXSlcbmZvciBtb2RlbCBpbiBbc3R1bXAsIGJhZ2dlZF06XG4gICAgcHJpbnQocm91bmQocm1zZSh0cmFpbltcInZvbF9uZXh0XCJdLCBtb2RlbC5wcmVkaWN0KHRyYWluW2NvbHVtbnNdKSksIDQpLFxuICAgICAgICAgIHJvdW5kKHJtc2UodGVzdFtcInZvbF9uZXh0XCJdLCBtb2RlbC5wcmVkaWN0KHRlc3RbY29sdW1uc10pKSwgNCkpIn0=
+</script>
+</div>
+<p>One stump errs 0.600 on the training days and 0.262 on the test days. The average of 100 stumps, each grown on a bootstrap sample, barely improves either.</p>
+</section>
+
+<section id="averaging-stumps-and-adding-them" class="title-slide slide level1 center">
+<h1>Averaging stumps, and adding them</h1>
+<div id="1eed2114" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_12_files/figure-revealjs/cell-3-output-1.png" class="quarto-figure quarto-figure-center" width="772" height="335"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>On <code>vol_20d</code> alone, 100 averaged stumps blur one step into a ramp from 0.79 to 1.80. Added one after another, 100 stumps build a staircase from 0.53 to 2.86.</p>
+</section>
+
+<section id="two-ways-to-combine-trees" class="title-slide slide level1 center">
+<h1>Two ways to combine trees</h1>
+<div class="compare">
+<div class="compare-col">
+<h3>
+Averaging: a forest
+</h3>
+<p>
+Deep trees, grown side by side on bootstrap samples, then averaged. Each tree fits its sample closely, so what the average removes is variance.
+</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>
+Adding: boosting
+</h3>
+<p>
+Small trees, grown one after another, each fitted to what the trees before it still get wrong. Each tree is too simple, so what the sum removes is bias.
+</p>
+</div>
+</div>
+<div class="keypoint">
+<p>An average of stumps is about as simple as one stump. A sum of stumps can bend wherever the data does.</p>
+</div>
+</section>
+
+<section id="boosting" class="title-slide slide level1 divider center">
+<h1>2 · Boosting</h1>
+<div class="divider-kicker">
+<p>Part 2</p>
+</div>
+<div class="divider-note">
+<p>The definition, the procedure, and the procedure run by hand on six days.</p>
+</div>
+</section>
+
+<section id="boosting-as-a-formula" class="title-slide slide level1 center">
+<h1>Boosting as a formula</h1>
+<div class="formula">
+<p><span class="math display">\hat f_M(\mathbf{x}) \;=\; \bar y \;+\; \nu \sum_{m=1}^{M} h_m(\mathbf{x})</span></p>
+</div>
+<p>Each <span class="math inline">h_m</span> is a small tree and <span class="math inline">M</span> is the number of trees; <span class="math inline">\nu</span>, between 0 and 1, is the learning rate. The trees are added, so there is no <span class="math inline">1/B</span>.</p>
+<div class="keypoint">
+<p>Tree <span class="math inline">m</span> is fitted to what the first <span class="math inline">m - 1</span> trees left: the residuals <span class="math inline">y_i - \hat f_{m-1}(\mathbf{x}_i)</span>.</p>
+</div>
+</section>
+
+<section id="the-procedure" class="title-slide slide level1 center">
+<h1>The procedure</h1>
+<ol type="1">
+<li>Start every row at the mean: <span class="math inline">\hat f_0(\mathbf{x}) = \bar y</span>.</li>
+<li>For each <span class="math inline">m = 1, \dots, M</span>:
+<ul>
+<li>compute the residuals on the training rows, <span class="math inline">r_i = y_i - \hat f_{m-1}(\mathbf{x}_i)</span>;</li>
+<li>fit a small tree <span class="math inline">h_m</span> to the pairs <span class="math inline">(\mathbf{x}_i, r_i)</span>;</li>
+<li>add a step of it: <span class="math inline">\hat f_m(\mathbf{x}) = \hat f_{m-1}(\mathbf{x}) + \nu\, h_m(\mathbf{x})</span>.</li>
+</ul></li>
+<li>Forecast new rows with <span class="math inline">\hat f_M</span>.</li>
+</ol>
+<p>Three settings shape the result: the number of trees <span class="math inline">M</span>, the learning rate <span class="math inline">\nu</span>, and the size of each tree.</p>
+</section>
+
+<section id="boosting-the-six-days-step-by-step" class="title-slide slide level1 center">
+<h1>Boosting the six days, step by step</h1>
+<div class="diagram">
+<svg width="1100" height="450" viewbox="0 0 1100 450" role="img" aria-label="Boosting the six days in six steps at a learning rate of 0.5: on the left the forecast starts at the mean, 0.95, with a dashed distance to every day; on the right the same distances, measured from zero, and the stump fitted to them. Each step adds half of that stump, the distances shrink, and the RSS falls from 0.815 to 0.038">
+<text x="293.0" y="22.0" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">the forecast, and its distance to each day</text> <text x="837.0" y="22.0" text-anchor="middle" font-size="17" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">the distances, and the stump fitted to them</text> <line x1="78" y1="324" x2="508" y2="324" stroke="#c3c2b7" stroke-width="1.4"></line> <line x1="78" y1="44" x2="78" y2="324" stroke="#c3c2b7" stroke-width="1.4"></line> <text x="70.0" y="289.0" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">0.5</text> <text x="70.0" y="189.0" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">1.0</text> <text x="70.0" y="89.0" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">1.5</text> <text x="131.8" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">0.5</text> <text x="221.3" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">1.0</text> <text x="310.9" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">1.5</text> <text x="400.5" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">2.0</text> <text x="490.1" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">2.5</text> <text x="293.0" y="368.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#52514e">vol_20d</text> <text x="22.0" y="184.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#52514e" transform="rotate(-90 22 184.0)">vol_next</text> <line x1="622" y1="196.7" x2="1052" y2="196.7" stroke="#c3c2b7" stroke-width="1.4"></line> <line x1="622" y1="44" x2="622" y2="324" stroke="#c3c2b7" stroke-width="1.4"></line> <text x="614.0" y="303.5" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">−0.4</text> <text x="614.0" y="201.7" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">0</text> <text x="614.0" y="99.9" text-anchor="end" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">+0.4</text> <text x="675.8" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">0.5</text> <text x="765.3" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">1.0</text> <text x="854.9" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">1.5</text> <text x="944.5" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">2.0</text> <text x="1034.1" y="344.0" text-anchor="middle" font-size="14" font-family="Segoe UI, sans-serif" fill="#898781">2.5</text> <text x="837.0" y="368.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#52514e">vol_20d</text> <text x="572.0" y="184.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#52514e" transform="rotate(-90 572 184.0)">distance</text> <g class="fragment fade-out" data-fragment-index="1"><line x1="113.8" y1="194.0" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="149.7" y1="194.0" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="185.5" y1="194.0" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="257.2" y1="194.0" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="328.8" y1="194.0" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="472.2" y1="194.0" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><path d="M78.0,194.0H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"></path><line x1="657.8" y1="196.7" x2="657.8" y2="311.3" stroke="#b8860b" stroke-width="3"></line><circle cx="657.8" cy="311.3" r="5.5" fill="#b8860b"></circle><line x1="693.7" y1="196.7" x2="693.7" y2="285.8" stroke="#b8860b" stroke-width="3"></line><circle cx="693.7" cy="285.8" r="5.5" fill="#b8860b"></circle><line x1="729.5" y1="196.7" x2="729.5" y2="260.4" stroke="#b8860b" stroke-width="3"></line><circle cx="729.5" cy="260.4" r="5.5" fill="#b8860b"></circle><line x1="801.2" y1="196.7" x2="801.2" y2="133.1" stroke="#b8860b" stroke-width="3"></line><circle cx="801.2" cy="133.1" r="5.5" fill="#b8860b"></circle><line x1="872.8" y1="196.7" x2="872.8" y2="56.7" stroke="#b8860b" stroke-width="3"></line><circle cx="872.8" cy="56.7" r="5.5" fill="#b8860b"></circle><line x1="1016.2" y1="196.7" x2="1016.2" y2="133.1" stroke="#b8860b" stroke-width="3"></line><circle cx="1016.2" cy="133.1" r="5.5" fill="#b8860b"></circle><path d="M622.0,285.8H765.3V107.6H1052.0" fill="none" stroke="#0d366b" stroke-width="2.6" stroke-dasharray="8 5"></path><text x="636.0" y="50.0" text-anchor="start" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">its values: −0.35 and +0.35</text><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Start: every day gets the mean, 0.95. A stump fitted to the distances cuts after 0.8.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">RSS 0.815</text></g> <g class="fragment fade-out" data-fragment-index="2"><g class="fragment" data-fragment-index="1"><line x1="113.8" y1="229.0" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="149.7" y1="229.0" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="185.5" y1="229.0" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="257.2" y1="159.0" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="328.8" y1="159.0" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="472.2" y1="159.0" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><path d="M78.0,229.0H221.3V159.0H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"></path><line x1="657.8" y1="196.7" x2="657.8" y2="266.7" stroke="#b8860b" stroke-width="3"></line><circle cx="657.8" cy="266.7" r="5.5" fill="#b8860b"></circle><line x1="693.7" y1="196.7" x2="693.7" y2="241.3" stroke="#b8860b" stroke-width="3"></line><circle cx="693.7" cy="241.3" r="5.5" fill="#b8860b"></circle><line x1="729.5" y1="196.7" x2="729.5" y2="215.8" stroke="#b8860b" stroke-width="3"></line><circle cx="729.5" cy="215.8" r="5.5" fill="#b8860b"></circle><line x1="801.2" y1="196.7" x2="801.2" y2="177.6" stroke="#b8860b" stroke-width="3"></line><circle cx="801.2" cy="177.6" r="5.5" fill="#b8860b"></circle><line x1="872.8" y1="196.7" x2="872.8" y2="101.3" stroke="#b8860b" stroke-width="3"></line><circle cx="872.8" cy="101.3" r="5.5" fill="#b8860b"></circle><line x1="1016.2" y1="196.7" x2="1016.2" y2="177.6" stroke="#b8860b" stroke-width="3"></line><circle cx="1016.2" cy="177.6" r="5.5" fill="#b8860b"></circle><path d="M622.0,241.3H765.3V152.2H1052.0" fill="none" stroke="#0d366b" stroke-width="2.6" stroke-dasharray="8 5"></path><text x="636.0" y="50.0" text-anchor="start" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">its values: −0.175 and +0.175</text><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Half of that stump is added. Half of each gap is left, so the next stump cuts after 0.8 again.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">1 stump · RSS 0.264</text></g></g> <g class="fragment fade-out" data-fragment-index="3"><g class="fragment" data-fragment-index="2"><line x1="113.8" y1="246.5" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="149.7" y1="246.5" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="185.5" y1="246.5" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="257.2" y1="141.5" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="328.8" y1="141.5" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="472.2" y1="141.5" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><path d="M78.0,246.5H221.3V141.5H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"></path><line x1="657.8" y1="196.7" x2="657.8" y2="244.5" stroke="#b8860b" stroke-width="3"></line><circle cx="657.8" cy="244.5" r="5.5" fill="#b8860b"></circle><line x1="693.7" y1="196.7" x2="693.7" y2="219.0" stroke="#b8860b" stroke-width="3"></line><circle cx="693.7" cy="219.0" r="5.5" fill="#b8860b"></circle><line x1="729.5" y1="196.7" x2="729.5" y2="193.5" stroke="#b8860b" stroke-width="3"></line><circle cx="729.5" cy="193.5" r="5.5" fill="#b8860b"></circle><line x1="801.2" y1="196.7" x2="801.2" y2="199.9" stroke="#b8860b" stroke-width="3"></line><circle cx="801.2" cy="199.9" r="5.5" fill="#b8860b"></circle><line x1="872.8" y1="196.7" x2="872.8" y2="123.5" stroke="#b8860b" stroke-width="3"></line><circle cx="872.8" cy="123.5" r="5.5" fill="#b8860b"></circle><line x1="1016.2" y1="196.7" x2="1016.2" y2="199.9" stroke="#b8860b" stroke-width="3"></line><circle cx="1016.2" cy="199.9" r="5.5" fill="#b8860b"></circle><path d="M622.0,214.2H837.0V161.7H1052.0" fill="none" stroke="#0d366b" stroke-width="2.6" stroke-dasharray="8 5"></path><text x="636.0" y="50.0" text-anchor="start" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">its values: −0.069 and +0.138</text><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">The day at 1.6 is now furthest off, and the next stump cuts after 1.2.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">2 stumps · RSS 0.126</text></g></g> <g class="fragment fade-out" data-fragment-index="4"><g class="fragment" data-fragment-index="3"><line x1="113.8" y1="253.4" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="149.7" y1="253.4" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="185.5" y1="253.4" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="257.2" y1="148.4" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="328.8" y1="127.7" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="472.2" y1="127.7" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><path d="M78.0,253.4H221.3V148.4H293.0V127.7H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"></path><line x1="657.8" y1="196.7" x2="657.8" y2="235.7" stroke="#b8860b" stroke-width="3"></line><circle cx="657.8" cy="235.7" r="5.5" fill="#b8860b"></circle><line x1="693.7" y1="196.7" x2="693.7" y2="210.2" stroke="#b8860b" stroke-width="3"></line><circle cx="693.7" cy="210.2" r="5.5" fill="#b8860b"></circle><line x1="729.5" y1="196.7" x2="729.5" y2="184.8" stroke="#b8860b" stroke-width="3"></line><circle cx="729.5" cy="184.8" r="5.5" fill="#b8860b"></circle><line x1="801.2" y1="196.7" x2="801.2" y2="191.2" stroke="#b8860b" stroke-width="3"></line><circle cx="801.2" cy="191.2" r="5.5" fill="#b8860b"></circle><line x1="872.8" y1="196.7" x2="872.8" y2="141.0" stroke="#b8860b" stroke-width="3"></line><circle cx="872.8" cy="141.0" r="5.5" fill="#b8860b"></circle><line x1="1016.2" y1="196.7" x2="1016.2" y2="217.4" stroke="#b8860b" stroke-width="3"></line><circle cx="1016.2" cy="217.4" r="5.5" fill="#b8860b"></circle><path d="M622.0,223.0H711.6V183.6H1052.0" fill="none" stroke="#0d366b" stroke-width="2.6" stroke-dasharray="8 5"></path><text x="636.0" y="50.0" text-anchor="start" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">its values: −0.103 and +0.052</text><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">The two calmest days are too high, and the next stump cuts after 0.6.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">3 stumps · RSS 0.083</text></g></g> <g class="fragment fade-out" data-fragment-index="5"><g class="fragment" data-fragment-index="4"><line x1="113.8" y1="263.7" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="149.7" y1="263.7" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="185.5" y1="248.2" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="257.2" y1="143.2" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="328.8" y1="122.6" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="472.2" y1="122.6" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><path d="M78.0,263.7H167.6V248.2H221.3V143.2H293.0V122.6H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"></path><line x1="657.8" y1="196.7" x2="657.8" y2="222.6" stroke="#b8860b" stroke-width="3"></line><circle cx="657.8" cy="222.6" r="5.5" fill="#b8860b"></circle><line x1="693.7" y1="196.7" x2="693.7" y2="197.1" stroke="#b8860b" stroke-width="3"></line><circle cx="693.7" cy="197.1" r="5.5" fill="#b8860b"></circle><line x1="729.5" y1="196.7" x2="729.5" y2="191.4" stroke="#b8860b" stroke-width="3"></line><circle cx="729.5" cy="191.4" r="5.5" fill="#b8860b"></circle><line x1="801.2" y1="196.7" x2="801.2" y2="197.7" stroke="#b8860b" stroke-width="3"></line><circle cx="801.2" cy="197.7" r="5.5" fill="#b8860b"></circle><line x1="872.8" y1="196.7" x2="872.8" y2="147.6" stroke="#b8860b" stroke-width="3"></line><circle cx="872.8" cy="147.6" r="5.5" fill="#b8860b"></circle><line x1="1016.2" y1="196.7" x2="1016.2" y2="224.0" stroke="#b8860b" stroke-width="3"></line><circle cx="1016.2" cy="224.0" r="5.5" fill="#b8860b"></circle><path d="M622.0,191.3H944.5V224.0H1052.0" fill="none" stroke="#0d366b" stroke-width="2.6" stroke-dasharray="8 5"></path><text x="636.0" y="50.0" text-anchor="start" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">its values: +0.021 and −0.107</text><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">The day at 2.4 is too high, and the next stump cuts after 1.6.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">4 stumps · RSS 0.059</text></g></g> <g class="fragment fade-out" data-fragment-index="6"><g class="fragment" data-fragment-index="5"><line x1="113.8" y1="261.5" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="149.7" y1="261.5" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="185.5" y1="246.1" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="257.2" y1="141.1" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="328.8" y1="120.5" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="472.2" y1="133.3" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><path d="M78.0,261.5H167.6V246.1H221.3V141.1H293.0V120.5H400.5V133.3H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"></path><line x1="657.8" y1="196.7" x2="657.8" y2="225.3" stroke="#b8860b" stroke-width="3"></line><circle cx="657.8" cy="225.3" r="5.5" fill="#b8860b"></circle><line x1="693.7" y1="196.7" x2="693.7" y2="199.8" stroke="#b8860b" stroke-width="3"></line><circle cx="693.7" cy="199.8" r="5.5" fill="#b8860b"></circle><line x1="729.5" y1="196.7" x2="729.5" y2="194.1" stroke="#b8860b" stroke-width="3"></line><circle cx="729.5" cy="194.1" r="5.5" fill="#b8860b"></circle><line x1="801.2" y1="196.7" x2="801.2" y2="200.4" stroke="#b8860b" stroke-width="3"></line><circle cx="801.2" cy="200.4" r="5.5" fill="#b8860b"></circle><line x1="872.8" y1="196.7" x2="872.8" y2="150.3" stroke="#b8860b" stroke-width="3"></line><circle cx="872.8" cy="150.3" r="5.5" fill="#b8860b"></circle><line x1="1016.2" y1="196.7" x2="1016.2" y2="210.3" stroke="#b8860b" stroke-width="3"></line><circle cx="1016.2" cy="210.3" r="5.5" fill="#b8860b"></circle><path d="M622.0,225.3H675.8V191.0H1052.0" fill="none" stroke="#0d366b" stroke-width="2.6" stroke-dasharray="8 5"></path><text x="636.0" y="50.0" text-anchor="start" font-size="15" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">its values: −0.112 and +0.022</text><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">The calmest day is too high, and the next stump cuts after 0.4.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">5 stumps · RSS 0.049</text></g></g> <g class="fragment" data-fragment-index="6"><line x1="113.8" y1="272.8" x2="113.8" y2="284.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="149.7" y1="259.3" x2="149.7" y2="264.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="185.5" y1="243.8" x2="185.5" y2="244.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="257.2" y1="138.8" x2="257.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="328.8" y1="118.2" x2="328.8" y2="84.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><line x1="472.2" y1="131.1" x2="472.2" y2="144.0" stroke="#b8860b" stroke-width="3" stroke-dasharray="4 3"></line><path d="M78.0,272.8H131.8V259.3H167.6V243.8H221.3V138.8H293.0V118.2H400.5V131.1H508.0" fill="none" stroke="#b3402f" stroke-width="3.2"></path><line x1="657.8" y1="196.7" x2="657.8" y2="211.0" stroke="#b8860b" stroke-width="3"></line><circle cx="657.8" cy="211.0" r="5.5" fill="#b8860b"></circle><line x1="693.7" y1="196.7" x2="693.7" y2="202.7" stroke="#b8860b" stroke-width="3"></line><circle cx="693.7" cy="202.7" r="5.5" fill="#b8860b"></circle><line x1="729.5" y1="196.7" x2="729.5" y2="196.9" stroke="#b8860b" stroke-width="3"></line><circle cx="729.5" cy="196.9" r="5.5" fill="#b8860b"></circle><line x1="801.2" y1="196.7" x2="801.2" y2="203.3" stroke="#b8860b" stroke-width="3"></line><circle cx="801.2" cy="203.3" r="5.5" fill="#b8860b"></circle><line x1="872.8" y1="196.7" x2="872.8" y2="153.2" stroke="#b8860b" stroke-width="3"></line><circle cx="872.8" cy="153.2" r="5.5" fill="#b8860b"></circle><line x1="1016.2" y1="196.7" x2="1016.2" y2="213.2" stroke="#b8860b" stroke-width="3"></line><circle cx="1016.2" cy="213.2" r="5.5" fill="#b8860b"></circle><text x="565.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">After six stumps every forecast is within 0.17 of its day.</text><text x="565.0" y="437.0" text-anchor="middle" font-size="21" font-family="Segoe UI, sans-serif" fill="#b3402f" font-weight="700">6 stumps · RSS 0.038</text></g> <circle cx="113.8" cy="284.0" r="7" fill="#1c5cab"></circle><circle cx="149.7" cy="264.0" r="7" fill="#1c5cab"></circle><circle cx="185.5" cy="244.0" r="7" fill="#1c5cab"></circle><circle cx="257.2" cy="144.0" r="7" fill="#1c5cab"></circle><circle cx="328.8" cy="84.0" r="7" fill="#1c5cab"></circle><circle cx="472.2" cy="144.0" r="7" fill="#1c5cab"></circle>
+</svg>
+</div>
+<p>The six days from last time, with <span class="math inline">\nu = 0.5</span>: each step fits a stump to the dashed distances and adds half of it. Six stumps take the RSS from 0.815 to 0.038.</p>
+</section>
+
+<section id="the-six-in-code" class="title-slide slide level1 center">
+<h1>The six, in code</h1>
+<div>
+<div id="pyodide-4" class="exercise-cell">
+
+</div>
+<script type="pyodide-4-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJzaXggPSBwZC5EYXRhRnJhbWUoe1widm9sXzIwZFwiOiBbMC40LCAwLjYsIDAuOCwgMS4yLCAxLjYsIDIuNF0sXG4gICAgICAgICAgICAgICAgICAgIFwidm9sX25leHRcIjogWzAuNSwgMC42LCAwLjcsIDEuMiwgMS41LCAxLjJdfSlcbmZvcmVjYXN0ID0gbnAuZnVsbCg2LCBzaXhbXCJ2b2xfbmV4dFwiXS5tZWFuKCkpXG5mb3Igc3RlcCBpbiByYW5nZSg2KTpcbiAgICBoID0gRGVjaXNpb25UcmVlUmVncmVzc29yKG1heF9kZXB0aD0xKS5maXQoc2l4W1tcInZvbF8yMGRcIl1dLCBzaXhbXCJ2b2xfbmV4dFwiXSAtIGZvcmVjYXN0KVxuICAgIGZvcmVjYXN0ID0gZm9yZWNhc3QgKyAwLjUgKiBoLnByZWRpY3Qoc2l4W1tcInZvbF8yMGRcIl1dKVxuICAgIHByaW50KHJvdW5kKCgoc2l4W1widm9sX25leHRcIl0gLSBmb3JlY2FzdCkgKiogMikuc3VtKCksIDQpKSJ9
+</script>
+</div>
+<p><code>h</code> is fitted to the residuals, not to <code>vol_next</code>, and half of its forecast is added on. The six RSS values are the diagram’s.</p>
+</section>
+
+<section id="your-turn-1" class="title-slide slide level1 your-turn center">
+<h1>Your turn <span class="chip chip-turn">1</span></h1>
+<p>Run the loop for 50 steps instead of 6. What happens to the RSS, and to the forecast?</p>
+<div>
+<div id="pyodide-5" class="exercise-cell">
+
+</div>
+<script type="pyodide-5-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIiOnRydWV9LCJjb2RlIjoiZm9yZWNhc3QgPSBucC5mdWxsKDYsIHNpeFtcInZvbF9uZXh0XCJdLm1lYW4oKSlcbmZvciBzdGVwIGluIHJhbmdlKC4uLik6XG4gICAgaCA9IERlY2lzaW9uVHJlZVJlZ3Jlc3NvcihtYXhfZGVwdGg9MSkuZml0KHNpeFtbXCJ2b2xfMjBkXCJdXSwgc2l4W1widm9sX25leHRcIl0gLSBmb3JlY2FzdClcbiAgICBmb3JlY2FzdCA9IGZvcmVjYXN0ICsgMC41ICogaC5wcmVkaWN0KHNpeFtbXCJ2b2xfMjBkXCJdXSlcbnByaW50KHJvdW5kKCgoc2l4W1widm9sX25leHRcIl0gLSBmb3JlY2FzdCkgKiogMikuc3VtKCksIDYpKVxucHJpbnQoZm9yZWNhc3Qucm91bmQoMykpIn0=
+</script>
+</div>
+<div class="muted small">
+<p>The number of steps goes inside <code>range</code>. Compare the forecast with <code>six["vol_next"]</code>.</p>
+</div>
+</section>
+
+<section id="your-turn-1-answer" class="title-slide slide level1 center">
+<h1>Your turn 1: answer</h1>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> step <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">50</span>):</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The RSS falls to 0.0001, and every forecast is within 0.006 of its day: 50 stumps have learned the six days. On new days, that is overfitting.</p>
+<div class="keypoint">
+<p>Adding trees can always lower the training error, so the number of trees has to be chosen on other rows.</p>
+</div>
+</section>
+
+<section id="residuals-as-a-gradient" class="title-slide slide level1 center">
+<h1>Residuals as a gradient</h1>
+<div class="formula">
+<p><span class="math display">L_i = \tfrac{1}{2}\big(y_i - \hat f(\mathbf{x}_i)\big)^2 \quad\Longrightarrow\quad -\frac{\partial L_i}{\partial \hat f(\mathbf{x}_i)} = y_i - \hat f(\mathbf{x}_i)</span></p>
+</div>
+<p>The residual is the negative gradient of the squared error with respect to the forecast. Each tree is one step of gradient descent on the forecasts, hence the name gradient boosting.</p>
+<div class="keypoint">
+<p>With another loss, each tree is fitted to that loss’s negative gradient instead: for log-loss, <span class="math inline">y_i - \hat p_i</span>.</p>
+</div>
+</section>
+
+<section id="boosting-by-hand-on-the-table" class="title-slide slide level1 center">
+<h1>Boosting by hand, on the table</h1>
+<div>
+<div id="pyodide-6" class="exercise-cell">
+
+</div>
+<script type="pyodide-6-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmb3JlY2FzdCA9IG5wLmZ1bGwobGVuKHRyYWluKSwgdHJhaW5bXCJ2b2xfbmV4dFwiXS5tZWFuKCkpXG50ZXN0X2ZvcmVjYXN0ID0gbnAuZnVsbChsZW4odGVzdCksIHRyYWluW1widm9sX25leHRcIl0ubWVhbigpKVxuZm9yIG0gaW4gcmFuZ2UoMTAwKTpcbiAgICBoID0gRGVjaXNpb25UcmVlUmVncmVzc29yKG1heF9kZXB0aD0xLCByYW5kb21fc3RhdGU9MClcbiAgICBoLmZpdCh0cmFpbltjb2x1bW5zXSwgdHJhaW5bXCJ2b2xfbmV4dFwiXSAtIGZvcmVjYXN0KVxuICAgIGZvcmVjYXN0ID0gZm9yZWNhc3QgKyAwLjEgKiBoLnByZWRpY3QodHJhaW5bY29sdW1uc10pXG4gICAgdGVzdF9mb3JlY2FzdCA9IHRlc3RfZm9yZWNhc3QgKyAwLjEgKiBoLnByZWRpY3QodGVzdFtjb2x1bW5zXSlcbnByaW50KHJvdW5kKHJtc2UodGVzdFtcInZvbF9uZXh0XCJdLCB0ZXN0X2ZvcmVjYXN0KSwgNCkpIn0=
+</script>
+</div>
+<p>100 stumps on the 19 columns, each fitted to what is left and added at <span class="math inline">\nu = 0.1</span>. The test error is 0.222, where 100 averaged stumps scored 0.255.</p>
+</section>
+
+<section id="gradient-boosting-in-scikit-learn" class="title-slide slide level1 center">
+<h1>Gradient boosting in scikit-learn</h1>
+<div>
+<div id="pyodide-7" class="exercise-cell">
+
+</div>
+<script type="pyodide-7-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4uZW5zZW1ibGUgaW1wb3J0IEdyYWRpZW50Qm9vc3RpbmdSZWdyZXNzb3JcblxuYm9vc3QgPSBHcmFkaWVudEJvb3N0aW5nUmVncmVzc29yKG5fZXN0aW1hdG9ycz0xMDAsIGxlYXJuaW5nX3JhdGU9MC4xLCBtYXhfZGVwdGg9MSwgcmFuZG9tX3N0YXRlPTApXG5ib29zdC5maXQodHJhaW5bY29sdW1uc10sIHRyYWluW1widm9sX25leHRcIl0pXG5wcmludChyb3VuZChybXNlKHRyYWluW1widm9sX25leHRcIl0sIGJvb3N0LnByZWRpY3QodHJhaW5bY29sdW1uc10pKSwgNCksXG4gICAgICByb3VuZChybXNlKHRlc3RbXCJ2b2xfbmV4dFwiXSwgYm9vc3QucHJlZGljdCh0ZXN0W2NvbHVtbnNdKSksIDQpKVxucHJpbnQobnAuYWxsY2xvc2UoYm9vc3QucHJlZGljdCh0ZXN0W2NvbHVtbnNdKSwgdGVzdF9mb3JlY2FzdCkpIn0=
+</script>
+</div>
+<p><code>n_estimators</code> is <span class="math inline">M</span>, <code>learning_rate</code> is <span class="math inline">\nu</span>, and <code>max_depth=1</code> makes each tree a stump. The forecasts are the loop’s: 0.457 on the training days, 0.222 on the test days.</p>
+</section>
+
+<section id="the-forecast-after-1-10-and-100-stumps" class="title-slide slide level1 center">
+<h1>The forecast after 1, 10 and 100 stumps</h1>
+<div id="95f300fc" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_12_files/figure-revealjs/cell-4-output-1.png" class="quarto-figure quarto-figure-center" width="1098" height="302"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The first stump moves the forecast a tenth of the way: 0.96 to 1.02. After 10 stumps it spans 0.86 to 1.74, and after 100, 0.53 to 2.86.</p>
+</section>
+
+<section id="how-many-trees" class="title-slide slide level1 divider center">
+<h1>3 · How many trees</h1>
+<div class="divider-kicker">
+<p>Part 3</p>
+</div>
+<div class="divider-note">
+<p>Every tree lowers the training error. On new days, too many trees do harm.</p>
+</div>
+</section>
+
+<section id="stumps-predict" class="title-slide slide level1 center">
+<h1>1,000 stumps <span class="chip chip-predict">predict</span></h1>
+<p>A forest’s test error only flattened as trees were added. Fit ten times as many stumps as <code>boost</code>: what will the test error do?</p>
+<div>
+<div id="pyodide-8" class="exercise-cell">
+
+</div>
+<script type="pyodide-8-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIiOnRydWV9LCJjb2RlIjoibWFueSA9IEdyYWRpZW50Qm9vc3RpbmdSZWdyZXNzb3Iobl9lc3RpbWF0b3JzPTEwMDAsIGxlYXJuaW5nX3JhdGU9MC4xLCBtYXhfZGVwdGg9MSwgcmFuZG9tX3N0YXRlPTApXG5tYW55LmZpdCh0cmFpbltjb2x1bW5zXSwgdHJhaW5bXCJ2b2xfbmV4dFwiXSlcblxucHJpbnQocm91bmQocm1zZSh0cmFpbltcInZvbF9uZXh0XCJdLCBtYW55LnByZWRpY3QodHJhaW5bY29sdW1uc10pKSwgNCkpXG5wcmludChyb3VuZChybXNlKHRlc3RbXCJ2b2xfbmV4dFwiXSwgbWFueS5wcmVkaWN0KHRlc3RbY29sdW1uc10pKSwgNCkpIn0=
+</script>
+</div>
+</section>
+
+<section id="test-error-against-the-number-of-trees" class="title-slide slide level1 center">
+<h1>Test error against the number of trees</h1>
+<div id="16b626c4" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_12_files/figure-revealjs/cell-5-output-1.png" class="quarto-figure quarto-figure-center" width="790" height="328"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>1,000 stumps err 0.350 on the training days and 0.248 on the test days. At every learning rate the test error falls, then rises; at 0.1 it is lowest near 144.</p>
+</section>
+
+<section id="your-turn-2" class="title-slide slide level1 your-turn center">
+<h1>Your turn <span class="chip chip-turn">2</span></h1>
+<p>Grow trees of depth 2 instead of stumps, with everything else as in <code>boost</code>. Better or worse on the test days?</p>
+<div>
+<div id="pyodide-9" class="exercise-cell">
+
+</div>
+<script type="pyodide-9-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIiOnRydWV9LCJjb2RlIjoiZGVlcGVyID0gR3JhZGllbnRCb29zdGluZ1JlZ3Jlc3NvcihuX2VzdGltYXRvcnM9MTAwLCBsZWFybmluZ19yYXRlPTAuMSwgbWF4X2RlcHRoPS4uLiwgcmFuZG9tX3N0YXRlPTApXG5kZWVwZXIuZml0KHRyYWluW2NvbHVtbnNdLCB0cmFpbltcInZvbF9uZXh0XCJdKVxucHJpbnQocm91bmQocm1zZSh0cmFpbltcInZvbF9uZXh0XCJdLCBkZWVwZXIucHJlZGljdCh0cmFpbltjb2x1bW5zXSkpLCA0KSlcbnByaW50KHJvdW5kKHJtc2UodGVzdFtcInZvbF9uZXh0XCJdLCBkZWVwZXIucHJlZGljdCh0ZXN0W2NvbHVtbnNdKSksIDQpKSJ9
+</script>
+</div>
+<div class="muted small">
+<p><code>max_depth</code> sets the questions on each path, as for one tree. Stumps scored 0.457 and 0.222.</p>
+</div>
+</section>
+
+<section id="your-turn-2-answer" class="title-slide slide level1 center">
+<h1>Your turn 2: answer</h1>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="" aria-hidden="true" tabindex="-1"></a>deeper <span class="op">=</span> GradientBoostingRegressor(n_estimators<span class="op">=</span><span class="dv">100</span>, learning_rate<span class="op">=</span><span class="fl">0.1</span>, max_depth<span class="op">=</span><span class="dv">2</span>, random_state<span class="op">=</span><span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Trees of depth 2 fit the training days more closely, 0.299 against 0.457, and the test days worse, 0.269 against 0.222.</p>
+<div class="keypoint">
+<p>A tree of depth 2 can fit how two columns interact, and 100 of them also fit the noise in the training days.</p>
+</div>
+</section>
+
+<section id="the-depth-of-each-tree" class="title-slide slide level1 center">
+<h1>The depth of each tree</h1>
+<div id="82958cd5" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_12_files/figure-revealjs/cell-6-output-1.png" class="quarto-figure quarto-figure-center" width="790" height="328"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Deeper trees reach their lowest test error sooner and then climb faster: after 15 trees at depth 3, 34 at depth 2 and 144 with stumps.</p>
+</section>
+
+<section id="stopping-early" class="title-slide slide level1 center">
+<h1>Stopping early</h1>
+<div id="3b4564b2" class="cell" data-execution_count="6">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_12_files/figure-revealjs/cell-7-output-1.png" class="quarto-figure quarto-figure-center" width="805" height="321"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Fitted on 2015 to 2021 and scored on 2022 after every stump, the error is lowest at 219. That model scores 0.217 on the test days; ridge scored 0.218.</p>
+</section>
+
+<section id="early-stopping-on-random-days" class="title-slide slide level1 center">
+<h1>Early stopping on random days</h1>
+<div>
+<div id="pyodide-10" class="exercise-cell">
+
+</div>
+<script type="pyodide-10-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJlYXJseSA9IEdyYWRpZW50Qm9vc3RpbmdSZWdyZXNzb3Iobl9lc3RpbWF0b3JzPTUwMDAsIGxlYXJuaW5nX3JhdGU9MC4xLCBtYXhfZGVwdGg9MSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB2YWxpZGF0aW9uX2ZyYWN0aW9uPTAuMSwgbl9pdGVyX25vX2NoYW5nZT0xMCwgcmFuZG9tX3N0YXRlPTApXG5lYXJseS5maXQodHJhaW5bY29sdW1uc10sIHRyYWluW1widm9sX25leHRcIl0pXG5wcmludChlYXJseS5uX2VzdGltYXRvcnNfLCByb3VuZChybXNlKHRlc3RbXCJ2b2xfbmV4dFwiXSwgZWFybHkucHJlZGljdCh0ZXN0W2NvbHVtbnNdKSksIDQpKSJ9
+</script>
+</div>
+<p><code>n_iter_no_change=10</code> stops once 10 more trees have not helped on a random tenth of the training days: at 342 trees, with 0.226 on the test days.</p>
+<div class="keypoint">
+<p>A random day has its neighbours among the fitting rows, as out-of-bag days did, so the search stops late. On days, stop on a later block.</p>
+</div>
+</section>
+
+<section id="xgboost-and-lightgbm" class="title-slide slide level1 divider center">
+<h1>4 · XGBoost and LightGBM</h1>
+<div class="divider-kicker">
+<p>Part 4</p>
+</div>
+<div class="divider-note">
+<p>The two libraries most used for boosting in practice.</p>
+</div>
+</section>
+
+<section id="two-libraries-built-for-boosting" class="title-slide slide level1 center">
+<h1>Two libraries built for boosting</h1>
+<div class="compare">
+<div class="compare-col">
+<h3>
+XGBoost
+</h3>
+<p>
+Chen and Guestrin (2016). Bins each column, puts a penalty on every tree, handles missing values and uses every core. In 2015, 17 of the 29 winning solutions on Kaggle’s blog used it.
+</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>
+LightGBM
+</h3>
+<p>
+Ke and others, at Microsoft (2017). Bins each column and grows each tree leaf by leaf, to be fast on large tables. Both libraries follow scikit-learn’s pattern: create, fit, predict.
+</p>
+</div>
+</div>
+<div class="keypoint">
+<p>On 45 tables, tree-based models stayed ahead of deep learning on medium-sized data, about 10,000 rows (Grinsztajn, Oyallon and Varoquaux, 2022).</p>
+</div>
+</section>
+
+<section id="xgboost-in-code" class="title-slide slide level1 center">
+<h1>XGBoost in code</h1>
+<div>
+<div id="pyodide-11" class="exercise-cell">
+
+</div>
+<script type="pyodide-11-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHhnYm9vc3QgaW1wb3J0IFhHQlJlZ3Jlc3NvclxuXG54Z2IgPSBYR0JSZWdyZXNzb3Iobl9lc3RpbWF0b3JzPTEwMCwgbGVhcm5pbmdfcmF0ZT0wLjEsIG1heF9kZXB0aD0xLCByYW5kb21fc3RhdGU9MClcbnhnYi5maXQodHJhaW5bY29sdW1uc10sIHRyYWluW1widm9sX25leHRcIl0pXG5wcmludChyb3VuZChybXNlKHRlc3RbXCJ2b2xfbmV4dFwiXSwgeGdiLnByZWRpY3QodGVzdFtjb2x1bW5zXSkpLCA0KSkifQ==
+</script>
+</div>
+<p>The same 100 stumps score 0.219, since XGBoost searches for cuts among 256 bins per column. Its defaults, 100 trees of depth 6 at a rate of 0.3, score 0.349.</p>
+</section>
+
+<section id="a-penalty-on-each-tree" class="title-slide slide level1 center">
+<h1>A penalty on each tree</h1>
+<div class="formula">
+<p><span class="math display">\sum_{i=1}^{n} L\big(y_i, \hat f(\mathbf{x}_i)\big) \;+\; \sum_{m=1}^{M} \Big(\gamma\, T_m + \tfrac{1}{2}\,\lambda \sum_{j=1}^{T_m} w_{mj}^2\Big)</span></p>
+</div>
+<p><span class="math inline">T_m</span> counts the leaves of tree <span class="math inline">m</span> and <span class="math inline">w_{mj}</span> are their values. <code>reg_lambda</code> is <span class="math inline">\lambda</span>, a ridge penalty on the values; <code>gamma</code> is <span class="math inline">\gamma</span>, a price per leaf, as in pruning.</p>
+<div class="keypoint">
+<p>The defaults are <code>reg_lambda=1</code> and <code>gamma=0</code>: a light ridge penalty on the leaves, and no price for adding one.</p>
+</div>
+</section>
+
+<section id="lightgbm-in-code" class="title-slide slide level1 center">
+<h1>LightGBM in code</h1>
+<div>
+<div id="pyodide-12" class="exercise-cell">
+
+</div>
+<script type="pyodide-12-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIGxpZ2h0Z2JtIGltcG9ydCBMR0JNUmVncmVzc29yXG5cbmxnYm0gPSBMR0JNUmVncmVzc29yKG5fZXN0aW1hdG9ycz0xMDAsIGxlYXJuaW5nX3JhdGU9MC4xLCBudW1fbGVhdmVzPTIsIHJhbmRvbV9zdGF0ZT0wLCB2ZXJib3NlPS0xKVxubGdibS5maXQodHJhaW5bY29sdW1uc10sIHRyYWluW1widm9sX25leHRcIl0pXG5wcmludChyb3VuZChybXNlKHRlc3RbXCJ2b2xfbmV4dFwiXSwgbGdibS5wcmVkaWN0KHRlc3RbY29sdW1uc10pKSwgNCkpIn0=
+</script>
+</div>
+<p>LightGBM sizes a tree by its leaves, so <code>num_leaves=2</code> makes a stump: 0.226. Its default of 31 leaves scores 0.346, and <code>verbose=-1</code> silences its messages.</p>
+</section>
+
+<section id="depth-by-depth-or-leaf-by-leaf" class="title-slide slide level1 center">
+<h1>Depth by depth, or leaf by leaf</h1>
+<div class="diagram">
+<svg width="1100" height="440" viewbox="0 0 1100 440" role="img" aria-label="Two trees grown with three questions each: depth by depth, as XGBoost does, splits both boxes of depth 1 and ends with four leaves at depth 2; leaf by leaf, as LightGBM does, splits the leaf that lowers the error most and ends with a branch of depth 3">
+<text x="275.0" y="26.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="700">depth by depth</text> <text x="275.0" y="50.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">XGBoost, scikit-learn’s GradientBoosting</text> <text x="825.0" y="26.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="700">leaf by leaf</text> <text x="825.0" y="50.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">LightGBM, scikit-learn’s HistGradientBoosting</text> <rect x="233.0" y="72.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="275.0" y="97.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text> <g class="fragment" data-fragment-index="1"><rect x="213.0" y="70.0" width="124" height="42" fill="#fcfcfb"></rect></g> <g class="fragment" data-fragment-index="1"><rect x="215.0" y="72.0" width="120" height="38" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"></rect><text x="275.0" y="97.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">question 1</text><line x1="275.0" y1="110.0" x2="165.0" y2="150.0" stroke="#86b6ef" stroke-width="2"></line><rect x="123.0" y="150.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="165.0" y="175.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text><line x1="275.0" y1="110.0" x2="385.0" y2="150.0" stroke="#86b6ef" stroke-width="2"></line><rect x="343.0" y="150.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="385.0" y="175.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text></g> <g class="fragment" data-fragment-index="2"><rect x="103.0" y="148.0" width="124" height="42" fill="#fcfcfb"></rect></g> <g class="fragment" data-fragment-index="2"><rect x="105.0" y="150.0" width="120" height="38" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"></rect><text x="165.0" y="175.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">question 2</text><line x1="165.0" y1="188.0" x2="105.0" y2="228.0" stroke="#86b6ef" stroke-width="2"></line><rect x="63.0" y="228.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="105.0" y="253.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text><line x1="165.0" y1="188.0" x2="225.0" y2="228.0" stroke="#86b6ef" stroke-width="2"></line><rect x="183.0" y="228.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="225.0" y="253.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text></g> <g class="fragment" data-fragment-index="3"><rect x="323.0" y="148.0" width="124" height="42" fill="#fcfcfb"></rect></g> <g class="fragment" data-fragment-index="3"><rect x="325.0" y="150.0" width="120" height="38" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"></rect><text x="385.0" y="175.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">question 3</text><line x1="385.0" y1="188.0" x2="325.0" y2="228.0" stroke="#86b6ef" stroke-width="2"></line><rect x="283.0" y="228.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="325.0" y="253.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text><line x1="385.0" y1="188.0" x2="445.0" y2="228.0" stroke="#86b6ef" stroke-width="2"></line><rect x="403.0" y="228.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="445.0" y="253.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text></g> <rect x="783.0" y="72.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="825.0" y="97.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text> <g class="fragment" data-fragment-index="1"><rect x="763.0" y="70.0" width="124" height="42" fill="#fcfcfb"></rect></g> <g class="fragment" data-fragment-index="1"><rect x="765.0" y="72.0" width="120" height="38" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"></rect><text x="825.0" y="97.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">question 1</text><line x1="825.0" y1="110.0" x2="715.0" y2="150.0" stroke="#86b6ef" stroke-width="2"></line><rect x="673.0" y="150.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="715.0" y="175.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text><line x1="825.0" y1="110.0" x2="935.0" y2="150.0" stroke="#86b6ef" stroke-width="2"></line><rect x="893.0" y="150.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="935.0" y="175.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text></g> <g class="fragment" data-fragment-index="2"><rect x="653.0" y="148.0" width="124" height="42" fill="#fcfcfb"></rect></g> <g class="fragment" data-fragment-index="2"><rect x="655.0" y="150.0" width="120" height="38" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"></rect><text x="715.0" y="175.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">question 2</text><line x1="715.0" y1="188.0" x2="655.0" y2="228.0" stroke="#86b6ef" stroke-width="2"></line><rect x="613.0" y="228.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="655.0" y="253.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text><line x1="715.0" y1="188.0" x2="775.0" y2="228.0" stroke="#86b6ef" stroke-width="2"></line><rect x="733.0" y="228.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="775.0" y="253.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text></g> <g class="fragment" data-fragment-index="3"><rect x="713.0" y="226.0" width="124" height="42" fill="#fcfcfb"></rect></g> <g class="fragment" data-fragment-index="3"><rect x="715.0" y="228.0" width="120" height="38" rx="8" fill="#eaf1fa" stroke="#0d366b" stroke-width="2"></rect><text x="775.0" y="253.0" text-anchor="middle" font-size="16" font-family="Segoe UI, sans-serif" fill="#0d366b" font-weight="600">question 3</text><line x1="775.0" y1="266.0" x2="715.0" y2="306.0" stroke="#86b6ef" stroke-width="2"></line><rect x="673.0" y="306.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="715.0" y="331.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text><line x1="775.0" y1="266.0" x2="835.0" y2="306.0" stroke="#86b6ef" stroke-width="2"></line><rect x="793.0" y="306.0" width="84" height="38" rx="8" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"></rect><text x="835.0" y="331.0" text-anchor="middle" font-size="15" font-family="Segoe UI, sans-serif" fill="#52514e">leaf</text></g> <g class="fragment fade-out" data-fragment-index="1"><text x="550.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Both start with every row in one box.</text></g> <g class="fragment fade-out" data-fragment-index="2"><g class="fragment" data-fragment-index="1"><text x="550.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Step 1: both ask a first question.</text></g></g> <g class="fragment fade-out" data-fragment-index="3"><g class="fragment" data-fragment-index="2"><text x="550.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Step 2: both split the left box.</text></g></g> <g class="fragment" data-fragment-index="3"><text x="550.0" y="402.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Step 3: depth by depth splits the right box to finish depth 2.</text><text x="550.0" y="430.0" text-anchor="middle" font-size="19" font-family="Segoe UI, sans-serif" fill="#141413">Leaf by leaf splits whichever leaf lowers the error most, here one level deeper.</text></g>
+</svg>
+</div>
+<p><code>max_depth</code> limits a tree grown depth by depth, and <code>num_leaves</code> one grown leaf by leaf. With the same leaves, a leaf-by-leaf tree goes deeper where the error is.</p>
+</section>
+
+<section id="early-stopping-in-xgboost" class="title-slide slide level1 center">
+<h1>Early stopping in XGBoost</h1>
+<div>
+<div id="pyodide-13" class="exercise-cell">
+
+</div>
+<script type="pyodide-13-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmaXRfcm93cywgc3RvcF9yb3dzID0gdHJhaW4ubG9jWzpcIjIwMjEtMTItMzFcIl0sIHRyYWluLmxvY1tcIjIwMjItMDEtMDFcIjpdXG54Z2Jfc3RvcCA9IFhHQlJlZ3Jlc3NvcihuX2VzdGltYXRvcnM9MzAwMCwgbGVhcm5pbmdfcmF0ZT0wLjEsIG1heF9kZXB0aD0xLFxuICAgICAgICAgICAgICAgICAgICAgICAgZWFybHlfc3RvcHBpbmdfcm91bmRzPTUwLCByYW5kb21fc3RhdGU9MClcbnhnYl9zdG9wLmZpdChmaXRfcm93c1tjb2x1bW5zXSwgZml0X3Jvd3NbXCJ2b2xfbmV4dFwiXSxcbiAgICAgICAgICAgICBldmFsX3NldD1bKHN0b3Bfcm93c1tjb2x1bW5zXSwgc3RvcF9yb3dzW1widm9sX25leHRcIl0pXSwgdmVyYm9zZT1GYWxzZSlcbnByaW50KHhnYl9zdG9wLmJlc3RfaXRlcmF0aW9uLCByb3VuZChybXNlKHRlc3RbXCJ2b2xfbmV4dFwiXSwgeGdiX3N0b3AucHJlZGljdCh0ZXN0W2NvbHVtbnNdKSksIDQpKSJ9
+</script>
+</div>
+<p>XGBoost scores every new tree on 2022 and stops 50 trees after the best. <code>best_iteration</code> counts from 0, so <code>predict</code> uses the first 244 stumps: 0.225.</p>
+</section>
+
+<section id="your-turn-3" class="title-slide slide level1 your-turn center">
+<h1>Your turn <span class="chip chip-turn">3</span></h1>
+<p>Suppose early stopping watched the test days instead of 2022. Pass them as <code>eval_set</code>: which score does it report, and is that a test score?</p>
+<div>
+<div id="pyodide-14" class="exercise-cell">
+
+</div>
+<script type="pyodide-14-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIiOnRydWV9LCJjb2RlIjoieGdiX3BlZWsgPSBYR0JSZWdyZXNzb3Iobl9lc3RpbWF0b3JzPTMwMDAsIGxlYXJuaW5nX3JhdGU9MC4xLCBtYXhfZGVwdGg9MSxcbiAgICAgICAgICAgICAgICAgICAgICAgIGVhcmx5X3N0b3BwaW5nX3JvdW5kcz01MCwgcmFuZG9tX3N0YXRlPTApXG54Z2JfcGVlay5maXQoZml0X3Jvd3NbY29sdW1uc10sIGZpdF9yb3dzW1widm9sX25leHRcIl0sXG4gICAgICAgICAgICAgZXZhbF9zZXQ9WyguLi4sIC4uLildLCB2ZXJib3NlPUZhbHNlKVxucHJpbnQoeGdiX3BlZWsuYmVzdF9pdGVyYXRpb24sIHJvdW5kKHhnYl9wZWVrLmJlc3Rfc2NvcmUsIDQpKSJ9
+</script>
+</div>
+<div class="muted small">
+<p><code>eval_set</code> takes a list of (columns, target) pairs, as in <code>xgb_stop</code>. <code>best_score</code> is the lowest RMSE early stopping saw.</p>
+</div>
+</section>
+
+<section id="your-turn-3-answer" class="title-slide slide level1 center">
+<h1>Your turn 3: answer</h1>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="" aria-hidden="true" tabindex="-1"></a>xgb_peek.fit(fit_rows[columns], fit_rows[<span class="st">"vol_next"</span>],</span>
+<span id="cb3-2"><a href="" aria-hidden="true" tabindex="-1"></a>             eval_set<span class="op">=</span>[(test[columns], test[<span class="st">"vol_next"</span>])], verbose<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>It keeps 30 stumps and reports 0.204, which would beat ridge’s 0.218. It is not a test score: the test days chose when to stop, out of 80 scores computed on them.</p>
+<div class="keypoint">
+<p>Rows that help choose a setting become validation rows. The test days report once, for a model chosen without them: here 0.225.</p>
+</div>
+</section>
+
+<section id="boosting-a-label" class="title-slide slide level1 divider center">
+<h1>5 · Boosting a label</h1>
+<div class="divider-kicker">
+<p>Part 5</p>
+</div>
+<div class="divider-note">
+<p>The credit table, where trees beat logistic regression.</p>
+</div>
+</section>
+
+<section id="the-credit-table" class="title-slide slide level1 center">
+<h1>The credit table</h1>
+<div>
+<div id="pyodide-15" class="exercise-cell">
+
+</div>
+<script type="pyodide-15-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4ubW9kZWxfc2VsZWN0aW9uIGltcG9ydCB0cmFpbl90ZXN0X3NwbGl0XG5cbmNyZWRpdCA9IHBkLnJlYWRfY3N2KFwiZGF0YS9jcmVkaXQuY3N2XCIpXG5jX3RyYWluLCBjX3Rlc3QgPSB0cmFpbl90ZXN0X3NwbGl0KGNyZWRpdCwgdGVzdF9zaXplPTAuMywgcmFuZG9tX3N0YXRlPTAsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHN0cmF0aWZ5PWNyZWRpdFtcImRlZmF1bHRcIl0pXG5jX2NvbHVtbnMgPSBbXCJsaW1pdFwiLCBcImFnZVwiLCBcImxhdGVfbm93XCIsIFwibW9udGhzX2xhdGVcIiwgXCJiaWxsXCIsIFwicGFpZFwiLCBcInV0aWxpc2F0aW9uXCJdXG5wcmludChsZW4oY190cmFpbiksIGxlbihjX3Rlc3QpLCByb3VuZChjX3RyYWluW1wiZGVmYXVsdFwiXS5tZWFuKCksIDMpKSJ9
+</script>
+</div>
+<p>One row per card holder; <code>default</code> is 1 for the 22 percent who defaulted the next month. On this split logistic regression scored 0.748 and the forest 0.777.</p>
+</section>
+
+<section id="boosting-a-label-1" class="title-slide slide level1 center">
+<h1>Boosting a label</h1>
+<div class="formula">
+<p><span class="math display">\hat p_i = \sigma\big(\hat f(\mathbf{x}_i)\big), \qquad -\frac{\partial\, \text{log-loss}_i}{\partial \hat f(\mathbf{x}_i)} = y_i - \hat p_i</span></p>
+</div>
+<p>The trees are added on the log-odds scale, and each is fitted to <span class="math inline">y_i - \hat p_i</span>, the gap between the label and the probability. The sigmoid turns the sum into a probability.</p>
+</section>
+
+<section id="xgboost-on-the-credit-table" class="title-slide slide level1 center">
+<h1>XGBoost on the credit table</h1>
+<div>
+<div id="pyodide-16" class="exercise-cell">
+
+</div>
+<script type="pyodide-16-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHhnYm9vc3QgaW1wb3J0IFhHQkNsYXNzaWZpZXJcbmZyb20gc2tsZWFybi5tZXRyaWNzIGltcG9ydCByb2NfYXVjX3Njb3JlXG5cbnhnYl9jID0gWEdCQ2xhc3NpZmllcihuX2VzdGltYXRvcnM9MTAwLCBsZWFybmluZ19yYXRlPTAuMSwgbWF4X2RlcHRoPTMsIHJhbmRvbV9zdGF0ZT0wKVxueGdiX2MuZml0KGNfdHJhaW5bY19jb2x1bW5zXSwgY190cmFpbltcImRlZmF1bHRcIl0pXG5wX3hnYiA9IHhnYl9jLnByZWRpY3RfcHJvYmEoY190ZXN0W2NfY29sdW1uc10pWzosIDFdXG5wcmludChyb3VuZChyb2NfYXVjX3Njb3JlKGNfdGVzdFtcImRlZmF1bHRcIl0sIHBfeGdiKSwgNCkpIn0=
+</script>
+</div>
+<p>100 trees of depth 3 at a learning rate of 0.1: an AUC of 0.777, the forest’s score, against 0.748 for logistic regression.</p>
+</section>
+
+<section id="four-implementations-of-boosting" class="title-slide slide level1 smaller center">
+<h1>Four implementations of boosting</h1>
+<table class="caption-top">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 39%">
+<col style="width: 18%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">model</th>
+<th style="text-align: left;">how a cut is searched</th>
+<th style="text-align: right;">fit, on one core</th>
+<th style="text-align: right;">test AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>GradientBoostingClassifier</code></td>
+<td style="text-align: left;">every value of every column</td>
+<td style="text-align: right;">1.91 s</td>
+<td style="text-align: right;">0.776</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>HistGradientBoostingClassifier</code></td>
+<td style="text-align: left;">255 bins per column</td>
+<td style="text-align: right;">0.14 s</td>
+<td style="text-align: right;">0.776</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>XGBClassifier</code></td>
+<td style="text-align: left;">256 bins per column</td>
+<td style="text-align: right;">0.08 s</td>
+<td style="text-align: right;">0.777</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>LGBMClassifier</code></td>
+<td style="text-align: left;">255 bins, leaf by leaf</td>
+<td style="text-align: right;">0.08 s</td>
+<td style="text-align: right;">0.777</td>
+</tr>
+</tbody>
+</table>
+<p>100 trees of depth 3, or of 8 leaves, at a learning rate of 0.1, on the 21,000 training rows. With bins, the same trees fit about 25 times faster.</p>
+</section>
+
+<section id="early-stopping-on-separate-borrowers" class="title-slide slide level1 center">
+<h1>Early stopping on separate borrowers</h1>
+<div>
+<div id="pyodide-17" class="exercise-cell">
+
+</div>
+<script type="pyodide-17-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIGxpZ2h0Z2JtIGltcG9ydCBMR0JNQ2xhc3NpZmllciwgZWFybHlfc3RvcHBpbmdcblxuZml0X2MsIHN0b3BfYyA9IHRyYWluX3Rlc3Rfc3BsaXQoY190cmFpbiwgdGVzdF9zaXplPTAuMiwgcmFuZG9tX3N0YXRlPTAsIHN0cmF0aWZ5PWNfdHJhaW5bXCJkZWZhdWx0XCJdKVxubGdibV9jID0gTEdCTUNsYXNzaWZpZXIobl9lc3RpbWF0b3JzPTMwMDAsIGxlYXJuaW5nX3JhdGU9MC4wNSwgbnVtX2xlYXZlcz0xNSwgcmFuZG9tX3N0YXRlPTAsIHZlcmJvc2U9LTEpXG5sZ2JtX2MuZml0KGZpdF9jW2NfY29sdW1uc10sIGZpdF9jW1wiZGVmYXVsdFwiXSwgZXZhbF9zZXQ9WyhzdG9wX2NbY19jb2x1bW5zXSwgc3RvcF9jW1wiZGVmYXVsdFwiXSldLFxuICAgICAgICAgICBldmFsX21ldHJpYz1cImF1Y1wiLCBjYWxsYmFja3M9W2Vhcmx5X3N0b3BwaW5nKDUwLCB2ZXJib3NlPUZhbHNlKV0pXG5wX2xnYm0gPSBsZ2JtX2MucHJlZGljdF9wcm9iYShjX3Rlc3RbY19jb2x1bW5zXSlbOiwgMV1cbnByaW50KGxnYm1fYy5iZXN0X2l0ZXJhdGlvbl8sIHJvdW5kKHJvY19hdWNfc2NvcmUoY190ZXN0W1wiZGVmYXVsdFwiXSwgcF9sZ2JtKSwgNCkpIn0=
+</script>
+</div>
+<p>Borrowers are separate cases, so a random fifth of the training rows can decide when to stop: 91 trees of 15 leaves, and an AUC of 0.776.</p>
+</section>
+
+<section id="when-to-change-what" class="title-slide slide level1 center">
+<h1>When to change what</h1>
+<div class="why-grid">
+<div class="why-point">
+<p><strong>Always</strong> <span><code>n_estimators</code>, found by early stopping, with <code>learning_rate</code>: a smaller rate needs more trees. The size of each tree: <code>max_depth</code>, or <code>num_leaves</code> in LightGBM.</span></p>
+</div>
+<div class="why-point">
+<p><strong>Sometimes</strong> <span><code>subsample</code> and <code>colsample_bytree</code>, a random share of the rows and columns for each tree, as in a forest; LightGBM also needs <code>subsample_freq=1</code>. The smallest leaf, <code>min_child_weight</code> or <code>min_child_samples</code>. <code>reg_lambda</code>.</span></p>
+</div>
+<div class="why-point">
+<p><strong>Rarely</strong> <span><code>gamma</code>, a price per leaf. <code>max_bin</code>, the number of bins per column. <code>objective</code>, the loss that is boosted.</span></p>
+</div>
+<div class="why-point">
+<p><strong>Never needed</strong> <span>A scaler. A cut compares one column with one number, so scaling changes no forecast.</span></p>
+</div>
+</div>
+</section>
+
+<section id="reading-a-model" class="title-slide slide level1 divider center">
+<h1>6 · Reading a model</h1>
+<div class="divider-kicker">
+<p>Part 6</p>
+</div>
+<div class="divider-note">
+<p>Which columns a model of many trees uses, measured two ways.</p>
+</div>
+</section>
+
+<section id="importance-from-the-cuts" class="title-slide slide level1 center">
+<h1>Importance from the cuts</h1>
+<div>
+<div id="pyodide-18" class="exercise-cell">
+
+</div>
+<script type="pyodide-18-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJpbXBvcnRhbmNlID0gcGQuU2VyaWVzKHhnYl9jLmZlYXR1cmVfaW1wb3J0YW5jZXNfLCBpbmRleD1jX2NvbHVtbnMpXG5wcmludChpbXBvcnRhbmNlLnNvcnRfdmFsdWVzKGFzY2VuZGluZz1GYWxzZSkucm91bmQoMykpIn0=
+</script>
+</div>
+<p>XGBoost averages the fall in the loss over the cuts on each column and scales the results to sum to one. The two lateness columns take 87 percent.</p>
+</section>
+
+<section id="a-column-of-random-numbers" class="title-slide slide level1 center">
+<h1>A column of random numbers</h1>
+<div>
+<div id="pyodide-19" class="exercise-cell">
+
+</div>
+<script type="pyodide-19-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJub2lzeV90cmFpbiA9IGNfdHJhaW4uY29weSgpXG5ub2lzeV90cmFpbltcIm5vaXNlXCJdID0gbnAucmFuZG9tLmRlZmF1bHRfcm5nKDApLm5vcm1hbChzaXplPWxlbihub2lzeV90cmFpbikpXG5uX2NvbHVtbnMgPSBjX2NvbHVtbnMgKyBbXCJub2lzZVwiXVxubm9pc3lfbW9kZWwgPSBMR0JNQ2xhc3NpZmllcihyYW5kb21fc3RhdGU9MCwgdmVyYm9zZT0tMSlcbm5vaXN5X21vZGVsLmZpdChub2lzeV90cmFpbltuX2NvbHVtbnNdLCBub2lzeV90cmFpbltcImRlZmF1bHRcIl0pXG5jdXRzID0gcGQuU2VyaWVzKG5vaXN5X21vZGVsLmZlYXR1cmVfaW1wb3J0YW5jZXNfLCBpbmRleD1uX2NvbHVtbnMpXG5wcmludChjdXRzLnNvcnRfdmFsdWVzKGFzY2VuZGluZz1GYWxzZSkudG9fZGljdCgpKSJ9
+</script>
+</div>
+<p>LightGBM counts the cuts on each column. The noise gets the most, 582: each of its 21,000 values is a possible cut, where <code>late_now</code> has 9 values and gets 83.</p>
+</section>
+
+<section id="what-each-library-counts" class="title-slide slide level1 smaller center">
+<h1>What each library counts</h1>
+<table class="caption-top">
+<colgroup>
+<col style="width: 31%">
+<col style="width: 68%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">model</th>
+<th style="text-align: left;">what <code>feature_importances_</code> measures</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">scikit-learn: trees, forests, <code>GradientBoosting</code></td>
+<td style="text-align: left;">the fall in squared error or Gini from each column’s cuts, summed and scaled to one</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">XGBoost</td>
+<td style="text-align: left;">the average fall in the loss per cut on the column, scaled to one</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">LightGBM</td>
+<td style="text-align: left;">the number of cuts on the column; <code>importance_type="gain"</code> sums the fall instead</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">scikit-learn: <code>HistGradientBoosting</code></td>
+<td style="text-align: left;">it has no <code>feature_importances_</code></td>
+</tr>
+</tbody>
+</table>
+<p>All four measure on the training rows, where a flexible model has fitted noise too. LightGBM’s gain still gives the random column 8 percent, more than <code>age</code>.</p>
+</section>
+
+<section id="permutation-importance" class="title-slide slide level1 center">
+<h1>Permutation importance</h1>
+<div class="formula">
+<p><span class="math display">I_j = s - \frac{1}{K}\sum_{k=1}^{K} s_{k,j}</span></p>
+</div>
+<p><span class="math inline">s</span> is the model’s score on the test rows and <span class="math inline">s_{k,j}</span> its score after the <span class="math inline">k</span>-th shuffle of column <span class="math inline">j</span>. Shuffling breaks the column’s link to the label and keeps its values.</p>
+<div class="keypoint">
+<p>It asks what the model loses without the column, on rows it did not fit.</p>
+</div>
+</section>
+
+<section id="permutation-importance-in-code" class="title-slide slide level1 center">
+<h1>Permutation importance in code</h1>
+<div>
+<div id="pyodide-20" class="exercise-cell">
+
+</div>
+<script type="pyodide-20-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmcm9tIHNrbGVhcm4uaW5zcGVjdGlvbiBpbXBvcnQgcGVybXV0YXRpb25faW1wb3J0YW5jZVxuXG5ub2lzeV90ZXN0ID0gY190ZXN0LmNvcHkoKVxubm9pc3lfdGVzdFtcIm5vaXNlXCJdID0gbnAucmFuZG9tLmRlZmF1bHRfcm5nKDEpLm5vcm1hbChzaXplPWxlbihub2lzeV90ZXN0KSlcbnJlc3VsdCA9IHBlcm11dGF0aW9uX2ltcG9ydGFuY2Uobm9pc3lfbW9kZWwsIG5vaXN5X3Rlc3Rbbl9jb2x1bW5zXSwgbm9pc3lfdGVzdFtcImRlZmF1bHRcIl0sXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHNjb3Jpbmc9XCJyb2NfYXVjXCIsIG5fcmVwZWF0cz0xMCwgcmFuZG9tX3N0YXRlPTApXG5zaHVmZmxlZCA9IHBkLlNlcmllcyhyZXN1bHQuaW1wb3J0YW5jZXNfbWVhbiwgaW5kZXg9bl9jb2x1bW5zKVxucHJpbnQoc2h1ZmZsZWQuc29ydF92YWx1ZXMoYXNjZW5kaW5nPUZhbHNlKS5yb3VuZCg0KS50b19kaWN0KCkpIn0=
+</script>
+</div>
+<p>Shuffling <code>months_late</code> costs 0.112 of AUC, and shuffling the noise costs nothing. The column the cut counts ranked first comes last.</p>
+</section>
+
+<section id="two-rankings-of-one-model" class="title-slide slide level1 center">
+<h1>Two rankings of one model</h1>
+<div id="d52a453a" class="cell" data-execution_count="7">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_12_files/figure-revealjs/cell-8-output-1.png" class="quarto-figure quarto-figure-center" width="1022" height="311"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The noise is shown in brick. Counts of cuts reward columns with many possible cuts on the rows the model fitted; the shuffles are scored on the test rows.</p>
+</section>
+
+<section id="two-correlated-columns" class="title-slide slide level1 center">
+<h1>Two correlated columns</h1>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: left;">column</th>
+<th style="text-align: right;">AUC lost when shuffled</th>
+<th style="text-align: right;">AUC lost by a refit without it</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>late_now</code></td>
+<td style="text-align: right;">0.031</td>
+<td style="text-align: right;">0.012</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>months_late</code></td>
+<td style="text-align: right;">0.112</td>
+<td style="text-align: right;">0.018</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">both, together</td>
+<td style="text-align: right;">0.206</td>
+<td style="text-align: right;">0.109</td>
+</tr>
+</tbody>
+</table>
+<p>The two columns have a correlation of 0.72. A refit without either one loses little, because the other carries much of the same information.</p>
+<div class="keypoint">
+<p>Importance is what this model loses without a column, given the others. It is not the column’s effect on default.</p>
+</div>
+</section>
+
+<section id="choosing-a-model" class="title-slide slide level1 divider center">
+<h1>7 · Choosing a model</h1>
+<div class="divider-kicker">
+<p>Part 7</p>
+</div>
+<div class="divider-note">
+<p>Every model of the course on both tables, what each is for, and the routine they share.</p>
+</div>
+</section>
+
+<section id="both-tables-every-model" class="title-slide slide level1 smaller center">
+<h1>Both tables, every model</h1>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: left;">model</th>
+<th style="text-align: right;">volatility: test RMSE</th>
+<th style="text-align: right;">credit: test AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">linear regression on <code>vol_20d</code>; logistic regression</td>
+<td style="text-align: right;">0.237</td>
+<td style="text-align: right;">0.748</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ridge</td>
+<td style="text-align: right;">0.218</td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">lasso</td>
+<td style="text-align: right;">0.217</td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">k-nearest neighbours</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0.749</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">a tree</td>
+<td style="text-align: right;">0.241</td>
+<td style="text-align: right;">0.722</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">a random forest</td>
+<td style="text-align: right;">0.226</td>
+<td style="text-align: right;">0.777</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">boosted trees, stopped early</td>
+<td style="text-align: right;">0.217 and 0.225</td>
+<td style="text-align: right;">0.777 and 0.776</td>
+</tr>
+</tbody>
+</table>
+<p>On the volatility table, ridge, lasso and boosted stumps lie within 0.008 of each other. On the credit table, boosting and the forest tie, 0.029 above logistic regression.</p>
+</section>
+
+<section id="the-models-of-the-course" class="title-slide slide level1 smaller center">
+<h1>The models of the course</h1>
+<table class="caption-top">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 28%">
+<col style="width: 21%">
+<col style="width: 29%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">model</th>
+<th style="text-align: left;">a forecast is</th>
+<th style="text-align: left;">settings to choose</th>
+<th style="text-align: left;">reach for it when</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">linear regression</td>
+<td style="text-align: left;">a weighted sum of the columns</td>
+<td style="text-align: left;">none</td>
+<td style="text-align: left;">the relationship is close to straight, and always as a baseline</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ridge, lasso</td>
+<td style="text-align: left;">the same sum, with the weights shrunk</td>
+<td style="text-align: left;"><code>alpha</code></td>
+<td style="text-align: left;">there are many columns for the rows</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">logistic regression</td>
+<td style="text-align: left;">a probability from a weighted sum</td>
+<td style="text-align: left;"><code>C</code></td>
+<td style="text-align: left;">the target is a label and the weights should be read</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">k-nearest neighbours</td>
+<td style="text-align: left;">the average of the closest rows</td>
+<td style="text-align: left;"><code>n_neighbors</code></td>
+<td style="text-align: left;">there are few columns, all scaled</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">a tree</td>
+<td style="text-align: left;">the mean of the box a row lands in</td>
+<td style="text-align: left;"><code>max_depth</code>, <code>min_samples_leaf</code></td>
+<td style="text-align: left;">the rules themselves are wanted</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">a random forest</td>
+<td style="text-align: left;">the average of many deep trees</td>
+<td style="text-align: left;"><code>max_features</code>, <code>min_samples_leaf</code></td>
+<td style="text-align: left;">a strong model is needed with little tuning</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">boosted trees</td>
+<td style="text-align: left;">the sum of many small trees</td>
+<td style="text-align: left;"><code>learning_rate</code>, <code>n_estimators</code>, depth</td>
+<td style="text-align: left;">there are many rows, interactions and missing values</td>
+</tr>
+</tbody>
+</table>
+<p>All seven follow the same pattern in code: create, fit, predict, with the settings chosen on validation rows.</p>
+</section>
+
+<section id="when-to-reach-for-boosting" class="title-slide slide level1 center">
+<h1>When to reach for boosting</h1>
+<div class="compare">
+<div class="compare-col">
+<h3>
+Boosted trees first
+</h3>
+<p>
+Many rows, columns that bend or interact, missing values, a mix of types. On the credit table boosting and the forest reached an AUC of 0.777, logistic regression 0.748.
+</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>
+A linear model first
+</h3>
+<p>
+Few rows, a noisy target, a relationship close to a straight line. On the volatility table ridge scored 0.218, and boosting stopped early 0.217 and 0.225.
+</p>
+</div>
+</div>
+<div class="keypoint">
+<p>Fit a baseline and a linear model first. Keep a boosted model only if it wins on validation rows that suit the data.</p>
+</div>
+</section>
+
+<section id="the-workflow-start-to-finish" class="title-slide slide level1 center">
+<h1>The workflow, start to finish</h1>
+<ol type="1">
+<li>Load the table and look at it: shapes, types, missing values.</li>
+<li>Build the target and the features from the past only.</li>
+<li>Split by date, or at random when the rows are separate cases.</li>
+<li>Score a baseline: the average, or the majority class.</li>
+<li>Fit, and choose the settings on folds or on a later block.</li>
+<li>Open the test rows once, for the model you chose.</li>
+<li>Read the model: its coefficients, or its importance on the test rows.</li>
+<li>Report the score beside the baseline’s.</li>
+</ol>
+</section>
+
+<section id="what-you-can-now-do" class="title-slide slide level1 center">
+<h1>What you can now do</h1>
+<div class="pillars">
+<div class="pillar">
+<div class="pillar-tag">
+Sessions 1 to 3
+</div>
+<div class="pillar-title">
+Work with data
+</div>
+<div class="pillar-body">
+Load, clean, reshape and plot a table with pandas and matplotlib, using loops, functions and dictionaries.
+</div>
+</div>
+<div class="pillar">
+<div class="pillar-tag">
+Session 4
+</div>
+<div class="pillar-title">
+Frame a prediction
+</div>
+<div class="pillar-body">
+Build features and a target from the past only, split by date, and pick a metric and a baseline first.
+</div>
+</div>
+<div class="pillar">
+<div class="pillar-tag">
+Sessions 5 and 6
+</div>
+<div class="pillar-title">
+Fit and choose
+</div>
+<div class="pillar-body">
+Fit linear models, ridge and lasso, choose their settings on folds that suit the rows, and open the test rows once.
+</div>
+</div>
+<div class="pillar">
+<div class="pillar-tag">
+Sessions 8 and 9
+</div>
+<div class="pillar-title">
+Classify
+</div>
+<div class="pillar-body">
+Logistic regression and k-nearest neighbours; AUC, precision and recall, thresholds set from costs, and calibration.
+</div>
+</div>
+<div class="pillar">
+<div class="pillar-tag">
+Sessions 11 and 12
+</div>
+<div class="pillar-title">
+Grow trees
+</div>
+<div class="pillar-body">
+Trees, forests and boosted trees, tuned on the right rows, timed, and read through their importance.
+</div>
+</div>
+<div class="pillar">
+<div class="pillar-tag">
+Sessions 7 and 10
+</div>
+<div class="pillar-title">
+Run the whole workflow
+</div>
+<div class="pillar-body">
+From a raw table to a scored forecast, on house prices in Aarhus and on power prices in West Denmark.
+</div>
+</div>
+</div>
+</section>
+
+<section id="what-stays-with-you" class="title-slide slide level1 smaller center">
+<h1>What stays with you</h1>
+<div class="recap-grid">
+<div class="recap-item">
+<p><strong>Averaging cannot remove bias</strong> 100 averaged stumps err 0.577 on the training days, against 0.600 for one. 100 stumps added one after another err 0.457.</p>
+</div>
+<div class="recap-item">
+<p><strong>Boosting fits what is left</strong> <span class="math inline">\hat f_m = \hat f_{m-1} + \nu\, h_m</span>: each small tree <span class="math inline">h_m</span> is fitted to the residuals, the negative gradient of the loss.</p>
+</div>
+<div class="recap-item">
+<p><strong>More trees can overfit</strong> At <span class="math inline">\nu = 0.1</span> the test error is lowest near 144 stumps, 0.221, and 0.265 at 3,000. Deeper trees turn up sooner.</p>
+</div>
+<div class="recap-item">
+<p><strong>Stop on a later block</strong> XGBoost stopped on 2022 at 244 stumps: 0.225. Stopped on the test days, it reported 0.204, a score those days chose.</p>
+</div>
+<div class="recap-item">
+<p><strong>XGBoost and LightGBM</strong> Bins, a penalty on each tree, growth leaf by leaf: on the credit table the same trees fit about 25 times faster than in <code>GradientBoosting</code>.</p>
+</div>
+<div class="recap-item">
+<p><strong>Boosting a label</strong> Each tree is fitted to <span class="math inline">y_i - \hat p_i</span> on the log-odds scale. On the credit table, 0.777: level with the forest.</p>
+</div>
+<div class="recap-item">
+<p><strong>Importance, two ways</strong> Counts of cuts ranked a column of random numbers first. Shuffles on the test rows ranked it last, at zero.</p>
+</div>
+<div class="recap-item">
+<p><strong>Correlated columns share importance</strong> Shuffled together, <code>late_now</code> and <code>months_late</code> cost 0.206 of AUC; a refit without either one loses under 0.02.</p>
+</div>
+</div>
+</section>
+
+<section id="where-this-goes-next" class="title-slide slide level1 center">
+<h1>Where this goes next</h1>
+<div class="timeline">
+<div class="tl-row">
+<span class="tl-week">before</span><span class="tl-topic">Python and pandas; linear regression, ridge and lasso; logistic regression and k-nearest neighbours; trees and forests</span><span class="tl-who">Sessions 1 to 11</span>
+</div>
+<div class="tl-row tl-now">
+<span class="tl-week">now</span><span class="tl-topic">boosting, XGBoost and LightGBM, and reading a model</span><span class="tl-who">trees, added</span>
+</div>
+<div class="tl-row tl-future">
+<span class="tl-week">next</span><span class="tl-topic">a final case lecture, and the wrap-up of the course</span><span class="tl-who">to finish</span>
+</div>
+</div>
+<div class="keypoint">
+<p>Every model came with the same routine: a baseline to beat, settings chosen on rows that suit the data, and a test set opened once.</p>
+</div>
+</section>
+
+<section id="after-this-session-case" class="title-slide slide level1 center">
+<h1>After this session <span class="chip chip-case">case</span></h1>
+<ul>
+<li><strong>Exercises</strong>: the six days boosted by hand, the gradient behind the residuals, the number of trees chosen on 2022 and on the folds, XGBoost and LightGBM, importance measured four ways, and a target with nothing in it.</li>
+<li><strong>Case Part 12</strong>, the last part: boosting for the risk report’s forecast and warning, then every model fitted since Part 4 side by side, and the report as it would go out.</li>
+</ul>
+<div class="muted small">
+<p>Stuck? Ask a friend, ask an AI for a hint rather than an answer, or email <strong>jobo@econ.au.dk</strong>.</p>
+</div>
+
+<script type="pyodide-data">
+eyJvcHRpb25zIjp7ImVudiI6eyJQTE9UTFlfUkVOREVSRVIiOiJwbG90bHlfbWltZXR5cGUifSwiaW5kZXhVUkwiOiJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvcHlvZGlkZS92MC4yOC4xL2Z1bGwvIn0sInBhY2thZ2VzIjp7InBrZ3MiOlsicHlvZGlkZV9odHRwIiwibWljcm9waXAiLCJpcHl0aG9uIiwibnVtcHkiLCJwYW5kYXMiLCJtYXRwbG90bGliIiwic2Npa2l0LWxlYXJuIiwieGdib29zdCIsImxpZ2h0Z2JtIl19fQ==
+</script>
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3siY2VsbE5hbWUiOiJweW9kaWRlLTIwIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMjAgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTIwLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMjAtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8yMCA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMjAsIHt9LCAyMCk7XG4ifSx7ImNlbGxOYW1lIjoicHlvZGlkZS0xOSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzE5ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS0xOS1jb250ZW50c1xcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGJsb2NrID0gSlNPTi5wYXJzZShiNjREZWNvZGUoc2NyaXB0Q29udGVudCkpO1xuXG4gIGNvbnN0IG9wdGlvbnMgPSBPYmplY3QuYXNzaWduKHsgaWQ6IGBweW9kaWRlLTE5LWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfMTkgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzE5LCB7fSwgMTkpO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtMTgiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl8xOCA9IHtcbiAgY29uc3QgeyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IsIGI2NERlY29kZSB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcblxuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcInB5b2RpZGUtMTgtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgcHlvZGlkZS0xOC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzE4ID0gcHlvZGlkZU9qcy5wcm9jZXNzKF9weW9kaWRlX2VkaXRvcl8xOCwge30sIDE4KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTE3IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTcgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTE3LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTctY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xNyA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTcsIHt9LCAxNyk7XG4ifSx7ImNlbGxOYW1lIjoicHlvZGlkZS0xNiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzE2ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS0xNi1jb250ZW50c1xcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGJsb2NrID0gSlNPTi5wYXJzZShiNjREZWNvZGUoc2NyaXB0Q29udGVudCkpO1xuXG4gIGNvbnN0IG9wdGlvbnMgPSBPYmplY3QuYXNzaWduKHsgaWQ6IGBweW9kaWRlLTE2LWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfMTYgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzE2LCB7fSwgMTYpO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtMTUiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl8xNSA9IHtcbiAgY29uc3QgeyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IsIGI2NERlY29kZSB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcblxuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcInB5b2RpZGUtMTUtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgcHlvZGlkZS0xNS1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzE1ID0gcHlvZGlkZU9qcy5wcm9jZXNzKF9weW9kaWRlX2VkaXRvcl8xNSwge30sIDE1KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTE0IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTQgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTE0LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTQtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xNCA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTQsIHt9LCAxNCk7XG4ifSx7ImNlbGxOYW1lIjoicHlvZGlkZS0xMyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzEzID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS0xMy1jb250ZW50c1xcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGJsb2NrID0gSlNPTi5wYXJzZShiNjREZWNvZGUoc2NyaXB0Q29udGVudCkpO1xuXG4gIGNvbnN0IG9wdGlvbnMgPSBPYmplY3QuYXNzaWduKHsgaWQ6IGBweW9kaWRlLTEzLWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfMTMgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzEzLCB7fSwgMTMpO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtMTIiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl8xMiA9IHtcbiAgY29uc3QgeyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IsIGI2NERlY29kZSB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcblxuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcInB5b2RpZGUtMTItY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgcHlvZGlkZS0xMi1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzEyID0gcHlvZGlkZU9qcy5wcm9jZXNzKF9weW9kaWRlX2VkaXRvcl8xMiwge30sIDEyKTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTExIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTEgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTExLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTEtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xMSA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTEsIHt9LCAxMSk7XG4ifSx7ImNlbGxOYW1lIjoicHlvZGlkZS0xMCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzEwID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS0xMC1jb250ZW50c1xcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGJsb2NrID0gSlNPTi5wYXJzZShiNjREZWNvZGUoc2NyaXB0Q29udGVudCkpO1xuXG4gIGNvbnN0IG9wdGlvbnMgPSBPYmplY3QuYXNzaWduKHsgaWQ6IGBweW9kaWRlLTEwLWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfMTAgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzEwLCB7fSwgMTApO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtOSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzkgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTktY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgcHlvZGlkZS05LWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfOSA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfOSwge30sIDkpO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtOCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzggPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTgtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgcHlvZGlkZS04LWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfOCA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfOCwge30sIDgpO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtNyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzcgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTctY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgcHlvZGlkZS03LWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfNyA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfNywge30sIDcpO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtNiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzYgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTYtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgcHlvZGlkZS02LWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfNiA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfNiwge30sIDYpO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtNSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzUgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTUtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgcHlvZGlkZS01LWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfNSA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfNSwge30sIDUpO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtNCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzQgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTQtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgcHlvZGlkZS00LWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfNCA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfNCwge30sIDQpO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtMyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzMgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTMtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgcHlvZGlkZS0zLWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfMyA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMywge30sIDMpO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtMiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzIgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTItY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgcHlvZGlkZS0yLWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfMiA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMiwge30sIDIpO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtMSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJfcHlvZGlkZV92YWx1ZV8xID0ge1xuICBjb25zdCB7IGhpZ2hsaWdodFB5dGhvbiwgYjY0RGVjb2RlfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTEtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICAvLyBEZWZhdWx0IGV2YWx1YXRpb24gY29uZmlndXJhdGlvblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7XG4gICAgaWQ6IFwicHlvZGlkZS0xLWNvbnRlbnRzXCIsXG4gICAgZWNobzogdHJ1ZSxcbiAgICBvdXRwdXQ6IHRydWVcbiAgfSwgYmxvY2suYXR0cik7XG5cbiAgLy8gRXZhbHVhdGUgdGhlIHByb3ZpZGVkIFB5dGhvbiBjb2RlXG4gIGNvbnN0IHJlc3VsdCA9IHB5b2RpZGVPanMucHJvY2Vzcyh7Y29kZTogYmxvY2suY29kZSwgb3B0aW9uc30sIHt9LCAxKTtcblxuICAvLyBFYXJseSB5aWVsZCB3aGlsZSB3ZSB3YWl0IGZvciB0aGUgZmlyc3QgZXZhbHVhdGlvbiBhbmQgcmVuZGVyXG4gIGlmIChvcHRpb25zLm91dHB1dCAmJiAhKFwiMVwiIGluIHB5b2RpZGVPanMucmVuZGVyZWRPanMpKSB7XG4gICAgY29uc3QgY29udGFpbmVyID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChcImRpdlwiKTtcbiAgICBjb25zdCBzcGlubmVyID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChcImRpdlwiKTtcblxuICAgIGlmIChvcHRpb25zLmVjaG8pIHtcbiAgICAgIC8vIFNob3cgb3V0cHV0IGFzIGhpZ2hsaWdodGVkIHNvdXJjZVxuICAgICAgY29uc3QgcHJlRWxlbSA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJwcmVcIik7XG4gICAgICBjb250YWluZXIuY2xhc3NOYW1lID0gXCJzb3VyY2VDb2RlXCI7XG4gICAgICBwcmVFbGVtLmNsYXNzTmFtZSA9IFwic291cmNlQ29kZSBweXRob25cIjtcbiAgICAgIHByZUVsZW0uYXBwZW5kQ2hpbGQoaGlnaGxpZ2h0UHl0aG9uKGJsb2NrLmNvZGUpKTtcbiAgICAgIHNwaW5uZXIuY2xhc3NOYW1lID0gXCJzcGlubmVyLWdyb3cgc3Bpbm5lci1ncm93LXNtIG0tMiBwb3NpdGlvbi1hYnNvbHV0ZSB0b3AtMCBlbmQtMFwiO1xuICAgICAgcHJlRWxlbS5hcHBlbmRDaGlsZChzcGlubmVyKTtcbiAgICAgIGNvbnRhaW5lci5hcHBlbmRDaGlsZChwcmVFbGVtKTtcbiAgICB9IGVsc2Uge1xuICAgICAgc3Bpbm5lci5jbGFzc05hbWUgPSBcInNwaW5uZXItYm9yZGVyIHNwaW5uZXItYm9yZGVyLXNtXCI7XG4gICAgICBjb250YWluZXIuYXBwZW5kQ2hpbGQoc3Bpbm5lcik7XG4gICAgfVxuXG4gICAgeWllbGQgY29udGFpbmVyO1xuICB9XG5cbiAgcHlvZGlkZU9qcy5yZW5kZXJlZE9qc1tcIjFcIl0gPSB0cnVlO1xuICB5aWVsZCBhd2FpdCByZXN1bHQ7XG59XG4ifSx7ImNlbGxOYW1lIjoicHlvZGlkZS1wcmVsdWRlIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoicHlvZGlkZU9qcyA9IHtcbiAgY29uc3Qge1xuICAgIFB5b2RpZGVFdmFsdWF0b3IsXG4gICAgUHlvZGlkZUVudmlyb25tZW50LFxuICAgIHNldHVwUHl0aG9uLFxuICAgIHN0YXJ0UHlvZGlkZVdvcmtlcixcbiAgICBiNjREZWNvZGUsXG4gICAgY29sbGFwc2VQYXRoLFxuICB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcblxuICBjb25zdCBzdGF0dXNDb250YWluZXIgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZChcImV4ZXJjaXNlLWxvYWRpbmctc3RhdHVzXCIpO1xuICBjb25zdCBpbmRpY2F0b3JDb250YWluZXIgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZChcImV4ZXJjaXNlLWxvYWRpbmctaW5kaWNhdG9yXCIpO1xuICBpbmRpY2F0b3JDb250YWluZXIuY2xhc3NMaXN0LnJlbW92ZShcImQtbm9uZVwiKTtcblxuICBsZXQgc3RhdHVzVGV4dCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJkaXZcIilcbiAgc3RhdHVzVGV4dC5jbGFzc0xpc3QgPSBcImV4ZXJjaXNlLWxvYWRpbmctZGV0YWlsc1wiO1xuICBzdGF0dXNUZXh0ID0gc3RhdHVzQ29udGFpbmVyLmFwcGVuZENoaWxkKHN0YXR1c1RleHQpO1xuICBzdGF0dXNUZXh0LnRleHRDb250ZW50ID0gYEluaXRpYWxpc2VgO1xuXG4gIC8vIEhvaXN0IGluZGljYXRvciBvdXQgZnJvbSBmaW5hbCBzbGlkZSB3aGVuIHJ1bm5pbmcgdW5kZXIgcmV2ZWFsXG4gIGNvbnN0IHJldmVhbFN0YXR1cyA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoXCIucmV2ZWFsIC5leGVyY2lzZS1sb2FkaW5nLWluZGljYXRvclwiKTtcbiAgaWYgKHJldmVhbFN0YXR1cykge1xuICAgIHJldmVhbFN0YXR1cy5yZW1vdmUoKTtcbiAgICBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKFwiLnJldmVhbCA+IC5zbGlkZXNcIikuYXBwZW5kQ2hpbGQocmV2ZWFsU3RhdHVzKTtcbiAgfVxuXG4gIC8vIE1ha2UgYW55IHJldmVhbCBzbGlkZXMgd2l0aCBsaXZlIGNlbGxzIHNjcm9sbGFibGVcbiAgZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbChcIi5yZXZlYWwgLmV4ZXJjaXNlLWNlbGxcIikuZm9yRWFjaCgoZWwpID0+IHtcbiAgICBlbC5jbG9zZXN0KCdzZWN0aW9uLnNsaWRlJykuY2xhc3NMaXN0LmFkZChcInNjcm9sbGFibGVcIik7XG4gIH0pXG5cbiAgLy8gUHlvZGlkZSBzdXBwbGVtZW50YWwgZGF0YSBhbmQgb3B0aW9uc1xuICBjb25zdCBkYXRhQ29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLWRhdGFcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBkYXRhID0gSlNPTi5wYXJzZShiNjREZWNvZGUoZGF0YUNvbnRlbnQpKTtcblxuICAvLyBHcmFiIGxpc3Qgb2YgcmVzb3VyY2VzIHRvIGJlIGRvd25sb2FkZWRcbiAgY29uc3QgZmlsZXNDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcInZmcy1maWxlXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgZmlsZXMgPSBKU09OLnBhcnNlKGI2NERlY29kZShmaWxlc0NvbnRlbnQpKTtcblxuICBsZXQgcHlvZGlkZVByb21pc2UgPSAoYXN5bmMgKCkgPT4ge1xuICAgIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSBgRG93bmxvYWRpbmcgUHlvZGlkZWA7XG4gICAgY29uc3QgcHlvZGlkZSA9IGF3YWl0IHN0YXJ0UHlvZGlkZVdvcmtlcihkYXRhLm9wdGlvbnMpO1xuXG4gICAgc3RhdHVzVGV4dC50ZXh0Q29udGVudCA9IGBEb3dubG9hZGluZyBwYWNrYWdlOiBtaWNyb3BpcGA7XG4gICAgYXdhaXQgcHlvZGlkZS5sb2FkUGFja2FnZShcIm1pY3JvcGlwXCIpO1xuICAgIGNvbnN0IG1pY3JvcGlwID0gYXdhaXQgcHlvZGlkZS5weWltcG9ydChcIm1pY3JvcGlwXCIpO1xuICAgIGF3YWl0IGRhdGEucGFja2FnZXMucGtncy5tYXAoKHBrZykgPT4gKCkgPT4ge1xuICAgICAgc3RhdHVzVGV4dC50ZXh0Q29udGVudCA9IGBEb3dubG9hZGluZyBwYWNrYWdlOiAke3BrZ31gO1xuICAgICAgcmV0dXJuIG1pY3JvcGlwLmluc3RhbGwocGtnKTtcbiAgICB9KS5yZWR1Y2UoKGN1ciwgbmV4dCkgPT4gY3VyLnRoZW4obmV4dCksIFByb21pc2UucmVzb2x2ZSgpKTtcbiAgICBhd2FpdCBtaWNyb3BpcC5kZXN0cm95KCk7XG5cbiAgICAvLyBEb3dubG9hZCBhbmQgaW5zdGFsbCByZXNvdXJjZXNcbiAgICBhd2FpdCBmaWxlcy5tYXAoKGZpbGUpID0+IGFzeW5jICgpID0+IHtcbiAgICAgIGNvbnN0IG5hbWUgPSBmaWxlLnN1YnN0cmluZyhmaWxlLmxhc3RJbmRleE9mKCcvJykgKyAxKTtcbiAgICAgIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSBgRG93bmxvYWRpbmcgcmVzb3VyY2U6ICR7bmFtZX1gO1xuICAgICAgY29uc3QgcmVzcG9uc2UgPSBhd2FpdCBmZXRjaChmaWxlKTtcbiAgICAgIGlmICghcmVzcG9uc2Uub2spIHtcbiAgICAgICAgdGhyb3cgbmV3IEVycm9yKGBDYW4ndCBkb3dubG9hZCBcXGAke2ZpbGV9XFxgLiBFcnJvciAke3Jlc3BvbnNlLnN0YXR1c306IFwiJHtyZXNwb25zZS5zdGF0dXNUZXh0fVwiLmApO1xuICAgICAgfVxuICAgICAgY29uc3QgZGF0YSA9IGF3YWl0IHJlc3BvbnNlLmFycmF5QnVmZmVyKCk7XG5cbiAgICAgIC8vIFN0b3JlIFVSTHMgaW4gdGhlIGN3ZCB3aXRob3V0IGFueSBzdWJkaXJlY3Rvcnkgc3RydWN0dXJlXG4gICAgICBpZiAoZmlsZS5pbmNsdWRlcyhcIjovL1wiKSkge1xuICAgICAgICBmaWxlID0gbmFtZTtcbiAgICAgIH1cblxuICAgICAgLy8gQ29sbGFwc2UgaGlnaGVyIGRpcmVjdG9yeSBzdHJ1Y3R1cmVcbiAgICAgIGZpbGUgPSBjb2xsYXBzZVBhdGgoZmlsZSk7XG5cbiAgICAgIC8vIENyZWF0ZSBkaXJlY3RvcnkgdHJlZSwgaWdub3JpbmcgXCJkaXJlY3RvcnkgZXhpc3RzXCIgVkZTIGVycm9yc1xuICAgICAgY29uc3QgcGFydHMgPSBmaWxlLnNwbGl0KCcvJykuc2xpY2UoMCwgLTEpO1xuICAgICAgbGV0IHBhdGggPSAnJztcbiAgICAgIHdoaWxlIChwYXJ0cy5sZW5ndGggPiAwKSB7XG4gICAgICAgIHBhdGggKz0gcGFydHMuc2hpZnQoKSArICcvJztcbiAgICAgICAgdHJ5IHtcbiAgICAgICAgICBhd2FpdCBweW9kaWRlLkZTLm1rZGlyKHBhdGgpO1xuICAgICAgICB9IGNhdGNoIChlKSB7XG4gICAgICAgICAgaWYgKGUubmFtZSAhPT0gXCJFcnJub0Vycm9yXCIpIHRocm93IGU7XG4gICAgICAgICAgaWYgKGUuZXJybm8gIT09IDIwKSB7XG4gICAgICAgICAgICBjb25zdCBlcnJvclRleHRQdHIgPSBhd2FpdCBweW9kaWRlLl9tb2R1bGUuX3N0cmVycm9yKGUuZXJybm8pO1xuICAgICAgICAgICAgY29uc3QgZXJyb3JUZXh0ID0gYXdhaXQgcHlvZGlkZS5fbW9kdWxlLlVURjhUb1N0cmluZyhlcnJvclRleHRQdHIpO1xuICAgICAgICAgICAgdGhyb3cgbmV3IEVycm9yKGBGaWxlc3lzdGVtIEVycm9yICR7ZS5lcnJub30gXCIke2Vycm9yVGV4dH1cIi5gKTtcbiAgICAgICAgICB9XG4gICAgICAgIH1cbiAgICAgIH1cblxuICAgICAgLy8gV3JpdGUgdGhpcyBmaWxlIHRvIHRoZSBWRlNcbiAgICAgIHRyeSB7XG4gICAgICAgIHJldHVybiBhd2FpdCBweW9kaWRlLkZTLndyaXRlRmlsZShmaWxlLCBuZXcgVWludDhBcnJheShkYXRhKSk7XG4gICAgICB9IGNhdGNoIChlKSB7XG4gICAgICAgIGlmIChlLm5hbWUgIT09IFwiRXJybm9FcnJvclwiKSB0aHJvdyBlO1xuICAgICAgICBjb25zdCBlcnJvclRleHRQdHIgPSBhd2FpdCBweW9kaWRlLl9tb2R1bGUuX3N0cmVycm9yKGUuZXJybm8pO1xuICAgICAgICBjb25zdCBlcnJvclRleHQgPSBhd2FpdCBweW9kaWRlLl9tb2R1bGUuVVRGOFRvU3RyaW5nKGVycm9yVGV4dFB0cik7XG4gICAgICAgIHRocm93IG5ldyBFcnJvcihgRmlsZXN5c3RlbSBFcnJvciAke2UuZXJybm99IFwiJHtlcnJvclRleHR9XCIuYCk7XG4gICAgICB9XG4gICAgfSkucmVkdWNlKChjdXIsIG5leHQpID0+IGN1ci50aGVuKG5leHQpLCBQcm9taXNlLnJlc29sdmUoKSk7XG5cbiAgICBzdGF0dXNUZXh0LnRleHRDb250ZW50ID0gYFB5b2RpZGUgZW52aXJvbm1lbnQgc2V0dXBgO1xuICAgIGF3YWl0IHNldHVwUHl0aG9uKHB5b2RpZGUpO1xuXG4gICAgc3RhdHVzVGV4dC5yZW1vdmUoKTtcbiAgICBpZiAoc3RhdHVzQ29udGFpbmVyLmNoaWxkcmVuLmxlbmd0aCA9PSAwKSB7XG4gICAgICBzdGF0dXNDb250YWluZXIucGFyZW50Tm9kZS5yZW1vdmUoKTtcbiAgICB9XG4gICAgcmV0dXJuIHB5b2RpZGU7XG4gIH0pKCkuY2F0Y2goKGVycikgPT4ge1xuICAgIHN0YXR1c1RleHQuc3R5bGUuY29sb3IgPSBcInZhcigtLWV4ZXJjaXNlLWVkaXRvci1obC1lciwgI0FEMDAwMClcIjtcbiAgICBzdGF0dXNUZXh0LnRleHRDb250ZW50ID0gZXJyLm1lc3NhZ2U7XG4gICAgLy9pbmRpY2F0b3JDb250YWluZXIucXVlcnlTZWxlY3RvcihcIi5zcGlubmVyLWdyb3dcIikuY2xhc3NMaXN0LmFkZChcImQtbm9uZVwiKTtcbiAgICB0aHJvdyBlcnI7XG4gIH0pO1xuXG4gIC8vIEtlZXAgdHJhY2sgb2YgaW5pdGlhbCBPSlMgYmxvY2sgcmVuZGVyXG4gIGNvbnN0IHJlbmRlcmVkT2pzID0ge307XG5cbiAgLy8gT0pTIGNhbiBzdGFydCBpbmRlcGVuZGVudCBjZWxscyBpbiBhbnkgb3JkZXIuIE9uIHRoZSBmaXJzdCBydW4sIHdhaXQgZm9yXG4gIC8vIHRoZSBwcmVjZWRpbmcgY2VsbCBzbyBsYXRlciBzbGlkZXMgY2FuIHVzZSB0aGUgbmFtZXMgaXQgZGVmaW5lZC4gRWRpdHNcbiAgLy8gYWZ0ZXIgdGhhdCBmaXJzdCBydW4gcmVtYWluIGluZGVwZW5kZW50LlxuICBjb25zdCBpbml0aWFsRG9uZSA9IFtQcm9taXNlLnJlc29sdmUoKV07XG4gIGNvbnN0IGZpbmlzaEluaXRpYWwgPSBbbnVsbF07XG4gIGNvbnN0IGluaXRpYWxDZWxsQ291bnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCdzY3JpcHRbdHlwZV49XCJweW9kaWRlLVwiXVt0eXBlJD1cIi1jb250ZW50c1wiXScpLmxlbmd0aDtcbiAgZm9yIChsZXQgaWQgPSAxOyBpZCA8PSBpbml0aWFsQ2VsbENvdW50OyBpZCsrKSB7XG4gICAgaW5pdGlhbERvbmVbaWRdID0gbmV3IFByb21pc2UoKHJlc29sdmUpID0+IHsgZmluaXNoSW5pdGlhbFtpZF0gPSByZXNvbHZlOyB9KTtcbiAgfVxuICBjb25zdCBzdGFydGVkID0gbmV3IFNldCgpO1xuICBjb25zdCBlbnZpcm9ubWVudHMgPSBuZXcgU2V0KCk7XG5cbiAgY29uc3QgcHJvY2VzcyA9IGFzeW5jIChjb250ZXh0LCBpbnB1dHMsIGJsb2NrSWQpID0+IHtcbiAgICBjb25zdCBmaXJzdFJ1biA9ICFzdGFydGVkLmhhcyhibG9ja0lkKTtcbiAgICBpZiAoZmlyc3RSdW4pIHtcbiAgICAgIHN0YXJ0ZWQuYWRkKGJsb2NrSWQpO1xuICAgICAgYXdhaXQgaW5pdGlhbERvbmVbYmxvY2tJZCAtIDFdO1xuICAgIH0gZWxzZSB7XG4gICAgICBhd2FpdCBpbml0aWFsRG9uZVtibG9ja0lkXTtcbiAgICB9XG4gICAgdHJ5IHtcbiAgICAgIGNvbnN0IHB5b2RpZGUgPSBhd2FpdCBweW9kaWRlUHJvbWlzZTtcbiAgICAgIGxldCBzY29wZWRDb250ZXh0ID0gY29udGV4dDtcbiAgICAgIGlmIChibG9ja0lkICYmICFjb250ZXh0Lm9wdGlvbnMuZXhlcmNpc2UpIHtcbiAgICAgICAgLy8gR2l2ZSBlYWNoIGNlbGwgdGhlIG5hbWVzIGRlZmluZWQgYmVmb3JlIGl0LCB0aGVuIGtlZXAgdGhhdCBzbmFwc2hvdC5cbiAgICAgICAgLy8gTGF0ZXIgc2xpZGVzIG1heSByZXVzZSBuYW1lcyBzdWNoIGFzIGB0ZXN0YCBmb3IgYW5vdGhlciBkYXRhc2V0O1xuICAgICAgICAvLyByZXZpc2l0aW5nIGFuIGVhcmxpZXIgY2VsbCBtdXN0IHN0aWxsIHNlZSBpdHMgb3JpZ2luYWwgZGF0YXNldC5cbiAgICAgICAgY29uc3QgbmFtZSA9IGBsZWN0dXJlLWNlbGwtJHtibG9ja0lkfWA7XG4gICAgICAgIGlmICghZW52aXJvbm1lbnRzLmhhcyhibG9ja0lkKSkge1xuICAgICAgICAgIGNvbnN0IHBhcmVudCA9IGJsb2NrSWQgPT09IDEgPyBcImdsb2JhbFwiIDogYGxlY3R1cmUtY2VsbC0ke2Jsb2NrSWQgLSAxfWA7XG4gICAgICAgICAgYXdhaXQgUHlvZGlkZUVudmlyb25tZW50Lmluc3RhbmNlKHB5b2RpZGUpLmNyZWF0ZShuYW1lLCBwYXJlbnQsIGZhbHNlKTtcbiAgICAgICAgICBlbnZpcm9ubWVudHMuYWRkKGJsb2NrSWQpO1xuICAgICAgICB9XG4gICAgICAgIHNjb3BlZENvbnRleHQgPSB7XG4gICAgICAgICAgLi4uY29udGV4dCxcbiAgICAgICAgICBvcHRpb25zOiB7IC4uLmNvbnRleHQub3B0aW9ucywgZW52aXI6IG5hbWUgfSxcbiAgICAgICAgfTtcbiAgICAgIH1cbiAgICAgIGNvbnN0IGV2YWx1YXRvciA9IG5ldyBQeW9kaWRlRXZhbHVhdG9yKHB5b2RpZGUsIHNjb3BlZENvbnRleHQpO1xuICAgICAgYXdhaXQgZXZhbHVhdG9yLnByb2Nlc3MoaW5wdXRzKTtcbiAgICAgIHJldHVybiBldmFsdWF0b3IuY29udGFpbmVyO1xuICAgIH0gZmluYWxseSB7XG4gICAgICAvLyBBIGNlbGwgdGhhdCBlcnJvcnMgbXVzdCBub3QgcHJldmVudCBsYXRlciBjZWxscyBmcm9tIHJ1bm5pbmcuXG4gICAgICBpZiAoZmlyc3RSdW4pIGZpbmlzaEluaXRpYWxbYmxvY2tJZF0oKTtcbiAgICB9XG4gIH1cblxuICByZXR1cm4ge1xuICAgIHB5b2RpZGVQcm9taXNlLFxuICAgIHJlbmRlcmVkT2pzLFxuICAgIHByb2Nlc3MsXG4gIH07XG59XG4ifV19
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
+
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+WyJkYXRhL21hcmtldF9mZWF0dXJlcy5jc3YiLCJkYXRhL2NyZWRpdC5jc3YiXQ==
+</script>
+</section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="session_12_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="session_12_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="session_12_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="session_12_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="session_12_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="session_12_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="session_12_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="session_12_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="session_12_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': false,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: false,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'fast',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1280,
+
+        height: 720,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 6.0e-2,
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script type="ojs-module-contents">
+    eyJjb250ZW50cyI6W119
+    </script>
+    <script type="module">
+    if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+    window._ojs.paths.runtimeToDoc = "../../..";
+    window._ojs.paths.runtimeToRoot = "../../../..";
+    window._ojs.paths.docToRoot = "..";
+    window._ojs.selfContained = false;
+    window._ojs.runtime.interpretFromScriptTags();
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

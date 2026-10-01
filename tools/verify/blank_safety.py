@@ -48,6 +48,9 @@ class Blanks(ast.NodeVisitor):
         # `x = ...` binds a placeholder; `x = something_real` clears it
         self.visit(node.value)
         for target in node.targets:
+            # `a, b = ...` unpacks the placeholder: "cannot unpack non-iterable ellipsis"
+            if isinstance(target, (ast.Tuple, ast.List)) and is_ellipsis(node.value):
+                self._flag("unpacking a placeholder into several names")
             names = ([target] if isinstance(target, ast.Name)
                      else [e for e in getattr(target, "elts", [])
                            if isinstance(e, ast.Name)])

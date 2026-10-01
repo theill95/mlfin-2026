@@ -157,7 +157,16 @@ Learned on Session 11 (trees), over five reviews.
   step has a caption and its running number. No JavaScript.
 - Name a model by its name, "linear regression" or "OLS", never "the line".
 - An in-lecture your-turn is one small change to code already on the slide,
-  such as one argument added to a constructor.
+  such as one argument added to a constructor. The change is small; the
+  question is not. "Halve the learning rate: how many trees now?" was
+  rejected as trivially easy. A good one needs a judgement about the result:
+  what happens after 50 steps and what that means for new days, or whether a
+  score from early stopping on the test days is still a test score.
+- An algorithm that is a procedure (boosting) is defined mathematically first,
+  then its procedure is written out as numbered steps, and only then run on a
+  toy example in a click-through animation that shows the quantities it works
+  on (the distance from the forecast to every point) over enough steps to see
+  it converge. Code comes after the animation.
 - When the new model does not win on the course table, keep the result and
   use it: Session 11 turned "trees do not beat ridge" into a part on tuning
   and on what a grid of settings costs to run.
@@ -362,12 +371,13 @@ floods the student with errors. A blank is the right-hand side of an
 assignment, a bare `...` statement, or an argument to `print()`. Pre-written
 lines never call a method on, index into, iterate over, do arithmetic with,
 or pass as an argument a placeholder, and never call anything on an object a
-chained exercise was supposed to produce. `while True:` is not blank-safe;
-bound the loop. `frame['x'] = ...` is not blank-safe if the frame is fitted
-on later. A function whose body is `...` returns `None`, so nothing may call
-`.shape` on its result. Deliberate-error demonstrations use the two-cell
-pattern: a cell that really errors, tagged `raises-exception`, then a blank
-fix cell.
+chained exercise was supposed to produce. `a, b = ...` is not blank-safe either
+(Python cannot unpack the placeholder): one blank per name. `while True:` is
+not blank-safe; bound the loop. `frame['x'] = ...` is not blank-safe if the
+frame is fitted on later. A function whose body is `...` returns `None`, so
+nothing may call `.shape` on its result. Deliberate-error demonstrations use
+the two-cell pattern: a cell that really errors, tagged `raises-exception`,
+then a blank fix cell.
 
 ### What the solutions must be
 

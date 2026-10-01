@@ -48,7 +48,7 @@
     <div class="actions">
       <a class="btn primary" href="downloads/mlfin-course.zip" download>
         <span class="label">↓ Download the course materials (ZIP)</span>
-        <span class="hint">under 1 MB · unzip it anywhere</span>
+        <span class="hint">about 7.5 MB · unzip it anywhere</span>
       </a>
     </div>
     <p class="card-foot">Unzip it, then in VS Code use <em>File → Open Folder</em> and pick
@@ -238,12 +238,43 @@
           <td><a href="session_11/session_11.html">open</a></td></tr>
     </tbody>
   </table>
+  <h2 id="session-12">Session 12 · Boosting and reading a model</h2>
+<table>
+    <thead><tr><th>File</th><th>What it is</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><code>session_12_exercises.ipynb</code></td><td>59 exercises</td>
+          <td><a href="session_12/session_12_exercises.ipynb" download>download</a></td></tr>
+      <tr><td><code>session_12_case.ipynb</code></td><td>The case, Part 12, the last part</td>
+          <td><a href="session_12/session_12_case.ipynb" download>download</a></td></tr>
+      <tr><td><code>market_features.csv</code></td><td>The 19-column table for the index, 2,376 rows</td>
+          <td><a href="data/market_features.csv" download>download</a></td></tr>
+      <tr><td><code>credit.csv</code></td><td>30,000 credit card holders at a Taiwanese bank in 2005, seven columns and whether each defaulted the month after; from the UCI Machine Learning Repository, CC BY 4.0</td>
+          <td><a href="data/credit.csv" download>download</a></td></tr>
+      <tr><td><code>prices.csv</code></td><td>All eleven instruments, 2015 to 2024, 27,676 rows</td>
+          <td><a href="data/prices.csv" download>download</a></td></tr>
+      <tr><td>The lecture</td><td>Runs in your browser, nothing to install</td>
+          <td><a href="session_12/session_12.html">open</a></td></tr>
+    </tbody>
+  </table>
+  <h2 id="session-13">Session 13 · The two cases with trees</h2>
+<table>
+    <thead><tr><th>File</th><th>What it is</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><code>aarhus_houses.csv</code></td><td>The house sales of Session 7: 7,621 ordinary house sales in the Aarhus postcodes, January 2021 to September 2024</td>
+          <td><a href="data/aarhus_houses.csv" download>download</a></td></tr>
+      <tr><td><code>power.csv</code></td><td>The hours of Session 10: 26,133 hours of day-ahead prices for West Denmark (DK1), 2022 to 2024, with the wind and sun forecasts</td>
+          <td><a href="data/power.csv" download>download</a></td></tr>
+      <tr><td>The lecture</td><td>Runs in your browser, nothing to install; no exercises or case this session</td>
+          <td><a href="session_13/session_13.html">open</a></td></tr>
+    </tbody>
+  </table>
   </div>
 
   <h2 id="running">Running the notebooks locally</h2>
   <ol class="setup-steps">
     <li>Follow the <a href="setup.html">setup guide</a> once: Python, VS Code, the Python
-        extension, and <code>%pip install numpy pandas matplotlib scikit-learn</code>.</li>
+        extension, and <code>%pip install numpy pandas matplotlib scikit-learn</code>.
+        Session 12 also needs <code>%pip install xgboost lightgbm</code>.</li>
     <li>Put the notebook and a <code>data/</code> folder in the same place, exactly as in
         the ZIP.</li>
     <li>In VS Code, <em>File → Open Folder</em> and choose that folder. Not the file: the

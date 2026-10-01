@@ -5,7 +5,7 @@ to finance and economics students. The course assumes econometrics (OLS) but
 **no prior Python or machine-learning experience**, and begins in Google
 Colab.
 
-Each session is a single self-contained folder. All six sessions are complete.
+Each session is a single self-contained folder. All thirteen sessions are complete.
 
 ## Live site
 
@@ -35,6 +35,10 @@ This repository is published:
   <https://theill95.github.io/mlfin-2026/session_10/session_10.html>
 - Interactive lecture, Session 11:
   <https://theill95.github.io/mlfin-2026/session_11/session_11.html>
+- Interactive lecture, Session 12:
+  <https://theill95.github.io/mlfin-2026/session_12/session_12.html>
+- Interactive lecture, Session 13:
+  <https://theill95.github.io/mlfin-2026/session_13/session_13.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
 The site has seven pages, linked from the sidebar:
@@ -118,13 +122,17 @@ Sessions 2 to 6 have the same shape. Current contents:
 | 9 · Classification in practice | `session_09.qmd` | 68 | Part 9, 16 questions |
 | 10 · Electricity prices in West Denmark (recap) | `session_10.qmd` | none | none |
 | 11 · Trees and forests | `session_11.qmd` | 62 | Part 11, 14 questions |
+| 12 · Boosting and reading a model | `session_12.qmd` | 59 | Part 12, 15 questions (the last part) |
+| 13 · The two cases with trees (recap) | `session_13.qmd` | none | none |
 
-Sessions 3 to 11 load numpy, pandas and matplotlib into the browser runtime
-(about 20 MB, once per page load). Sessions 5 to 11 add scikit-learn, which
-brings scipy and a BLAS with it, so their cold load is nearer 45 MB. Open the deck and
-run one cell several minutes before class so it is warm.
+Sessions 3 to 12 load numpy, pandas and matplotlib into the browser runtime
+(about 20 MB, once per page load). Sessions 5 to 13 add scikit-learn, which
+brings scipy and a BLAS with it, so their cold load is nearer 45 MB; Sessions 12
+and 13 also load xgboost, and Session 12 lightgbm, about 2 MB more. Session 13's
+figures are drawn when the deck is rendered, so it loads no matplotlib. Open the
+deck and run one cell several minutes before class so it is warm.
 
-Sessions 4 to 6 are the decks with mathematics on the slides; it renders
+From Session 4 on, the decks have mathematics on the slides; it renders
 through KaTeX, set in the `.qmd` front matter.
 
 The `.qmd` file **is** the lecture: it is at once the slide deck, the lecture
@@ -208,7 +216,7 @@ render is also a check that the lecture code all runs.
 python tools/release.py
 ```
 
-Rebuilds everything generated (the six notebooks, the cheatsheet, the sidebar,
+Rebuilds everything generated (the notebooks, the cheatsheet, the sidebar,
 the download bundle) and runs the checks. Run it before every push. See
 [`tools/README.md`](tools/README.md) for the details, and for the checklist to
 follow when adding a session. In short: edit the generator, not the notebook.
@@ -220,8 +228,9 @@ pip install -r requirements.txt
 ```
 
 Built and tested with Python 3.12, pandas 2.2, numpy 1.26, matplotlib 3.9,
-scikit-learn 1.5. Sessions 5 to 11 use scikit-learn in the materials
-themselves, in the deck, the exercises and the case. Session 6 also reads
+scikit-learn 1.5, xgboost 2.1 and lightgbm 4.6. Sessions 5 to 13 use
+scikit-learn in the materials themselves, in the deck, the exercises and the
+case, and Sessions 12 and 13 the two boosting libraries. Session 6 also reads
 `data/market_features.csv`, a nineteen-column table built from the prices by
 `tools/build_session06_table.py`, and Session 7 reads `data/aarhus_houses.csv`,
 7,621 Aarhus house sales from January 2021 to September 2024, built once by
@@ -231,7 +240,12 @@ kept). Session 10 reads `data/power.csv`, 26,133 hours of day-ahead prices and
 wind and sun forecasts for West Denmark from 2022 to 2024, built once by
 `tools/build_session10_table.py` from Energinet's Energi Data Service; its
 interactive slides are drawn by `tools/deck10_widgets.py` from numbers that
-`tools/deck10_data.py` computes with the same models as the live cells. All
+`tools/deck10_data.py` computes with the same models as the live cells.
+Session 13 works the same way with `tools/deck13_widgets.py`, except that
+`tools/deck13_data.py` saves its numbers to `session_13/data/deck13.json` (and
+the map to `map13.png`) and the deck only reads that file when it renders, so
+the Python that Quarto renders with needs no xgboost. Rebuild the file with
+`python tools/deck13_data.py session_13/data` after changing a model. All
 core materials run **offline** once this environment is installed
 and the repository is cloned.
 

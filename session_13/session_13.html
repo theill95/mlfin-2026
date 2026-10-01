@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="session_13_files/libs/clipboard/clipboard.min.js"></script>
+<script src="session_13_files/libs/quarto-html/tabby.min.js"></script>
+<script src="session_13_files/libs/quarto-html/popper.min.js"></script>
+<script src="session_13_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="session_13_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="session_13_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="session_13_files/libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="session_13_files/libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="session_13_files/libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.9.38">
+
+  <title>The two cases with trees</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="session_13_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="session_13_files/libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+      }
+    pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+    div.sourceCode
+      { color: #24292e;  }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #24292e; } /* Normal */
+    code span.al { color: #ff5555; font-weight: bold; } /* Alert */
+    code span.an { color: #6a737d; } /* Annotation */
+    code span.at { color: #d73a49; } /* Attribute */
+    code span.bn { color: #005cc5; } /* BaseN */
+    code span.bu { color: #d73a49; } /* BuiltIn */
+    code span.cf { color: #d73a49; } /* ControlFlow */
+    code span.ch { color: #032f62; } /* Char */
+    code span.cn { color: #005cc5; } /* Constant */
+    code span.co { color: #6a737d; } /* Comment */
+    code span.cv { color: #6a737d; } /* CommentVar */
+    code span.do { color: #6a737d; } /* Documentation */
+    code span.dt { color: #d73a49; } /* DataType */
+    code span.dv { color: #005cc5; } /* DecVal */
+    code span.er { color: #ff5555; text-decoration: underline; } /* Error */
+    code span.ex { color: #d73a49; font-weight: bold; } /* Extension */
+    code span.fl { color: #005cc5; } /* Float */
+    code span.fu { color: #6f42c1; } /* Function */
+    code span.im { color: #032f62; } /* Import */
+    code span.in { color: #6a737d; } /* Information */
+    code span.kw { color: #d73a49; } /* Keyword */
+    code span.op { color: #24292e; } /* Operator */
+    code span.ot { color: #6f42c1; } /* Other */
+    code span.pp { color: #d73a49; } /* Preprocessor */
+    code span.re { color: #6a737d; } /* RegionMarker */
+    code span.sc { color: #005cc5; } /* SpecialChar */
+    code span.ss { color: #032f62; } /* SpecialString */
+    code span.st { color: #032f62; } /* String */
+    code span.va { color: #e36209; } /* Variable */
+    code span.vs { color: #032f62; } /* VerbatimString */
+    code span.wa { color: #ff5555; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="session_13_files/libs/revealjs/dist/theme/quarto-6111bc620332b17cf5d5ecdb3c24ce47.css">
+  <link href="session_13_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="session_13_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="session_13_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="session_13_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+  <script type="module" src="session_13_files/libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+  <link href="session_13_files/libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">The two cases with trees</h1>
+  <p class="subtitle">Machine Learning in Finance · Session 13</p>
+
+<div class="quarto-title-authors">
+</div>
+
+</section>
+<section id="the-two-cases" class="title-slide slide level1 center">
+<h1>The two cases</h1>
+<div class="compare">
+<div class="compare-col">
+<h3>
+A house in Aarhus V
+</h3>
+<p>
+Session 7 valued every 2024 sale with linear regression in logs on 28 columns. It missed by 1.26 million kroner, with 15 percent of the loans underwater.
+</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>
+An hour in West Denmark
+</h3>
+<p>
+Session 10 asked whether tomorrow’s price at an hour beats today’s. Logistic regression ranked the hours of 2024 with an AUC of 0.833, and k-NN with 0.844.
+</p>
+</div>
+</div>
+<p>Both sessions came before trees, forests and boosting. Today the same tables, splits and scores go to those models.</p>
+</section>
+
+<section id="trees-on-the-course-tables" class="title-slide slide level1 center">
+<h1>Trees on the course tables</h1>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: left;">table</th>
+<th style="text-align: right;">the linear model</th>
+<th style="text-align: right;">a forest</th>
+<th style="text-align: right;">boosted trees</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">volatility, test RMSE</td>
+<td style="text-align: right;">0.218, ridge</td>
+<td style="text-align: right;">0.226</td>
+<td style="text-align: right;">0.217 and 0.225</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">credit, test AUC</td>
+<td style="text-align: right;">0.748, logistic regression</td>
+<td style="text-align: right;">0.777</td>
+<td style="text-align: right;">0.777</td>
+</tr>
+</tbody>
+</table>
+<p>On the volatility table the trees drew level with ridge. On the credit table they gained 0.029 of AUC. The two cases are two more tests.</p>
+</section>
+
+<section id="today" class="title-slide slide level1 center">
+<h1>Today</h1>
+<ul>
+<li>the house in <strong>Aarhus V</strong>: a tree, a forest and boosted trees on the 2024 sales</li>
+<li>the hours of <strong>West Denmark</strong>: the same models on tomorrow’s price</li>
+<li><strong>choosing</strong> a model: accuracy, compute and explanations</li>
+<li>the <strong>course</strong> and the <strong>exam</strong>, then your questions</li>
+</ul>
+<p>There are no exercises and no case for this session.</p>
+</section>
+
+<section id="the-house-in-aarhus-v" class="title-slide slide level1 divider center">
+<h1>1 · The house in Aarhus V</h1>
+<div class="divider-kicker">
+<p>Part 1</p>
+</div>
+<div class="divider-note">
+<p>Session 7’s valuation of every 2024 sale, against a tree, a forest and boosted trees.</p>
+</div>
+</section>
+
+<section id="the-house" class="title-slide slide level1 center">
+<h1>The house</h1>
+<div class="statband">
+<div class="stat">
+<span class="stat-big">150 m²</span>
+<div class="stat-label">
+living area
+</div>
+</div>
+<div class="stat">
+<span class="stat-big">1973</span>
+<div class="stat-label">
+year built
+</div>
+</div>
+<div class="stat">
+<span class="stat-big">5</span>
+<div class="stat-label">
+rooms
+</div>
+</div>
+<div class="stat">
+<span class="stat-big">villa</span>
+<div class="stat-label">
+type
+</div>
+</div>
+<div class="stat">
+<span class="stat-big">Aarhus&nbsp;V</span>
+<div class="stat-label">
+postal town
+</div>
+</div>
+<div class="stat">
+<span class="stat-big">3.6 km</span>
+<div class="stat-label">
+from the cathedral
+</div>
+</div>
+</div>
+<p>It sold for 3,800,000 kroner in January 2024. Session 7’s model valued it at 4,341,389, 14 percent above the price.</p>
+</section>
+
+<section id="the-libraries-of-the-course" class="title-slide slide level1 center">
+<h1>The libraries of the course</h1>
+<div>
+<div id="pyodide-1" class="exercise-cell">
+
+</div>
+<script type="pyodide-1-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJpbXBvcnQgbnVtcHkgYXMgbnBcbmltcG9ydCBwYW5kYXMgYXMgcGRcbmZyb20gc2tsZWFybi5saW5lYXJfbW9kZWwgaW1wb3J0IFJpZGdlLCBMb2dpc3RpY1JlZ3Jlc3Npb25cbmZyb20gc2tsZWFybi5wcmVwcm9jZXNzaW5nIGltcG9ydCBTdGFuZGFyZFNjYWxlclxuZnJvbSBza2xlYXJuLnBpcGVsaW5lIGltcG9ydCBQaXBlbGluZVxuZnJvbSBza2xlYXJuLm1vZGVsX3NlbGVjdGlvbiBpbXBvcnQgS0ZvbGQsIEdyaWRTZWFyY2hDVlxuZnJvbSBza2xlYXJuLm1ldHJpY3MgaW1wb3J0IHJvY19hdWNfc2NvcmVcbmZyb20gc2tsZWFybi50cmVlIGltcG9ydCBEZWNpc2lvblRyZWVSZWdyZXNzb3JcbmZyb20gc2tsZWFybi5lbnNlbWJsZSBpbXBvcnQgUmFuZG9tRm9yZXN0UmVncmVzc29yLCBSYW5kb21Gb3Jlc3RDbGFzc2lmaWVyXG5mcm9tIHhnYm9vc3QgaW1wb3J0IFhHQlJlZ3Jlc3NvciwgWEdCQ2xhc3NpZmllciJ9
+</script>
+</div>
+<p>NumPy and pandas came in Session 3, the linear models between Sessions 5 and 9, the trees in Session 11 and XGBoost in Session 12.</p>
+</section>
+
+<section id="the-table-and-the-split" class="title-slide slide level1 center">
+<h1>The table and the split</h1>
+<div>
+<div id="pyodide-2" class="exercise-cell">
+
+</div>
+<script type="pyodide-2-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJob3VzZXMgPSBwZC5yZWFkX2NzdignZGF0YS9hYXJodXNfaG91c2VzLmNzdicpXG53aWRlID0gcGQuZ2V0X2R1bW1pZXMoaG91c2VzLCBjb2x1bW5zPVsndG93bicsICd0eXBlJ10sIGR0eXBlPWludClcbmNvbHVtbnMgPSBbYyBmb3IgYyBpbiB3aWRlLmNvbHVtbnMgaWYgYyBub3QgaW4gWydwcmljZScsICdzb2xkJywgJ3F1YXJ0ZXInLCAnZGF0ZScsICd6aXAnLCAnbGF0JywgJ2xvbiddXVxudHJhaW4gPSB3aWRlW3dpZGVbJ3NvbGQnXSA8PSAyMDIzXVxudGVzdCA9IHdpZGVbd2lkZVsnc29sZCddID09IDIwMjRdXG5wcmludChsZW4odHJhaW4pLCBsZW4odGVzdCksIGxlbihjb2x1bW5zKSkifQ==
+</script>
+</div>
+<p>These are the same sales as in Session 7: 6,212 from 2021 to 2023 to learn from, and the 1,409 of 2024 to check on.</p>
+</section>
+
+<section id="two-scores" class="title-slide slide level1 center">
+<h1>Two scores</h1>
+<div>
+<div id="pyodide-3" class="exercise-cell">
+
+</div>
+<script type="pyodide-3-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJkZWYgcm1zZShhY3R1YWwsIHByZWRpY3RlZCk6XG4gICAgcmV0dXJuIG5wLnNxcnQoKChhY3R1YWwgLSBwcmVkaWN0ZWQpICoqIDIpLm1lYW4oKSlcblxuZGVmIHVuZGVyd2F0ZXIoYWN0dWFsLCBwcmVkaWN0ZWQpOlxuICAgIHJldHVybiAoMC44ICogcHJlZGljdGVkID4gYWN0dWFsKS5tZWFuKCkifQ==
+</script>
+</div>
+<p>The first is the error in kroner. The second is the share of 2024 sales where a loan of 80 percent of the valuation is more than the price.</p>
+</section>
+
+<section id="session-7s-valuation" class="title-slide slide level1 center">
+<h1>Session 7’s valuation</h1>
+<div>
+<div id="pyodide-4" class="exercise-cell">
+
+</div>
+<script type="pyodide-4-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmb2xkcyA9IEtGb2xkKG5fc3BsaXRzPTUsIHNodWZmbGU9VHJ1ZSwgcmFuZG9tX3N0YXRlPTApXG5waXBlID0gUGlwZWxpbmUoWygnc2NhbGUnLCBTdGFuZGFyZFNjYWxlcigpKSwgKCdyaWRnZScsIFJpZGdlKCkpXSlcbmdyaWQgPSB7J3JpZGdlX19hbHBoYSc6IFswLjAxLCAwLjEsIDEsIDEwLCAxMDAsIDEwMDBdfVxudmFsdWF0aW9uID0gR3JpZFNlYXJjaENWKHBpcGUsIGdyaWQsIGN2PWZvbGRzLCBzY29yaW5nPSduZWdfcm9vdF9tZWFuX3NxdWFyZWRfZXJyb3InKVxudmFsdWF0aW9uLmZpdCh0cmFpbltjb2x1bW5zXSwgbnAubG9nKHRyYWluWydwcmljZSddKSlcbnZhbHVlZCA9IG5wLmV4cCh2YWx1YXRpb24ucHJlZGljdCh0ZXN0W2NvbHVtbnNdKSlcbnByaW50KHJvdW5kKHJtc2UodGVzdFsncHJpY2UnXSwgdmFsdWVkKSksIHJvdW5kKHVuZGVyd2F0ZXIodGVzdFsncHJpY2UnXSwgdmFsdWVkKSwgMykpIn0=
+</script>
+</div>
+<p>Ridge in logs, with alpha chosen on the folds: 1,257,437 kroner, and 15.1 percent of the loans underwater. Every new model is held to these two numbers.</p>
+</section>
+
+<section id="a-tree" class="title-slide slide level1 center">
+<h1>A tree</h1>
+<div>
+<div id="pyodide-5" class="exercise-cell">
+
+</div>
+<script type="pyodide-5-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJ0cmVlID0gRGVjaXNpb25UcmVlUmVncmVzc29yKG1pbl9zYW1wbGVzX2xlYWY9MjAsIHJhbmRvbV9zdGF0ZT0wKVxudHJlZS5maXQodHJhaW5bY29sdW1uc10sIG5wLmxvZyh0cmFpblsncHJpY2UnXSkpXG52YWx1ZWQgPSBucC5leHAodHJlZS5wcmVkaWN0KHRlc3RbY29sdW1uc10pKVxucHJpbnQocm91bmQocm1zZSh0ZXN0WydwcmljZSddLCB2YWx1ZWQpKSwgcm91bmQodW5kZXJ3YXRlcih0ZXN0WydwcmljZSddLCB2YWx1ZWQpLCAzKSlcbnByaW50KHRyZWUuZ2V0X2RlcHRoKCksIHRyZWUuZ2V0X25fbGVhdmVzKCkpIn0=
+</script>
+</div>
+<p>Leaves of at least 20 sales were chosen on the folds. The tree is 13,000 kroner worse than ridge and puts 13.8 percent of the loans underwater.</p>
+</section>
+
+<section id="a-forest" class="title-slide slide level1 center">
+<h1>A forest</h1>
+<div>
+<div id="pyodide-6" class="exercise-cell">
+
+</div>
+<script type="pyodide-6-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmb3Jlc3QgPSBSYW5kb21Gb3Jlc3RSZWdyZXNzb3Iobl9lc3RpbWF0b3JzPTEwMCwgbWF4X2ZlYXR1cmVzPSdzcXJ0JywgcmFuZG9tX3N0YXRlPTApXG5mb3Jlc3QuZml0KHRyYWluW2NvbHVtbnNdLCBucC5sb2codHJhaW5bJ3ByaWNlJ10pKVxudmFsdWVkID0gbnAuZXhwKGZvcmVzdC5wcmVkaWN0KHRlc3RbY29sdW1uc10pKVxucHJpbnQocm91bmQocm1zZSh0ZXN0WydwcmljZSddLCB2YWx1ZWQpKSwgcm91bmQodW5kZXJ3YXRlcih0ZXN0WydwcmljZSddLCB2YWx1ZWQpLCAzKSkifQ==
+</script>
+</div>
+<p>A hundred trees, each grown on a bootstrap sample and averaged, cut the error by 144,000 kroner to 1,113,028. The underwater share falls to 12.1 percent.</p>
+</section>
+
+<section id="boosted-trees-stopped-on-2023" class="title-slide slide level1 center">
+<h1>Boosted trees, stopped on 2023</h1>
+<div>
+<div id="pyodide-7" class="exercise-cell">
+
+</div>
+<script type="pyodide-7-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJmaXRfcm93cywgc3RvcF9yb3dzID0gdHJhaW5bdHJhaW5bJ3NvbGQnXSA8PSAyMDIyXSwgdHJhaW5bdHJhaW5bJ3NvbGQnXSA9PSAyMDIzXVxuc3RvcHBlciA9IFhHQlJlZ3Jlc3NvcihuX2VzdGltYXRvcnM9MzAwMCwgbGVhcm5pbmdfcmF0ZT0wLjA1LCBtYXhfZGVwdGg9MyxcbiAgICAgICAgICAgICAgICAgICAgICAgZWFybHlfc3RvcHBpbmdfcm91bmRzPTEwMCwgcmFuZG9tX3N0YXRlPTApXG5zdG9wcGVyLmZpdChmaXRfcm93c1tjb2x1bW5zXSwgbnAubG9nKGZpdF9yb3dzWydwcmljZSddKSxcbiAgICAgICAgICAgIGV2YWxfc2V0PVsoc3RvcF9yb3dzW2NvbHVtbnNdLCBucC5sb2coc3RvcF9yb3dzWydwcmljZSddKSldLCB2ZXJib3NlPUZhbHNlKVxuYm9vc3RlZCA9IFhHQlJlZ3Jlc3NvcihuX2VzdGltYXRvcnM9c3RvcHBlci5iZXN0X2l0ZXJhdGlvbiArIDEsIGxlYXJuaW5nX3JhdGU9MC4wNSwgbWF4X2RlcHRoPTMsIHJhbmRvbV9zdGF0ZT0wKVxuYm9vc3RlZC5maXQodHJhaW5bY29sdW1uc10sIG5wLmxvZyh0cmFpblsncHJpY2UnXSkpXG52YWx1ZWQgPSBucC5leHAoYm9vc3RlZC5wcmVkaWN0KHRlc3RbY29sdW1uc10pKVxucHJpbnQoc3RvcHBlci5iZXN0X2l0ZXJhdGlvbiArIDEsIHJvdW5kKHJtc2UodGVzdFsncHJpY2UnXSwgdmFsdWVkKSksIHJvdW5kKHVuZGVyd2F0ZXIodGVzdFsncHJpY2UnXSwgdmFsdWVkKSwgMykpIn0=
+</script>
+</div>
+<p>Depth 3 and 974 trees did best on the 2023 sales. Refitted on all three years, the model misses by 1,166,375 kroner, with 11.6 percent underwater.</p>
+</section>
+
+<section id="prices-inside-one-town" class="title-slide slide level1 center">
+<h1>Prices inside one town</h1>
+<div id="5bdd782c" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_13_files/figure-revealjs/cell-3-output-1.png" class="quarto-figure quarto-figure-center" width="895" height="373"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Every house in Aarhus V gets the same town premium, yet one sale in ten there went below 21,500 kroner per square metre and one in ten above 44,900.</p>
+</section>
+
+<section id="coordinates-as-columns" class="title-slide slide level1 center">
+<h1>Coordinates as columns</h1>
+<div>
+<div id="pyodide-8" class="exercise-cell">
+
+</div>
+<script type="pyodide-8-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJwbGFjZSA9IFsnYXJlYScsICdyb29tcycsICdidWlsdCcsICdjZW50cmVfa20nLCAnbGF0JywgJ2xvbicsICd0eXBlX3ZpbGxhJ11cbnN0b3BwZXIgPSBYR0JSZWdyZXNzb3Iobl9lc3RpbWF0b3JzPTMwMDAsIGxlYXJuaW5nX3JhdGU9MC4wNSwgbWF4X2RlcHRoPTQsXG4gICAgICAgICAgICAgICAgICAgICAgIGVhcmx5X3N0b3BwaW5nX3JvdW5kcz0xMDAsIHJhbmRvbV9zdGF0ZT0wKVxuc3RvcHBlci5maXQoZml0X3Jvd3NbcGxhY2VdLCBucC5sb2coZml0X3Jvd3NbJ3ByaWNlJ10pLFxuICAgICAgICAgICAgZXZhbF9zZXQ9WyhzdG9wX3Jvd3NbcGxhY2VdLCBucC5sb2coc3RvcF9yb3dzWydwcmljZSddKSldLCB2ZXJib3NlPUZhbHNlKVxuYm9vc3RlZF9wbGFjZSA9IFhHQlJlZ3Jlc3NvcihuX2VzdGltYXRvcnM9c3RvcHBlci5iZXN0X2l0ZXJhdGlvbiArIDEsIGxlYXJuaW5nX3JhdGU9MC4wNSwgbWF4X2RlcHRoPTQsIHJhbmRvbV9zdGF0ZT0wKVxuYm9vc3RlZF9wbGFjZS5maXQodHJhaW5bcGxhY2VdLCBucC5sb2codHJhaW5bJ3ByaWNlJ10pKVxudmFsdWVkID0gbnAuZXhwKGJvb3N0ZWRfcGxhY2UucHJlZGljdCh0ZXN0W3BsYWNlXSkpXG5wcmludChzdG9wcGVyLmJlc3RfaXRlcmF0aW9uICsgMSwgcm91bmQocm1zZSh0ZXN0WydwcmljZSddLCB2YWx1ZWQpKSwgcm91bmQodW5kZXJ3YXRlcih0ZXN0WydwcmljZSddLCB2YWx1ZWQpLCAzKSkifQ==
+</script>
+</div>
+<p>Latitude and longitude replace the 22 town columns, and depth 4 did best on 2023. The error falls to 1,030,321 kroner and the underwater share to 9.9 percent.</p>
+</section>
+
+<section id="the-house-anywhere-in-the-inner-city-play" class="title-slide slide level1 center">
+<h1>The house anywhere in the inner city <span class="chip chip-predict">play</span></h1>
+<style>
+.w-btn { font: 600 0.54em "Segoe UI", sans-serif; color: #0d366b; background: #ffffff; border: 1.5px solid #86b6ef; border-radius: 7px; padding: 0 0.75em; height: 2em; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; line-height: 1; cursor: pointer; white-space: nowrap; vertical-align: middle; }
+.w-marks { display: inline-flex; align-items: center; gap: 0.45em; flex-wrap: wrap; }
+.w-btn:hover { border-color: #1c5cab; }
+.w-btn.on { background: #0d366b; color: #ffffff; border-color: #0d366b; }
+.w-read { font: 0.54em "Segoe UI", sans-serif; color: #52514e; }
+.w-read b, .w-val { font-family: "Cascadia Mono", Consolas, monospace; color: #0d366b; font-weight: 600; }
+.w-range { accent-color: #1c5cab; }
+.w-tip { position: absolute; pointer-events: none; background: #ffffff; border: 1px solid #c3c2b7; border-radius: 6px; padding: 4px 8px; font: 13px "Segoe UI", sans-serif; color: #141413; box-shadow: 0 2px 6px rgba(0,0,0,0.08); white-space: nowrap; display: none; z-index: 5; }
+.w-pm-top { display: flex; align-items: center; gap: 1em; margin: 0 0 0.35em; }
+.w-pm-wrap { position: relative; width: 900px; }
+.w-pm-key { position: absolute; right: 10px; bottom: 10px; background: rgba(252,252,251,0.92); border: 1px solid #c3c2b7; border-radius: 6px; padding: 5px 9px; font: 12.5px "Segoe UI", sans-serif; color: #52514e; }
+.w-pm-key .bar { width: 170px; height: 10px; border-radius: 3px; margin: 3px 0 2px; }
+.w-pm-key .ends { display: flex; justify-content: space-between; }
+.w-pm-credit { position: absolute; left: 8px; bottom: 6px; pointer-events: none; background: rgba(252,252,251,0.85); border-radius: 4px; padding: 1px 6px; font: 11px "Segoe UI", sans-serif; color: #6e6d68; }
+</style>
+<div id="pm">
+<div class="w-pm-top"><span class="w-marks"><button class="w-btn on" data-m="ridge_place">linear regression</button><button class="w-btn" data-m="boosted_place">boosted trees</button></span>
+<span class="w-read" id="pm-read"></span></div>
+<div class="w-pm-wrap">
+<svg id="pm-svg" width="900" height="440" viewbox="0 0 900 440" role="img" aria-label="A map of the inner Aarhus postcodes, shaded by what a model says the house from Aarhus V would be worth at each spot"></svg>
+<div class="w-pm-key"><div>the house valued here, million kroner</div><div class="bar" id="pm-bar"></div><div class="ends"><span id="pm-lo"></span><span id="pm-hi"></span></div></div>
+<div class="w-pm-credit">map: © Esri, HERE, Garmin, OpenStreetMap contributors</div>
+</div>
+</div>
+<script>
+(function () {
+var NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent, text) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, o) { o = o || {}; return el("text", { x: x, y: y, "font-size": o.size || 12.5, "font-weight": o.weight || 400, fill: o.fill || "#898781", "text-anchor": o.anchor || "start", "font-family": "Segoe UI, sans-serif", transform: o.rotate ? "rotate(" + o.rotate + " " + x + " " + y + ")" : "", stroke: o.halo ? "#fcfcfb" : "none", "stroke-width": o.halo ? 4 : 0, "paint-order": "stroke" }, parent, s); }
+function onShow(node, fn) { var sec = node.closest("section"); if (!sec) { fn(); return; } var was = false; function check() { var now = sec.classList.contains("present"); if (now && !was) fn(); was = now; } new MutationObserver(check).observe(sec, { attributes: true, attributeFilter: ["class"] }); check(); }
+function visible(node) { var sec = node.closest("section"); return !sec || sec.classList.contains("present"); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function ramp(stops, t) { t = Math.max(0, Math.min(1, t)); var n = stops.length - 1, i = Math.min(n - 1, Math.floor(t * n)), u = t * n - i, a = stops[i], b = stops[i + 1]; return "rgb(" + Math.round(lerp(a[0], b[0], u)) + "," + Math.round(lerp(a[1], b[1], u)) + "," + Math.round(lerp(a[2], b[2], u)) + ")"; }
+var BLUES = [[241, 245, 250], [134, 182, 239], [28, 92, 171], [13, 54, 107]];
+var AMBERS = [[240, 222, 170], [184, 134, 11]];
+var BRICKS = [[251, 241, 240], [224, 160, 149], [179, 64, 47]];
+function priceColour(v) { if (v === null || v === undefined) return "#ffffff"; if (v < 0) return ramp(AMBERS, Math.min(1, -v / 300)); return ramp(BLUES, Math.min(1, v / 1500)); }
+function fmt(n) { var s = Math.round(Math.abs(n)).toLocaleString("en-GB"); return (n < -0.5 ? "−" : "") + s; }
+function hh(h) { return (h < 10 ? "0" : "") + h + ":00"; }
+function niceTicks(lo, hi, n) { var span = hi - lo, raw = span / Math.max(1, n), mag = Math.pow(10, Math.floor(Math.log10(raw))), step = [1, 2, 2.5, 5, 10].map(function (m) { return m * mag; }).filter(function (s) { return s >= raw; })[0]; var out = []; for (var v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(Math.round(v * 1000) / 1000); return out; }
+function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { window["__" + key] = value; } return value; }
+function recall(key) { try { var v = localStorage.getItem(key); if (v) return JSON.parse(v); } catch (e) {} return window["__" + key] || null; }
+function hidpi(canvas, w, h) { var r = 2; canvas.width = w * r; canvas.height = h * r; canvas.style.width = w + "px"; canvas.style.height = h + "px"; var c = canvas.getContext("2d"); c.setTransform(r, 0, 0, r, 0, 0); return c; }
+var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+var WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+function longDate(iso) { var d = new Date(iso + "T12:00:00"); return WEEKDAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear(); }
+var WDNAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+function dayMonth(iso) { var d = new Date(iso + "T12:00:00"); return WEEKDAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()]; }
+function signed(v) { return (v > 0 ? "+" : "") + fmt(v); }
+function diverge(v, span) { if (v === null || v === undefined) return "#ffffff"; var t = Math.max(-1, Math.min(1, v / span)); return t < 0 ? ramp([[241, 240, 236], [134, 182, 239], [28, 92, 171]], -t) : ramp([[241, 240, 236], [224, 160, 149], [179, 64, 47]], t); }
+  var D = {"width":900,"height":440,"cells":[[80.0,430.0,10.6,10.6],[90.0,430.0,10.6,10.6],[100.0,430.0,10.6,10.6],[110.0,430.0,10.6,10.6],[120.0,430.0,10.6,10.6],[130.0,430.0,10.6,10.6],[220.0,430.0,10.6,10.6],[230.0,430.0,10.6,10.6],[240.0,430.0,10.6,10.6],[250.0,430.0,10.6,10.6],[260.0,430.0,10.6,10.6],[270.0,430.0,10.6,10.6],[280.0,430.0,10.6,10.6],[290.0,430.0,10.6,10.6],[300.0,430.0,10.6,10.6],[310.0,430.0,10.6,10.6],[320.0,430.0,10.6,10.6],[330.0,430.0,10.6,10.6],[340.0,430.0,10.6,10.6],[350.0,430.0,10.6,10.6],[360.0,430.0,10.6,10.6],[370.0,430.0,10.6,10.6],[380.0,430.0,10.6,10.6],[390.0,430.0,10.6,10.6],[400.0,430.0,10.6,10.6],[410.0,430.0,10.6,10.6],[420.0,430.0,10.6,10.6],[430.0,430.0,10.6,10.6],[440.0,430.0,10.6,10.6],[450.0,430.0,10.6,10.6],[460.0,430.0,10.6,10.6],[470.0,430.0,10.6,10.6],[480.0,430.0,10.6,10.6],[490.0,430.0,10.6,10.6],[500.0,430.0,10.6,10.6],[510.0,430.0,10.6,10.6],[520.0,430.0,10.6,10.6],[550.0,430.0,10.6,10.6],[560.0,430.0,10.6,10.6],[570.0,430.0,10.6,10.6],[90.0,420.0,10.6,10.6],[100.0,420.0,10.6,10.6],[110.0,420.0,10.6,10.6],[120.0,420.0,10.6,10.6],[220.0,420.0,10.6,10.6],[230.0,420.0,10.6,10.6],[240.0,420.0,10.6,10.6],[250.0,420.0,10.6,10.6],[260.0,420.0,10.6,10.6],[270.0,420.0,10.6,10.6],[280.0,420.0,10.6,10.6],[290.0,420.0,10.6,10.6],[300.0,420.0,10.6,10.6],[310.0,420.0,10.6,10.6],[320.0,420.0,10.6,10.6],[330.0,420.0,10.6,10.6],[340.0,420.0,10.6,10.6],[350.0,420.0,10.6,10.6],[360.0,420.0,10.6,10.6],[370.0,420.0,10.6,10.6],[380.0,420.0,10.6,10.6],[390.0,420.0,10.6,10.6],[400.0,420.0,10.6,10.6],[410.0,420.0,10.6,10.6],[420.0,420.0,10.6,10.6],[430.0,420.0,10.6,10.6],[440.0,420.0,10.6,10.6],[450.0,420.0,10.6,10.6],[460.0,420.0,10.6,10.6],[470.0,420.0,10.6,10.6],[480.0,420.0,10.6,10.6],[490.0,420.0,10.6,10.6],[500.0,420.0,10.6,10.6],[510.0,420.0,10.6,10.6],[550.0,420.0,10.6,10.6],[560.0,420.0,10.6,10.6],[570.0,420.0,10.6,10.6],[90.0,410.0,10.6,10.6],[100.0,410.0,10.6,10.6],[110.0,410.0,10.6,10.6],[210.0,410.0,10.6,10.6],[220.0,410.0,10.6,10.6],[230.0,410.0,10.6,10.6],[240.0,410.0,10.6,10.6],[250.0,410.0,10.6,10.6],[260.0,410.0,10.6,10.6],[270.0,410.0,10.6,10.6],[280.0,410.0,10.6,10.6],[290.0,410.0,10.6,10.6],[300.0,410.0,10.6,10.6],[310.0,410.0,10.6,10.6],[320.0,410.0,10.6,10.6],[330.0,410.0,10.6,10.6],[340.0,410.0,10.6,10.6],[350.0,410.0,10.6,10.6],[360.0,410.0,10.6,10.6],[370.0,410.0,10.6,10.6],[380.0,410.0,10.6,10.6],[390.0,410.0,10.6,10.6],[400.0,410.0,10.6,10.6],[410.0,410.0,10.6,10.6],[420.0,410.0,10.6,10.6],[430.0,410.0,10.6,10.6],[440.0,410.0,10.6,10.6],[450.0,410.0,10.6,10.6],[460.0,410.0,10.6,10.6],[470.0,410.0,10.6,10.6],[480.0,410.0,10.6,10.6],[490.0,410.0,10.6,10.6],[500.0,410.0,10.6,10.6],[510.0,410.0,10.6,10.6],[550.0,410.0,10.6,10.6],[560.0,410.0,10.6,10.6],[210.0,400.0,10.6,10.6],[220.0,400.0,10.6,10.6],[230.0,400.0,10.6,10.6],[240.0,400.0,10.6,10.6],[250.0,400.0,10.6,10.6],[260.0,400.0,10.6,10.6],[270.0,400.0,10.6,10.6],[280.0,400.0,10.6,10.6],[290.0,400.0,10.6,10.6],[300.0,400.0,10.6,10.6],[310.0,400.0,10.6,10.6],[320.0,400.0,10.6,10.6],[340.0,400.0,10.6,10.6],[350.0,400.0,10.6,10.6],[360.0,400.0,10.6,10.6],[370.0,400.0,10.6,10.6],[380.0,400.0,10.6,10.6],[390.0,400.0,10.6,10.6],[400.0,400.0,10.6,10.6],[410.0,400.0,10.6,10.6],[420.0,400.0,10.6,10.6],[430.0,400.0,10.6,10.6],[440.0,400.0,10.6,10.6],[450.0,400.0,10.6,10.6],[460.0,400.0,10.6,10.6],[470.0,400.0,10.6,10.6],[480.0,400.0,10.6,10.6],[490.0,400.0,10.6,10.6],[500.0,400.0,10.6,10.6],[510.0,400.0,10.6,10.6],[550.0,400.0,10.6,10.6],[560.0,400.0,10.6,10.6],[50.0,390.0,10.6,10.6],[60.0,390.0,10.6,10.6],[220.0,390.0,10.6,10.6],[230.0,390.0,10.6,10.6],[240.0,390.0,10.6,10.6],[250.0,390.0,10.6,10.6],[260.0,390.0,10.6,10.6],[270.0,390.0,10.6,10.6],[280.0,390.0,10.6,10.6],[290.0,390.0,10.6,10.6],[300.0,390.0,10.6,10.6],[310.0,390.0,10.6,10.6],[320.0,390.0,10.6,10.6],[330.0,390.0,10.6,10.6],[350.0,390.0,10.6,10.6],[360.0,390.0,10.6,10.6],[370.0,390.0,10.6,10.6],[380.0,390.0,10.6,10.6],[390.0,390.0,10.6,10.6],[400.0,390.0,10.6,10.6],[410.0,390.0,10.6,10.6],[420.0,390.0,10.6,10.6],[430.0,390.0,10.6,10.6],[440.0,390.0,10.6,10.6],[450.0,390.0,10.6,10.6],[460.0,390.0,10.6,10.6],[470.0,390.0,10.6,10.6],[480.0,390.0,10.6,10.6],[490.0,390.0,10.6,10.6],[500.0,390.0,10.6,10.6],[510.0,390.0,10.6,10.6],[540.0,390.0,10.6,10.6],[550.0,390.0,10.6,10.6],[560.0,390.0,10.6,10.6],[40.0,380.1,10.6,10.6],[50.0,380.1,10.6,10.6],[60.0,380.1,10.6,10.6],[220.0,380.1,10.6,10.6],[230.0,380.1,10.6,10.6],[240.0,380.1,10.6,10.6],[250.0,380.1,10.6,10.6],[260.0,380.1,10.6,10.6],[270.0,380.1,10.6,10.6],[280.0,380.1,10.6,10.6],[290.0,380.1,10.6,10.6],[300.0,380.1,10.6,10.6],[310.0,380.1,10.6,10.6],[320.0,380.1,10.6,10.6],[330.0,380.1,10.6,10.6],[380.0,380.1,10.6,10.6],[390.0,380.1,10.6,10.6],[400.0,380.1,10.6,10.6],[410.0,380.1,10.6,10.6],[420.0,380.1,10.6,10.6],[430.0,380.1,10.6,10.6],[440.0,380.1,10.6,10.6],[450.0,380.1,10.6,10.6],[460.0,380.1,10.6,10.6],[470.0,380.1,10.6,10.6],[480.0,380.1,10.6,10.6],[490.0,380.1,10.6,10.6],[500.0,380.1,10.6,10.6],[540.0,380.1,10.6,10.6],[550.0,380.1,10.6,10.6],[560.0,380.1,10.6,10.6],[250.0,370.1,10.6,10.6],[260.0,370.1,10.6,10.6],[270.0,370.1,10.6,10.6],[280.0,370.1,10.6,10.6],[290.0,370.1,10.6,10.6],[300.0,370.1,10.6,10.6],[310.0,370.1,10.6,10.6],[320.0,370.1,10.6,10.6],[410.0,370.1,10.6,10.6],[420.0,370.1,10.6,10.6],[430.0,370.1,10.6,10.6],[440.0,370.1,10.6,10.6],[450.0,370.1,10.6,10.6],[460.0,370.1,10.6,10.6],[470.0,370.1,10.6,10.6],[480.0,370.1,10.6,10.6],[490.0,370.1,10.6,10.6],[500.0,370.1,10.6,10.6],[510.0,370.1,10.6,10.6],[550.0,370.1,10.6,10.6],[260.0,360.1,10.6,10.6],[270.0,360.1,10.6,10.6],[280.0,360.1,10.6,10.6],[290.0,360.1,10.6,10.6],[300.0,360.1,10.6,10.6],[310.0,360.1,10.6,10.6],[420.0,360.1,10.6,10.6],[430.0,360.1,10.6,10.6],[440.0,360.1,10.6,10.6],[450.0,360.1,10.6,10.6],[460.0,360.1,10.6,10.6],[470.0,360.1,10.6,10.6],[480.0,360.1,10.6,10.6],[490.0,360.1,10.6,10.6],[500.0,360.1,10.6,10.6],[510.0,360.1,10.6,10.6],[520.0,360.1,10.6,10.6],[530.0,360.1,10.6,10.6],[540.0,360.1,10.6,10.6],[270.0,350.1,10.6,10.6],[280.0,350.1,10.6,10.6],[290.0,350.1,10.6,10.6],[300.0,350.1,10.6,10.6],[310.0,350.1,10.6,10.6],[440.0,350.1,10.6,10.6],[450.0,350.1,10.6,10.6],[460.0,350.1,10.6,10.6],[470.0,350.1,10.6,10.6],[480.0,350.1,10.6,10.6],[490.0,350.1,10.6,10.6],[500.0,350.1,10.6,10.6],[510.0,350.1,10.6,10.6],[520.0,350.1,10.6,10.6],[530.0,350.1,10.6,10.6],[540.0,350.1,10.6,10.6],[290.0,340.1,10.6,10.6],[300.0,340.1,10.6,10.6],[370.0,340.1,10.6,10.6],[390.0,340.1,10.6,10.6],[400.0,340.1,10.6,10.6],[410.0,340.1,10.6,10.6],[420.0,340.1,10.6,10.6],[440.0,340.1,10.6,10.6],[450.0,340.1,10.6,10.6],[460.0,340.1,10.6,10.6],[500.0,340.1,10.6,10.6],[520.0,340.1,10.6,10.6],[530.0,340.1,10.6,10.6],[540.0,340.1,10.6,10.6],[330.0,330.1,10.6,10.6],[340.0,330.1,10.6,10.6],[350.0,330.1,10.6,10.6],[360.0,330.1,10.6,10.6],[370.0,330.1,10.6,10.6],[380.0,330.1,10.6,10.6],[390.0,330.1,10.6,10.6],[400.0,330.1,10.6,10.6],[410.0,330.1,10.6,10.6],[420.0,330.1,10.6,10.6],[500.0,330.1,10.6,10.6],[510.0,330.1,10.6,10.6],[520.0,330.1,10.6,10.6],[530.0,330.1,10.6,10.6],[540.0,330.1,10.6,10.6],[180.0,320.1,10.6,10.6],[320.0,320.1,10.6,10.6],[330.0,320.1,10.6,10.6],[340.0,320.1,10.6,10.6],[350.0,320.1,10.6,10.6],[360.0,320.1,10.6,10.6],[370.0,320.1,10.6,10.6],[380.0,320.1,10.6,10.6],[390.0,320.1,10.6,10.6],[400.0,320.1,10.6,10.6],[410.0,320.1,10.6,10.6],[420.0,320.1,10.6,10.6],[490.0,320.1,10.6,10.6],[500.0,320.1,10.6,10.6],[510.0,320.1,10.6,10.6],[520.0,320.1,10.6,10.6],[530.0,320.1,10.6,10.6],[540.0,320.1,10.6,10.6],[160.0,310.1,10.6,10.6],[170.0,310.1,10.6,10.6],[180.0,310.1,10.6,10.6],[190.0,310.1,10.6,10.6],[200.0,310.1,10.6,10.6],[280.0,310.1,10.6,10.6],[290.0,310.1,10.6,10.6],[300.0,310.1,10.6,10.6],[310.0,310.1,10.6,10.6],[320.0,310.1,10.6,10.6],[330.0,310.1,10.6,10.6],[340.0,310.1,10.6,10.6],[350.0,310.1,10.6,10.6],[360.0,310.1,10.6,10.6],[370.0,310.1,10.6,10.6],[380.0,310.1,10.6,10.6],[390.0,310.1,10.6,10.6],[400.0,310.1,10.6,10.6],[410.0,310.1,10.6,10.6],[420.0,310.1,10.6,10.6],[490.0,310.1,10.6,10.6],[500.0,310.1,10.6,10.6],[510.0,310.1,10.6,10.6],[520.0,310.1,10.6,10.6],[530.0,310.1,10.6,10.6],[540.0,310.1,10.6,10.6],[550.0,310.1,10.6,10.6],[110.0,300.1,10.6,10.6],[120.0,300.1,10.6,10.6],[130.0,300.1,10.6,10.6],[140.0,300.1,10.6,10.6],[160.0,300.1,10.6,10.6],[170.0,300.1,10.6,10.6],[180.0,300.1,10.6,10.6],[190.0,300.1,10.6,10.6],[200.0,300.1,10.6,10.6],[210.0,300.1,10.6,10.6],[220.0,300.1,10.6,10.6],[230.0,300.1,10.6,10.6],[250.0,300.1,10.6,10.6],[260.0,300.1,10.6,10.6],[270.0,300.1,10.6,10.6],[280.0,300.1,10.6,10.6],[290.0,300.1,10.6,10.6],[300.0,300.1,10.6,10.6],[310.0,300.1,10.6,10.6],[320.0,300.1,10.6,10.6],[330.0,300.1,10.6,10.6],[340.0,300.1,10.6,10.6],[350.0,300.1,10.6,10.6],[360.0,300.1,10.6,10.6],[370.0,300.1,10.6,10.6],[380.0,300.1,10.6,10.6],[390.0,300.1,10.6,10.6],[400.0,300.1,10.6,10.6],[410.0,300.1,10.6,10.6],[420.0,300.1,10.6,10.6],[490.0,300.1,10.6,10.6],[500.0,300.1,10.6,10.6],[510.0,300.1,10.6,10.6],[520.0,300.1,10.6,10.6],[530.0,300.1,10.6,10.6],[540.0,300.1,10.6,10.6],[550.0,300.1,10.6,10.6],[110.0,290.1,10.6,10.6],[120.0,290.1,10.6,10.6],[130.0,290.1,10.6,10.6],[140.0,290.1,10.6,10.6],[150.0,290.1,10.6,10.6],[160.0,290.1,10.6,10.6],[170.0,290.1,10.6,10.6],[180.0,290.1,10.6,10.6],[190.0,290.1,10.6,10.6],[200.0,290.1,10.6,10.6],[210.0,290.1,10.6,10.6],[220.0,290.1,10.6,10.6],[230.0,290.1,10.6,10.6],[240.0,290.1,10.6,10.6],[250.0,290.1,10.6,10.6],[260.0,290.1,10.6,10.6],[270.0,290.1,10.6,10.6],[280.0,290.1,10.6,10.6],[290.0,290.1,10.6,10.6],[300.0,290.1,10.6,10.6],[310.0,290.1,10.6,10.6],[320.0,290.1,10.6,10.6],[330.0,290.1,10.6,10.6],[340.0,290.1,10.6,10.6],[350.0,290.1,10.6,10.6],[360.0,290.1,10.6,10.6],[370.0,290.1,10.6,10.6],[380.0,290.1,10.6,10.6],[390.0,290.1,10.6,10.6],[400.0,290.1,10.6,10.6],[410.0,290.1,10.6,10.6],[420.0,290.1,10.6,10.6],[430.0,290.1,10.6,10.6],[440.0,290.1,10.6,10.6],[490.0,290.1,10.6,10.6],[500.0,290.1,10.6,10.6],[510.0,290.1,10.6,10.6],[520.0,290.1,10.6,10.6],[530.0,290.1,10.6,10.6],[540.0,290.1,10.6,10.6],[550.0,290.1,10.6,10.6],[110.0,280.1,10.6,10.6],[120.0,280.1,10.6,10.6],[130.0,280.1,10.6,10.6],[140.0,280.1,10.6,10.6],[160.0,280.1,10.6,10.6],[170.0,280.1,10.6,10.6],[180.0,280.1,10.6,10.6],[190.0,280.1,10.6,10.6],[200.0,280.1,10.6,10.6],[210.0,280.1,10.6,10.6],[220.0,280.1,10.6,10.6],[230.0,280.1,10.6,10.6],[240.0,280.1,10.6,10.6],[250.0,280.1,10.6,10.6],[260.0,280.1,10.6,10.6],[270.0,280.1,10.6,10.6],[280.0,280.1,10.6,10.6],[290.0,280.1,10.6,10.6],[300.0,280.1,10.6,10.6],[310.0,280.1,10.6,10.6],[320.0,280.1,10.6,10.6],[330.0,280.1,10.6,10.6],[340.0,280.1,10.6,10.6],[350.0,280.1,10.6,10.6],[360.0,280.1,10.6,10.6],[370.0,280.1,10.6,10.6],[380.0,280.1,10.6,10.6],[390.0,280.1,10.6,10.6],[400.0,280.1,10.6,10.6],[410.0,280.1,10.6,10.6],[420.0,280.1,10.6,10.6],[430.0,280.1,10.6,10.6],[440.0,280.1,10.6,10.6],[450.0,280.1,10.6,10.6],[460.0,280.1,10.6,10.6],[500.0,280.1,10.6,10.6],[510.0,280.1,10.6,10.6],[520.0,280.1,10.6,10.6],[530.0,280.1,10.6,10.6],[540.0,280.1,10.6,10.6],[550.0,280.1,10.6,10.6],[560.0,280.1,10.6,10.6],[120.0,270.1,10.6,10.6],[130.0,270.1,10.6,10.6],[160.0,270.1,10.6,10.6],[170.0,270.1,10.6,10.6],[180.0,270.1,10.6,10.6],[190.0,270.1,10.6,10.6],[200.0,270.1,10.6,10.6],[210.0,270.1,10.6,10.6],[220.0,270.1,10.6,10.6],[230.0,270.1,10.6,10.6],[240.0,270.1,10.6,10.6],[250.0,270.1,10.6,10.6],[260.0,270.1,10.6,10.6],[270.0,270.1,10.6,10.6],[280.0,270.1,10.6,10.6],[290.0,270.1,10.6,10.6],[300.0,270.1,10.6,10.6],[310.0,270.1,10.6,10.6],[320.0,270.1,10.6,10.6],[330.0,270.1,10.6,10.6],[340.0,270.1,10.6,10.6],[350.0,270.1,10.6,10.6],[360.0,270.1,10.6,10.6],[370.0,270.1,10.6,10.6],[380.0,270.1,10.6,10.6],[390.0,270.1,10.6,10.6],[400.0,270.1,10.6,10.6],[410.0,270.1,10.6,10.6],[420.0,270.1,10.6,10.6],[430.0,270.1,10.6,10.6],[440.0,270.1,10.6,10.6],[450.0,270.1,10.6,10.6],[460.0,270.1,10.6,10.6],[520.0,270.1,10.6,10.6],[530.0,270.1,10.6,10.6],[540.0,270.1,10.6,10.6],[550.0,270.1,10.6,10.6],[180.0,260.1,10.6,10.6],[190.0,260.1,10.6,10.6],[200.0,260.1,10.6,10.6],[210.0,260.1,10.6,10.6],[220.0,260.1,10.6,10.6],[230.0,260.1,10.6,10.6],[240.0,260.1,10.6,10.6],[250.0,260.1,10.6,10.6],[260.0,260.1,10.6,10.6],[270.0,260.1,10.6,10.6],[280.0,260.1,10.6,10.6],[290.0,260.1,10.6,10.6],[300.0,260.1,10.6,10.6],[310.0,260.1,10.6,10.6],[320.0,260.1,10.6,10.6],[330.0,260.1,10.6,10.6],[340.0,260.1,10.6,10.6],[350.0,260.1,10.6,10.6],[360.0,260.1,10.6,10.6],[370.0,260.1,10.6,10.6],[380.0,260.1,10.6,10.6],[390.0,260.1,10.6,10.6],[400.0,260.1,10.6,10.6],[410.0,260.1,10.6,10.6],[420.0,260.1,10.6,10.6],[430.0,260.1,10.6,10.6],[440.0,260.1,10.6,10.6],[450.0,260.1,10.6,10.6],[460.0,260.1,10.6,10.6],[500.0,260.1,10.6,10.6],[510.0,260.1,10.6,10.6],[520.0,260.1,10.6,10.6],[530.0,260.1,10.6,10.6],[540.0,260.1,10.6,10.6],[550.0,260.1,10.6,10.6],[560.0,260.1,10.6,10.6],[170.0,250.1,10.6,10.6],[180.0,250.1,10.6,10.6],[190.0,250.1,10.6,10.6],[200.0,250.1,10.6,10.6],[210.0,250.1,10.6,10.6],[220.0,250.1,10.6,10.6],[230.0,250.1,10.6,10.6],[240.0,250.1,10.6,10.6],[250.0,250.1,10.6,10.6],[260.0,250.1,10.6,10.6],[270.0,250.1,10.6,10.6],[280.0,250.1,10.6,10.6],[290.0,250.1,10.6,10.6],[300.0,250.1,10.6,10.6],[310.0,250.1,10.6,10.6],[320.0,250.1,10.6,10.6],[340.0,250.1,10.6,10.6],[350.0,250.1,10.6,10.6],[360.0,250.1,10.6,10.6],[370.0,250.1,10.6,10.6],[380.0,250.1,10.6,10.6],[390.0,250.1,10.6,10.6],[400.0,250.1,10.6,10.6],[410.0,250.1,10.6,10.6],[420.0,250.1,10.6,10.6],[430.0,250.1,10.6,10.6],[440.0,250.1,10.6,10.6],[450.0,250.1,10.6,10.6],[480.0,250.1,10.6,10.6],[490.0,250.1,10.6,10.6],[500.0,250.1,10.6,10.6],[510.0,250.1,10.6,10.6],[520.0,250.1,10.6,10.6],[530.0,250.1,10.6,10.6],[540.0,250.1,10.6,10.6],[550.0,250.1,10.6,10.6],[560.0,250.1,10.6,10.6],[570.0,250.1,10.6,10.6],[170.0,240.1,10.6,10.6],[180.0,240.1,10.6,10.6],[190.0,240.1,10.6,10.6],[200.0,240.1,10.6,10.6],[210.0,240.1,10.6,10.6],[220.0,240.1,10.6,10.6],[230.0,240.1,10.6,10.6],[240.0,240.1,10.6,10.6],[250.0,240.1,10.6,10.6],[260.0,240.1,10.6,10.6],[270.0,240.1,10.6,10.6],[280.0,240.1,10.6,10.6],[290.0,240.1,10.6,10.6],[300.0,240.1,10.6,10.6],[310.0,240.1,10.6,10.6],[320.0,240.1,10.6,10.6],[330.0,240.1,10.6,10.6],[350.0,240.1,10.6,10.6],[360.0,240.1,10.6,10.6],[370.0,240.1,10.6,10.6],[380.0,240.1,10.6,10.6],[390.0,240.1,10.6,10.6],[400.0,240.1,10.6,10.6],[410.0,240.1,10.6,10.6],[420.0,240.1,10.6,10.6],[430.0,240.1,10.6,10.6],[440.0,240.1,10.6,10.6],[450.0,240.1,10.6,10.6],[460.0,240.1,10.6,10.6],[470.0,240.1,10.6,10.6],[480.0,240.1,10.6,10.6],[490.0,240.1,10.6,10.6],[500.0,240.1,10.6,10.6],[510.0,240.1,10.6,10.6],[520.0,240.1,10.6,10.6],[530.0,240.1,10.6,10.6],[540.0,240.1,10.6,10.6],[550.0,240.1,10.6,10.6],[560.0,240.1,10.6,10.6],[570.0,240.1,10.6,10.6],[600.0,240.1,10.6,10.6],[610.0,240.1,10.6,10.6],[170.0,230.1,10.6,10.6],[180.0,230.1,10.6,10.6],[190.0,230.1,10.6,10.6],[200.0,230.1,10.6,10.6],[210.0,230.1,10.6,10.6],[220.0,230.1,10.6,10.6],[230.0,230.1,10.6,10.6],[240.0,230.1,10.6,10.6],[250.0,230.1,10.6,10.6],[260.0,230.1,10.6,10.6],[270.0,230.1,10.6,10.6],[280.0,230.1,10.6,10.6],[290.0,230.1,10.6,10.6],[300.0,230.1,10.6,10.6],[310.0,230.1,10.6,10.6],[320.0,230.1,10.6,10.6],[330.0,230.1,10.6,10.6],[350.0,230.1,10.6,10.6],[360.0,230.1,10.6,10.6],[370.0,230.1,10.6,10.6],[380.0,230.1,10.6,10.6],[390.0,230.1,10.6,10.6],[400.0,230.1,10.6,10.6],[410.0,230.1,10.6,10.6],[420.0,230.1,10.6,10.6],[430.0,230.1,10.6,10.6],[440.0,230.1,10.6,10.6],[450.0,230.1,10.6,10.6],[460.0,230.1,10.6,10.6],[470.0,230.1,10.6,10.6],[480.0,230.1,10.6,10.6],[490.0,230.1,10.6,10.6],[500.0,230.1,10.6,10.6],[510.0,230.1,10.6,10.6],[520.0,230.1,10.6,10.6],[530.0,230.1,10.6,10.6],[540.0,230.1,10.6,10.6],[550.0,230.1,10.6,10.6],[560.0,230.1,10.6,10.6],[570.0,230.1,10.6,10.6],[580.0,230.1,10.6,10.6],[590.0,230.1,10.6,10.6],[600.0,230.1,10.6,10.6],[610.0,230.1,10.6,10.6],[620.0,230.1,10.6,10.6],[180.0,220.1,10.6,10.6],[190.0,220.1,10.6,10.6],[200.0,220.1,10.6,10.6],[210.0,220.1,10.6,10.6],[220.0,220.1,10.6,10.6],[230.0,220.1,10.6,10.6],[280.0,220.1,10.6,10.6],[290.0,220.1,10.6,10.6],[300.0,220.1,10.6,10.6],[310.0,220.1,10.6,10.6],[320.0,220.1,10.6,10.6],[350.0,220.1,10.6,10.6],[360.0,220.1,10.6,10.6],[370.0,220.1,10.6,10.6],[380.0,220.1,10.6,10.6],[390.0,220.1,10.6,10.6],[400.0,220.1,10.6,10.6],[410.0,220.1,10.6,10.6],[420.0,220.1,10.6,10.6],[430.0,220.1,10.6,10.6],[440.0,220.1,10.6,10.6],[450.0,220.1,10.6,10.6],[460.0,220.1,10.6,10.6],[470.0,220.1,10.6,10.6],[480.0,220.1,10.6,10.6],[490.0,220.1,10.6,10.6],[500.0,220.1,10.6,10.6],[510.0,220.1,10.6,10.6],[520.0,220.1,10.6,10.6],[530.0,220.1,10.6,10.6],[540.0,220.1,10.6,10.6],[550.0,220.1,10.6,10.6],[560.0,220.1,10.6,10.6],[570.0,220.1,10.6,10.6],[580.0,220.1,10.6,10.6],[590.0,220.1,10.6,10.6],[600.0,220.1,10.6,10.6],[610.0,220.1,10.6,10.6],[620.0,220.1,10.6,10.6],[290.0,210.1,10.6,10.6],[300.0,210.1,10.6,10.6],[370.0,210.1,10.6,10.6],[380.0,210.1,10.6,10.6],[390.0,210.1,10.6,10.6],[400.0,210.1,10.6,10.6],[410.0,210.1,10.6,10.6],[420.0,210.1,10.6,10.6],[430.0,210.1,10.6,10.6],[440.0,210.1,10.6,10.6],[450.0,210.1,10.6,10.6],[460.0,210.1,10.6,10.6],[470.0,210.1,10.6,10.6],[480.0,210.1,10.6,10.6],[490.0,210.1,10.6,10.6],[500.0,210.1,10.6,10.6],[510.0,210.1,10.6,10.6],[520.0,210.1,10.6,10.6],[530.0,210.1,10.6,10.6],[540.0,210.1,10.6,10.6],[550.0,210.1,10.6,10.6],[560.0,210.1,10.6,10.6],[570.0,210.1,10.6,10.6],[580.0,210.1,10.6,10.6],[590.0,210.1,10.6,10.6],[600.0,210.1,10.6,10.6],[610.0,210.1,10.6,10.6],[340.0,200.1,10.6,10.6],[350.0,200.1,10.6,10.6],[360.0,200.1,10.6,10.6],[390.0,200.1,10.6,10.6],[400.0,200.1,10.6,10.6],[410.0,200.1,10.6,10.6],[420.0,200.1,10.6,10.6],[430.0,200.1,10.6,10.6],[440.0,200.1,10.6,10.6],[450.0,200.1,10.6,10.6],[460.0,200.1,10.6,10.6],[470.0,200.1,10.6,10.6],[480.0,200.1,10.6,10.6],[490.0,200.1,10.6,10.6],[500.0,200.1,10.6,10.6],[510.0,200.1,10.6,10.6],[520.0,200.1,10.6,10.6],[560.0,200.1,10.6,10.6],[570.0,200.1,10.6,10.6],[580.0,200.1,10.6,10.6],[590.0,200.1,10.6,10.6],[40.0,190.1,10.6,10.6],[50.0,190.1,10.6,10.6],[60.0,190.1,10.6,10.6],[330.0,190.1,10.6,10.6],[340.0,190.1,10.6,10.6],[350.0,190.1,10.6,10.6],[360.0,190.1,10.6,10.6],[370.0,190.1,10.6,10.6],[380.0,190.1,10.6,10.6],[390.0,190.1,10.6,10.6],[400.0,190.1,10.6,10.6],[410.0,190.1,10.6,10.6],[420.0,190.1,10.6,10.6],[430.0,190.1,10.6,10.6],[440.0,190.1,10.6,10.6],[450.0,190.1,10.6,10.6],[460.0,190.1,10.6,10.6],[470.0,190.1,10.6,10.6],[480.0,190.1,10.6,10.6],[490.0,190.1,10.6,10.6],[510.0,190.1,10.6,10.6],[550.0,190.1,10.6,10.6],[560.0,190.1,10.6,10.6],[570.0,190.1,10.6,10.6],[580.0,190.1,10.6,10.6],[590.0,190.1,10.6,10.6],[40.0,180.1,10.6,10.6],[50.0,180.1,10.6,10.6],[60.0,180.1,10.6,10.6],[70.0,180.1,10.6,10.6],[210.0,180.1,10.6,10.6],[220.0,180.1,10.6,10.6],[230.0,180.1,10.6,10.6],[240.0,180.1,10.6,10.6],[320.0,180.1,10.6,10.6],[330.0,180.1,10.6,10.6],[340.0,180.1,10.6,10.6],[350.0,180.1,10.6,10.6],[360.0,180.1,10.6,10.6],[370.0,180.1,10.6,10.6],[380.0,180.1,10.6,10.6],[390.0,180.1,10.6,10.6],[400.0,180.1,10.6,10.6],[410.0,180.1,10.6,10.6],[420.0,180.1,10.6,10.6],[430.0,180.1,10.6,10.6],[440.0,180.1,10.6,10.6],[450.0,180.1,10.6,10.6],[460.0,180.1,10.6,10.6],[470.0,180.1,10.6,10.6],[480.0,180.1,10.6,10.6],[490.0,180.1,10.6,10.6],[500.0,180.1,10.6,10.6],[540.0,180.1,10.6,10.6],[550.0,180.1,10.6,10.6],[560.0,180.1,10.6,10.6],[570.0,180.1,10.6,10.6],[580.0,180.1,10.6,10.6],[590.0,180.1,10.6,10.6],[600.0,180.1,10.6,10.6],[40.0,170.1,10.6,10.6],[50.0,170.1,10.6,10.6],[60.0,170.1,10.6,10.6],[70.0,170.1,10.6,10.6],[200.0,170.1,10.6,10.6],[210.0,170.1,10.6,10.6],[220.0,170.1,10.6,10.6],[230.0,170.1,10.6,10.6],[240.0,170.1,10.6,10.6],[250.0,170.1,10.6,10.6],[260.0,170.1,10.6,10.6],[270.0,170.1,10.6,10.6],[280.0,170.1,10.6,10.6],[290.0,170.1,10.6,10.6],[300.0,170.1,10.6,10.6],[310.0,170.1,10.6,10.6],[320.0,170.1,10.6,10.6],[330.0,170.1,10.6,10.6],[340.0,170.1,10.6,10.6],[350.0,170.1,10.6,10.6],[360.0,170.1,10.6,10.6],[370.0,170.1,10.6,10.6],[380.0,170.1,10.6,10.6],[390.0,170.1,10.6,10.6],[400.0,170.1,10.6,10.6],[410.0,170.1,10.6,10.6],[420.0,170.1,10.6,10.6],[430.0,170.1,10.6,10.6],[440.0,170.1,10.6,10.6],[450.0,170.1,10.6,10.6],[460.0,170.1,10.6,10.6],[470.0,170.1,10.6,10.6],[480.0,170.1,10.6,10.6],[490.0,170.1,10.6,10.6],[500.0,170.1,10.6,10.6],[510.0,170.1,10.6,10.6],[520.0,170.1,10.6,10.6],[530.0,170.1,10.6,10.6],[540.0,170.1,10.6,10.6],[550.0,170.1,10.6,10.6],[560.0,170.1,10.6,10.6],[570.0,170.1,10.6,10.6],[580.0,170.1,10.6,10.6],[590.0,170.1,10.6,10.6],[600.0,170.1,10.6,10.6],[50.0,160.1,10.6,10.6],[60.0,160.1,10.6,10.6],[180.0,160.1,10.6,10.6],[190.0,160.1,10.6,10.6],[200.0,160.1,10.6,10.6],[210.0,160.1,10.6,10.6],[220.0,160.1,10.6,10.6],[230.0,160.1,10.6,10.6],[240.0,160.1,10.6,10.6],[250.0,160.1,10.6,10.6],[260.0,160.1,10.6,10.6],[270.0,160.1,10.6,10.6],[280.0,160.1,10.6,10.6],[290.0,160.1,10.6,10.6],[300.0,160.1,10.6,10.6],[310.0,160.1,10.6,10.6],[320.0,160.1,10.6,10.6],[330.0,160.1,10.6,10.6],[340.0,160.1,10.6,10.6],[350.0,160.1,10.6,10.6],[360.0,160.1,10.6,10.6],[370.0,160.1,10.6,10.6],[380.0,160.1,10.6,10.6],[390.0,160.1,10.6,10.6],[400.0,160.1,10.6,10.6],[410.0,160.1,10.6,10.6],[420.0,160.1,10.6,10.6],[430.0,160.1,10.6,10.6],[440.0,160.1,10.6,10.6],[450.0,160.1,10.6,10.6],[460.0,160.1,10.6,10.6],[470.0,160.1,10.6,10.6],[480.0,160.1,10.6,10.6],[490.0,160.1,10.6,10.6],[500.0,160.1,10.6,10.6],[510.0,160.1,10.6,10.6],[520.0,160.1,10.6,10.6],[530.0,160.1,10.6,10.6],[540.0,160.1,10.6,10.6],[550.0,160.1,10.6,10.6],[560.0,160.1,10.6,10.6],[570.0,160.1,10.6,10.6],[580.0,160.1,10.6,10.6],[590.0,160.1,10.6,10.6],[180.0,150.1,10.6,10.6],[190.0,150.1,10.6,10.6],[200.0,150.1,10.6,10.6],[210.0,150.1,10.6,10.6],[220.0,150.1,10.6,10.6],[230.0,150.1,10.6,10.6],[240.0,150.1,10.6,10.6],[250.0,150.1,10.6,10.6],[260.0,150.1,10.6,10.6],[270.0,150.1,10.6,10.6],[280.0,150.1,10.6,10.6],[290.0,150.1,10.6,10.6],[300.0,150.1,10.6,10.6],[310.0,150.1,10.6,10.6],[320.0,150.1,10.6,10.6],[330.0,150.1,10.6,10.6],[340.0,150.1,10.6,10.6],[350.0,150.1,10.6,10.6],[360.0,150.1,10.6,10.6],[370.0,150.1,10.6,10.6],[380.0,150.1,10.6,10.6],[390.0,150.1,10.6,10.6],[400.0,150.1,10.6,10.6],[410.0,150.1,10.6,10.6],[420.0,150.1,10.6,10.6],[430.0,150.1,10.6,10.6],[440.0,150.1,10.6,10.6],[450.0,150.1,10.6,10.6],[460.0,150.1,10.6,10.6],[470.0,150.1,10.6,10.6],[480.0,150.1,10.6,10.6],[490.0,150.1,10.6,10.6],[500.0,150.1,10.6,10.6],[510.0,150.1,10.6,10.6],[520.0,150.1,10.6,10.6],[530.0,150.1,10.6,10.6],[540.0,150.1,10.6,10.6],[550.0,150.1,10.6,10.6],[560.0,150.1,10.6,10.6],[570.0,150.1,10.6,10.6],[580.0,150.1,10.6,10.6],[590.0,150.1,10.6,10.6],[190.0,140.1,10.6,10.6],[200.0,140.1,10.6,10.6],[210.0,140.1,10.6,10.6],[220.0,140.1,10.6,10.6],[230.0,140.1,10.6,10.6],[240.0,140.1,10.6,10.6],[250.0,140.1,10.6,10.6],[260.0,140.1,10.6,10.6],[270.0,140.1,10.6,10.6],[280.0,140.1,10.6,10.6],[290.0,140.1,10.6,10.6],[300.0,140.1,10.6,10.6],[310.0,140.1,10.6,10.6],[320.0,140.1,10.6,10.6],[330.0,140.1,10.6,10.6],[370.0,140.1,10.6,10.6],[380.0,140.1,10.6,10.6],[390.0,140.1,10.6,10.6],[400.0,140.1,10.6,10.6],[410.0,140.1,10.6,10.6],[420.0,140.1,10.6,10.6],[430.0,140.1,10.6,10.6],[440.0,140.1,10.6,10.6],[450.0,140.1,10.6,10.6],[460.0,140.1,10.6,10.6],[470.0,140.1,10.6,10.6],[480.0,140.1,10.6,10.6],[490.0,140.1,10.6,10.6],[500.0,140.1,10.6,10.6],[510.0,140.1,10.6,10.6],[520.0,140.1,10.6,10.6],[530.0,140.1,10.6,10.6],[540.0,140.1,10.6,10.6],[550.0,140.1,10.6,10.6],[560.0,140.1,10.6,10.6],[570.0,140.1,10.6,10.6],[580.0,140.1,10.6,10.6],[590.0,140.1,10.6,10.6],[210.0,130.1,10.6,10.6],[220.0,130.1,10.6,10.6],[230.0,130.1,10.6,10.6],[240.0,130.1,10.6,10.6],[250.0,130.1,10.6,10.6],[260.0,130.1,10.6,10.6],[270.0,130.1,10.6,10.6],[280.0,130.1,10.6,10.6],[290.0,130.1,10.6,10.6],[300.0,130.1,10.6,10.6],[310.0,130.1,10.6,10.6],[320.0,130.1,10.6,10.6],[330.0,130.1,10.6,10.6],[370.0,130.1,10.6,10.6],[380.0,130.1,10.6,10.6],[390.0,130.1,10.6,10.6],[400.0,130.1,10.6,10.6],[430.0,130.1,10.6,10.6],[440.0,130.1,10.6,10.6],[450.0,130.1,10.6,10.6],[460.0,130.1,10.6,10.6],[470.0,130.1,10.6,10.6],[480.0,130.1,10.6,10.6],[490.0,130.1,10.6,10.6],[500.0,130.1,10.6,10.6],[510.0,130.1,10.6,10.6],[520.0,130.1,10.6,10.6],[530.0,130.1,10.6,10.6],[540.0,130.1,10.6,10.6],[550.0,130.1,10.6,10.6],[560.0,130.1,10.6,10.6],[570.0,130.1,10.6,10.6],[580.0,130.1,10.6,10.6],[590.0,130.1,10.6,10.6],[600.0,130.1,10.6,10.6],[610.0,130.1,10.6,10.6],[620.0,130.1,10.6,10.6],[630.0,130.1,10.6,10.6],[640.0,130.1,10.6,10.6],[220.0,120.1,10.6,10.6],[230.0,120.1,10.6,10.6],[240.0,120.1,10.6,10.6],[250.0,120.1,10.6,10.6],[260.0,120.1,10.6,10.6],[270.0,120.1,10.6,10.6],[280.0,120.1,10.6,10.6],[290.0,120.1,10.6,10.6],[300.0,120.1,10.6,10.6],[440.0,120.1,10.6,10.6],[450.0,120.1,10.6,10.6],[470.0,120.1,10.6,10.6],[480.0,120.1,10.6,10.6],[490.0,120.1,10.6,10.6],[500.0,120.1,10.6,10.6],[510.0,120.1,10.6,10.6],[520.0,120.1,10.6,10.6],[530.0,120.1,10.6,10.6],[540.0,120.1,10.6,10.6],[550.0,120.1,10.6,10.6],[560.0,120.1,10.6,10.6],[570.0,120.1,10.6,10.6],[580.0,120.1,10.6,10.6],[590.0,120.1,10.6,10.6],[600.0,120.1,10.6,10.6],[610.0,120.1,10.6,10.6],[620.0,120.1,10.6,10.6],[630.0,120.1,10.6,10.6],[640.0,120.1,10.6,10.6],[220.0,110.1,10.6,10.6],[230.0,110.1,10.6,10.6],[240.0,110.1,10.6,10.6],[250.0,110.1,10.6,10.6],[260.0,110.1,10.6,10.6],[270.0,110.1,10.6,10.6],[280.0,110.1,10.6,10.6],[290.0,110.1,10.6,10.6],[300.0,110.1,10.6,10.6],[310.0,110.1,10.6,10.6],[510.0,110.1,10.6,10.6],[520.0,110.1,10.6,10.6],[530.0,110.1,10.6,10.6],[540.0,110.1,10.6,10.6],[550.0,110.1,10.6,10.6],[560.0,110.1,10.6,10.6],[570.0,110.1,10.6,10.6],[580.0,110.1,10.6,10.6],[590.0,110.1,10.6,10.6],[600.0,110.1,10.6,10.6],[610.0,110.1,10.6,10.6],[620.0,110.1,10.6,10.6],[630.0,110.1,10.6,10.6],[640.0,110.1,10.6,10.6],[650.0,110.1,10.6,10.6],[0.0,100.1,10.6,10.6],[180.0,100.1,10.6,10.6],[190.0,100.1,10.6,10.6],[200.0,100.1,10.6,10.6],[210.0,100.1,10.6,10.6],[220.0,100.1,10.6,10.6],[230.0,100.1,10.6,10.6],[240.0,100.1,10.6,10.6],[250.0,100.1,10.6,10.6],[260.0,100.1,10.6,10.6],[270.0,100.1,10.6,10.6],[280.0,100.1,10.6,10.6],[290.0,100.1,10.6,10.6],[300.0,100.1,10.6,10.6],[310.0,100.1,10.6,10.6],[390.0,100.1,10.6,10.6],[400.0,100.1,10.6,10.6],[410.0,100.1,10.6,10.6],[500.0,100.1,10.6,10.6],[510.0,100.1,10.6,10.6],[540.0,100.1,10.6,10.6],[550.0,100.1,10.6,10.6],[560.0,100.1,10.6,10.6],[570.0,100.1,10.6,10.6],[580.0,100.1,10.6,10.6],[590.0,100.1,10.6,10.6],[600.0,100.1,10.6,10.6],[610.0,100.1,10.6,10.6],[620.0,100.1,10.6,10.6],[630.0,100.1,10.6,10.6],[640.0,100.1,10.6,10.6],[650.0,100.1,10.6,10.6],[660.0,100.1,10.6,10.6],[170.0,90.1,10.6,10.6],[180.0,90.1,10.6,10.6],[190.0,90.1,10.6,10.6],[200.0,90.1,10.6,10.6],[210.0,90.1,10.6,10.6],[220.0,90.1,10.6,10.6],[230.0,90.1,10.6,10.6],[240.0,90.1,10.6,10.6],[250.0,90.1,10.6,10.6],[260.0,90.1,10.6,10.6],[270.0,90.1,10.6,10.6],[280.0,90.1,10.6,10.6],[290.0,90.1,10.6,10.6],[300.0,90.1,10.6,10.6],[310.0,90.1,10.6,10.6],[320.0,90.1,10.6,10.6],[380.0,90.1,10.6,10.6],[390.0,90.1,10.6,10.6],[400.0,90.1,10.6,10.6],[410.0,90.1,10.6,10.6],[490.0,90.1,10.6,10.6],[500.0,90.1,10.6,10.6],[510.0,90.1,10.6,10.6],[520.0,90.1,10.6,10.6],[530.0,90.1,10.6,10.6],[560.0,90.1,10.6,10.6],[570.0,90.1,10.6,10.6],[580.0,90.1,10.6,10.6],[590.0,90.1,10.6,10.6],[600.0,90.1,10.6,10.6],[610.0,90.1,10.6,10.6],[620.0,90.1,10.6,10.6],[630.0,90.1,10.6,10.6],[640.0,90.1,10.6,10.6],[650.0,90.1,10.6,10.6],[660.0,90.1,10.6,10.6],[160.0,80.1,10.6,10.6],[170.0,80.1,10.6,10.6],[180.0,80.1,10.6,10.6],[190.0,80.1,10.6,10.6],[200.0,80.1,10.6,10.6],[210.0,80.1,10.6,10.6],[220.0,80.1,10.6,10.6],[230.0,80.1,10.6,10.6],[240.0,80.1,10.6,10.6],[250.0,80.1,10.6,10.6],[260.0,80.1,10.6,10.6],[270.0,80.1,10.6,10.6],[280.0,80.1,10.6,10.6],[290.0,80.1,10.6,10.6],[300.0,80.1,10.6,10.6],[310.0,80.1,10.6,10.6],[320.0,80.1,10.6,10.6],[380.0,80.1,10.6,10.6],[390.0,80.1,10.6,10.6],[400.0,80.1,10.6,10.6],[410.0,80.1,10.6,10.6],[480.0,80.1,10.6,10.6],[490.0,80.1,10.6,10.6],[500.0,80.1,10.6,10.6],[510.0,80.1,10.6,10.6],[520.0,80.1,10.6,10.6],[530.0,80.1,10.6,10.6],[560.0,80.1,10.6,10.6],[570.0,80.1,10.6,10.6],[580.0,80.1,10.6,10.6],[590.0,80.1,10.6,10.6],[600.0,80.1,10.6,10.6],[610.0,80.1,10.6,10.6],[620.0,80.1,10.6,10.6],[630.0,80.1,10.6,10.6],[640.0,80.1,10.6,10.6],[650.0,80.1,10.6,10.6],[660.0,80.1,10.6,10.6],[670.0,80.1,10.6,10.6],[680.0,80.1,10.6,10.6],[160.0,70.1,10.6,10.6],[170.0,70.1,10.6,10.6],[180.0,70.1,10.6,10.6],[190.0,70.1,10.6,10.6],[200.0,70.1,10.6,10.6],[210.0,70.1,10.6,10.6],[220.0,70.1,10.6,10.6],[230.0,70.1,10.6,10.6],[240.0,70.1,10.6,10.6],[250.0,70.1,10.6,10.6],[260.0,70.1,10.6,10.6],[270.0,70.1,10.6,10.6],[280.0,70.1,10.6,10.6],[290.0,70.1,10.6,10.6],[300.0,70.1,10.6,10.6],[310.0,70.1,10.6,10.6],[320.0,70.1,10.6,10.6],[390.0,70.1,10.6,10.6],[400.0,70.1,10.6,10.6],[480.0,70.1,10.6,10.6],[490.0,70.1,10.6,10.6],[500.0,70.1,10.6,10.6],[510.0,70.1,10.6,10.6],[520.0,70.1,10.6,10.6],[530.0,70.1,10.6,10.6],[560.0,70.1,10.6,10.6],[570.0,70.1,10.6,10.6],[580.0,70.1,10.6,10.6],[590.0,70.1,10.6,10.6],[600.0,70.1,10.6,10.6],[610.0,70.1,10.6,10.6],[620.0,70.1,10.6,10.6],[630.0,70.1,10.6,10.6],[640.0,70.1,10.6,10.6],[650.0,70.1,10.6,10.6],[660.0,70.1,10.6,10.6],[670.0,70.1,10.6,10.6],[680.0,70.1,10.6,10.6],[690.0,70.1,10.6,10.6],[700.0,70.1,10.6,10.6],[110.0,60.1,10.6,10.6],[120.0,60.1,10.6,10.6],[130.0,60.1,10.6,10.6],[170.0,60.1,10.6,10.6],[180.0,60.1,10.6,10.6],[190.0,60.1,10.6,10.6],[200.0,60.1,10.6,10.6],[210.0,60.1,10.6,10.6],[220.0,60.1,10.6,10.6],[230.0,60.1,10.6,10.6],[240.0,60.1,10.6,10.6],[250.0,60.1,10.6,10.6],[260.0,60.1,10.6,10.6],[270.0,60.1,10.6,10.6],[280.0,60.1,10.6,10.6],[290.0,60.1,10.6,10.6],[300.0,60.1,10.6,10.6],[310.0,60.1,10.6,10.6],[490.0,60.1,10.6,10.6],[500.0,60.1,10.6,10.6],[510.0,60.1,10.6,10.6],[520.0,60.1,10.6,10.6],[530.0,60.1,10.6,10.6],[550.0,60.1,10.6,10.6],[560.0,60.1,10.6,10.6],[570.0,60.1,10.6,10.6],[580.0,60.1,10.6,10.6],[590.0,60.1,10.6,10.6],[600.0,60.1,10.6,10.6],[610.0,60.1,10.6,10.6],[620.0,60.1,10.6,10.6],[630.0,60.1,10.6,10.6],[640.0,60.1,10.6,10.6],[650.0,60.1,10.6,10.6],[660.0,60.1,10.6,10.6],[670.0,60.1,10.6,10.6],[680.0,60.1,10.6,10.6],[690.0,60.1,10.6,10.6],[700.0,60.1,10.6,10.6],[710.0,60.1,10.6,10.6],[100.0,50.0,10.6,10.6],[110.0,50.0,10.6,10.6],[120.0,50.0,10.6,10.6],[130.0,50.0,10.6,10.6],[140.0,50.0,10.6,10.6],[190.0,50.0,10.6,10.6],[200.0,50.0,10.6,10.6],[210.0,50.0,10.6,10.6],[220.0,50.0,10.6,10.6],[240.0,50.0,10.6,10.6],[250.0,50.0,10.6,10.6],[260.0,50.0,10.6,10.6],[270.0,50.0,10.6,10.6],[280.0,50.0,10.6,10.6],[290.0,50.0,10.6,10.6],[300.0,50.0,10.6,10.6],[440.0,50.0,10.6,10.6],[450.0,50.0,10.6,10.6],[480.0,50.0,10.6,10.6],[490.0,50.0,10.6,10.6],[500.0,50.0,10.6,10.6],[510.0,50.0,10.6,10.6],[520.0,50.0,10.6,10.6],[530.0,50.0,10.6,10.6],[540.0,50.0,10.6,10.6],[550.0,50.0,10.6,10.6],[560.0,50.0,10.6,10.6],[570.0,50.0,10.6,10.6],[580.0,50.0,10.6,10.6],[590.0,50.0,10.6,10.6],[600.0,50.0,10.6,10.6],[610.0,50.0,10.6,10.6],[620.0,50.0,10.6,10.6],[630.0,50.0,10.6,10.6],[640.0,50.0,10.6,10.6],[650.0,50.0,10.6,10.6],[660.0,50.0,10.6,10.6],[670.0,50.0,10.6,10.6],[680.0,50.0,10.6,10.6],[690.0,50.0,10.6,10.6],[700.0,50.0,10.6,10.6],[710.0,50.0,10.6,10.6],[720.0,50.0,10.6,10.6],[730.0,50.0,10.6,10.6],[90.0,40.0,10.6,10.6],[100.0,40.0,10.6,10.6],[110.0,40.0,10.6,10.6],[120.0,40.0,10.6,10.6],[130.0,40.0,10.6,10.6],[140.0,40.0,10.6,10.6],[430.0,40.0,10.6,10.6],[440.0,40.0,10.6,10.6],[450.0,40.0,10.6,10.6],[460.0,40.0,10.6,10.6],[470.0,40.0,10.6,10.6],[480.0,40.0,10.6,10.6],[490.0,40.0,10.6,10.6],[500.0,40.0,10.6,10.6],[510.0,40.0,10.6,10.6],[520.0,40.0,10.6,10.6],[530.0,40.0,10.6,10.6],[540.0,40.0,10.6,10.6],[550.0,40.0,10.6,10.6],[560.0,40.0,10.6,10.6],[570.0,40.0,10.6,10.6],[580.0,40.0,10.6,10.6],[590.0,40.0,10.6,10.6],[600.0,40.0,10.6,10.6],[610.0,40.0,10.6,10.6],[620.0,40.0,10.6,10.6],[630.0,40.0,10.6,10.6],[640.0,40.0,10.6,10.6],[650.0,40.0,10.6,10.6],[660.0,40.0,10.6,10.6],[670.0,40.0,10.6,10.6],[680.0,40.0,10.6,10.6],[690.0,40.0,10.6,10.6],[700.0,40.0,10.6,10.6],[710.0,40.0,10.6,10.6],[720.0,40.0,10.6,10.6],[730.0,40.0,10.6,10.6],[740.0,40.0,10.6,10.6],[750.0,40.0,10.6,10.6],[760.0,40.0,10.6,10.6],[90.0,30.0,10.6,10.6],[100.0,30.0,10.6,10.6],[110.0,30.0,10.6,10.6],[120.0,30.0,10.6,10.6],[130.0,30.0,10.6,10.6],[420.0,30.0,10.6,10.6],[430.0,30.0,10.6,10.6],[440.0,30.0,10.6,10.6],[450.0,30.0,10.6,10.6],[460.0,30.0,10.6,10.6],[470.0,30.0,10.6,10.6],[480.0,30.0,10.6,10.6],[490.0,30.0,10.6,10.6],[500.0,30.0,10.6,10.6],[510.0,30.0,10.6,10.6],[520.0,30.0,10.6,10.6],[530.0,30.0,10.6,10.6],[540.0,30.0,10.6,10.6],[550.0,30.0,10.6,10.6],[560.0,30.0,10.6,10.6],[570.0,30.0,10.6,10.6],[580.0,30.0,10.6,10.6],[590.0,30.0,10.6,10.6],[600.0,30.0,10.6,10.6],[610.0,30.0,10.6,10.6],[620.0,30.0,10.6,10.6],[630.0,30.0,10.6,10.6],[640.0,30.0,10.6,10.6],[650.0,30.0,10.6,10.6],[660.0,30.0,10.6,10.6],[670.0,30.0,10.6,10.6],[680.0,30.0,10.6,10.6],[690.0,30.0,10.6,10.6],[700.0,30.0,10.6,10.6],[710.0,30.0,10.6,10.6],[720.0,30.0,10.6,10.6],[730.0,30.0,10.6,10.6],[740.0,30.0,10.6,10.6],[750.0,30.0,10.6,10.6],[760.0,30.0,10.6,10.6],[770.0,30.0,10.6,10.6],[90.0,20.0,10.6,10.6],[100.0,20.0,10.6,10.6],[110.0,20.0,10.6,10.6],[120.0,20.0,10.6,10.6],[130.0,20.0,10.6,10.6],[140.0,20.0,10.6,10.6],[430.0,20.0,10.6,10.6],[440.0,20.0,10.6,10.6],[450.0,20.0,10.6,10.6],[460.0,20.0,10.6,10.6],[470.0,20.0,10.6,10.6],[480.0,20.0,10.6,10.6],[490.0,20.0,10.6,10.6],[500.0,20.0,10.6,10.6],[510.0,20.0,10.6,10.6],[520.0,20.0,10.6,10.6],[530.0,20.0,10.6,10.6],[540.0,20.0,10.6,10.6],[550.0,20.0,10.6,10.6],[560.0,20.0,10.6,10.6],[570.0,20.0,10.6,10.6],[580.0,20.0,10.6,10.6],[590.0,20.0,10.6,10.6],[600.0,20.0,10.6,10.6],[610.0,20.0,10.6,10.6],[620.0,20.0,10.6,10.6],[630.0,20.0,10.6,10.6],[640.0,20.0,10.6,10.6],[650.0,20.0,10.6,10.6],[660.0,20.0,10.6,10.6],[670.0,20.0,10.6,10.6],[680.0,20.0,10.6,10.6],[690.0,20.0,10.6,10.6],[700.0,20.0,10.6,10.6],[710.0,20.0,10.6,10.6],[720.0,20.0,10.6,10.6],[730.0,20.0,10.6,10.6],[740.0,20.0,10.6,10.6],[750.0,20.0,10.6,10.6],[760.0,20.0,10.6,10.6],[770.0,20.0,10.6,10.6],[90.0,10.0,10.6,10.6],[100.0,10.0,10.6,10.6],[110.0,10.0,10.6,10.6],[120.0,10.0,10.6,10.6],[130.0,10.0,10.6,10.6],[140.0,10.0,10.6,10.6],[440.0,10.0,10.6,10.6],[450.0,10.0,10.6,10.6],[530.0,10.0,10.6,10.6],[540.0,10.0,10.6,10.6],[550.0,10.0,10.6,10.6],[560.0,10.0,10.6,10.6],[570.0,10.0,10.6,10.6],[580.0,10.0,10.6,10.6],[590.0,10.0,10.6,10.6],[600.0,10.0,10.6,10.6],[610.0,10.0,10.6,10.6],[620.0,10.0,10.6,10.6],[630.0,10.0,10.6,10.6],[640.0,10.0,10.6,10.6],[650.0,10.0,10.6,10.6],[660.0,10.0,10.6,10.6],[670.0,10.0,10.6,10.6],[680.0,10.0,10.6,10.6],[690.0,10.0,10.6,10.6],[700.0,10.0,10.6,10.6],[710.0,10.0,10.6,10.6],[720.0,10.0,10.6,10.6],[730.0,10.0,10.6,10.6],[740.0,10.0,10.6,10.6],[750.0,10.0,10.6,10.6],[760.0,10.0,10.6,10.6],[770.0,10.0,10.6,10.6],[40.0,0.0,10.6,10.6],[50.0,0.0,10.6,10.6],[60.0,0.0,10.6,10.6],[70.0,0.0,10.6,10.6],[80.0,0.0,10.6,10.6],[110.0,0.0,10.6,10.6],[120.0,0.0,10.6,10.6],[130.0,0.0,10.6,10.6],[140.0,0.0,10.6,10.6],[200.0,0.0,10.6,10.6],[210.0,0.0,10.6,10.6],[220.0,0.0,10.6,10.6],[300.0,0.0,10.6,10.6],[310.0,0.0,10.6,10.6],[320.0,0.0,10.6,10.6],[530.0,0.0,10.6,10.6],[540.0,0.0,10.6,10.6],[550.0,0.0,10.6,10.6],[560.0,0.0,10.6,10.6],[570.0,0.0,10.6,10.6],[580.0,0.0,10.6,10.6],[590.0,0.0,10.6,10.6],[600.0,0.0,10.6,10.6],[610.0,0.0,10.6,10.6],[620.0,0.0,10.6,10.6],[630.0,0.0,10.6,10.6],[640.0,0.0,10.6,10.6],[650.0,0.0,10.6,10.6],[660.0,0.0,10.6,10.6],[670.0,0.0,10.6,10.6],[680.0,0.0,10.6,10.6],[690.0,0.0,10.6,10.6],[700.0,0.0,10.6,10.6],[710.0,0.0,10.6,10.6],[720.0,0.0,10.6,10.6],[730.0,0.0,10.6,10.6],[740.0,0.0,10.6,10.6],[750.0,0.0,10.6,10.6],[760.0,0.0,10.6,10.6],[770.0,0.0,10.6,10.6]],"values":{"ridge_place":[2.94,2.99,3.04,3.09,3.14,3.2,3.7,3.76,3.82,3.89,3.93,4.0,4.07,4.14,4.18,4.25,4.33,4.37,4.45,4.52,4.57,4.65,4.7,4.78,4.84,4.92,4.97,5.03,5.08,5.17,5.23,5.29,5.31,5.37,5.43,5.46,5.52,5.64,5.67,5.7,3.0,3.05,3.1,3.16,3.71,3.78,3.84,3.91,3.95,4.02,4.08,4.15,4.22,4.27,4.34,4.42,4.47,4.54,4.62,4.67,4.75,4.8,4.88,4.94,5.02,5.08,5.13,5.19,5.25,5.31,5.37,5.43,5.49,5.52,5.7,5.73,5.76,3.01,3.06,3.12,3.67,3.73,3.79,3.86,3.9,3.96,4.03,4.1,4.17,4.24,4.29,4.36,4.44,4.51,4.56,4.64,4.72,4.77,4.85,4.9,4.99,5.04,5.1,5.19,5.24,5.3,5.36,5.42,5.48,5.54,5.57,5.76,5.79,3.68,3.74,3.81,3.87,3.91,3.98,4.05,4.12,4.19,4.26,4.31,4.38,4.53,4.58,4.66,4.74,4.79,4.87,4.95,5.01,5.09,5.15,5.21,5.3,5.35,5.41,5.47,5.54,5.6,5.63,5.81,5.84,2.82,2.87,3.74,3.8,3.87,3.93,4.0,4.07,4.13,4.2,4.28,4.32,4.4,4.47,4.62,4.68,4.76,4.84,4.89,4.97,5.06,5.11,5.2,5.26,5.32,5.41,5.47,5.53,5.59,5.65,5.68,5.84,5.87,5.9,2.77,2.82,2.87,3.75,3.82,3.88,3.95,4.01,4.08,4.15,4.22,4.29,4.34,4.41,4.49,4.86,4.94,4.99,5.08,5.16,5.22,5.28,5.37,5.43,5.49,5.58,5.65,5.71,5.9,5.93,5.96,3.96,4.03,4.1,4.17,4.21,4.29,4.36,4.43,5.1,5.19,5.24,5.33,5.39,5.48,5.54,5.61,5.67,5.73,5.8,5.99,4.02,4.09,4.16,4.23,4.3,4.38,5.21,5.3,5.35,5.45,5.51,5.6,5.66,5.72,5.79,5.85,5.92,5.98,6.02,4.11,4.18,4.25,4.32,4.39,5.41,5.47,5.56,5.62,5.72,5.78,5.85,5.91,5.98,6.04,6.08,4.27,4.34,4.85,5.02,5.11,5.19,5.25,5.43,5.52,5.58,5.9,6.04,6.1,6.14,4.56,4.63,4.71,4.79,4.87,4.96,5.04,5.13,5.21,5.27,5.93,6.03,6.1,6.16,6.2,3.53,4.5,4.58,4.65,4.73,4.81,4.89,4.98,5.06,5.15,5.2,5.29,5.92,5.99,6.05,6.16,6.19,6.26,3.41,3.49,3.55,3.61,3.67,4.2,4.27,4.34,4.42,4.49,4.57,4.64,4.72,4.8,4.89,4.97,5.05,5.14,5.23,5.31,5.94,6.05,6.11,6.18,6.25,6.32,6.35,3.13,3.18,3.26,3.31,3.43,3.48,3.54,3.6,3.66,3.73,3.79,3.85,3.99,4.05,4.12,4.19,4.26,4.34,4.43,4.51,4.59,4.66,4.74,4.82,4.91,4.99,5.07,5.16,5.25,5.34,5.97,6.07,6.14,6.24,6.31,6.38,6.45,3.14,3.2,3.25,3.31,3.36,3.42,3.48,3.54,3.6,3.66,3.72,3.78,3.85,3.91,3.98,4.07,4.14,4.21,4.28,4.35,4.43,4.5,4.58,4.66,4.74,4.82,4.9,4.98,5.07,5.15,5.24,5.33,5.42,5.51,5.99,6.1,6.2,6.27,6.37,6.45,6.52,3.14,3.19,3.25,3.3,3.41,3.47,3.53,3.59,3.65,3.71,3.78,3.86,3.93,3.99,4.06,4.13,4.2,4.27,4.35,4.42,4.49,4.57,4.65,4.73,4.81,4.89,4.97,5.09,5.17,5.26,5.35,5.44,5.53,5.63,5.72,6.12,6.22,6.33,6.4,6.51,6.58,6.62,3.19,3.24,3.41,3.47,3.52,3.58,3.65,3.71,3.79,3.86,3.92,3.99,4.06,4.12,4.19,4.27,4.34,4.41,4.49,4.56,4.64,4.72,4.83,4.91,4.99,5.08,5.16,5.25,5.34,5.43,5.52,5.62,5.71,6.32,6.43,6.54,6.65,3.52,3.58,3.64,3.72,3.79,3.85,3.92,3.98,4.05,4.12,4.19,4.26,4.33,4.4,4.48,4.56,4.63,4.74,4.82,4.9,4.98,5.07,5.15,5.24,5.33,5.42,5.51,5.61,5.7,6.14,6.24,6.35,6.45,6.56,6.67,6.71,3.45,3.51,3.57,3.63,3.69,3.78,3.84,3.91,3.98,4.04,4.11,4.18,4.25,4.32,4.4,4.47,4.63,4.7,4.81,4.89,4.98,5.06,5.15,5.23,5.32,5.41,5.5,5.6,5.89,5.99,6.09,6.19,6.3,6.41,6.51,6.62,6.66,6.62,3.45,3.51,3.57,3.63,3.69,3.75,3.84,3.9,3.97,4.04,4.1,4.17,4.24,4.32,4.39,4.46,4.54,4.7,4.78,4.86,4.97,5.05,5.14,5.22,5.31,5.4,5.5,5.59,5.68,5.78,5.88,5.98,6.08,6.18,6.29,6.36,6.47,6.54,6.57,6.57,6.49,6.45,3.44,3.5,3.56,3.62,3.68,3.75,3.81,3.87,3.96,4.03,4.1,4.17,4.24,4.31,4.38,4.46,4.53,4.69,4.77,4.85,4.93,5.01,5.1,5.19,5.27,5.36,5.45,5.55,5.64,5.74,5.83,5.93,6.03,6.14,6.24,6.31,6.38,6.45,6.49,6.48,6.48,6.48,6.44,6.4,6.36,3.5,3.55,3.62,3.68,3.74,3.8,4.14,4.21,4.3,4.38,4.45,4.68,4.76,4.84,4.92,5.01,5.09,5.18,5.27,5.35,5.45,5.54,5.63,5.73,5.79,5.89,5.99,6.09,6.16,6.23,6.3,6.37,6.4,6.4,6.4,6.39,6.39,6.35,6.31,4.2,4.27,4.8,4.89,4.97,5.05,5.14,5.23,5.32,5.41,5.5,5.59,5.69,5.75,5.85,5.95,6.01,6.08,6.18,6.21,6.28,6.32,6.31,6.31,6.31,6.31,6.3,4.56,4.64,4.72,4.96,5.05,5.13,5.19,5.28,5.37,5.46,5.55,5.64,5.71,5.8,5.87,5.97,6.03,6.23,6.23,6.26,6.26,2.72,2.76,2.81,4.45,4.53,4.6,4.68,4.76,4.84,4.92,5.01,5.09,5.18,5.24,5.33,5.42,5.51,5.57,5.66,5.73,5.89,6.12,6.15,6.15,6.18,6.18,2.71,2.76,2.8,2.85,3.63,3.69,3.76,3.82,4.37,4.44,4.52,4.57,4.65,4.73,4.81,4.89,4.97,5.05,5.14,5.2,5.29,5.38,5.44,5.53,5.59,5.68,5.75,5.97,6.01,6.04,6.07,6.1,6.1,6.1,2.71,2.75,2.8,2.85,3.54,3.6,3.67,3.73,3.79,3.86,3.92,3.99,4.05,4.12,4.19,4.26,4.34,4.41,4.49,4.56,4.64,4.69,4.77,4.85,4.93,5.02,5.07,5.16,5.25,5.31,5.4,5.46,5.55,5.61,5.67,5.74,5.8,5.86,5.9,5.93,5.96,5.99,6.02,6.02,6.02,2.73,2.78,3.42,3.48,3.54,3.6,3.66,3.72,3.78,3.85,3.89,3.96,4.02,4.09,4.16,4.23,4.31,4.38,4.45,4.53,4.6,4.66,4.74,4.82,4.9,4.98,5.04,5.12,5.18,5.27,5.32,5.42,5.48,5.54,5.6,5.66,5.72,5.79,5.82,5.85,5.88,5.91,5.94,5.94,3.4,3.45,3.51,3.57,3.63,3.69,3.76,3.82,3.88,3.95,4.02,4.09,4.16,4.2,4.27,4.35,4.42,4.49,4.57,4.62,4.7,4.78,4.86,4.92,5.0,5.08,5.14,5.23,5.29,5.34,5.4,5.5,5.56,5.59,5.65,5.71,5.74,5.77,5.8,5.83,5.86,5.86,3.43,3.49,3.54,3.61,3.67,3.73,3.79,3.86,3.92,3.99,4.06,4.12,4.19,4.24,4.31,4.59,4.67,4.74,4.8,4.88,4.96,5.02,5.1,5.16,5.22,5.3,5.36,5.42,5.48,5.54,5.57,5.64,5.67,5.7,5.73,5.76,5.79,5.79,3.54,3.6,3.66,3.7,3.76,3.83,3.89,3.96,4.03,4.09,4.16,4.21,4.28,4.55,4.63,4.71,4.76,4.98,5.04,5.09,5.18,5.24,5.29,5.35,5.41,5.47,5.5,5.56,5.59,5.62,5.65,5.68,5.71,5.71,5.74,5.74,5.73,5.73,5.73,3.57,3.63,3.69,3.76,3.8,3.86,3.93,4.0,4.06,5.0,5.05,5.17,5.22,5.28,5.34,5.4,5.43,5.49,5.52,5.55,5.58,5.61,5.64,5.63,5.66,5.66,5.66,5.66,5.65,3.55,3.61,3.67,3.73,3.77,3.84,3.9,3.97,4.03,4.1,5.33,5.36,5.42,5.45,5.48,5.5,5.53,5.56,5.56,5.59,5.59,5.59,5.58,5.58,5.58,2.44,3.31,3.35,3.4,3.46,3.52,3.58,3.64,3.7,3.76,3.81,3.87,3.94,4.0,4.05,4.55,4.63,4.68,5.2,5.26,5.38,5.4,5.43,5.46,5.49,5.49,5.52,5.51,5.51,5.51,5.54,5.54,5.5,3.23,3.29,3.34,3.38,3.44,3.49,3.55,3.61,3.67,3.74,3.78,3.84,3.91,3.97,4.02,4.09,4.47,4.52,4.57,4.65,5.08,5.13,5.19,5.22,5.25,5.36,5.39,5.39,5.42,5.44,5.44,5.44,5.47,5.47,5.46,5.46,3.15,3.21,3.26,3.32,3.37,3.41,3.47,3.53,3.59,3.65,3.69,3.75,3.81,3.88,3.92,3.99,4.06,4.41,4.46,4.54,4.59,4.98,5.01,5.07,5.12,5.15,5.18,5.29,5.32,5.32,5.35,5.37,5.37,5.37,5.4,5.39,5.39,5.39,5.39,5.39,3.13,3.18,3.24,3.29,3.35,3.38,3.44,3.5,3.56,3.62,3.66,3.72,3.79,3.85,3.89,3.96,4.0,4.43,4.48,4.92,4.95,5.0,5.06,5.08,5.11,5.22,5.25,5.25,5.28,5.3,5.3,5.3,5.33,5.32,5.32,5.32,5.32,5.31,5.31,5.31,2.87,2.92,2.97,3.16,3.21,3.27,3.32,3.36,3.42,3.47,3.53,3.57,3.63,3.7,3.76,3.8,3.86,3.93,4.91,4.93,4.99,5.02,5.04,5.13,5.15,5.18,5.18,5.21,5.23,5.23,5.26,5.26,5.25,5.25,5.25,5.25,5.24,5.24,5.24,5.24,2.8,2.85,2.9,2.95,3.0,3.24,3.3,3.33,3.39,3.51,3.55,3.61,3.67,3.71,3.77,3.84,4.58,4.63,4.79,4.84,4.87,4.92,4.95,4.98,5.0,5.06,5.09,5.08,5.11,5.14,5.17,5.16,5.19,5.19,5.19,5.18,5.18,5.18,5.18,5.17,5.17,5.17,5.17,5.13,2.74,2.78,2.83,2.88,2.93,2.98,4.5,4.55,4.6,4.62,4.68,4.73,4.78,4.81,4.86,4.89,4.91,4.94,4.96,4.99,5.02,5.04,5.07,5.1,5.1,5.12,5.12,5.12,5.12,5.14,5.14,5.14,5.14,5.1,5.1,5.1,5.1,5.09,5.06,5.06,2.73,2.76,2.81,2.86,2.9,4.39,4.44,4.49,4.54,4.59,4.61,4.67,4.72,4.74,4.8,4.82,4.85,4.87,4.9,4.92,4.95,4.98,5.0,5.03,5.03,5.06,5.05,5.05,5.08,5.08,5.07,5.07,5.07,5.07,5.06,5.03,5.03,5.03,5.03,4.99,4.99,2.71,2.74,2.79,2.84,2.88,2.93,4.38,4.43,4.48,4.53,4.55,4.6,4.66,4.68,4.71,4.76,4.78,4.81,4.83,4.86,4.89,4.91,4.94,4.94,4.96,4.99,4.99,4.98,5.01,5.01,5.01,5.0,5.0,5.0,5.0,5.0,4.99,4.96,4.96,4.96,4.93,2.69,2.74,2.77,2.81,2.86,2.91,4.37,4.42,4.72,4.75,4.77,4.8,4.82,4.85,4.87,4.87,4.9,4.92,4.92,4.92,4.95,4.94,4.94,4.94,4.94,4.93,4.93,4.93,4.93,4.93,4.89,4.89,4.89,2.47,2.5,2.54,2.58,2.63,2.75,2.79,2.84,2.89,3.16,3.21,3.25,3.65,3.69,3.74,4.66,4.68,4.71,4.73,4.76,4.78,4.81,4.81,4.83,4.86,4.86,4.85,4.88,4.88,4.88,4.87,4.87,4.87,4.87,4.86,4.86,4.86,4.86,4.83,4.83],"boosted_place":[2.49,2.49,2.44,2.44,2.71,2.72,3.14,3.26,3.33,3.39,3.57,3.51,3.53,3.82,3.79,3.66,3.6,3.58,3.58,3.62,3.68,3.82,3.95,4.06,4.27,4.32,4.23,4.51,4.65,4.69,5.51,5.58,5.64,6.14,6.04,6.53,6.5,6.64,6.74,7.01,2.78,2.76,2.78,3.08,3.25,3.38,3.44,3.66,3.66,3.71,3.74,3.91,3.88,3.74,3.68,3.66,3.67,3.75,3.77,3.91,4.04,4.15,4.37,4.33,4.58,4.89,4.82,5.0,5.67,5.63,5.74,6.34,6.34,6.76,7.19,7.3,7.6,2.77,2.75,2.87,3.24,3.24,3.46,3.48,3.65,3.58,3.6,3.85,3.9,3.86,3.73,3.67,3.66,3.71,3.73,3.76,3.89,4.03,4.14,4.22,4.5,4.5,4.84,5.0,4.91,5.54,5.63,5.77,6.75,6.66,7.09,6.95,7.06,3.58,3.64,3.85,4.04,4.06,4.11,4.15,4.44,4.34,4.3,4.05,3.98,3.98,4.01,4.03,4.18,4.22,4.19,4.57,4.65,4.9,5.28,5.06,5.1,5.78,6.02,6.43,6.91,6.58,6.93,7.32,7.43,3.12,3.24,3.72,3.93,4.12,4.07,4.09,4.37,4.53,4.43,4.39,4.14,4.08,4.09,4.03,4.05,4.25,4.1,4.21,4.55,4.77,4.82,5.07,4.95,5.03,5.78,5.95,6.22,6.59,6.78,7.13,7.6,7.78,7.94,3.22,3.24,3.37,3.99,4.15,4.29,4.37,4.41,4.72,4.72,4.62,4.58,4.31,4.26,4.16,4.26,4.59,4.74,5.0,4.92,5.25,5.21,5.35,5.99,6.19,6.73,7.63,7.52,7.85,8.03,8.11,4.27,4.56,4.72,4.72,4.62,4.58,4.32,4.29,4.9,4.92,5.33,5.34,5.35,6.01,6.46,7.23,7.63,7.87,7.91,8.03,4.56,4.72,4.72,4.62,4.58,4.33,4.99,5.46,5.34,5.37,6.17,6.94,7.23,7.63,7.87,7.91,7.89,7.64,7.71,4.67,4.67,4.57,4.54,4.31,4.93,4.8,6.46,6.65,6.71,7.09,7.34,7.22,7.28,7.19,7.26,4.57,4.55,4.32,4.64,4.79,4.67,4.72,4.79,5.34,5.98,6.73,6.66,6.58,6.64,4.12,4.24,3.86,4.06,4.35,4.61,4.66,4.93,4.72,4.72,6.73,6.69,6.66,6.52,6.58,4.26,3.88,4.08,4.2,3.82,4.02,4.42,4.55,4.69,5.04,4.7,4.72,6.5,6.71,6.66,6.55,6.47,5.89,3.44,3.76,4.05,3.82,4.02,4.59,4.5,4.5,4.12,3.84,4.04,4.15,3.78,3.98,4.37,4.54,4.69,5.33,5.04,5.06,6.47,6.63,6.56,5.88,5.81,5.99,6.22,3.31,3.47,3.25,3.26,3.61,3.9,4.19,3.96,4.17,4.57,4.76,4.41,4.76,4.75,4.75,4.75,4.66,4.66,4.04,3.98,4.31,3.9,4.11,4.14,4.48,4.73,5.0,5.54,5.19,5.04,6.5,6.63,5.93,6.04,5.58,5.64,5.85,3.27,3.5,3.27,3.27,3.58,3.62,3.91,4.21,3.98,4.18,4.59,4.78,4.42,4.44,4.78,4.77,4.77,4.77,4.69,4.54,4.06,3.99,4.32,3.91,4.12,4.17,4.75,4.88,5.15,5.62,5.27,5.11,5.62,5.5,6.51,6.03,6.13,5.71,5.64,6.58,6.83,3.2,3.41,3.18,3.19,3.53,3.81,3.95,3.82,3.96,4.0,4.17,4.18,4.43,4.62,4.61,4.61,4.61,4.53,4.45,4.01,3.95,4.27,3.87,4.08,4.14,4.72,4.84,5.49,5.6,5.24,5.3,5.61,5.49,5.52,6.04,6.05,5.69,5.69,6.5,6.56,6.81,6.87,3.4,3.18,3.52,3.8,3.94,3.82,3.96,3.99,4.08,4.17,4.42,4.61,4.6,4.6,4.6,4.52,4.44,4.0,3.94,4.26,3.86,4.07,4.28,4.65,4.79,5.42,5.58,5.23,5.29,5.59,5.48,5.51,6.03,5.68,6.97,7.04,7.16,3.94,3.82,3.96,4.16,4.08,4.17,4.42,4.61,4.6,4.6,4.6,4.52,4.44,4.0,3.94,4.26,3.86,4.07,4.28,4.65,4.79,5.42,5.58,5.23,5.29,5.59,5.48,5.51,6.03,6.18,5.68,7.03,6.99,6.93,7.16,7.2,4.0,4.16,4.02,4.17,4.21,4.31,4.39,4.66,4.86,4.85,4.85,4.85,4.77,4.68,4.22,4.15,4.09,4.31,4.54,5.14,5.08,5.16,5.31,5.34,5.39,5.7,5.53,5.56,6.29,6.51,6.31,6.39,6.39,6.92,6.99,7.12,7.12,7.51,3.98,4.13,3.91,4.05,4.09,4.26,4.26,4.52,4.71,4.71,4.71,4.71,4.63,4.54,4.1,4.03,4.36,4.19,4.25,5.05,4.93,5.13,5.28,5.31,5.3,5.6,5.44,5.46,6.0,6.11,6.18,6.39,6.2,6.28,6.28,6.8,6.87,7.12,7.16,7.38,7.47,7.42,3.34,3.68,3.56,3.69,3.73,3.88,3.98,3.99,4.3,4.29,4.29,4.29,4.22,4.14,3.73,3.69,3.98,3.87,3.94,4.75,4.63,4.75,4.96,4.98,4.83,5.26,5.15,5.16,5.57,5.75,5.81,6.04,5.86,5.88,5.93,5.88,6.5,6.74,6.78,6.99,6.26,6.5,6.89,6.92,7.43,3.72,3.6,3.73,3.77,3.93,4.03,4.34,4.26,4.19,3.78,3.74,3.92,3.99,4.8,4.64,4.77,5.12,5.0,4.85,5.28,5.17,5.18,5.59,5.72,5.78,6.06,6.18,5.73,5.86,5.82,5.88,6.14,6.17,6.36,6.24,6.46,6.74,7.32,7.49,4.22,4.26,4.27,4.37,4.61,4.97,4.84,4.87,5.13,5.03,5.04,5.52,5.57,5.63,5.9,6.04,5.91,5.57,5.59,5.64,5.91,5.94,6.18,5.93,6.23,7.04,7.35,3.38,3.14,3.31,3.9,4.15,4.05,4.06,4.18,4.39,4.4,4.8,4.82,4.98,5.52,5.7,5.55,5.52,5.44,5.67,5.57,6.2,3.0,3.01,3.03,3.29,3.38,3.13,3.31,3.5,3.74,3.9,3.98,4.05,4.06,4.44,4.39,4.4,4.8,4.88,4.93,5.52,5.59,5.72,5.74,6.08,5.97,6.34,2.93,2.93,2.95,2.67,3.11,3.29,3.26,3.27,3.06,3.22,3.3,3.32,3.12,3.47,3.64,3.75,3.81,3.87,3.89,4.27,3.95,4.07,4.4,4.57,4.68,5.16,5.38,5.35,5.69,5.72,6.04,5.97,6.26,6.73,2.91,2.91,2.93,2.65,3.04,3.01,3.14,3.24,3.26,3.27,3.46,3.46,3.46,3.38,3.36,3.27,3.15,3.13,3.13,3.24,3.03,3.37,3.52,3.71,3.73,3.74,3.79,4.16,4.11,3.87,4.39,4.56,4.67,5.22,5.4,5.33,5.38,5.28,5.33,5.68,5.71,6.03,5.96,6.25,6.63,2.94,2.96,3.2,3.06,3.07,3.04,3.17,3.27,3.29,3.3,3.37,3.49,3.49,3.42,3.38,3.24,3.18,3.16,3.16,3.27,3.05,3.24,3.56,3.79,3.75,3.74,3.74,4.16,4.09,4.11,4.27,4.56,4.67,5.22,5.39,5.39,5.41,5.23,5.28,5.63,5.65,5.97,5.9,6.28,3.09,3.17,3.06,2.97,3.11,3.26,3.18,3.22,3.36,3.48,3.48,3.41,3.37,3.22,3.25,3.15,3.15,3.17,3.26,3.22,3.55,3.76,3.79,3.76,3.74,4.13,4.09,4.11,4.54,4.3,4.67,5.22,5.39,5.39,5.39,5.29,5.35,5.7,5.72,6.04,5.97,6.26,3.06,3.0,2.9,2.97,3.1,3.15,3.21,3.2,3.38,3.38,3.31,3.28,3.14,3.11,3.07,3.24,3.29,3.67,3.75,3.72,3.66,4.0,4.0,4.01,4.42,4.37,4.18,5.04,5.02,5.25,5.25,5.3,5.36,5.68,5.71,5.9,5.84,6.12,2.95,3.02,3.18,3.23,3.19,3.21,3.35,3.47,3.39,3.36,3.21,3.18,3.22,3.31,3.36,3.75,3.83,4.08,4.03,4.04,4.52,4.46,4.56,5.09,4.73,5.35,5.34,5.4,5.46,5.79,5.82,5.94,5.95,6.24,6.48,6.56,6.95,7.49,7.85,2.96,3.14,3.23,3.19,3.29,3.28,3.47,3.4,3.36,4.03,4.04,4.46,4.57,5.1,5.1,5.33,5.33,5.13,5.19,5.33,5.34,5.45,5.77,6.38,6.62,6.96,6.96,7.51,7.77,2.94,3.11,3.15,3.23,3.17,3.2,3.33,3.38,3.35,3.19,5.05,5.05,5.1,5.12,5.21,5.21,5.23,5.65,6.21,6.44,6.77,6.79,7.15,7.47,7.89,2.92,3.03,3.03,2.98,2.94,2.94,3.05,3.1,3.23,3.17,3.27,3.27,3.38,3.35,3.19,3.56,3.62,3.64,4.81,5.04,5.17,5.25,5.25,5.27,5.7,6.19,6.43,6.65,6.68,7.15,7.47,7.86,7.89,2.6,3.01,3.03,2.98,2.89,2.95,3.06,3.1,3.17,3.24,3.18,3.2,3.39,3.36,3.2,3.16,3.36,3.56,3.64,3.66,4.86,4.76,5.0,5.0,5.06,5.16,5.18,5.6,6.1,6.33,6.65,6.66,7.12,7.56,7.82,7.76,2.83,2.6,3.01,3.03,2.98,2.89,2.94,3.06,3.04,3.12,3.17,3.24,3.28,3.32,3.36,3.2,3.16,3.36,3.56,3.64,3.67,4.7,5.08,4.84,5.02,5.02,5.08,5.16,5.18,5.58,6.07,6.3,6.69,6.7,7.09,7.28,7.76,7.48,7.11,7.83,2.83,2.84,3.0,3.01,3.01,2.88,2.89,3.06,3.04,3.12,3.12,3.24,3.18,3.25,3.29,3.2,3.16,3.56,3.64,4.7,5.07,4.97,5.22,5.22,5.29,5.19,5.22,5.76,6.26,6.5,6.57,6.59,6.96,7.06,6.42,6.46,7.09,7.83,8.81,8.99,2.59,2.76,2.98,2.84,3.0,3.01,3.0,2.91,2.89,3.05,3.03,3.05,3.11,3.16,3.23,3.18,3.22,3.2,5.05,4.96,5.19,5.19,5.25,5.04,5.04,4.88,5.61,6.02,6.25,6.42,6.42,5.82,5.91,6.18,6.23,6.85,7.59,8.57,8.78,8.78,2.62,2.59,2.76,2.89,2.98,3.0,2.98,2.91,2.88,3.03,3.05,3.05,3.12,3.16,3.24,3.26,3.96,3.97,4.47,4.81,4.73,4.94,4.94,5.0,5.0,5.2,5.2,5.03,5.34,5.68,5.71,5.76,5.76,5.85,5.93,6.03,6.09,6.69,7.46,8.43,8.6,8.61,8.62,8.37,2.77,2.61,2.61,2.75,2.86,2.97,3.99,3.95,3.95,4.42,4.34,4.44,4.74,4.66,4.82,4.82,4.87,4.87,4.87,4.87,4.82,4.98,5.14,5.13,5.14,5.14,5.14,5.28,5.37,5.42,6.06,7.1,8.12,8.11,8.03,8.19,8.24,8.24,8.05,8.72,2.77,2.74,2.61,2.75,2.86,3.66,4.07,3.94,3.95,4.42,4.33,4.43,4.78,4.69,4.88,4.88,4.93,4.93,4.93,4.93,4.88,4.93,4.97,4.97,5.03,5.03,5.03,5.13,5.22,5.27,5.85,6.72,7.52,7.6,7.54,7.65,7.5,7.5,7.63,8.26,8.47,2.76,2.73,2.6,2.77,2.85,2.85,3.93,3.89,3.97,4.35,4.27,4.37,4.71,4.68,4.85,4.85,4.9,4.9,4.9,4.9,4.9,4.92,4.96,4.96,4.96,4.96,4.96,5.0,5.08,5.13,5.59,6.21,7.01,7.16,7.16,6.96,7.2,7.18,7.41,8.05,7.8,2.84,2.81,2.81,2.78,2.85,2.85,3.8,3.82,4.63,4.65,4.63,4.63,4.64,4.62,4.65,4.65,4.61,4.61,4.71,4.62,4.63,4.6,4.69,4.83,5.15,4.96,4.96,5.11,5.32,5.32,5.37,5.85,6.0,2.88,2.88,2.85,2.79,2.83,2.8,2.74,2.81,2.81,2.96,2.87,2.86,3.01,2.94,2.92,4.71,4.73,4.72,4.72,4.72,4.68,4.72,4.63,4.59,4.59,4.58,4.56,4.56,4.57,4.68,4.64,4.65,4.7,4.7,4.87,5.07,4.86,5.29,5.23,5.44]},"house":[420.1,155.7],"lo":2,"hi":8,"own":{"ridge_place":4.986132,"boosted_place":3.741219}};
+  var svg = document.getElementById("pm-svg"); if (!svg) return;
+  var LO = D.lo, HI = D.hi, ST = [[247, 250, 253], [134, 182, 239], [28, 92, 171], [13, 54, 107]];
+  function colour(v) { return ramp(ST, (v - LO) / (HI - LO)); }
+  el("image", { href: "data/map13.png", x: 0, y: 0, width: D.width, height: D.height, preserveAspectRatio: "none" }, svg);
+  var cells = el("g", {}, svg), mark = el("g", {}, svg), model = "ridge_place", rects = [];
+  D.cells.forEach(function (c, k) { rects.push(el("rect", { x: c[0], y: c[1], width: c[2], height: c[3], "fill-opacity": 0.72, "data-k": k }, cells)); });
+  el("circle", { cx: D.house[0], cy: D.house[1], r: 9, fill: "#d99a1c", stroke: "#fcfcfb", "stroke-width": 2.5 }, mark);
+  txt(mark, D.house[0] + 14, D.house[1] + 5, "the house", { fill: "#8a6508", size: 15, weight: 700, halo: true });
+  var read = document.getElementById("pm-read");
+  function base() { read.innerHTML = "At the house's own spot: <b>" + D.own[model].toFixed(2) + " million</b>. Point at the map to read another spot."; }
+  function paint() { rects.forEach(function (r, k) { r.setAttribute("fill", colour(D.values[model][k])); }); base(); }
+  cells.addEventListener("mousemove", function (e) { var k = e.target.getAttribute("data-k"); if (k === null) return; read.innerHTML = "The house placed here: <b>" + D.values[model][+k].toFixed(2) + " million kroner</b>."; });
+  cells.addEventListener("mouseleave", base);
+  document.querySelectorAll("#pm .w-btn").forEach(function (b) { b.addEventListener("click", function () { document.querySelectorAll("#pm .w-btn").forEach(function (x) { x.classList.remove("on"); }); b.classList.add("on"); model = b.getAttribute("data-m"); paint(); }); });
+  var bar = document.getElementById("pm-bar"); bar.style.background = "linear-gradient(to right," + [0, 0.33, 0.66, 1].map(function (t) { return ramp(ST, t); }).join(",") + ")";
+  document.getElementById("pm-lo").textContent = LO.toFixed(0); document.getElementById("pm-hi").textContent = HI.toFixed(0) + " or more";
+  paint();
+})();
+</script>
+<p>Each square is the house, moved there. Linear regression on the same columns can only tilt the map and follow the distance, and misses by 1.31 million.</p>
+</section>
+
+<section id="the-error-model-by-model" class="title-slide slide level1 center">
+<h1>The error, model by model</h1>
+<div id="9488f9a6" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_13_files/figure-revealjs/cell-5-output-1.png" class="quarto-figure quarto-figure-center" width="1001" height="359"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The forest and both boosted models beat ridge. Boosting on coordinates cuts the underwater share from 15 percent to 10.</p>
+</section>
+
+<section id="the-house-valued-by-every-model" class="title-slide slide level1 center">
+<h1>The house, valued by every model</h1>
+<style>
+.w-btn { font: 600 0.54em "Segoe UI", sans-serif; color: #0d366b; background: #ffffff; border: 1.5px solid #86b6ef; border-radius: 7px; padding: 0 0.75em; height: 2em; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; line-height: 1; cursor: pointer; white-space: nowrap; vertical-align: middle; }
+.w-marks { display: inline-flex; align-items: center; gap: 0.45em; flex-wrap: wrap; }
+.w-btn:hover { border-color: #1c5cab; }
+.w-btn.on { background: #0d366b; color: #ffffff; border-color: #0d366b; }
+.w-read { font: 0.54em "Segoe UI", sans-serif; color: #52514e; }
+.w-read b, .w-val { font-family: "Cascadia Mono", Consolas, monospace; color: #0d366b; font-weight: 600; }
+.w-range { accent-color: #1c5cab; }
+.w-tip { position: absolute; pointer-events: none; background: #ffffff; border: 1px solid #c3c2b7; border-radius: 6px; padding: 4px 8px; font: 13px "Segoe UI", sans-serif; color: #141413; box-shadow: 0 2px 6px rgba(0,0,0,0.08); white-space: nowrap; display: none; z-index: 5; }
+.w-val { margin: 0.2em 0 0; }
+.w-val-row { display: flex; align-items: center; gap: 14px; margin: 7px 0; }
+.w-val-lab { flex: 0 0 13.5em; text-align: right; font: 600 16px "Segoe UI", sans-serif; color: #52514e; }
+.w-val-track { flex: 1 1 0; height: 30px; background: #f4f4f1; border-radius: 6px; position: relative; overflow: hidden; }
+.w-val-bar { height: 100%; border-radius: 6px; background: #86b6ef; }
+.w-val-bar.guess { background: #d99a1c; }
+.w-val-bar.price { background: #0d366b; }
+.w-val-bar.best { background: #1c5cab; }
+.w-val-line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed #0d366b; }
+.w-val-num { flex: 0 0 9.5em; font: 600 16px "Cascadia Mono", Consolas, monospace; color: #0d366b; }
+.w-val-num.unset { color: #c3c2b7; font-weight: 400; }
+</style>
+<div class="w-val" id="val"></div>
+<script>
+(function () {
+var NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent, text) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, o) { o = o || {}; return el("text", { x: x, y: y, "font-size": o.size || 12.5, "font-weight": o.weight || 400, fill: o.fill || "#898781", "text-anchor": o.anchor || "start", "font-family": "Segoe UI, sans-serif", transform: o.rotate ? "rotate(" + o.rotate + " " + x + " " + y + ")" : "", stroke: o.halo ? "#fcfcfb" : "none", "stroke-width": o.halo ? 4 : 0, "paint-order": "stroke" }, parent, s); }
+function onShow(node, fn) { var sec = node.closest("section"); if (!sec) { fn(); return; } var was = false; function check() { var now = sec.classList.contains("present"); if (now && !was) fn(); was = now; } new MutationObserver(check).observe(sec, { attributes: true, attributeFilter: ["class"] }); check(); }
+function visible(node) { var sec = node.closest("section"); return !sec || sec.classList.contains("present"); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function ramp(stops, t) { t = Math.max(0, Math.min(1, t)); var n = stops.length - 1, i = Math.min(n - 1, Math.floor(t * n)), u = t * n - i, a = stops[i], b = stops[i + 1]; return "rgb(" + Math.round(lerp(a[0], b[0], u)) + "," + Math.round(lerp(a[1], b[1], u)) + "," + Math.round(lerp(a[2], b[2], u)) + ")"; }
+var BLUES = [[241, 245, 250], [134, 182, 239], [28, 92, 171], [13, 54, 107]];
+var AMBERS = [[240, 222, 170], [184, 134, 11]];
+var BRICKS = [[251, 241, 240], [224, 160, 149], [179, 64, 47]];
+function priceColour(v) { if (v === null || v === undefined) return "#ffffff"; if (v < 0) return ramp(AMBERS, Math.min(1, -v / 300)); return ramp(BLUES, Math.min(1, v / 1500)); }
+function fmt(n) { var s = Math.round(Math.abs(n)).toLocaleString("en-GB"); return (n < -0.5 ? "−" : "") + s; }
+function hh(h) { return (h < 10 ? "0" : "") + h + ":00"; }
+function niceTicks(lo, hi, n) { var span = hi - lo, raw = span / Math.max(1, n), mag = Math.pow(10, Math.floor(Math.log10(raw))), step = [1, 2, 2.5, 5, 10].map(function (m) { return m * mag; }).filter(function (s) { return s >= raw; })[0]; var out = []; for (var v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(Math.round(v * 1000) / 1000); return out; }
+function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { window["__" + key] = value; } return value; }
+function recall(key) { try { var v = localStorage.getItem(key); if (v) return JSON.parse(v); } catch (e) {} return window["__" + key] || null; }
+function hidpi(canvas, w, h) { var r = 2; canvas.width = w * r; canvas.height = h * r; canvas.style.width = w + "px"; canvas.style.height = h + "px"; var c = canvas.getContext("2d"); c.setTransform(r, 0, 0, r, 0, 0); return c; }
+var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+var WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+function longDate(iso) { var d = new Date(iso + "T12:00:00"); return WEEKDAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear(); }
+var WDNAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+function dayMonth(iso) { var d = new Date(iso + "T12:00:00"); return WEEKDAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()]; }
+function signed(v) { return (v > 0 ? "+" : "") + fmt(v); }
+function diverge(v, span) { if (v === null || v === undefined) return "#ffffff"; var t = Math.max(-1, Math.min(1, v / span)); return t < 0 ? ramp([[241, 240, 236], [134, 182, 239], [28, 92, 171]], -t) : ramp([[241, 240, 236], [224, 160, 149], [179, 64, 47]], t); }
+  var D = {"rows":[["linear regression, Session 7",4341389,""],["a tree",4917272,""],["a forest",4022162,""],["boosted trees",3944918,""],["boosted trees on coordinates",3741219,"best"]],"price":3800000}, box = document.getElementById("val"); if (!box) return;
+  function guess() { try { var v = parseFloat(localStorage.getItem("mlfin7-guess")); return isFinite(v) && v > 0 ? v : null; } catch (e) { return null; } }
+  function render() {
+    var g = guess(), rows = [["your guess, Session 7", g, "guess"]].concat(D.rows.map(function (r) { return [r[0], r[1], r[2]]; })).concat([["sold for", D.price, "price"]]);
+    var top = Math.max.apply(null, rows.map(function (r) { return r[1] || 0; })) * 1.04, html = "";
+    rows.forEach(function (r) {
+      var w = r[1] ? (100 * r[1] / top) : 0, num = r[1] ? fmt(r[1]) + " kr" : "no guess entered";
+      html += "<div class='w-val-row'><span class='w-val-lab'>" + r[0] + "</span><div class='w-val-track'><div class='w-val-bar " + r[2] + "' style='width:" + w + "%'></div><div class='w-val-line' style='left:" + (100 * D.price / top) + "%'></div></div><span class='w-val-num" + (r[1] ? "" : " unset") + "'>" + num + "</span></div>";
+    });
+    box.innerHTML = html;
+  }
+  render();
+  onShow(box, render);
+})();
+</script>
+<p>Boosted trees on coordinates came closest on this house, 58,781 kroner below the price. One house says little; the scores on the 1,409 sales say more.</p>
+</section>
+
+<section id="tomorrows-price-at-this-hour" class="title-slide slide level1 divider center">
+<h1>2 · Tomorrow’s price at this hour</h1>
+<div class="divider-kicker">
+<p>Part 2</p>
+</div>
+<div class="divider-note">
+<p>Session 10’s question on the same 2024 hours, with the same scores, and with a forest and boosted trees.</p>
+</div>
+</section>
+
+<section id="the-question-again" class="title-slide slide level1 center">
+<h1>The question, again</h1>
+<div class="statband">
+<div class="stat">
+<span class="stat-big">0.833</span>
+<div class="stat-label">
+logistic regression, AUC on 2024
+</div>
+</div>
+<div class="stat">
+<span class="stat-big">0.844</span>
+<div class="stat-label">
+k-NN, AUC on 2024
+</div>
+</div>
+<div class="stat">
+<span class="stat-big">957,809&nbsp;kr</span>
+<div class="stat-label">
+logistic regression, trading 2024 at a threshold of 0.6
+</div>
+</div>
+</div>
+<p>An hour is up when its price is higher than at the same hour the day before. These were Session 10’s best models of that label.</p>
+</section>
+
+<section id="the-hours-as-in-session-10" class="title-slide slide level1 center">
+<h1>The hours, as in Session 10</h1>
+<div>
+<div id="pyodide-9" class="exercise-cell">
+
+</div>
+<script type="pyodide-9-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJwb3dlciA9IHBkLnJlYWRfY3N2KCdkYXRhL3Bvd2VyLmNzdicsIHBhcnNlX2RhdGVzPVsndGltZSddKS5zZXRfaW5kZXgoJ3RpbWUnKVxucG93ZXJbJ3ByaWNlX2JlZm9yZSddID0gcG93ZXIuZ3JvdXBieSgnaG91cicpWydwcmljZSddLnNoaWZ0KDEpXG5wb3dlclsndXAnXSA9IChwb3dlclsncHJpY2UnXSA+IHBvd2VyWydwcmljZV9iZWZvcmUnXSkuYXN0eXBlKGludClcbnBvd2VyWyd3aW5kX2NoYW5nZSddID0gcG93ZXJbJ3dpbmQnXSAtIHBvd2VyLmdyb3VwYnkoJ2hvdXInKVsnd2luZCddLnNoaWZ0KDEpXG5wb3dlclsnY2hhbmdlX2JlZm9yZSddID0gcG93ZXJbJ3ByaWNlX2JlZm9yZSddIC0gcG93ZXIuZ3JvdXBieSgnaG91cicpWydwcmljZSddLnNoaWZ0KDIpXG5kYXlzID0gcGQuZ2V0X2R1bW1pZXMocG93ZXJbJ3dlZWtkYXknXSwgcHJlZml4PSd3ZWVrZGF5JywgZHR5cGU9aW50KVxucG93ZXIgPSBwb3dlci5qb2luKGRheXMpLmRyb3BuYSgpXG5wb3dlcl90cmFpbiwgcG93ZXJfdGVzdCA9IHBvd2VyLmxvY1s6JzIwMjMnXSwgcG93ZXIubG9jWycyMDI0J11cbnByaW50KGxlbihwb3dlcl90cmFpbiksIGxlbihwb3dlcl90ZXN0KSkifQ==
+</script>
+</div>
+<p>The columns are built as in Session 10, with the weekday as seven columns: 17,422 hours to learn from and 8,663 to check on.</p>
+</section>
+
+<section id="boosted-trees-on-the-same-columns" class="title-slide slide level1 center">
+<h1>Boosted trees on the same columns</h1>
+<div>
+<div id="pyodide-10" class="exercise-cell">
+
+</div>
+<script type="pyodide-10-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJuZWFyID0gWyd3aW5kX2NoYW5nZScsICdjaGFuZ2VfYmVmb3JlJywgJ3dlZWtkYXknLCAnaG91ciddXG5ib29zdGVkX3VwID0gWEdCQ2xhc3NpZmllcihuX2VzdGltYXRvcnM9MzE5LCBsZWFybmluZ19yYXRlPTAuMDUsIG1heF9kZXB0aD0zLCByYW5kb21fc3RhdGU9MClcbmJvb3N0ZWRfdXAuZml0KHBvd2VyX3RyYWluW25lYXJdLCBwb3dlcl90cmFpblsndXAnXSlcbnAgPSBib29zdGVkX3VwLnByZWRpY3RfcHJvYmEocG93ZXJfdGVzdFtuZWFyXSlbOiwgMV1cbnByaW50KHJvY19hdWNfc2NvcmUocG93ZXJfdGVzdFsndXAnXSwgcCkpIn0=
+</script>
+</div>
+<p>Depth 3 and 319 trees did best on 2023. The trees match k-NN on 2024, 0.843 against 0.844, and do no better than logistic regression on the folds.</p>
+</section>
+
+<section id="todays-price-and-the-wind" class="title-slide slide level1 center">
+<h1>Today’s price and the wind</h1>
+<div id="f7e3c0ba" class="cell" data-execution_count="6">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_13_files/figure-revealjs/cell-7-output-1.png" class="quarto-figure quarto-figure-center" width="977" height="360"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>After a forecast fall of over 1,000 MW, 94 percent of hours rose when today’s price was low and 72 percent when it was high.</p>
+</section>
+
+<section id="three-more-columns" class="title-slide slide level1 center">
+<h1>Three more columns</h1>
+<div>
+<div id="pyodide-11" class="exercise-cell">
+
+</div>
+<script type="pyodide-11-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJtb3JlID0gbmVhciArIFsncHJpY2VfYmVmb3JlJywgJ3dpbmQnLCAnc29sYXInXVxuYm9vc3RlZF9tb3JlID0gWEdCQ2xhc3NpZmllcihuX2VzdGltYXRvcnM9NTgsIGxlYXJuaW5nX3JhdGU9MC4wNSwgbWF4X2RlcHRoPTQsIHJhbmRvbV9zdGF0ZT0wKVxuYm9vc3RlZF9tb3JlLmZpdChwb3dlcl90cmFpblttb3JlXSwgcG93ZXJfdHJhaW5bJ3VwJ10pXG5wX21vcmUgPSBib29zdGVkX21vcmUucHJlZGljdF9wcm9iYShwb3dlcl90ZXN0W21vcmVdKVs6LCAxXVxucHJpbnQocm9jX2F1Y19zY29yZShwb3dlcl90ZXN0Wyd1cCddLCBwX21vcmUpKSJ9
+</script>
+</div>
+<p>The trees now also see today’s price and the wind and sun forecasts themselves. With 58 trees of depth 4, chosen on 2023, the AUC rises to 0.856.</p>
+</section>
+
+<section id="your-turn-1" class="title-slide slide level1 your-turn center">
+<h1>Your turn <span class="chip chip-turn">1</span></h1>
+<p>Give logistic regression the same three columns. How much does it gain, and why does it gain less than the trees?</p>
+<div>
+<div id="pyodide-12" class="exercise-cell">
+
+</div>
+<script type="pyodide-12-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIiOnRydWV9LCJjb2RlIjoiZmVhdHVyZXMgPSBbJ3dpbmRfY2hhbmdlJ10gKyBsaXN0KGRheXMuY29sdW1ucykgKyBbJ2NoYW5nZV9iZWZvcmUnXVxubG9naXQgPSBQaXBlbGluZShbKCdzY2FsZScsIFN0YW5kYXJkU2NhbGVyKCkpLCAoJ2xvZ2l0JywgTG9naXN0aWNSZWdyZXNzaW9uKCkpXSlcbmxvZ2l0LmZpdChwb3dlcl90cmFpbltmZWF0dXJlcyArIFsuLi5dXSwgcG93ZXJfdHJhaW5bJ3VwJ10pXG5wX2xvZ2l0ID0gbG9naXQucHJlZGljdF9wcm9iYShwb3dlcl90ZXN0W2ZlYXR1cmVzICsgWy4uLl1dKVs6LCAxXVxucHJpbnQocm9jX2F1Y19zY29yZShwb3dlcl90ZXN0Wyd1cCddLCBwX2xvZ2l0KSkifQ==
+</script>
+</div>
+<div class="muted small">
+<p><code>features</code> is Session 10’s list, which scored 0.833. Replace both <code>[...]</code> with the three new columns.</p>
+</div>
+</section>
+
+<section id="your-turn-1-answer" class="title-slide slide level1 center">
+<h1>Your turn 1: answer</h1>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="" aria-hidden="true" tabindex="-1"></a>logit.fit(power_train[features <span class="op">+</span> [<span class="st">'price_before'</span>, <span class="st">'wind'</span>, <span class="st">'solar'</span>]], power_train[<span class="st">'up'</span>])</span>
+<span id="cb1-2"><a href="" aria-hidden="true" tabindex="-1"></a>p_logit <span class="op">=</span> logit.predict_proba(power_test[features <span class="op">+</span> [<span class="st">'price_before'</span>, <span class="st">'wind'</span>, <span class="st">'solar'</span>]])[:, <span class="dv">1</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The AUC is 0.836, up 0.003, where the trees gained 0.014. Logistic regression keeps one slope for the wind change at every price level; the trees need not.</p>
+</section>
+
+<section id="the-pl-in-2024" class="title-slide slide level1 center">
+<h1>The P&amp;L in 2024</h1>
+<div id="1f36963c" class="cell" data-execution_count="7">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_13_files/figure-revealjs/cell-8-output-1.png" class="quarto-figure quarto-figure-center" width="1002" height="350"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The wind rule trades at one half, the models at 0.6. The forest earns 77,418 kroner more than logistic regression in 2024.</p>
+</section>
+
+<section id="your-eight-hours-again" class="title-slide slide level1 center">
+<h1>Your eight hours, again</h1>
+<style>
+.w-btn { font: 600 0.54em "Segoe UI", sans-serif; color: #0d366b; background: #ffffff; border: 1.5px solid #86b6ef; border-radius: 7px; padding: 0 0.75em; height: 2em; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; line-height: 1; cursor: pointer; white-space: nowrap; vertical-align: middle; }
+.w-marks { display: inline-flex; align-items: center; gap: 0.45em; flex-wrap: wrap; }
+.w-btn:hover { border-color: #1c5cab; }
+.w-btn.on { background: #0d366b; color: #ffffff; border-color: #0d366b; }
+.w-read { font: 0.54em "Segoe UI", sans-serif; color: #52514e; }
+.w-read b, .w-val { font-family: "Cascadia Mono", Consolas, monospace; color: #0d366b; font-weight: 600; }
+.w-range { accent-color: #1c5cab; }
+.w-tip { position: absolute; pointer-events: none; background: #ffffff; border: 1px solid #c3c2b7; border-radius: 6px; padding: 4px 8px; font: 13px "Segoe UI", sans-serif; color: #141413; box-shadow: 0 2px 6px rgba(0,0,0,0.08); white-space: nowrap; display: none; z-index: 5; }
+.w-sc13 table { border-collapse: collapse; font: 14.5px "Segoe UI", sans-serif; width: 100%; }
+.w-sc13 th { color: #52514e; font-weight: 600; text-align: right !important; padding: 4px 8px; border-bottom: 1.5px solid #c3c2b7; line-height: 1.2; vertical-align: bottom; }
+.w-sc13 td { text-align: right !important; padding: 4px 8px; border-bottom: 1px solid #ecebe6; font-family: "Cascadia Mono", Consolas, monospace; color: #52514e; white-space: nowrap; }
+.w-sc13 td.t, .w-sc13 th.t { text-align: left !important; font-family: "Segoe UI", sans-serif; }
+.w-sc13 tr.sum td { border-top: 1.5px solid #c3c2b7; color: #0d366b; font-weight: 700; }
+.w-sc13 td.best { background: #eaf1fa; color: #0d366b; font-weight: 700; }
+.w-sc13 td.unset { color: #c3c2b7; }
+.w-sc13-note { font: 0.44em "Segoe UI", sans-serif; color: #52514e; margin-top: 0.35em; }
+</style>
+<div class="w-sc13" id="sc13"><div id="sc13-body" style="min-height: 330px"></div><div class="w-sc13-note" id="sc13-note"></div></div>
+<script>
+(function () {
+var NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent, text) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, o) { o = o || {}; return el("text", { x: x, y: y, "font-size": o.size || 12.5, "font-weight": o.weight || 400, fill: o.fill || "#898781", "text-anchor": o.anchor || "start", "font-family": "Segoe UI, sans-serif", transform: o.rotate ? "rotate(" + o.rotate + " " + x + " " + y + ")" : "", stroke: o.halo ? "#fcfcfb" : "none", "stroke-width": o.halo ? 4 : 0, "paint-order": "stroke" }, parent, s); }
+function onShow(node, fn) { var sec = node.closest("section"); if (!sec) { fn(); return; } var was = false; function check() { var now = sec.classList.contains("present"); if (now && !was) fn(); was = now; } new MutationObserver(check).observe(sec, { attributes: true, attributeFilter: ["class"] }); check(); }
+function visible(node) { var sec = node.closest("section"); return !sec || sec.classList.contains("present"); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function ramp(stops, t) { t = Math.max(0, Math.min(1, t)); var n = stops.length - 1, i = Math.min(n - 1, Math.floor(t * n)), u = t * n - i, a = stops[i], b = stops[i + 1]; return "rgb(" + Math.round(lerp(a[0], b[0], u)) + "," + Math.round(lerp(a[1], b[1], u)) + "," + Math.round(lerp(a[2], b[2], u)) + ")"; }
+var BLUES = [[241, 245, 250], [134, 182, 239], [28, 92, 171], [13, 54, 107]];
+var AMBERS = [[240, 222, 170], [184, 134, 11]];
+var BRICKS = [[251, 241, 240], [224, 160, 149], [179, 64, 47]];
+function priceColour(v) { if (v === null || v === undefined) return "#ffffff"; if (v < 0) return ramp(AMBERS, Math.min(1, -v / 300)); return ramp(BLUES, Math.min(1, v / 1500)); }
+function fmt(n) { var s = Math.round(Math.abs(n)).toLocaleString("en-GB"); return (n < -0.5 ? "−" : "") + s; }
+function hh(h) { return (h < 10 ? "0" : "") + h + ":00"; }
+function niceTicks(lo, hi, n) { var span = hi - lo, raw = span / Math.max(1, n), mag = Math.pow(10, Math.floor(Math.log10(raw))), step = [1, 2, 2.5, 5, 10].map(function (m) { return m * mag; }).filter(function (s) { return s >= raw; })[0]; var out = []; for (var v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(Math.round(v * 1000) / 1000); return out; }
+function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { window["__" + key] = value; } return value; }
+function recall(key) { try { var v = localStorage.getItem(key); if (v) return JSON.parse(v); } catch (e) {} return window["__" + key] || null; }
+function hidpi(canvas, w, h) { var r = 2; canvas.width = w * r; canvas.height = h * r; canvas.style.width = w + "px"; canvas.style.height = h + "px"; var c = canvas.getContext("2d"); c.setTransform(r, 0, 0, r, 0, 0); return c; }
+var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+var WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+function longDate(iso) { var d = new Date(iso + "T12:00:00"); return WEEKDAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear(); }
+var WDNAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+function dayMonth(iso) { var d = new Date(iso + "T12:00:00"); return WEEKDAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()]; }
+function signed(v) { return (v > 0 ? "+" : "") + fmt(v); }
+function diverge(v, span) { if (v === null || v === undefined) return "#ffffff"; var t = Math.max(-1, Math.min(1, v / span)); return t < 0 ? ramp([[241, 240, 236], [134, 182, 239], [28, 92, 171]], -t) : ramp([[241, 240, 236], [224, 160, 149], [179, 64, 47]], t); }
+  var G = {"rounds":[{"short":"Tue 2 Jan","hour":13,"truth":1,"logit":0.101,"knn":0.104,"forest":0.215,"boosted":0.166},{"short":"Wed 24 Apr","hour":19,"truth":1,"logit":0.603,"knn":0.607,"forest":0.597,"boosted":0.608},{"short":"Thu 23 May","hour":12,"truth":1,"logit":0.938,"knn":0.886,"forest":0.963,"boosted":0.901},{"short":"Fri 12 Jul","hour":20,"truth":0,"logit":0.359,"knn":0.403,"forest":0.431,"boosted":0.41},{"short":"Sat 31 Aug","hour":10,"truth":0,"logit":0.246,"knn":0.164,"forest":0.201,"boosted":0.231},{"short":"Sun 15 Sep","hour":9,"truth":0,"logit":0.611,"knn":0.388,"forest":0.65,"boosted":0.736},{"short":"Thu 10 Oct","hour":18,"truth":0,"logit":0.061,"knn":0.06,"forest":0.02,"boosted":0.05},{"short":"Mon 2 Dec","hour":17,"truth":1,"logit":0.883,"knn":0.886,"forest":0.781,"boosted":0.775}]}, K1 = "mlfin10-updown", K2 = "mlfin10-updown-revised", WHO = ["first", "rev", "logit", "knn", "forest", "boosted"];
+  var body = document.getElementById("sc13-body"); if (!body) return;
+  function brier(p, y) { return (p - y) * (p - y); }
+  function logl(p, y) { p = Math.min(0.99, Math.max(0.01, p)); return -(y * Math.log(p) + (1 - y) * Math.log(1 - p)); }
+  function got(a, k) { return a && a[k] !== null && a[k] !== undefined; }
+  function render() {
+    var first = recall(K1) || [], rev = recall(K2) || [], m = G.rounds.length, rows = "", unset = 0, tot = {};
+    WHO.forEach(function (w) { tot[w] = [0, 0]; });
+    G.rounds.forEach(function (r, k) {
+      var f = got(first, k) ? first[k] : 0.5, ps = { first: f, rev: got(rev, k) ? rev[k] : f, logit: r.logit, knn: r.knn, forest: r.forest, boosted: r.boosted };
+      if (!got(first, k)) unset++;
+      var best = Math.min.apply(null, WHO.map(function (w) { return brier(ps[w], r.truth); }));
+      WHO.forEach(function (w) { tot[w][0] += brier(ps[w], r.truth); tot[w][1] += logl(ps[w], r.truth); });
+      rows += "<tr><td class='t'>" + r.short + ", " + hh(r.hour) + "</td><td class='t'>" + (r.truth ? "higher" : "not higher") + "</td>" +
+        WHO.map(function (w) { var cls = Math.abs(brier(ps[w], r.truth) - best) < 1e-9 ? "best" : (w === "first" && !got(first, k) ? "unset" : ""); return "<td class='" + cls + "'>" + Math.round(ps[w] * 100) + "%</td>"; }).join("") + "</tr>";
+    });
+    function sumRow(label, j) {
+      var v = WHO.map(function (w) { return tot[w][j] / m; }), best = Math.min.apply(null, v);
+      return "<tr class='sum'><td class='t' colspan='2'>" + label + "</td>" + v.map(function (x) { return "<td" + (Math.abs(x - best) < 1e-9 ? " class='best'" : "") + ">" + x.toFixed(3) + "</td>"; }).join("") + "</tr>";
+    }
+    body.innerHTML = "<table><tr><th class='t'>tomorrow, at the hour</th><th class='t'>what happened</th><th>your first<br>answer</th><th>your revised<br>answer</th><th>logistic<br>regression</th><th>k-NN</th><th>a forest</th><th>boosted<br>trees</th></tr>" + rows +
+      sumRow("Brier score, average", 0) + sumRow("log loss, average", 1) + "</table>";
+    var note = "Shaded: the closest forecast on each hour, and the lowest score. Your answers come from the Session 10 deck, opened in this browser. ";
+    if (unset) note += "Answers not set count as 50 percent. ";
+    document.getElementById("sc13-note").textContent = note;
+  }
+  function again() { render(); try { if (window.Reveal && Reveal.layout) Reveal.layout(); } catch (e) {} }
+  render();
+  onShow(body, again);
+})();
+</script>
+<p>Of the four models, k-NN has the lowest Brier score here and the forest the lowest log loss. Eight hours cannot separate models 0.01 of AUC apart.</p>
+</section>
+
+<section id="choosing-a-model" class="title-slide slide level1 divider center">
+<h1>3 · Choosing a model</h1>
+<div class="divider-kicker">
+<p>Part 3</p>
+</div>
+<div class="divider-note">
+<p>When a more flexible model does better, what it costs to fit and to run, and what it can explain.</p>
+</div>
+</section>
+
+<section id="four-tables-four-answers" class="title-slide slide level1 smaller center">
+<h1>Four tables, four answers</h1>
+<table class="caption-top">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 18%">
+<col style="width: 18%">
+<col style="width: 22%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">table</th>
+<th style="text-align: right;">rows to learn from</th>
+<th style="text-align: right;">the linear model</th>
+<th style="text-align: right;">the best trees</th>
+<th style="text-align: right;">the change</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">volatility, test RMSE</td>
+<td style="text-align: right;">1,894 days</td>
+<td style="text-align: right;">ridge 0.218</td>
+<td style="text-align: right;">boosted trees 0.217</td>
+<td style="text-align: right;">none</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">credit, test AUC</td>
+<td style="text-align: right;">21,000 borrowers</td>
+<td style="text-align: right;">logistic regression 0.748</td>
+<td style="text-align: right;">a forest 0.777</td>
+<td style="text-align: right;">+0.029</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">houses, test RMSE</td>
+<td style="text-align: right;">6,212 sales</td>
+<td style="text-align: right;">ridge 1.26 million</td>
+<td style="text-align: right;">boosted, coordinates 1.03 million</td>
+<td style="text-align: right;">-18 percent</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">hours, test AUC</td>
+<td style="text-align: right;">17,422 hours</td>
+<td style="text-align: right;">logistic regression 0.833</td>
+<td style="text-align: right;">a forest 0.857</td>
+<td style="text-align: right;">+0.024</td>
+</tr>
+</tbody>
+</table>
+<p>The trees gained most where location or a changing slope matters, and nothing where the target is mostly noise around a straight line.</p>
+</section>
+
+<section id="where-the-trees-gained" class="title-slide slide level1 center">
+<h1>Where the trees gained</h1>
+<div class="why-grid">
+<div class="why-point">
+<p><strong>A map</strong> <span>The town columns hold one premium per town. Boosted trees cut the coordinates into districts and took 18 percent off the error.</span></p>
+</div>
+<div class="why-point">
+<p><strong>A slope that changes</strong> <span>A fall in the wind raises tomorrow’s price less often when today’s price is high. A linear model has one slope for it.</span></p>
+</div>
+<div class="why-point">
+<p><strong>Steps</strong> <span>On the credit table the default rate jumps from 12 to 30 percent at the first month late. A tree’s cut takes a step like that directly.</span></p>
+</div>
+<div class="why-point">
+<p><strong>Mostly noise</strong> <span>Next month’s volatility is close to this month’s plus noise. On 1,894 days the trees only matched ridge.</span></p>
+</div>
+</div>
+</section>
+
+<section id="the-time-to-fit-and-to-predict" class="title-slide slide level1 center">
+<h1>The time to fit and to predict</h1>
+<div id="313a1c00" class="cell" data-execution_count="10">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="session_13_files/figure-revealjs/cell-11-output-1.png" class="quarto-figure quarto-figure-center" width="1020" height="360"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>k-NN fits at once but takes half a second to score 2024; the forest takes over a second to fit. A grid of settings multiplies every fit.</p>
+</section>
+
+<section id="two-fits-timed-predict" class="title-slide slide level1 center">
+<h1>Two fits, timed <span class="chip chip-predict">predict</span></h1>
+<div>
+<div id="pyodide-13" class="exercise-cell">
+
+</div>
+<script type="pyodide-13-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJzdGFydG92ZXIiOnRydWV9LCJjb2RlIjoiaW1wb3J0IHRpbWVcbnN0YXJ0ID0gdGltZS5wZXJmX2NvdW50ZXIoKVxuUmFuZG9tRm9yZXN0Q2xhc3NpZmllcihuX2VzdGltYXRvcnM9MTAwLCBtaW5fc2FtcGxlc19sZWFmPTIwLCByYW5kb21fc3RhdGU9MCkuZml0KHBvd2VyX3RyYWluW21vcmVdLCBwb3dlcl90cmFpblsndXAnXSlcbnByaW50KCdhIGZvcmVzdCAgICAgOicsIHJvdW5kKHRpbWUucGVyZl9jb3VudGVyKCkgLSBzdGFydCwgMiksICdzZWNvbmRzJylcbnN0YXJ0ID0gdGltZS5wZXJmX2NvdW50ZXIoKVxuWEdCQ2xhc3NpZmllcihuX2VzdGltYXRvcnM9NTgsIGxlYXJuaW5nX3JhdGU9MC4wNSwgbWF4X2RlcHRoPTQsIHJhbmRvbV9zdGF0ZT0wKS5maXQocG93ZXJfdHJhaW5bbW9yZV0sIHBvd2VyX3RyYWluWyd1cCddKVxucHJpbnQoJ2Jvb3N0ZWQgdHJlZXM6Jywgcm91bmQodGltZS5wZXJmX2NvdW50ZXIoKSAtIHN0YXJ0LCAyKSwgJ3NlY29uZHMnKSJ9
+</script>
+</div>
+<p>Before you run it: which of the two takes longer in your browser, and by how much? Both models score about 0.857 on 2024.</p>
+</section>
+
+<section id="thirty-more-square-metres" class="title-slide slide level1 center">
+<h1>Thirty more square metres</h1>
+<div>
+<div id="pyodide-14" class="exercise-cell">
+
+</div>
+<script type="pyodide-14-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJzaXggPSB0ZXN0LnNhbXBsZSg2LCByYW5kb21fc3RhdGU9MylcbmJpZ2dlciA9IHNpeC5jb3B5KClcbmJpZ2dlclsnYXJlYSddID0gYmlnZ2VyWydhcmVhJ10gKyAzMFxucHJpbnQobnAuZXhwKHZhbHVhdGlvbi5wcmVkaWN0KGJpZ2dlcltjb2x1bW5zXSkgLSB2YWx1YXRpb24ucHJlZGljdChzaXhbY29sdW1uc10pKS5yb3VuZCgzKSlcbnByaW50KG5wLmV4cChib29zdGVkX3BsYWNlLnByZWRpY3QoYmlnZ2VyW3BsYWNlXSkgLSBib29zdGVkX3BsYWNlLnByZWRpY3Qoc2l4W3BsYWNlXSkpLnJvdW5kKDMpKSJ9
+</script>
+</div>
+<p>In logs, linear regression adds 14.7 percent to every house. Boosted trees add between 8 and 35 percent, depending on the house and where it stands.</p>
+</section>
+
+<section id="a-bigger-house-play" class="title-slide slide level1 center">
+<h1>A bigger house <span class="chip chip-predict">play</span></h1>
+<style>
+.w-btn { font: 600 0.54em "Segoe UI", sans-serif; color: #0d366b; background: #ffffff; border: 1.5px solid #86b6ef; border-radius: 7px; padding: 0 0.75em; height: 2em; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; line-height: 1; cursor: pointer; white-space: nowrap; vertical-align: middle; }
+.w-marks { display: inline-flex; align-items: center; gap: 0.45em; flex-wrap: wrap; }
+.w-btn:hover { border-color: #1c5cab; }
+.w-btn.on { background: #0d366b; color: #ffffff; border-color: #0d366b; }
+.w-read { font: 0.54em "Segoe UI", sans-serif; color: #52514e; }
+.w-read b, .w-val { font-family: "Cascadia Mono", Consolas, monospace; color: #0d366b; font-weight: 600; }
+.w-range { accent-color: #1c5cab; }
+.w-tip { position: absolute; pointer-events: none; background: #ffffff; border: 1px solid #c3c2b7; border-radius: 6px; padding: 4px 8px; font: 13px "Segoe UI", sans-serif; color: #141413; box-shadow: 0 2px 6px rgba(0,0,0,0.08); white-space: nowrap; display: none; z-index: 5; }
+.w-bg-top { display: flex; align-items: center; gap: 1.2em; margin-bottom: 0.2em; }
+.w-bg-top label { font: 600 0.52em "Segoe UI", sans-serif; color: #0d366b; display: flex; align-items: center; gap: 0.5em; white-space: nowrap; }
+.w-bg-top input[type=range] { width: 17em; }
+</style>
+<div id="bg">
+<div class="w-bg-top"><label>area <input class="w-range" type="range" id="bg-a" min="60" max="300" step="5" value="150" aria-label="the area of the house"> <span class="w-val" id="bg-av"></span></label>
+<span class="w-marks"><button class="w-btn" id="bg-rise">boosted trees, told to rise</button></span></div>
+<svg id="bg-svg" width="1040" height="400" viewbox="0 0 1040 400" role="img" aria-label="The value of the house from Aarhus V as its area grows from 60 to 300 square metres, under linear regression, a forest and boosted trees"></svg>
+<div class="w-read" id="bg-read"></div>
+</div>
+<script>
+(function () {
+var NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent, text) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, o) { o = o || {}; return el("text", { x: x, y: y, "font-size": o.size || 12.5, "font-weight": o.weight || 400, fill: o.fill || "#898781", "text-anchor": o.anchor || "start", "font-family": "Segoe UI, sans-serif", transform: o.rotate ? "rotate(" + o.rotate + " " + x + " " + y + ")" : "", stroke: o.halo ? "#fcfcfb" : "none", "stroke-width": o.halo ? 4 : 0, "paint-order": "stroke" }, parent, s); }
+function onShow(node, fn) { var sec = node.closest("section"); if (!sec) { fn(); return; } var was = false; function check() { var now = sec.classList.contains("present"); if (now && !was) fn(); was = now; } new MutationObserver(check).observe(sec, { attributes: true, attributeFilter: ["class"] }); check(); }
+function visible(node) { var sec = node.closest("section"); return !sec || sec.classList.contains("present"); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function ramp(stops, t) { t = Math.max(0, Math.min(1, t)); var n = stops.length - 1, i = Math.min(n - 1, Math.floor(t * n)), u = t * n - i, a = stops[i], b = stops[i + 1]; return "rgb(" + Math.round(lerp(a[0], b[0], u)) + "," + Math.round(lerp(a[1], b[1], u)) + "," + Math.round(lerp(a[2], b[2], u)) + ")"; }
+var BLUES = [[241, 245, 250], [134, 182, 239], [28, 92, 171], [13, 54, 107]];
+var AMBERS = [[240, 222, 170], [184, 134, 11]];
+var BRICKS = [[251, 241, 240], [224, 160, 149], [179, 64, 47]];
+function priceColour(v) { if (v === null || v === undefined) return "#ffffff"; if (v < 0) return ramp(AMBERS, Math.min(1, -v / 300)); return ramp(BLUES, Math.min(1, v / 1500)); }
+function fmt(n) { var s = Math.round(Math.abs(n)).toLocaleString("en-GB"); return (n < -0.5 ? "−" : "") + s; }
+function hh(h) { return (h < 10 ? "0" : "") + h + ":00"; }
+function niceTicks(lo, hi, n) { var span = hi - lo, raw = span / Math.max(1, n), mag = Math.pow(10, Math.floor(Math.log10(raw))), step = [1, 2, 2.5, 5, 10].map(function (m) { return m * mag; }).filter(function (s) { return s >= raw; })[0]; var out = []; for (var v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(Math.round(v * 1000) / 1000); return out; }
+function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { window["__" + key] = value; } return value; }
+function recall(key) { try { var v = localStorage.getItem(key); if (v) return JSON.parse(v); } catch (e) {} return window["__" + key] || null; }
+function hidpi(canvas, w, h) { var r = 2; canvas.width = w * r; canvas.height = h * r; canvas.style.width = w + "px"; canvas.style.height = h + "px"; var c = canvas.getContext("2d"); c.setTransform(r, 0, 0, r, 0, 0); return c; }
+var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+var WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+function longDate(iso) { var d = new Date(iso + "T12:00:00"); return WEEKDAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear(); }
+var WDNAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+function dayMonth(iso) { var d = new Date(iso + "T12:00:00"); return WEEKDAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()]; }
+function signed(v) { return (v > 0 ? "+" : "") + fmt(v); }
+function diverge(v, span) { if (v === null || v === undefined) return "#ffffff"; var t = Math.max(-1, Math.min(1, v / span)); return t < 0 ? ramp([[241, 240, 236], [134, 182, 239], [28, 92, 171]], -t) : ramp([[241, 240, 236], [224, 160, 149], [179, 64, 47]], t); }
+  var D = {"areas":[60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,245,250,255,260,265,270,275,280,285,290,295,300],"values":{"ridge":[2874995,2941583,3009713,3079421,3150743,3223718,3298382,3374776,3452939,3532913,3614739,3698460,3784120,3871764,3961438,4053188,4147064,4243115,4341389,4441940,4544820,4650083,4757783,4867978,4980726,5096084,5214115,5334879,5458440,5584863,5714214,5846561,5981973,6120522,6262279,6407320,6555720,6707557,6862910,7021862,7184496,7350896,7521150,7695347,7873579,8055939,8242523,8433428,8628755],"forest":[3010659,3120529,3140044,3153380,3211704,3264741,3275675,3280286,3286527,3258776,3253001,3272290,3210754,3087570,3516945,3520660,3649334,3890490,4022162,4002488,4071320,4115567,4529387,4896754,4829929,4700590,4613640,4549756,4450657,4553141,4678886,4620156,4580684,4443892,4440241,4421536,4467118,4480633,4472104,4490102,4549233,4728528,4794348,5063950,5063950,5083995,5106223,5183244,5191657],"boosted_place":[2393453,2596221,2523801,2641364,2609790,2871618,3099994,2996156,3268540,3335668,3363738,3439480,3447174,3455874,3634170,3668028,3700617,3773378,3741219,3761547,3831733,3872640,3932665,4017851,4006682,4130262,4153266,4308561,4230467,4181061,4308105,4453659,4582202,4632388,4644430,4679727,4679727,5360807,5473624,5473624,5473624,5473624,5473624,5473624,5782798,5782798,5782798,5782798,6443867],"boosted_rising":[2077688,2418977,2418977,2612537,2612537,2757024,2814148,2815415,3128362,3153963,3175873,3197026,3352069,3352069,3682384,3761375,3761375,3776744,3871876,3907229,4068354,4068354,4285518,4444862,4444862,4540412,4540412,4546592,4546592,4546592,4670088,4858782,4925428,4954079,4954079,4954079,4954079,5480864,5480864,5480864,5517722,5517722,5517722,5517722,5780456,5780456,5780456,5780456,6436220]},"data_max":265,"vmax":10}, svg = document.getElementById("bg-svg"); if (!svg) return;
+  var L = 70, R = 840, T = 12, B = 350, A0 = 60, A1 = 300, V1 = D.vmax, showRise = false;
+  function X(a) { return L + (a - A0) / (A1 - A0) * (R - L); } function Y(v) { return B - v / V1 * (B - T); }
+  var LINES = [["ridge", "linear regression", "#0d366b"], ["forest", "a forest", "#898781"], ["boosted_place", "boosted trees", "#b3402f"], ["boosted_rising", "boosted trees, told to rise", "#b8860b"]];
+  function at(name, a) { var i = Math.round((a - D.areas[0]) / 5); return D.values[name][Math.max(0, Math.min(D.areas.length - 1, i))] / 1e6; }
+  function draw() {
+    var a = +document.getElementById("bg-a").value;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    el("rect", { x: X(D.data_max), y: T, width: R - X(D.data_max), height: B - T, fill: "#f1f0ec" }, svg);
+    txt(svg, X(D.data_max) + 8, T + 18, "larger than 99 percent of the sales", { fill: "#898781", size: 13 });
+    for (var v = 0; v <= V1 + 1e-9; v += 2) { el("line", { x1: L, y1: Y(v), x2: R, y2: Y(v), stroke: v === 0 ? "#c3c2b7" : "#ecebe6" }, svg); txt(svg, L - 8, Y(v) + 4, v.toFixed(0), { anchor: "end" }); }
+    [60, 100, 150, 200, 250, 300].forEach(function (x) { txt(svg, X(x), B + 19, x + " m²", { anchor: "middle" }); });
+    txt(svg, 18, (T + B) / 2, "the house's value, million kroner", { anchor: "middle", rotate: -90, fill: "#52514e", size: 13 });
+    LINES.forEach(function (l) {
+      if (l[0] === "boosted_rising" && !showRise) return;
+      var d = ""; D.areas.forEach(function (x, i) { d += (i ? " L" : "M") + X(x).toFixed(1) + "," + Y(D.values[l[0]][i] / 1e6).toFixed(1); });
+      el("path", { d: d, fill: "none", stroke: l[2], "stroke-width": l[0] === "forest" ? 2.6 : 3.2, "stroke-dasharray": l[0] === "boosted_rising" ? "8 5" : "none" }, svg);
+      var last = D.values[l[0]][D.areas.length - 1] / 1e6;
+      txt(svg, R + 10, Y(last) + 5 + (l[0] === "boosted_rising" ? 16 : 0), l[1], { fill: l[2], size: 14, weight: 700 });
+    });
+    el("line", { x1: X(a), y1: T, x2: X(a), y2: B, stroke: "#141413", "stroke-width": 1.2, "stroke-dasharray": "4 4" }, svg);
+    var parts = [];
+    LINES.forEach(function (l) { if (l[0] === "boosted_rising" && !showRise) return; var v = at(l[0], a); el("circle", { cx: X(a), cy: Y(v), r: 6, fill: l[2], stroke: "#fcfcfb", "stroke-width": 2 }, svg); parts.push(l[1] + " <b>" + v.toFixed(2) + "</b>"); });
+    document.getElementById("bg-av").textContent = a + " m²";
+    document.getElementById("bg-read").innerHTML = "At " + a + " m², in million kroner: " + parts.join(" · ");
+  }
+  document.getElementById("bg-a").addEventListener("input", draw);
+  document.getElementById("bg-rise").addEventListener("click", function (e) { showRise = !showRise; e.target.classList.toggle("on", showRise); draw(); });
+  draw();
+})();
+</script>
+<p>Boosted trees value the house lower at some larger areas, and the forest stops rising beyond the largest sales it learned from.</p>
+</section>
+
+<section id="monotone-constraints" class="title-slide slide level1 center">
+<h1>Monotone constraints</h1>
+<div>
+<div id="pyodide-15" class="exercise-cell">
+
+</div>
+<script type="pyodide-15-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOnRydWUsImVkaXQiOnRydWUsImV2YWwiOnRydWUsInN0YXJ0b3ZlciI6dHJ1ZX0sImNvZGUiOiJzdG9wcGVyID0gWEdCUmVncmVzc29yKG5fZXN0aW1hdG9ycz0zMDAwLCBsZWFybmluZ19yYXRlPTAuMDUsIG1heF9kZXB0aD00LCBlYXJseV9zdG9wcGluZ19yb3VuZHM9MTAwLFxuICAgICAgICAgICAgICAgICAgICAgICBtb25vdG9uZV9jb25zdHJhaW50cz17J2FyZWEnOiAxfSwgcmFuZG9tX3N0YXRlPTApXG5zdG9wcGVyLmZpdChmaXRfcm93c1twbGFjZV0sIG5wLmxvZyhmaXRfcm93c1sncHJpY2UnXSksXG4gICAgICAgICAgICBldmFsX3NldD1bKHN0b3Bfcm93c1twbGFjZV0sIG5wLmxvZyhzdG9wX3Jvd3NbJ3ByaWNlJ10pKV0sIHZlcmJvc2U9RmFsc2UpXG5yaXNpbmcgPSBYR0JSZWdyZXNzb3Iobl9lc3RpbWF0b3JzPXN0b3BwZXIuYmVzdF9pdGVyYXRpb24gKyAxLCBsZWFybmluZ19yYXRlPTAuMDUsIG1heF9kZXB0aD00LFxuICAgICAgICAgICAgICAgICAgICAgIG1vbm90b25lX2NvbnN0cmFpbnRzPXsnYXJlYSc6IDF9LCByYW5kb21fc3RhdGU9MClcbnJpc2luZy5maXQodHJhaW5bcGxhY2VdLCBucC5sb2codHJhaW5bJ3ByaWNlJ10pKVxudmFsdWVkID0gbnAuZXhwKHJpc2luZy5wcmVkaWN0KHRlc3RbcGxhY2VdKSlcbnByaW50KHN0b3BwZXIuYmVzdF9pdGVyYXRpb24gKyAxLCByb3VuZChybXNlKHRlc3RbJ3ByaWNlJ10sIHZhbHVlZCkpLCByb3VuZCh1bmRlcndhdGVyKHRlc3RbJ3ByaWNlJ10sIHZhbHVlZCksIDMpKSJ9
+</script>
+</div>
+<p><code>monotone_constraints</code> lets the value only rise with the area. Every one of 200 test houses had a fall before and none has one now, for 33,000 kroner of RMSE.</p>
+</section>
+
+<section id="explanations-in-credit" class="title-slide slide level1 center">
+<h1>Explanations in credit</h1>
+<p>The EU’s AI Act counts models that score the creditworthiness of people as high-risk. A person refused on such a score may ask for the main elements of the decision.</p>
+<p>A coefficient states the same reason for every customer. A sum of a thousand trees has to be explained one decision at a time.</p>
+<div class="muted small">
+<p>Regulation (EU) 2024/1689 (the AI Act), Annex III, point 5(b), and Article 86(1).</p>
+</div>
+</section>
+
+<section id="the-trade-offs-model-by-model" class="title-slide slide level1 smaller center">
+<h1>The trade-offs, model by model</h1>
+<table class="caption-top">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 23%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">model</th>
+<th style="text-align: right;">houses: RMSE, and seconds to fit</th>
+<th style="text-align: right;">hours: AUC, and seconds to fit</th>
+<th style="text-align: left;">one prediction comes from</th>
+<th style="text-align: left;">beyond the training rows</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">linear or logistic regression</td>
+<td style="text-align: right;">1.26 million, 0.005 s</td>
+<td style="text-align: right;">0.833, 0.011 s</td>
+<td style="text-align: left;">one coefficient per column</td>
+<td style="text-align: left;">the slope continues</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">k-NN</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0.844, 0.012 s; 0.50 s to predict</td>
+<td style="text-align: left;">the nearest training rows</td>
+<td style="text-align: left;">the nearest training rows</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">a tree</td>
+<td style="text-align: right;">1.27 million, 0.013 s</td>
+<td style="text-align: right;"></td>
+<td style="text-align: left;">a path of up to 19 questions</td>
+<td style="text-align: left;">the value of a leaf</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">a forest</td>
+<td style="text-align: right;">1.11 million, 0.59 s</td>
+<td style="text-align: right;">0.857, 1.67 s</td>
+<td style="text-align: left;">an average of 100 trees</td>
+<td style="text-align: left;">flat</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">boosted trees</td>
+<td style="text-align: right;">1.03 million, 0.36 s</td>
+<td style="text-align: right;">0.856, 0.067 s</td>
+<td style="text-align: left;">a sum of 58 to 1,017 trees</td>
+<td style="text-align: left;">flat</td>
+</tr>
+</tbody>
+</table>
+<p>None of them wins every column. Which one matters depends on who uses the model and how often it is refitted.</p>
+</section>
+
+<section id="choosing-a-model-1" class="title-slide slide level1 center">
+<h1>Choosing a model</h1>
+<ol type="1">
+<li>Score a baseline and a linear model first.</li>
+<li>Fit a forest and boosted trees on the same folds.</li>
+<li>Keep the flexible model only when it wins on the folds and on the test rows.</li>
+<li>Check what it does to one row: its direction, and far from the data.</li>
+<li>Price the compute: fitting, tuning and predicting.</li>
+<li>Ask who has to understand one prediction.</li>
+</ol>
+</section>
+
+<section id="the-course-and-the-exam" class="title-slide slide level1 divider center">
+<h1>4 · The course, and the exam</h1>
+<div class="divider-kicker">
+<p>Part 4</p>
+</div>
+<div class="divider-note">
+<p>A look back over thirteen sessions, the exam, and time for your questions.</p>
+</div>
+</section>
+
+<section id="thirteen-sessions" class="title-slide slide level1 center">
+<h1>Thirteen sessions</h1>
+<div class="timeline">
+<div class="tl-row">
+<span class="tl-week">1 to 3</span><span class="tl-topic">Python: variables, loops, functions and dictionaries; NumPy, pandas and matplotlib</span><span class="tl-who">the risk report begins</span>
+</div>
+<div class="tl-row">
+<span class="tl-week">4</span><span class="tl-topic">features, targets, splits and the scores of a prediction</span><span class="tl-who">no model yet</span>
+</div>
+<div class="tl-row">
+<span class="tl-week">5 and 6</span><span class="tl-topic">linear regression, folds, ridge and lasso</span><span class="tl-who">the volatility forecast</span>
+</div>
+<div class="tl-row">
+<span class="tl-week">7</span><span class="tl-topic">a house in Aarhus, with every tool so far</span><span class="tl-who">a case lecture</span>
+</div>
+<div class="tl-row">
+<span class="tl-week">8 and 9</span><span class="tl-topic">logistic regression, thresholds, costs and k-NN</span><span class="tl-who">the jump warning</span>
+</div>
+<div class="tl-row">
+<span class="tl-week">10</span><span class="tl-topic">tomorrow’s power price in West Denmark</span><span class="tl-who">a case lecture</span>
+</div>
+<div class="tl-row">
+<span class="tl-week">11 and 12</span><span class="tl-topic">trees, forests and boosted trees</span><span class="tl-who">the report as a whole</span>
+</div>
+<div class="tl-row tl-now">
+<span class="tl-week">13</span><span class="tl-topic">the two cases with trees</span><span class="tl-who">today</span>
+</div>
+</div>
+</section>
+
+<section id="the-routine-behind-every-model" class="title-slide slide level1 center">
+<h1>The routine behind every model</h1>
+<div class="recap-grid">
+<div class="recap-item">
+<p><strong>A baseline first</strong> The training average, the majority class or persistence. Every score goes next to the baseline’s.</p>
+</div>
+<div class="recap-item">
+<p><strong>A split that respects time</strong> When the rows are days or hours, the test rows come after the training rows.</p>
+</div>
+<div class="recap-item">
+<p><strong>Settings on validation rows</strong> Folds or a later block choose alpha, C, k, the depth and the number of trees.</p>
+</div>
+<div class="recap-item">
+<p><strong>The test rows once</strong> They score the model already chosen, and the folds are reported beside them.</p>
+</div>
+<div class="recap-item">
+<p><strong>A model read</strong> Its coefficients, its importance, or what it does to one row.</p>
+</div>
+<div class="recap-item">
+<p><strong>A model priced</strong> The time to fit and to predict, and who has to understand it.</p>
+</div>
+</div>
+</section>
+
+<section id="the-exam" class="title-slide slide level1 center">
+<h1>The exam</h1>
+<div class="exam-facts" style="grid-template-columns: repeat(4, 1fr)">
+<div class="exam-fact">
+<span class="ef-big">180 minutes</span>
+<div class="ef-label">
+on site, offline, in VS Code
+</div>
+</div>
+<div class="exam-fact">
+<span class="ef-big">Two parts</span>
+<div class="ef-label">
+50 points each
+</div>
+</div>
+<div class="exam-fact">
+<span class="ef-big">No AI</span>
+<div class="ef-label">
+the exam cover sets the other rules
+</div>
+</div>
+<div class="exam-fact">
+<span class="ef-big">Two files</span>
+<div class="ef-label">
+the answer notebook and the blank PDF
+</div>
+</div>
+</div>
+<p>Three mock exams and a two-page guide to preparing are on the <a href="../exam_info.html" target="_blank" rel="noopener">Exam Info page</a> of the course site.</p>
+</section>
+
+<section id="before-the-exam" class="title-slide slide level1 center">
+<h1>Before the exam</h1>
+<ul>
+<li>Download the notebooks, the data, the cheatsheet and the lectures while you are online. Press <code>e</code> on a lecture, then print it to PDF.</li>
+<li>Open a course notebook in VS Code and read a local CSV, so the setup works before the day.</li>
+<li>Sit one mock exam in three uninterrupted hours, with Wi-Fi and AI switched off.</li>
+<li>Switch off AI and code completion in VS Code, as the guide shows.</li>
+</ul>
+</section>
+
+<section id="questions" class="title-slide slide level1 center">
+<h1>Questions</h1>
+<div class="questions-end">
+<p class="q-big">
+Questions about the exam, the course, or anything else
+</p>
+<p class="q-small">
+The lectures, the notebooks, the cheatsheet and the mock exams stay on the course site. Email: <b>jobo@econ.au.dk</b>
+</p>
+</div>
+<style>
+.questions-end { margin-top: 2.4em; text-align: center; }
+.questions-end .q-big { font-size: 1.45em; font-weight: 700; color: #0d366b; line-height: 1.25; }
+.questions-end .q-small { font-size: 0.8em; color: #52514e; margin-top: 1.2em; }
+</style>
+
+<script type="pyodide-data">
+eyJvcHRpb25zIjp7ImVudiI6eyJQTE9UTFlfUkVOREVSRVIiOiJwbG90bHlfbWltZXR5cGUifSwiaW5kZXhVUkwiOiJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvcHlvZGlkZS92MC4yOC4xL2Z1bGwvIn0sInBhY2thZ2VzIjp7InBrZ3MiOlsicHlvZGlkZV9odHRwIiwibWljcm9waXAiLCJpcHl0aG9uIiwibnVtcHkiLCJwYW5kYXMiLCJzY2lraXQtbGVhcm4iLCJ4Z2Jvb3N0Il19fQ==
+</script>
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3siY2VsbE5hbWUiOiJweW9kaWRlLTE1IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTUgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTE1LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTUtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xNSA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTUsIHt9LCAxNSk7XG4ifSx7ImNlbGxOYW1lIjoicHlvZGlkZS0xNCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzE0ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS0xNC1jb250ZW50c1xcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGJsb2NrID0gSlNPTi5wYXJzZShiNjREZWNvZGUoc2NyaXB0Q29udGVudCkpO1xuXG4gIGNvbnN0IG9wdGlvbnMgPSBPYmplY3QuYXNzaWduKHsgaWQ6IGBweW9kaWRlLTE0LWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfMTQgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzE0LCB7fSwgMTQpO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtMTMiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl8xMyA9IHtcbiAgY29uc3QgeyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IsIGI2NERlY29kZSB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcblxuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcInB5b2RpZGUtMTMtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgcHlvZGlkZS0xMy1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzEzID0gcHlvZGlkZU9qcy5wcm9jZXNzKF9weW9kaWRlX2VkaXRvcl8xMywge30sIDEzKTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTEyIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfcHlvZGlkZV9lZGl0b3JfMTIgPSB7XG4gIGNvbnN0IHsgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJweW9kaWRlLTEyLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMTItY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgUHlvZGlkZUV4ZXJjaXNlRWRpdG9yKFxuICAgIHB5b2RpZGVPanMucHlvZGlkZVByb21pc2UsXG4gICAgYmxvY2suY29kZSxcbiAgICBvcHRpb25zXG4gICk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fcHlvZGlkZV92YWx1ZV8xMiA9IHB5b2RpZGVPanMucHJvY2VzcyhfcHlvZGlkZV9lZGl0b3JfMTIsIHt9LCAxMik7XG4ifSx7ImNlbGxOYW1lIjoicHlvZGlkZS0xMSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3B5b2RpZGVfZWRpdG9yXzExID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS0xMS1jb250ZW50c1xcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGJsb2NrID0gSlNPTi5wYXJzZShiNjREZWNvZGUoc2NyaXB0Q29udGVudCkpO1xuXG4gIGNvbnN0IG9wdGlvbnMgPSBPYmplY3QuYXNzaWduKHsgaWQ6IGBweW9kaWRlLTExLWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFB5b2RpZGVFeGVyY2lzZUVkaXRvcihcbiAgICBweW9kaWRlT2pzLnB5b2RpZGVQcm9taXNlLFxuICAgIGJsb2NrLmNvZGUsXG4gICAgb3B0aW9uc1xuICApO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3B5b2RpZGVfdmFsdWVfMTEgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzExLCB7fSwgMTEpO1xuIn0seyJjZWxsTmFtZSI6InB5b2RpZGUtMTAiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl8xMCA9IHtcbiAgY29uc3QgeyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IsIGI2NERlY29kZSB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcblxuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcInB5b2RpZGUtMTAtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgcHlvZGlkZS0xMC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzEwID0gcHlvZGlkZU9qcy5wcm9jZXNzKF9weW9kaWRlX2VkaXRvcl8xMCwge30sIDEwKTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTkiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl85ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS05LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtOS1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzkgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzksIHt9LCA5KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTgiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl84ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS04LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtOC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzggPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzgsIHt9LCA4KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTciLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl83ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS03LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtNy1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzcgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzcsIHt9LCA3KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTYiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl82ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS02LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtNi1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzYgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzYsIHt9LCA2KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTUiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl81ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS01LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtNS1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzUgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzUsIHt9LCA1KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTQiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl80ID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS00LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtNC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzQgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzQsIHt9LCA0KTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTMiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl8zID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS0zLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMy1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzMgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzMsIHt9LCAzKTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTIiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl8yID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS0yLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMi1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzIgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzIsIHt9LCAyKTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLTEiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF9weW9kaWRlX2VkaXRvcl8xID0ge1xuICBjb25zdCB7IFB5b2RpZGVFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwicHlvZGlkZS0xLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHB5b2RpZGUtMS1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBQeW9kaWRlRXhlcmNpc2VFZGl0b3IoXG4gICAgcHlvZGlkZU9qcy5weW9kaWRlUHJvbWlzZSxcbiAgICBibG9jay5jb2RlLFxuICAgIG9wdGlvbnNcbiAgKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl9weW9kaWRlX3ZhbHVlXzEgPSBweW9kaWRlT2pzLnByb2Nlc3MoX3B5b2RpZGVfZWRpdG9yXzEsIHt9LCAxKTtcbiJ9LHsiY2VsbE5hbWUiOiJweW9kaWRlLXByZWx1ZGUiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJweW9kaWRlT2pzID0ge1xuICBjb25zdCB7XG4gICAgUHlvZGlkZUV2YWx1YXRvcixcbiAgICBQeW9kaWRlRW52aXJvbm1lbnQsXG4gICAgc2V0dXBQeXRob24sXG4gICAgc3RhcnRQeW9kaWRlV29ya2VyLFxuICAgIGI2NERlY29kZSxcbiAgICBjb2xsYXBzZVBhdGgsXG4gIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuXG4gIGNvbnN0IHN0YXR1c0NvbnRhaW5lciA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKFwiZXhlcmNpc2UtbG9hZGluZy1zdGF0dXNcIik7XG4gIGNvbnN0IGluZGljYXRvckNvbnRhaW5lciA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKFwiZXhlcmNpc2UtbG9hZGluZy1pbmRpY2F0b3JcIik7XG4gIGluZGljYXRvckNvbnRhaW5lci5jbGFzc0xpc3QucmVtb3ZlKFwiZC1ub25lXCIpO1xuXG4gIGxldCBzdGF0dXNUZXh0ID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChcImRpdlwiKVxuICBzdGF0dXNUZXh0LmNsYXNzTGlzdCA9IFwiZXhlcmNpc2UtbG9hZGluZy1kZXRhaWxzXCI7XG4gIHN0YXR1c1RleHQgPSBzdGF0dXNDb250YWluZXIuYXBwZW5kQ2hpbGQoc3RhdHVzVGV4dCk7XG4gIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSBgSW5pdGlhbGlzZWA7XG5cbiAgLy8gSG9pc3QgaW5kaWNhdG9yIG91dCBmcm9tIGZpbmFsIHNsaWRlIHdoZW4gcnVubmluZyB1bmRlciByZXZlYWxcbiAgY29uc3QgcmV2ZWFsU3RhdHVzID0gZG9jdW1lbnQucXVlcnlTZWxlY3RvcihcIi5yZXZlYWwgLmV4ZXJjaXNlLWxvYWRpbmctaW5kaWNhdG9yXCIpO1xuICBpZiAocmV2ZWFsU3RhdHVzKSB7XG4gICAgcmV2ZWFsU3RhdHVzLnJlbW92ZSgpO1xuICAgIGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoXCIucmV2ZWFsID4gLnNsaWRlc1wiKS5hcHBlbmRDaGlsZChyZXZlYWxTdGF0dXMpO1xuICB9XG5cbiAgLy8gTWFrZSBhbnkgcmV2ZWFsIHNsaWRlcyB3aXRoIGxpdmUgY2VsbHMgc2Nyb2xsYWJsZVxuICBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKFwiLnJldmVhbCAuZXhlcmNpc2UtY2VsbFwiKS5mb3JFYWNoKChlbCkgPT4ge1xuICAgIGVsLmNsb3Nlc3QoJ3NlY3Rpb24uc2xpZGUnKS5jbGFzc0xpc3QuYWRkKFwic2Nyb2xsYWJsZVwiKTtcbiAgfSlcblxuICAvLyBQeW9kaWRlIHN1cHBsZW1lbnRhbCBkYXRhIGFuZCBvcHRpb25zXG4gIGNvbnN0IGRhdGFDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcInB5b2RpZGUtZGF0YVxcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGRhdGEgPSBKU09OLnBhcnNlKGI2NERlY29kZShkYXRhQ29udGVudCkpO1xuXG4gIC8vIEdyYWIgbGlzdCBvZiByZXNvdXJjZXMgdG8gYmUgZG93bmxvYWRlZFxuICBjb25zdCBmaWxlc0NvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwidmZzLWZpbGVcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBmaWxlcyA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKGZpbGVzQ29udGVudCkpO1xuXG4gIGxldCBweW9kaWRlUHJvbWlzZSA9IChhc3luYyAoKSA9PiB7XG4gICAgc3RhdHVzVGV4dC50ZXh0Q29udGVudCA9IGBEb3dubG9hZGluZyBQeW9kaWRlYDtcbiAgICBjb25zdCBweW9kaWRlID0gYXdhaXQgc3RhcnRQeW9kaWRlV29ya2VyKGRhdGEub3B0aW9ucyk7XG5cbiAgICBzdGF0dXNUZXh0LnRleHRDb250ZW50ID0gYERvd25sb2FkaW5nIHBhY2thZ2U6IG1pY3JvcGlwYDtcbiAgICBhd2FpdCBweW9kaWRlLmxvYWRQYWNrYWdlKFwibWljcm9waXBcIik7XG4gICAgY29uc3QgbWljcm9waXAgPSBhd2FpdCBweW9kaWRlLnB5aW1wb3J0KFwibWljcm9waXBcIik7XG4gICAgYXdhaXQgZGF0YS5wYWNrYWdlcy5wa2dzLm1hcCgocGtnKSA9PiAoKSA9PiB7XG4gICAgICBzdGF0dXNUZXh0LnRleHRDb250ZW50ID0gYERvd25sb2FkaW5nIHBhY2thZ2U6ICR7cGtnfWA7XG4gICAgICByZXR1cm4gbWljcm9waXAuaW5zdGFsbChwa2cpO1xuICAgIH0pLnJlZHVjZSgoY3VyLCBuZXh0KSA9PiBjdXIudGhlbihuZXh0KSwgUHJvbWlzZS5yZXNvbHZlKCkpO1xuICAgIGF3YWl0IG1pY3JvcGlwLmRlc3Ryb3koKTtcblxuICAgIC8vIERvd25sb2FkIGFuZCBpbnN0YWxsIHJlc291cmNlc1xuICAgIGF3YWl0IGZpbGVzLm1hcCgoZmlsZSkgPT4gYXN5bmMgKCkgPT4ge1xuICAgICAgY29uc3QgbmFtZSA9IGZpbGUuc3Vic3RyaW5nKGZpbGUubGFzdEluZGV4T2YoJy8nKSArIDEpO1xuICAgICAgc3RhdHVzVGV4dC50ZXh0Q29udGVudCA9IGBEb3dubG9hZGluZyByZXNvdXJjZTogJHtuYW1lfWA7XG4gICAgICBjb25zdCByZXNwb25zZSA9IGF3YWl0IGZldGNoKGZpbGUpO1xuICAgICAgaWYgKCFyZXNwb25zZS5vaykge1xuICAgICAgICB0aHJvdyBuZXcgRXJyb3IoYENhbid0IGRvd25sb2FkIFxcYCR7ZmlsZX1cXGAuIEVycm9yICR7cmVzcG9uc2Uuc3RhdHVzfTogXCIke3Jlc3BvbnNlLnN0YXR1c1RleHR9XCIuYCk7XG4gICAgICB9XG4gICAgICBjb25zdCBkYXRhID0gYXdhaXQgcmVzcG9uc2UuYXJyYXlCdWZmZXIoKTtcblxuICAgICAgLy8gU3RvcmUgVVJMcyBpbiB0aGUgY3dkIHdpdGhvdXQgYW55IHN1YmRpcmVjdG9yeSBzdHJ1Y3R1cmVcbiAgICAgIGlmIChmaWxlLmluY2x1ZGVzKFwiOi8vXCIpKSB7XG4gICAgICAgIGZpbGUgPSBuYW1lO1xuICAgICAgfVxuXG4gICAgICAvLyBDb2xsYXBzZSBoaWdoZXIgZGlyZWN0b3J5IHN0cnVjdHVyZVxuICAgICAgZmlsZSA9IGNvbGxhcHNlUGF0aChmaWxlKTtcblxuICAgICAgLy8gQ3JlYXRlIGRpcmVjdG9yeSB0cmVlLCBpZ25vcmluZyBcImRpcmVjdG9yeSBleGlzdHNcIiBWRlMgZXJyb3JzXG4gICAgICBjb25zdCBwYXJ0cyA9IGZpbGUuc3BsaXQoJy8nKS5zbGljZSgwLCAtMSk7XG4gICAgICBsZXQgcGF0aCA9ICcnO1xuICAgICAgd2hpbGUgKHBhcnRzLmxlbmd0aCA+IDApIHtcbiAgICAgICAgcGF0aCArPSBwYXJ0cy5zaGlmdCgpICsgJy8nO1xuICAgICAgICB0cnkge1xuICAgICAgICAgIGF3YWl0IHB5b2RpZGUuRlMubWtkaXIocGF0aCk7XG4gICAgICAgIH0gY2F0Y2ggKGUpIHtcbiAgICAgICAgICBpZiAoZS5uYW1lICE9PSBcIkVycm5vRXJyb3JcIikgdGhyb3cgZTtcbiAgICAgICAgICBpZiAoZS5lcnJubyAhPT0gMjApIHtcbiAgICAgICAgICAgIGNvbnN0IGVycm9yVGV4dFB0ciA9IGF3YWl0IHB5b2RpZGUuX21vZHVsZS5fc3RyZXJyb3IoZS5lcnJubyk7XG4gICAgICAgICAgICBjb25zdCBlcnJvclRleHQgPSBhd2FpdCBweW9kaWRlLl9tb2R1bGUuVVRGOFRvU3RyaW5nKGVycm9yVGV4dFB0cik7XG4gICAgICAgICAgICB0aHJvdyBuZXcgRXJyb3IoYEZpbGVzeXN0ZW0gRXJyb3IgJHtlLmVycm5vfSBcIiR7ZXJyb3JUZXh0fVwiLmApO1xuICAgICAgICAgIH1cbiAgICAgICAgfVxuICAgICAgfVxuXG4gICAgICAvLyBXcml0ZSB0aGlzIGZpbGUgdG8gdGhlIFZGU1xuICAgICAgdHJ5IHtcbiAgICAgICAgcmV0dXJuIGF3YWl0IHB5b2RpZGUuRlMud3JpdGVGaWxlKGZpbGUsIG5ldyBVaW50OEFycmF5KGRhdGEpKTtcbiAgICAgIH0gY2F0Y2ggKGUpIHtcbiAgICAgICAgaWYgKGUubmFtZSAhPT0gXCJFcnJub0Vycm9yXCIpIHRocm93IGU7XG4gICAgICAgIGNvbnN0IGVycm9yVGV4dFB0ciA9IGF3YWl0IHB5b2RpZGUuX21vZHVsZS5fc3RyZXJyb3IoZS5lcnJubyk7XG4gICAgICAgIGNvbnN0IGVycm9yVGV4dCA9IGF3YWl0IHB5b2RpZGUuX21vZHVsZS5VVEY4VG9TdHJpbmcoZXJyb3JUZXh0UHRyKTtcbiAgICAgICAgdGhyb3cgbmV3IEVycm9yKGBGaWxlc3lzdGVtIEVycm9yICR7ZS5lcnJub30gXCIke2Vycm9yVGV4dH1cIi5gKTtcbiAgICAgIH1cbiAgICB9KS5yZWR1Y2UoKGN1ciwgbmV4dCkgPT4gY3VyLnRoZW4obmV4dCksIFByb21pc2UucmVzb2x2ZSgpKTtcblxuICAgIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSBgUHlvZGlkZSBlbnZpcm9ubWVudCBzZXR1cGA7XG4gICAgYXdhaXQgc2V0dXBQeXRob24ocHlvZGlkZSk7XG5cbiAgICBzdGF0dXNUZXh0LnJlbW92ZSgpO1xuICAgIGlmIChzdGF0dXNDb250YWluZXIuY2hpbGRyZW4ubGVuZ3RoID09IDApIHtcbiAgICAgIHN0YXR1c0NvbnRhaW5lci5wYXJlbnROb2RlLnJlbW92ZSgpO1xuICAgIH1cbiAgICByZXR1cm4gcHlvZGlkZTtcbiAgfSkoKS5jYXRjaCgoZXJyKSA9PiB7XG4gICAgc3RhdHVzVGV4dC5zdHlsZS5jb2xvciA9IFwidmFyKC0tZXhlcmNpc2UtZWRpdG9yLWhsLWVyLCAjQUQwMDAwKVwiO1xuICAgIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSBlcnIubWVzc2FnZTtcbiAgICAvL2luZGljYXRvckNvbnRhaW5lci5xdWVyeVNlbGVjdG9yKFwiLnNwaW5uZXItZ3Jvd1wiKS5jbGFzc0xpc3QuYWRkKFwiZC1ub25lXCIpO1xuICAgIHRocm93IGVycjtcbiAgfSk7XG5cbiAgLy8gS2VlcCB0cmFjayBvZiBpbml0aWFsIE9KUyBibG9jayByZW5kZXJcbiAgY29uc3QgcmVuZGVyZWRPanMgPSB7fTtcblxuICAvLyBPSlMgY2FuIHN0YXJ0IGluZGVwZW5kZW50IGNlbGxzIGluIGFueSBvcmRlci4gT24gdGhlIGZpcnN0IHJ1biwgd2FpdCBmb3JcbiAgLy8gdGhlIHByZWNlZGluZyBjZWxsIHNvIGxhdGVyIHNsaWRlcyBjYW4gdXNlIHRoZSBuYW1lcyBpdCBkZWZpbmVkLiBFZGl0c1xuICAvLyBhZnRlciB0aGF0IGZpcnN0IHJ1biByZW1haW4gaW5kZXBlbmRlbnQuXG4gIGNvbnN0IGluaXRpYWxEb25lID0gW1Byb21pc2UucmVzb2x2ZSgpXTtcbiAgY29uc3QgZmluaXNoSW5pdGlhbCA9IFtudWxsXTtcbiAgY29uc3QgaW5pdGlhbENlbGxDb3VudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3JBbGwoJ3NjcmlwdFt0eXBlXj1cInB5b2RpZGUtXCJdW3R5cGUkPVwiLWNvbnRlbnRzXCJdJykubGVuZ3RoO1xuICBmb3IgKGxldCBpZCA9IDE7IGlkIDw9IGluaXRpYWxDZWxsQ291bnQ7IGlkKyspIHtcbiAgICBpbml0aWFsRG9uZVtpZF0gPSBuZXcgUHJvbWlzZSgocmVzb2x2ZSkgPT4geyBmaW5pc2hJbml0aWFsW2lkXSA9IHJlc29sdmU7IH0pO1xuICB9XG4gIGNvbnN0IHN0YXJ0ZWQgPSBuZXcgU2V0KCk7XG4gIGNvbnN0IGVudmlyb25tZW50cyA9IG5ldyBTZXQoKTtcblxuICBjb25zdCBwcm9jZXNzID0gYXN5bmMgKGNvbnRleHQsIGlucHV0cywgYmxvY2tJZCkgPT4ge1xuICAgIGNvbnN0IGZpcnN0UnVuID0gIXN0YXJ0ZWQuaGFzKGJsb2NrSWQpO1xuICAgIGlmIChmaXJzdFJ1bikge1xuICAgICAgc3RhcnRlZC5hZGQoYmxvY2tJZCk7XG4gICAgICBhd2FpdCBpbml0aWFsRG9uZVtibG9ja0lkIC0gMV07XG4gICAgfSBlbHNlIHtcbiAgICAgIGF3YWl0IGluaXRpYWxEb25lW2Jsb2NrSWRdO1xuICAgIH1cbiAgICB0cnkge1xuICAgICAgY29uc3QgcHlvZGlkZSA9IGF3YWl0IHB5b2RpZGVQcm9taXNlO1xuICAgICAgbGV0IHNjb3BlZENvbnRleHQgPSBjb250ZXh0O1xuICAgICAgaWYgKGJsb2NrSWQgJiYgIWNvbnRleHQub3B0aW9ucy5leGVyY2lzZSkge1xuICAgICAgICAvLyBHaXZlIGVhY2ggY2VsbCB0aGUgbmFtZXMgZGVmaW5lZCBiZWZvcmUgaXQsIHRoZW4ga2VlcCB0aGF0IHNuYXBzaG90LlxuICAgICAgICAvLyBMYXRlciBzbGlkZXMgbWF5IHJldXNlIG5hbWVzIHN1Y2ggYXMgYHRlc3RgIGZvciBhbm90aGVyIGRhdGFzZXQ7XG4gICAgICAgIC8vIHJldmlzaXRpbmcgYW4gZWFybGllciBjZWxsIG11c3Qgc3RpbGwgc2VlIGl0cyBvcmlnaW5hbCBkYXRhc2V0LlxuICAgICAgICBjb25zdCBuYW1lID0gYGxlY3R1cmUtY2VsbC0ke2Jsb2NrSWR9YDtcbiAgICAgICAgaWYgKCFlbnZpcm9ubWVudHMuaGFzKGJsb2NrSWQpKSB7XG4gICAgICAgICAgY29uc3QgcGFyZW50ID0gYmxvY2tJZCA9PT0gMSA/IFwiZ2xvYmFsXCIgOiBgbGVjdHVyZS1jZWxsLSR7YmxvY2tJZCAtIDF9YDtcbiAgICAgICAgICBhd2FpdCBQeW9kaWRlRW52aXJvbm1lbnQuaW5zdGFuY2UocHlvZGlkZSkuY3JlYXRlKG5hbWUsIHBhcmVudCwgZmFsc2UpO1xuICAgICAgICAgIGVudmlyb25tZW50cy5hZGQoYmxvY2tJZCk7XG4gICAgICAgIH1cbiAgICAgICAgc2NvcGVkQ29udGV4dCA9IHtcbiAgICAgICAgICAuLi5jb250ZXh0LFxuICAgICAgICAgIG9wdGlvbnM6IHsgLi4uY29udGV4dC5vcHRpb25zLCBlbnZpcjogbmFtZSB9LFxuICAgICAgICB9O1xuICAgICAgfVxuICAgICAgY29uc3QgZXZhbHVhdG9yID0gbmV3IFB5b2RpZGVFdmFsdWF0b3IocHlvZGlkZSwgc2NvcGVkQ29udGV4dCk7XG4gICAgICBhd2FpdCBldmFsdWF0b3IucHJvY2VzcyhpbnB1dHMpO1xuICAgICAgcmV0dXJuIGV2YWx1YXRvci5jb250YWluZXI7XG4gICAgfSBmaW5hbGx5IHtcbiAgICAgIC8vIEEgY2VsbCB0aGF0IGVycm9ycyBtdXN0IG5vdCBwcmV2ZW50IGxhdGVyIGNlbGxzIGZyb20gcnVubmluZy5cbiAgICAgIGlmIChmaXJzdFJ1bikgZmluaXNoSW5pdGlhbFtibG9ja0lkXSgpO1xuICAgIH1cbiAgfVxuXG4gIHJldHVybiB7XG4gICAgcHlvZGlkZVByb21pc2UsXG4gICAgcmVuZGVyZWRPanMsXG4gICAgcHJvY2VzcyxcbiAgfTtcbn1cbiJ9XX0=
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
+
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+WyJkYXRhL2Fhcmh1c19ob3VzZXMuY3N2IiwiZGF0YS9wb3dlci5jc3YiXQ==
+</script>
+</section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="session_13_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="session_13_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="session_13_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="session_13_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="session_13_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="session_13_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="session_13_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="session_13_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="session_13_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': false,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: false,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'fast',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1280,
+
+        height: 720,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 6.0e-2,
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script type="ojs-module-contents">
+    eyJjb250ZW50cyI6W119
+    </script>
+    <script type="module">
+    if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+    window._ojs.paths.runtimeToDoc = "../../..";
+    window._ojs.paths.runtimeToRoot = "../../../..";
+    window._ojs.paths.docToRoot = "..";
+    window._ojs.selfContained = false;
+    window._ojs.runtime.interpretFromScriptTags();
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

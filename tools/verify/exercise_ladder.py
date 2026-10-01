@@ -24,9 +24,9 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SESSIONS = ["01", "02", "03", "04", "05", "06", "08", "09", "11"]
+SESSIONS = ["01", "02", "03", "04", "05", "06", "08", "09", "11", "12"]
 
-HEAD = re.compile(r"^### ([A-Z])(\d+) · (.+?)\s+([★☆]{5})(?:\s+· revisits (S\d))?\s*$")
+HEAD = re.compile(r"^### ([A-Z])(\d+) · (.+?)\s+([★☆]{5})(?:\s+· revisits (S\d{1,2}))?\s*$")
 
 failures = []
 print(f"{'session':>8}  {'n':>3}  {'1*':>4}{'2*':>4}{'3*':>4}{'4*':>4}{'5*':>4}   revisits")

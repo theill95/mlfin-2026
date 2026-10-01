@@ -1,0 +1,878 @@
+---
+title: "The two cases with trees"
+subtitle: "Machine Learning in Finance · Session 13"
+# Not self-contained: quarto-live's Pyodide runtime cannot resolve its worker
+# from a data: URI, so embed-resources is off. Ship session_13.html together
+# with session_13_files/ and data/, and SERVE OVER HTTP (double-click
+# serve.cmd, or publish to a URL). Opened from a file:// path the live code
+# cells do not merely fail to run, they do not appear at all.
+#
+# This deck loads numpy, pandas, scikit-learn and xgboost into the browser
+# runtime. Open the deck and run one cell several minutes before class so it
+# is warm.
+#
+# The last session of the course. Part 1 revisits Session 7's houses
+# (data/aarhus_houses.csv) and Part 2 Session 10's hours (data/power.csv) with
+# the trees of Sessions 11 and 12; Part 3 is about choosing a model; Part 4
+# looks back over the course and leaves time for questions about the exam.
+# There are no exercises and no case. Everything the figures and the
+# interactive pieces show is computed by tools/deck13_data.py (the same models
+# as the live cells), cached in data/deck13.json with data/map13.png (rebuild:
+# python tools/deck13_data.py session_13/data, with the Python the live cells
+# are verified with), and drawn by tools/deck13_widgets.py. Slides marked PLAY have
+# controls. Two pieces read what students entered in Sessions 7 and 10, kept in
+# the browser (localStorage keys mlfin7-guess, mlfin10-updown and
+# mlfin10-updown-revised). Re-measure with tools/verify/session_13_deck.py.
+format:
+  live-revealjs:
+    theme: [default, ../theme/mlfin.scss]
+    width: 1280
+    height: 720
+    margin: 0.06
+    center: false
+    transition: fade
+    transition-speed: fast
+    background-transition: none
+    slide-number: c/t
+    controls: false
+    progress: true
+    hash: true
+    history: false
+    code-line-numbers: false
+    highlight-style: github
+    auto-stretch: false
+html-math-method: katex
+engine: jupyter
+pyodide:
+  packages:
+    - numpy
+    - pandas
+    - scikit-learn
+    - xgboost
+  resources:
+    - data/aarhus_houses.csv
+    - data/power.csv
+  cell-options:
+    autorun: true
+    startover: true
+execute:
+  echo: true
+  warning: false
+---
+
+# The two cases
+
+```{python}
+#| include: false
+# House style for every precomputed figure, plus everything the figures and
+# the interactive pieces draw. deck13_data fits the same models as the cells.
+import sys
+import json
+import warnings
+warnings.filterwarnings("ignore")
+from pathlib import Path
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from PIL import Image
+
+MLFIN_STYLE = {
+    "figure.facecolor": "#fcfcfb", "axes.facecolor": "#fcfcfb",
+    "savefig.facecolor": "#fcfcfb",
+    "font.family": ["Segoe UI", "Arial", "sans-serif"],
+    "font.size": 12, "text.color": "#141413", "axes.edgecolor": "#c3c2b7",
+    "axes.labelcolor": "#52514e", "axes.titlecolor": "#141413",
+    "axes.titlesize": 13, "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": "#e6e5df", "grid.linewidth": 0.8,
+    "axes.axisbelow": True,
+    "xtick.color": "#898781", "ytick.color": "#898781",
+    "xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+    "legend.frameon": False, "legend.fontsize": 10.5,
+}
+plt.rcParams.update(MLFIN_STYLE)
+
+for _f in ["data/aarhus_houses.csv", "data/aarhus_inner.png", "data/aarhus_inner.json", "data/deck13.json", "data/map13.png"]:
+    if not Path(_f).exists():
+        raise FileNotFoundError(f"Missing {_f}: run python tools/deck13_data.py session_13/data from the repository root.")
+sys.path.insert(0, str(Path("../tools").resolve()))
+import deck13_widgets as W
+
+DATA = json.loads(Path("data/deck13.json").read_text(encoding="utf-8"))
+H, P = DATA["houses"], DATA["hours"]
+
+BLUE = "#1c5cab"
+BLUE_LIGHT = "#86b6ef"
+DEEP = "#0d366b"
+AMBER = "#b8860b"
+AMBER_LIGHT = "#d99a1c"
+BRICK = "#b3402f"
+GREY = "#c3c2b7"
+INK = "#141413"
+MUTED = "#52514e"
+
+
+def mdeg(lat):
+    """Mercator latitude in degrees, so a map drawn with equal axes keeps its proportions."""
+    return np.degrees(np.log(np.tan(np.radians(lat) / 2 + np.pi / 4)))
+
+
+def draw_map(ax, south, west, north, east):
+    """Session 7's basemap of the inner postcodes, cropped to the bounds."""
+    src = json.loads(Path("data/aarhus_inner.json").read_text())
+    img = Image.open("data/aarhus_inner.png")
+    w, h = img.size
+    top, bot = mdeg(src["north"]), mdeg(src["south"])
+    box = (round((west - src["west"]) / (src["east"] - src["west"]) * w), round((top - mdeg(north)) / (top - bot) * h),
+           round((east - src["west"]) / (src["east"] - src["west"]) * w), round((top - mdeg(south)) / (top - bot) * h))
+    ax.imshow(np.asarray(img.crop(box).convert("RGB")), extent=[west, east, mdeg(south), mdeg(north)], interpolation="bilinear")
+    ax.set_xlim(west, east)
+    ax.set_ylim(mdeg(south), mdeg(north))
+    ax.set_aspect("equal")
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.grid(False)
+    for side in ("left", "bottom"):
+        ax.spines[side].set_visible(False)
+```
+
+<div class="compare">
+<div class="compare-col">
+<h3>A house in Aarhus V</h3>
+<p>Session 7 valued every 2024 sale with linear regression in logs on 28 columns. It missed by 1.26 million kroner, with 15 percent of the loans underwater.</p>
+</div>
+<div class="compare-col cmp-alt">
+<h3>An hour in West Denmark</h3>
+<p>Session 10 asked whether tomorrow's price at an hour beats today's. Logistic regression ranked the hours of 2024 with an AUC of 0.833, and k-NN with 0.844.</p>
+</div>
+</div>
+
+Both sessions came before trees, forests and boosting. Today the same tables,
+splits and scores go to those models.
+
+
+# Trees on the course tables
+
+| table | the linear model | a forest | boosted trees |
+|:--------------|----------:|----------:|----------:|
+| volatility, test RMSE | 0.218, ridge | 0.226 | 0.217 and 0.225 |
+| credit, test AUC | 0.748, logistic regression | 0.777 | 0.777 |
+
+On the volatility table the trees drew level with ridge. On the credit table
+they gained 0.029 of AUC. The two cases are two more tests.
+
+
+# Today
+
+- the house in **Aarhus V**: a tree, a forest and boosted trees on the 2024 sales
+- the hours of **West Denmark**: the same models on tomorrow's price
+- **choosing** a model: accuracy, compute and explanations
+- the **course** and the **exam**, then your questions
+
+There are no exercises and no case for this session.
+
+
+# 1 · The house in Aarhus V {.divider}
+
+::: {.divider-kicker}
+Part 1
+:::
+
+::: {.divider-note}
+Session 7's valuation of every 2024 sale, against a tree, a forest and boosted
+trees.
+:::
+
+
+# The house
+
+<div class="statband">
+<div class="stat"><span class="stat-big">150 m²</span><div class="stat-label">living area</div></div>
+<div class="stat"><span class="stat-big">1973</span><div class="stat-label">year built</div></div>
+<div class="stat"><span class="stat-big">5</span><div class="stat-label">rooms</div></div>
+<div class="stat"><span class="stat-big">villa</span><div class="stat-label">type</div></div>
+<div class="stat"><span class="stat-big">Aarhus&nbsp;V</span><div class="stat-label">postal town</div></div>
+<div class="stat"><span class="stat-big">3.6 km</span><div class="stat-label">from the cathedral</div></div>
+</div>
+
+It sold for 3,800,000 kroner in January 2024. Session 7's model valued it at
+4,341,389, 14 percent above the price.
+
+
+# The libraries of the course
+
+```{pyodide}
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import Ridge, LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import KFold, GridSearchCV
+from sklearn.metrics import roc_auc_score
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from xgboost import XGBRegressor, XGBClassifier
+```
+
+NumPy and pandas came in Session 3, the linear models between Sessions 5 and
+9, the trees in Session 11 and XGBoost in Session 12.
+
+
+# The table and the split
+
+```{pyodide}
+houses = pd.read_csv('data/aarhus_houses.csv')
+wide = pd.get_dummies(houses, columns=['town', 'type'], dtype=int)
+columns = [c for c in wide.columns if c not in ['price', 'sold', 'quarter', 'date', 'zip', 'lat', 'lon']]
+train = wide[wide['sold'] <= 2023]
+test = wide[wide['sold'] == 2024]
+print(len(train), len(test), len(columns))
+```
+
+These are the same sales as in Session 7: 6,212 from 2021 to 2023 to learn
+from, and the 1,409 of 2024 to check on.
+
+
+# Two scores
+
+```{pyodide}
+def rmse(actual, predicted):
+    return np.sqrt(((actual - predicted) ** 2).mean())
+
+def underwater(actual, predicted):
+    return (0.8 * predicted > actual).mean()
+```
+
+The first is the error in kroner. The second is the share of 2024 sales where a
+loan of 80 percent of the valuation is more than the price.
+
+
+# Session 7's valuation
+
+```{pyodide}
+folds = KFold(n_splits=5, shuffle=True, random_state=0)
+pipe = Pipeline([('scale', StandardScaler()), ('ridge', Ridge())])
+grid = {'ridge__alpha': [0.01, 0.1, 1, 10, 100, 1000]}
+valuation = GridSearchCV(pipe, grid, cv=folds, scoring='neg_root_mean_squared_error')
+valuation.fit(train[columns], np.log(train['price']))
+valued = np.exp(valuation.predict(test[columns]))
+print(round(rmse(test['price'], valued)), round(underwater(test['price'], valued), 3))
+```
+
+Ridge in logs, with alpha chosen on the folds: 1,257,437 kroner, and 15.1
+percent of the loans underwater. Every new model is held to these two numbers.
+
+
+# A tree
+
+```{pyodide}
+tree = DecisionTreeRegressor(min_samples_leaf=20, random_state=0)
+tree.fit(train[columns], np.log(train['price']))
+valued = np.exp(tree.predict(test[columns]))
+print(round(rmse(test['price'], valued)), round(underwater(test['price'], valued), 3))
+print(tree.get_depth(), tree.get_n_leaves())
+```
+
+Leaves of at least 20 sales were chosen on the folds. The tree is 13,000 kroner
+worse than ridge and puts 13.8 percent of the loans underwater.
+
+
+# A forest
+
+```{pyodide}
+forest = RandomForestRegressor(n_estimators=100, max_features='sqrt', random_state=0)
+forest.fit(train[columns], np.log(train['price']))
+valued = np.exp(forest.predict(test[columns]))
+print(round(rmse(test['price'], valued)), round(underwater(test['price'], valued), 3))
+```
+
+A hundred trees, each grown on a bootstrap sample and averaged, cut the error by
+144,000 kroner to 1,113,028. The underwater share falls to 12.1 percent.
+
+
+# Boosted trees, stopped on 2023
+
+```{pyodide}
+fit_rows, stop_rows = train[train['sold'] <= 2022], train[train['sold'] == 2023]
+stopper = XGBRegressor(n_estimators=3000, learning_rate=0.05, max_depth=3,
+                       early_stopping_rounds=100, random_state=0)
+stopper.fit(fit_rows[columns], np.log(fit_rows['price']),
+            eval_set=[(stop_rows[columns], np.log(stop_rows['price']))], verbose=False)
+boosted = XGBRegressor(n_estimators=stopper.best_iteration + 1, learning_rate=0.05, max_depth=3, random_state=0)
+boosted.fit(train[columns], np.log(train['price']))
+valued = np.exp(boosted.predict(test[columns]))
+print(stopper.best_iteration + 1, round(rmse(test['price'], valued)), round(underwater(test['price'], valued), 3))
+```
+
+Depth 3 and 974 trees did best on the 2023 sales. Refitted on all three years,
+the model misses by 1,166,375 kroner, with 11.6 percent underwater.
+
+
+# Prices inside one town
+
+```{python}
+#| echo: false
+#| fig-align: center
+_all = pd.read_csv("data/aarhus_houses.csv")
+_all["per_m2"] = _all["price"] / _all["area"]
+_v = _all[_all["town"] == "Aarhus V"]
+_others = _all[_all["town"] != "Aarhus V"]
+_house = _all.loc[H["house"]["index"]]
+_s, _n = 56.154, 56.188
+_c = 10.153
+_span = (10.4 / 4.3) * (mdeg(_n) - mdeg(_s))
+_w, _e = _c - _span / 2, _c + _span / 2
+fig, ax = plt.subplots(figsize=(10.4, 4.3))
+draw_map(ax, _s, _w, _n, _e)
+_box = _others[_others["lat"].between(_s, _n) & _others["lon"].between(_w, _e)]
+ax.scatter(_box["lon"], mdeg(_box["lat"]), s=8, color="#898781", alpha=0.35, linewidths=0)
+_sc = ax.scatter(_v["lon"], mdeg(_v["lat"]), s=40, c=_v["per_m2"] / 1000, cmap="Blues", vmin=15, vmax=55,
+                 edgecolor="#fcfcfb", linewidths=0.6, zorder=4)
+ax.scatter([_house["lon"]], [mdeg(_house["lat"])], s=190, color=AMBER_LIGHT, edgecolor="#fcfcfb", linewidths=2, zorder=6)
+ax.annotate("the house", xy=(_house["lon"], mdeg(_house["lat"])), xytext=(_house["lon"] - 0.006, mdeg(_house["lat"]) + 0.0115),
+            fontsize=12, color="#8a6508", fontweight="bold", arrowprops=dict(arrowstyle="-", color="#8a6508", linewidth=1.2))
+_cb = fig.colorbar(_sc, ax=ax, shrink=0.62, pad=0.015)
+_cb.set_label("thousand kroner per m²", color=MUTED, fontsize=10.5)
+_cb.outline.set_visible(False)
+ax.set_title("Sales in Aarhus V, 2021 to 2024, by price per square metre; other towns in grey", loc="left")
+ax.text(_e - 0.002, mdeg(_s) + 0.002, "map: © Esri, HERE, Garmin, OpenStreetMap contributors", fontsize=8, color="#898781", ha="right")
+fig.tight_layout()
+plt.show()
+_q = _v["per_m2"].quantile([0.1, 0.9]).round(-2)
+assert (int(_q.iloc[0]), int(_q.iloc[1])) == (21500, 44900) and len(_v) == 402
+```
+
+Every house in Aarhus V gets the same town premium, yet one sale in ten there
+went below 21,500 kroner per square metre and one in ten above 44,900.
+
+
+# Coordinates as columns
+
+```{pyodide}
+place = ['area', 'rooms', 'built', 'centre_km', 'lat', 'lon', 'type_villa']
+stopper = XGBRegressor(n_estimators=3000, learning_rate=0.05, max_depth=4,
+                       early_stopping_rounds=100, random_state=0)
+stopper.fit(fit_rows[place], np.log(fit_rows['price']),
+            eval_set=[(stop_rows[place], np.log(stop_rows['price']))], verbose=False)
+boosted_place = XGBRegressor(n_estimators=stopper.best_iteration + 1, learning_rate=0.05, max_depth=4, random_state=0)
+boosted_place.fit(train[place], np.log(train['price']))
+valued = np.exp(boosted_place.predict(test[place]))
+print(stopper.best_iteration + 1, round(rmse(test['price'], valued)), round(underwater(test['price'], valued), 3))
+```
+
+Latitude and longitude replace the 22 town columns, and depth 4 did best on
+2023. The error falls to 1,030,321 kroner and the underwater share to 9.9
+percent.
+
+
+# The house anywhere in the inner city [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.place_map(H["map"], H["house"]["values"])))
+```
+
+Each square is the house, moved there. Linear regression on the same columns
+can only tilt the map and follow the distance, and misses by 1.31 million.
+
+
+# The error, model by model
+
+```{python}
+#| echo: false
+#| fig-align: center
+_rows = [("every house at the average", "average"), ("linear regression in logs, Session 7", "ridge"),
+         ("a tree", "tree"), ("a forest", "forest"), ("boosted trees", "boosted"),
+         ("boosted trees on coordinates", "boosted_place")]
+_errs = [H["scores"][k]["rmse"] / 1e6 for _, k in _rows]
+_uw = [H["scores"][k]["underwater"] for _, k in _rows]
+fig, ax = plt.subplots(figsize=(10.6, 3.9))
+_cols = [AMBER_LIGHT if k == "boosted_place" else (DEEP if k == "ridge" else BLUE_LIGHT) for _, k in _rows]
+ax.barh(range(len(_rows)), _errs, color=_cols, height=0.66)
+ax.set_yticks(range(len(_rows)))
+ax.set_yticklabels([n for n, _ in _rows], fontsize=10.5)
+ax.invert_yaxis()
+ax.set_xlabel("RMSE on the 1,409 sales of 2024, million kroner")
+ax.set_xlim(0, 2.6)
+ax.grid(axis="y", visible=False)
+for i, (e, u) in enumerate(zip(_errs, _uw)):
+    ax.text(e + 0.03, i, "%.2f million   underwater on %.0f%%" % (e, u * 100), va="center", fontsize=10, color=MUTED)
+fig.tight_layout()
+plt.show()
+```
+
+The forest and both boosted models beat ridge. Boosting on coordinates cuts the
+underwater share from 15 percent to 10.
+
+
+# The house, valued by every model
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.valued(H["house"])))
+```
+
+Boosted trees on coordinates came closest on this house, 58,781 kroner below the
+price. One house says little; the scores on the 1,409 sales say more.
+
+
+# 2 · Tomorrow's price at this hour {.divider}
+
+::: {.divider-kicker}
+Part 2
+:::
+
+::: {.divider-note}
+Session 10's question on the same 2024 hours, with the same scores, and with a
+forest and boosted trees.
+:::
+
+
+# The question, again
+
+<div class="statband">
+<div class="stat"><span class="stat-big">0.833</span><div class="stat-label">logistic regression, AUC on 2024</div></div>
+<div class="stat"><span class="stat-big">0.844</span><div class="stat-label">k-NN, AUC on 2024</div></div>
+<div class="stat"><span class="stat-big">957,809&nbsp;kr</span><div class="stat-label">logistic regression, trading 2024 at a threshold of 0.6</div></div>
+</div>
+
+An hour is up when its price is higher than at the same hour the day before.
+These were Session 10's best models of that label.
+
+
+# The hours, as in Session 10
+
+```{pyodide}
+power = pd.read_csv('data/power.csv', parse_dates=['time']).set_index('time')
+power['price_before'] = power.groupby('hour')['price'].shift(1)
+power['up'] = (power['price'] > power['price_before']).astype(int)
+power['wind_change'] = power['wind'] - power.groupby('hour')['wind'].shift(1)
+power['change_before'] = power['price_before'] - power.groupby('hour')['price'].shift(2)
+days = pd.get_dummies(power['weekday'], prefix='weekday', dtype=int)
+power = power.join(days).dropna()
+power_train, power_test = power.loc[:'2023'], power.loc['2024']
+print(len(power_train), len(power_test))
+```
+
+The columns are built as in Session 10, with the weekday as seven columns: 17,422
+hours to learn from and 8,663 to check on.
+
+
+# Boosted trees on the same columns
+
+```{pyodide}
+near = ['wind_change', 'change_before', 'weekday', 'hour']
+boosted_up = XGBClassifier(n_estimators=319, learning_rate=0.05, max_depth=3, random_state=0)
+boosted_up.fit(power_train[near], power_train['up'])
+p = boosted_up.predict_proba(power_test[near])[:, 1]
+print(roc_auc_score(power_test['up'], p))
+```
+
+Depth 3 and 319 trees did best on 2023. The trees match k-NN on 2024, 0.843
+against 0.844, and do no better than logistic regression on the folds.
+
+
+# Today's price and the wind
+
+```{python}
+#| echo: false
+#| fig-align: center
+_lv = P["levels_train"]
+_e = P["levels"]["edges"]
+fig, ax = plt.subplots(figsize=(10.4, 3.9))
+for _row, _name, _col in zip(_lv, ["low", "middle", "high"], [BLUE_LIGHT, BLUE, DEEP]):
+    ax.plot(range(5), _row, marker="o", markersize=8, linewidth=2.6, color=_col)
+    ax.text(-0.12, _row[0], "today's price " + _name, ha="right", va="center", fontsize=11, color=_col, fontweight="bold")
+ax.set_xticks(range(5))
+ax.set_xticklabels(P["levels"]["bands"])
+ax.set_xlim(-1.35, 4.25)
+ax.set_ylim(0, 1)
+ax.set_xlabel("wind change: tomorrow's wind forecast minus today's, MW")
+ax.set_ylabel("share of hours that rose")
+ax.set_title("2022 and 2023: today's price below %s kroner, %s to %s, above %s" % (f"{_e[0]:,}", f"{_e[0]:,}", f"{_e[1]:,}", f"{_e[1]:,}"), loc="left")
+ax.grid(axis="x", visible=False)
+fig.tight_layout()
+plt.show()
+assert [round(_lv[0][0], 2), round(_lv[2][0], 2)] == [0.94, 0.72]
+```
+
+After a forecast fall of over 1,000 MW, 94 percent of hours rose when today's
+price was low and 72 percent when it was high.
+
+
+# Three more columns
+
+```{pyodide}
+more = near + ['price_before', 'wind', 'solar']
+boosted_more = XGBClassifier(n_estimators=58, learning_rate=0.05, max_depth=4, random_state=0)
+boosted_more.fit(power_train[more], power_train['up'])
+p_more = boosted_more.predict_proba(power_test[more])[:, 1]
+print(roc_auc_score(power_test['up'], p_more))
+```
+
+The trees now also see today's price and the wind and sun forecasts themselves.
+With 58 trees of depth 4, chosen on 2023, the AUC rises to 0.856.
+
+
+# Your turn [1]{.chip .chip-turn} {.your-turn}
+
+Give logistic regression the same three columns. How much does it gain, and why
+does it gain less than the trees?
+
+```{pyodide}
+#| autorun: false
+features = ['wind_change'] + list(days.columns) + ['change_before']
+logit = Pipeline([('scale', StandardScaler()), ('logit', LogisticRegression())])
+logit.fit(power_train[features + [...]], power_train['up'])
+p_logit = logit.predict_proba(power_test[features + [...]])[:, 1]
+print(roc_auc_score(power_test['up'], p_logit))
+```
+
+::: {.muted .small}
+`features` is Session 10's list, which scored 0.833. Replace both `[...]` with the three new columns.
+:::
+
+
+# Your turn 1: answer
+
+```python
+logit.fit(power_train[features + ['price_before', 'wind', 'solar']], power_train['up'])
+p_logit = logit.predict_proba(power_test[features + ['price_before', 'wind', 'solar']])[:, 1]
+```
+
+The AUC is 0.836, up 0.003, where the trees gained 0.014. Logistic regression
+keeps one slope for the wind change at every price level; the trees need not.
+
+
+# The P&L in 2024
+
+```{python}
+#| echo: false
+#| fig-align: center
+_k = [("the wind rule", P["rule_pnl"]), ("logistic regression", P["scores"]["logistic"]["pnl"]),
+      ("k-NN", P["scores"]["knn"]["pnl"]), ("boosted trees, Session 10's columns", P["scores"]["boosted"]["pnl"]),
+      ("boosted trees, three more columns", P["scores"]["boosted_more"]["pnl"]),
+      ("a forest, three more columns", P["scores"]["forest_more"]["pnl"])]
+fig, ax = plt.subplots(figsize=(10.6, 3.8))
+_cols = [GREY, DEEP, BLUE_LIGHT, BLUE_LIGHT, AMBER_LIGHT, AMBER_LIGHT]
+ax.barh(range(len(_k)), [v / 1e6 for _, v in _k], color=_cols, height=0.66)
+ax.set_yticks(range(len(_k)))
+ax.set_yticklabels([n for n, _ in _k], fontsize=10.5)
+ax.invert_yaxis()
+ax.set_xlim(0, 1.35)
+ax.set_xlabel("P&L in 2024, million kroner, trading every hour at a threshold of 0.6 for 50 kroner a trade")
+ax.grid(axis="y", visible=False)
+for i, (_, v) in enumerate(_k):
+    ax.text(v / 1e6 + 0.015, i, f"{v:,} kr", va="center", fontsize=10, color=MUTED)
+fig.tight_layout()
+plt.show()
+assert P["scores"]["forest_more"]["pnl"] - P["scores"]["logistic"]["pnl"] == 77418
+```
+
+The wind rule trades at one half, the models at 0.6. The forest earns 77,418
+kroner more than logistic regression in 2024.
+
+
+# Your eight hours, again
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.scoreboard(P["game"])))
+```
+
+Of the four models, k-NN has the lowest Brier score here and the forest the
+lowest log loss. Eight hours cannot separate models 0.01 of AUC apart.
+
+
+# 3 · Choosing a model {.divider}
+
+::: {.divider-kicker}
+Part 3
+:::
+
+::: {.divider-note}
+When a more flexible model does better, what it costs to fit and to run, and
+what it can explain.
+:::
+
+
+# Four tables, four answers {.smaller}
+
+```{python}
+#| echo: false
+#| output: asis
+_hs, _ps = H["scores"], P["scores"]
+print("| table | rows to learn from | the linear model | the best trees | the change |")
+print("|:-----------|----------:|----------:|------------:|----------:|")
+print("| volatility, test RMSE | 1,894 days | ridge 0.218 | boosted trees 0.217 | none |")
+print("| credit, test AUC | 21,000 borrowers | logistic regression 0.748 | a forest 0.777 | +0.029 |")
+print(f"| houses, test RMSE | {H['n_train']:,} sales | ridge {_hs['ridge']['rmse'] / 1e6:.2f} million | boosted, coordinates {_hs['boosted_place']['rmse'] / 1e6:.2f} million | "
+      f"{100 * (_hs['boosted_place']['rmse'] / _hs['ridge']['rmse'] - 1):.0f} percent |")
+print(f"| hours, test AUC | {P['n_train']:,} hours | logistic regression {_ps['logistic']['auc']:.3f} | a forest {_ps['forest_more']['auc']:.3f} | "
+      f"+{_ps['forest_more']['auc'] - _ps['logistic']['auc']:.3f} |")
+```
+
+The trees gained most where location or a changing slope matters, and nothing
+where the target is mostly noise around a straight line.
+
+
+# Where the trees gained
+
+::: {.why-grid}
+::: {.why-point}
+**A map** <span>The town columns hold one premium per town. Boosted trees cut the coordinates into districts and took 18 percent off the error.</span>
+:::
+::: {.why-point}
+**A slope that changes** <span>A fall in the wind raises tomorrow's price less often when today's price is high. A linear model has one slope for it.</span>
+:::
+::: {.why-point}
+**Steps** <span>On the credit table the default rate jumps from 12 to 30 percent at the first month late. A tree's cut takes a step like that directly.</span>
+:::
+::: {.why-point}
+**Mostly noise** <span>Next month's volatility is close to this month's plus noise. On 1,894 days the trees only matched ridge.</span>
+:::
+:::
+
+
+# The time to fit and to predict
+
+```{python}
+#| echo: false
+#| fig-align: center
+_t = [("houses: linear regression", H["timing"]["ridge"]), ("houses: a tree", H["timing"]["tree"]),
+      ("houses: a forest", H["timing"]["forest"]), ("houses: boosted trees", H["timing"]["boosted"]),
+      ("houses: boosted, coordinates", H["timing"]["boosted_place"]),
+      ("hours: logistic regression", P["timing"]["logistic"]), ("hours: k-NN", P["timing"]["knn"]),
+      ("hours: a forest", P["timing"]["forest_more"]), ("hours: boosted trees", P["timing"]["boosted_more"])]
+fig, axes = plt.subplots(1, 2, figsize=(10.8, 3.9), sharey=True)
+for ax, _key, _title in [(axes[0], "fit", "seconds to fit the training rows, one core"),
+                         (axes[1], "predict", "seconds to score the test rows, one core")]:
+    _v = [d[_key] for _, d in _t]
+    ax.barh(range(len(_t)), _v, color=[BLUE_LIGHT if n.startswith("houses") else AMBER_LIGHT for n, _ in _t], height=0.62)
+    ax.set_xscale("log")
+    ax.set_xlim(0.0003, 8)
+    ax.set_xticks([0.001, 0.01, 0.1, 1])
+    ax.set_xticklabels(["0.001", "0.01", "0.1", "1"])
+    ax.minorticks_off()
+    for i, x in enumerate(_v):
+        ax.text(x * 1.25, i, f"{x:.3f}" if x < 0.1 else f"{x:.2f}", va="center", fontsize=9.5, color=MUTED)
+    ax.set_title(_title, loc="left", fontsize=12)
+    ax.grid(axis="y", visible=False)
+axes[0].set_yticks(range(len(_t)))
+axes[0].set_yticklabels([n for n, _ in _t], fontsize=10)
+axes[0].invert_yaxis()
+fig.tight_layout()
+plt.show()
+```
+
+k-NN fits at once but takes half a second to score 2024; the forest takes over
+a second to fit. A grid of settings multiplies every fit.
+
+
+# Two fits, timed [predict]{.chip .chip-predict}
+
+```{pyodide}
+#| autorun: false
+import time
+start = time.perf_counter()
+RandomForestClassifier(n_estimators=100, min_samples_leaf=20, random_state=0).fit(power_train[more], power_train['up'])
+print('a forest     :', round(time.perf_counter() - start, 2), 'seconds')
+start = time.perf_counter()
+XGBClassifier(n_estimators=58, learning_rate=0.05, max_depth=4, random_state=0).fit(power_train[more], power_train['up'])
+print('boosted trees:', round(time.perf_counter() - start, 2), 'seconds')
+```
+
+Before you run it: which of the two takes longer in your browser, and by how
+much? Both models score about 0.857 on 2024.
+
+
+# Thirty more square metres
+
+```{pyodide}
+six = test.sample(6, random_state=3)
+bigger = six.copy()
+bigger['area'] = bigger['area'] + 30
+print(np.exp(valuation.predict(bigger[columns]) - valuation.predict(six[columns])).round(3))
+print(np.exp(boosted_place.predict(bigger[place]) - boosted_place.predict(six[place])).round(3))
+```
+
+In logs, linear regression adds 14.7 percent to every house. Boosted trees add
+between 8 and 35 percent, depending on the house and where it stands.
+
+
+# A bigger house [play]{.chip .chip-predict}
+
+```{python}
+#| echo: false
+#| output: asis
+print(W.emit(W.bigger(H["curve"])))
+```
+
+Boosted trees value the house lower at some larger areas, and the forest stops
+rising beyond the largest sales it learned from.
+
+
+# Monotone constraints
+
+```{pyodide}
+stopper = XGBRegressor(n_estimators=3000, learning_rate=0.05, max_depth=4, early_stopping_rounds=100,
+                       monotone_constraints={'area': 1}, random_state=0)
+stopper.fit(fit_rows[place], np.log(fit_rows['price']),
+            eval_set=[(stop_rows[place], np.log(stop_rows['price']))], verbose=False)
+rising = XGBRegressor(n_estimators=stopper.best_iteration + 1, learning_rate=0.05, max_depth=4,
+                      monotone_constraints={'area': 1}, random_state=0)
+rising.fit(train[place], np.log(train['price']))
+valued = np.exp(rising.predict(test[place]))
+print(stopper.best_iteration + 1, round(rmse(test['price'], valued)), round(underwater(test['price'], valued), 3))
+```
+
+`monotone_constraints` lets the value only rise with the area. Every one of 200
+test houses had a fall before and none has one now, for 33,000 kroner of RMSE.
+
+
+# Explanations in credit
+
+The EU's AI Act counts models that score the creditworthiness of people as
+high-risk. A person refused on such a score may ask for the main elements of
+the decision.
+
+A coefficient states the same reason for every customer. A sum of a thousand
+trees has to be explained one decision at a time.
+
+::: {.muted .small}
+Regulation (EU) 2024/1689 (the AI Act), Annex III, point 5(b), and Article 86(1).
+:::
+
+
+# The trade-offs, model by model {.smaller}
+
+```{python}
+#| echo: false
+#| output: asis
+_ht, _pt = H["timing"], P["timing"]
+
+
+def _s(x):
+    return f"{x:.2f} s" if x >= 0.1 else f"{x:.3f} s"
+
+
+print("| model | houses: RMSE, and seconds to fit | hours: AUC, and seconds to fit | one prediction comes from | beyond the training rows |")
+print("|:-------------|----------:|----------:|:--------------|:-------------|")
+print(f"| linear or logistic regression | {_hs['ridge']['rmse'] / 1e6:.2f} million, {_s(_ht['ridge']['fit'])} | "
+      f"{_ps['logistic']['auc']:.3f}, {_s(_pt['logistic']['fit'])} | one coefficient per column | the slope continues |")
+print(f"| k-NN | | {_ps['knn']['auc']:.3f}, {_s(_pt['knn']['fit'])}; {_s(_pt['knn']['predict'])} to predict | "
+      f"the nearest training rows | the nearest training rows |")
+print(f"| a tree | {_hs['tree']['rmse'] / 1e6:.2f} million, {_s(_ht['tree']['fit'])} | | "
+      f"a path of up to {H['tree_depth']} questions | the value of a leaf |")
+print(f"| a forest | {_hs['forest']['rmse'] / 1e6:.2f} million, {_s(_ht['forest']['fit'])} | "
+      f"{_ps['forest_more']['auc']:.3f}, {_s(_pt['forest_more']['fit'])} | an average of 100 trees | flat |")
+print(f"| boosted trees | {_hs['boosted_place']['rmse'] / 1e6:.2f} million, {_s(_ht['boosted_place']['fit'])} | "
+      f"{_ps['boosted_more']['auc']:.3f}, {_s(_pt['boosted_more']['fit'])} | "
+      f"a sum of {P['boosted_more']['trees']} to {H['boosted_place']['trees']:,} trees | flat |")
+```
+
+None of them wins every column. Which one matters depends on who uses the model
+and how often it is refitted.
+
+
+# Choosing a model
+
+1. Score a baseline and a linear model first.
+2. Fit a forest and boosted trees on the same folds.
+3. Keep the flexible model only when it wins on the folds and on the test rows.
+4. Check what it does to one row: its direction, and far from the data.
+5. Price the compute: fitting, tuning and predicting.
+6. Ask who has to understand one prediction.
+
+
+# 4 · The course, and the exam {.divider}
+
+::: {.divider-kicker}
+Part 4
+:::
+
+::: {.divider-note}
+A look back over thirteen sessions, the exam, and time for your questions.
+:::
+
+
+# Thirteen sessions
+
+<div class="timeline">
+<div class="tl-row"><span class="tl-week">1 to 3</span><span class="tl-topic">Python: variables, loops, functions and dictionaries; NumPy, pandas and matplotlib</span><span class="tl-who">the risk report begins</span></div>
+<div class="tl-row"><span class="tl-week">4</span><span class="tl-topic">features, targets, splits and the scores of a prediction</span><span class="tl-who">no model yet</span></div>
+<div class="tl-row"><span class="tl-week">5 and 6</span><span class="tl-topic">linear regression, folds, ridge and lasso</span><span class="tl-who">the volatility forecast</span></div>
+<div class="tl-row"><span class="tl-week">7</span><span class="tl-topic">a house in Aarhus, with every tool so far</span><span class="tl-who">a case lecture</span></div>
+<div class="tl-row"><span class="tl-week">8 and 9</span><span class="tl-topic">logistic regression, thresholds, costs and k-NN</span><span class="tl-who">the jump warning</span></div>
+<div class="tl-row"><span class="tl-week">10</span><span class="tl-topic">tomorrow's power price in West Denmark</span><span class="tl-who">a case lecture</span></div>
+<div class="tl-row"><span class="tl-week">11 and 12</span><span class="tl-topic">trees, forests and boosted trees</span><span class="tl-who">the report as a whole</span></div>
+<div class="tl-row tl-now"><span class="tl-week">13</span><span class="tl-topic">the two cases with trees</span><span class="tl-who">today</span></div>
+</div>
+
+
+# The routine behind every model
+
+::: {.recap-grid}
+::: {.recap-item}
+**A baseline first**
+The training average, the majority class or persistence. Every score goes next
+to the baseline's.
+:::
+::: {.recap-item}
+**A split that respects time**
+When the rows are days or hours, the test rows come after the training rows.
+:::
+::: {.recap-item}
+**Settings on validation rows**
+Folds or a later block choose alpha, C, k, the depth and the number of trees.
+:::
+::: {.recap-item}
+**The test rows once**
+They score the model already chosen, and the folds are reported beside them.
+:::
+::: {.recap-item}
+**A model read**
+Its coefficients, its importance, or what it does to one row.
+:::
+::: {.recap-item}
+**A model priced**
+The time to fit and to predict, and who has to understand it.
+:::
+:::
+
+
+# The exam
+
+<div class="exam-facts" style="grid-template-columns: repeat(4, 1fr)">
+<div class="exam-fact"><span class="ef-big">180 minutes</span><div class="ef-label">on site, offline, in VS Code</div></div>
+<div class="exam-fact"><span class="ef-big">Two parts</span><div class="ef-label">50 points each</div></div>
+<div class="exam-fact"><span class="ef-big">No AI</span><div class="ef-label">the exam cover sets the other rules</div></div>
+<div class="exam-fact"><span class="ef-big">Two files</span><div class="ef-label">the answer notebook and the blank PDF</div></div>
+</div>
+
+Three mock exams and a two-page guide to preparing are on the
+<a href="../exam_info.html" target="_blank" rel="noopener">Exam Info page</a> of the course site.
+
+
+# Before the exam
+
+- Download the notebooks, the data, the cheatsheet and the lectures while you are online. Press `e` on a lecture, then print it to PDF.
+- Open a course notebook in VS Code and read a local CSV, so the setup works before the day.
+- Sit one mock exam in three uninterrupted hours, with Wi-Fi and AI switched off.
+- Switch off AI and code completion in VS Code, as the guide shows.
+
+
+# Questions
+
+<div class="questions-end">
+<p class="q-big">Questions about the exam, the course, or anything else</p>
+<p class="q-small">The lectures, the notebooks, the cheatsheet and the mock exams stay on the course site. Email: <b>jobo@econ.au.dk</b></p>
+</div>
+
+<style>
+.questions-end { margin-top: 2.4em; text-align: center; }
+.questions-end .q-big { font-size: 1.45em; font-weight: 700; color: #0d366b; line-height: 1.25; }
+.questions-end .q-small { font-size: 0.8em; color: #52514e; margin-top: 1.2em; }
+</style>
