@@ -47,6 +47,10 @@ In order, and `release.py` covers steps 4 to 6:
 6. Add the new notebooks and data to `INCLUDE_GLOBS` in
    `tools/build_download_bundle.py` if they do not already match.
 7. Update the session table in the root `README.md`.
+8. If it has notebooks, add it to `NOTEBOOK_SESSIONS` in `tools/build_search.py`,
+   and give its case part a row in `case.html`. The revision page and the search
+   read decks 1 to 13; a fourteenth deck means widening `range(1, 14)` in
+   `tools/build_revision.py` and `tools/build_search.py`.
 
 The download bundle is built from an **allowlist**, so a new session's files
 are not published to students until step 6. That is on purpose: it is safer to
@@ -182,6 +186,8 @@ python tools/build_revision.py         # revision.html, from the rendered decks
 python tools/build_nav.py              # stamp assets/nav.html into every page
 python tools/build_download_bundle.py  # downloads/mlfin-course.zip
 python tools/build_cheatsheet.py       # cheatsheet.html
+python tools/build_search.py           # assets/search-index.json, for search.html
+python tools/verify/site_links.py      # every link inside the site resolves
 ```
 
 The sidebar lives once, in `assets/nav.html`, and `build_nav.py` copies it into
@@ -198,6 +204,14 @@ unchanged bundle produces no git diff.
 session's "What stays with you" slide and Session 13's routine, word for word,
 with a link back to the slide. The glossary is kept in the script. Render a deck
 again and the page follows on the next run.
+
+`build_search.py` writes the index the search page searches: one entry per
+slide (with the names its code uses), exercise and case question, cheatsheet
+row, glossary term and page section, each with its link. It reads what the other
+steps build, so it runs after them; render a deck and the next run picks it up.
+`verify/site_links.py` then checks every link on the pages, in the decks and in
+the index, anchors included: a slide link needs a slide with that id, and a
+Colab link a notebook in the repository.
 
 `build_cheatsheet.py` writes `cheatsheet.html`. Every example on that page is
 executed against the real course data while the page is built, and the output

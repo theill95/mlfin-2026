@@ -589,6 +589,20 @@ def slug(title):
     return re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
 
 
+def row_id(call, used):
+    """A stable anchor for a row, from the name it calls: r-pd-read-csv."""
+    first = re.split(r"  +", call)[0]
+    base = "r-" + (slug(first.split("(")[0]) or slug(first) or "row")[:40].rstrip("-")
+    rid, k = base, 2
+    while rid in used:
+        rid, k = f"{base}-{k}", k + 1
+    used.add(rid)
+    return rid
+
+
+SESSIONS_USED = sorted({row["since"] for sec in SECTIONS for row in sec["rows"]}, key=lambda x: int(x[1:]))
+
+
 NAV = (ROOT / "assets" / "nav.html").read_text(encoding="utf-8").rstrip("\n")
 NAV = NAV.replace('<a href="cheatsheet.html">', '<a href="cheatsheet.html" aria-current="page">')
 
@@ -636,8 +650,21 @@ parts.append("""<!doctype html>
     before the exam, since the site cannot be opened during it. Ctrl+P also works: the menu
     and the page furniture drop out when printing.
   </div>
+
+  <div class="cs-filter no-print" role="search">
+    <input id="cs-q" type="search" placeholder="Filter the rows: a function or a word"
+           aria-label="Filter the rows by a function or a word" autocomplete="off" spellcheck="false" data-slash>
+    <select id="cs-s" aria-label="Only the rows a session added">
+      <option value="">Every session</option>
+""" + "\n".join(f'      <option value="{k[1:]}">Added in {SINCE_LABEL[k]}</option>' for k in SESSIONS_USED) + """
+    </select>
+    <span class="cs-count" id="cs-n" aria-live="polite"></span>
+  </div>
+  <p class="cs-none no-print" id="cs-none" hidden>No row matches.
+    <a id="cs-none-link" href="search.html">Search the whole course</a> instead.</p>
 """)
 
+USED_IDS = {slug(sec["title"]) for sec in SECTIONS}
 parts.append('  <ul class="cs-toc">')
 for sec in SECTIONS:
     parts.append(f'    <li><a href="#{slug(sec["title"])}">{html.escape(sec["title"])}</a></li>')
@@ -656,9 +683,11 @@ for sec in SECTIONS:
     for row in sec["rows"]:
         # two spaces in a call separate alternatives: rendered as a faint dot
         call = ' <span class="cs-or">&middot;</span> '.join(html.escape(x) for x in re.split(r"  +", row["call"]))
-        parts.append(f'      <div class="cs-sig"><code>{call}</code></div>')
-        parts.append(f'      <div class="cs-desc">{html.escape(row["what"])}'
+        parts.append(f'      <div class="cs-row" data-since="{row["since"][1:]}">')
+        parts.append(f'        <div class="cs-sig" id="{row_id(row["call"], USED_IDS)}"><code>{call}</code></div>')
+        parts.append(f'        <div class="cs-desc">{html.escape(row["what"])}'
                      f'<span class="cs-since">{SINCE_LABEL[row["since"]]}</span></div>')
+        parts.append('      </div>')
     parts.append('    </div>')
     parts.append("  </section>")
 
@@ -670,6 +699,57 @@ parts.append("""
   </footer>
   </main>
 </div>
+<script>
+/* The filter: the rows whose call or description holds every word typed, from
+   the session chosen. A section, and its chip, with no row left is hidden. */
+(function () {
+  var q = document.getElementById("cs-q"), s = document.getElementById("cs-s"),
+      n = document.getElementById("cs-n"), none = document.getElementById("cs-none"),
+      noneLink = document.getElementById("cs-none-link");
+  var rows = [].slice.call(document.querySelectorAll(".cs-row"));
+  var sections = [].slice.call(document.querySelectorAll(".cs-section"));
+  var chips = {};
+  [].slice.call(document.querySelectorAll(".cs-toc a")).forEach(function (a) {
+    chips[a.getAttribute("href").slice(1)] = a.parentNode;
+  });
+  function norm(t) { return t.toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g, ""); }
+  rows.forEach(function (r) {
+    r.words = norm(r.querySelector(".cs-sig").textContent + " " +
+                   r.querySelector(".cs-desc").firstChild.textContent);
+  });
+  function apply() {
+    var typed = q.value.trim(), words = norm(typed).split(/\\s+/).filter(Boolean);
+    var since = s.value, shown = 0;
+    rows.forEach(function (r) {
+      var ok = (!since || r.getAttribute("data-since") === since) &&
+               words.every(function (w) { return r.words.indexOf(w) !== -1; });
+      r.hidden = !ok;
+      if (ok) shown++;
+    });
+    sections.forEach(function (sec) {
+      var any = !!sec.querySelector(".cs-row:not([hidden])");
+      sec.hidden = !any;
+      if (chips[sec.id]) chips[sec.id].hidden = !any;
+    });
+    n.textContent = (words.length || since ? shown + " of " : "") + rows.length + " rows";
+    none.hidden = shown > 0;
+    noneLink.href = "search.html" + (typed ? "?q=" + encodeURIComponent(typed) : "");
+    var params = [];
+    if (typed) params.push("q=" + encodeURIComponent(typed));
+    if (since) params.push("s=" + since);
+    try {
+      history.replaceState(null, "", location.pathname + (params.length ? "?" + params.join("&") : "") + location.hash);
+    } catch (e) {}
+  }
+  var given = new URLSearchParams(location.search);
+  if (given.get("q")) q.value = given.get("q");
+  if (given.get("s") && s.querySelector('option[value="' + given.get("s") + '"]')) s.value = given.get("s");
+  q.addEventListener("input", apply);
+  s.addEventListener("change", apply);
+  q.addEventListener("keydown", function (e) { if (e.key === "Escape") { q.value = ""; apply(); } });
+  apply();
+})();
+</script>
 </body>
 </html>
 """)

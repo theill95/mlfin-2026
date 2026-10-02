@@ -3,11 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Served for any missing address on the site, at any depth, so every link
-     below resolves from the site's root. -->
-<base href="/mlfin-2026/">
-<title>Page not found · Machine Learning in Finance</title>
+<title>Search · Machine Learning in Finance</title>
+<meta name="description" content="Search the whole course: every lecture slide, exercise, case question, cheatsheet row, glossary term and page.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:site_name" content="Machine Learning in Finance">
+<meta property="og:title" content="Search · Machine Learning in Finance">
+<meta property="og:description" content="Search the whole course: every lecture slide, exercise, case question, cheatsheet row, glossary term and page.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://theill95.github.io/mlfin-2026/search.html">
+<meta property="og:image" content="https://theill95.github.io/mlfin-2026/assets/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
@@ -25,7 +32,7 @@
       <input type="search" name="q" placeholder="Search the course" aria-label="Search the course" autocomplete="off" spellcheck="false">
     </form>
     <ul>
-      <li class="nav-search-link"><a href="search.html">Search</a></li>
+      <li class="nav-search-link"><a href="search.html" aria-current="page">Search</a></li>
       <li><a href="index.html">Sessions</a></li>
       <li><a href="case.html">The case</a></li>
       <li><a href="revision.html">Revision</a></li>
@@ -66,38 +73,31 @@
   <main class="wrap" id="main">
   <header>
     <div class="accent"></div>
-    <div class="eyebrow">Page not found</div>
-    <h1>That page is not here</h1>
-    <p class="lede">The address may be mistyped, or the page may have moved. Search
-       for it, or start from one of these.</p>
+    <div class="eyebrow">The whole course at once</div>
+    <h1>Search</h1>
+    <p class="lede">Every slide of the thirteen lectures, every exercise and case
+       question, every row of the cheatsheet, every term in the glossary, and every
+       section of these pages. A slide opens at that slide; an exercise opens its
+       notebook in Colab.</p>
   </header>
 
-  <form class="search-box" action="search.html" role="search">
-    <input name="q" type="search" placeholder="Search the course" aria-label="Search the course"
-           autocomplete="off" spellcheck="false" data-slash>
+  <form class="search-box" id="search-form" role="search" action="search.html">
+    <input id="q" name="q" type="search" placeholder="A function, a word, a model"
+           aria-label="Search the course" autocomplete="off" spellcheck="false" autofocus data-slash>
   </form>
-
-  <section class="card">
-    <div class="actions">
-      <a class="btn primary" href="index.html">
-        <span class="label">All sessions</span>
-        <span class="hint">lectures, exercises and the case</span>
-      </a>
-      <a class="btn" href="downloads.html">
-        <span class="label">Downloads</span>
-        <span class="hint">every notebook, data file and PDF</span>
-      </a>
-      <a class="btn" href="exam_info.html">
-        <span class="label">Exam info</span>
-        <span class="hint">the exam, the checklist, mock exams</span>
-      </a>
-    </div>
-  </section>
+  <ul class="sr-kinds" id="kinds" aria-label="Show only" hidden></ul>
+  <p class="sr-status" id="status" aria-live="polite"></p>
+  <ol class="sr-list" id="results"></ol>
+  <button type="button" class="sr-more" id="more" hidden>Show more</button>
+  <noscript><p>The search needs JavaScript. The <a href="cheatsheet.html">cheatsheet</a>
+    and the <a href="revision.html">revision page</a> work without it.</p></noscript>
 
   <footer>
-    Something missing? Email <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
+    Press <kbd>/</kbd> on any page to jump to the search box. Something you expected
+    to find? Email <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
   </footer>
   </main>
 </div>
+<script src="assets/search.js"></script>
 </body>
 </html>

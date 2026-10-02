@@ -41,14 +41,15 @@ This repository is published:
   <https://theill95.github.io/mlfin-2026/session_13/session_13.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
-The site has nine pages, linked from the sidebar:
+The site has ten pages, linked from the sidebar:
 
 | page | what it is |
 |:--|:--|
 | `index.html` | the sessions: lecture, exercises and case for each, and the questions students ask |
 | `case.html` | the course case on one page: how the parts work, each part's question, what it added and the number it ended on, with a Colab link to each |
 | `revision.html` | each session's "What stays with you" slide, Session 13's routine, and a glossary of the course's terms. **Generated** by `tools/build_revision.py` from the rendered decks, so render a deck before running it |
-| `cheatsheet.html` | every function the course has used, one row each: the call with general argument names, and what it does. **Generated** by `tools/build_cheatsheet.py`, which checks every name against the library it comes from, so do not edit it by hand. The earlier worked-example format is kept in `tools/archive/` |
+| `cheatsheet.html` | every function the course has used, one row each: the call with general argument names, and what it does, with a filter by word and by session. **Generated** by `tools/build_cheatsheet.py`, which checks every name against the library it comes from, so do not edit it by hand. The earlier worked-example format is kept in `tools/archive/` |
+| `search.html` | one search over every slide, exercise and case question, cheatsheet row, glossary term and page section; a slide result opens at that slide. It reads `assets/search-index.json`, **generated** by `tools/build_search.py` from the rendered decks, the notebooks and the built pages. `/` on any page jumps to a search box |
 | `math.html` | the maths the course assumes: matrix and vector notation, dimensions, vectorisation, inverses and multicollinearity, and how to read the objective functions behind OLS, ridge, lasso, logistic regression and trees. Hand-written; maths renders through KaTeX from a CDN |
 | `setup.html` | installing Python and VS Code, and the extras (scripts vs notebooks, virtual environments, Git), each marked needed or optional |
 | `resources.html` | official docs, ISLP, Kaggle, the AI-use policy, the data and its terms, and how the materials may be reused |

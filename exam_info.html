@@ -28,7 +28,11 @@
   </script>
   <nav class="sidenav" aria-label="Course pages">
     <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
+    <form class="nav-search" action="search.html" role="search">
+      <input type="search" name="q" placeholder="Search the course" aria-label="Search the course" autocomplete="off" spellcheck="false">
+    </form>
     <ul>
+      <li class="nav-search-link"><a href="search.html">Search</a></li>
       <li><a href="index.html">Sessions</a></li>
       <li><a href="case.html">The case</a></li>
       <li><a href="revision.html">Revision</a></li>
@@ -53,6 +57,16 @@
       root.setAttribute("data-theme", dark ? "light" : "dark");
       try { localStorage.setItem("mlfin-theme", dark ? "light" : "dark"); } catch (e) {}
     });
+    /* "/" jumps to the search box: the page's own if it has one, else the sidebar's. */
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+      var t = e.target;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      var box = document.querySelector("[data-slash]") || document.querySelector(".nav-search input");
+      e.preventDefault();
+      if (box && box.offsetParent !== null) { box.focus(); box.select(); }
+      else location.href = "search.html";
+    });
   </script>
   <!-- nav:end -->
 
@@ -66,7 +80,7 @@
        official exam cover gives the rules for the sitting itself.</p>
   </header>
 
-  <section class="card">
+  <section class="card" id="glance">
     <h2>The exam at a glance</h2>
     <div class="facts">
       <div class="fact"><strong>180 minutes</strong><span>on site, offline, in VS Code</span></div>
@@ -79,7 +93,7 @@
        beforehand.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="ready">
     <h2>Get ready, in this order</h2>
     <ol class="checklist">
       <li><strong>Save your offline copies</strong> while you have internet: the course ZIP,
@@ -141,7 +155,7 @@
     </ul>
   </section>
 
-  <section class="card">
+  <section class="card" id="practicalities">
     <h2>Practicalities and preparation</h2>
     <p class="sub">A two-page guide to preparing offline materials, checking VS Code's AI and
        code-completion settings, practising under exam conditions, and handing in your
@@ -154,7 +168,7 @@
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" id="mocks">
     <h2>Mock exams</h2>
     <p class="sub">Each ZIP contains the question paper, answer notebook, CSV data, blank PDF
        for the two-file hand-in, and a separate notebook with code solutions. Try one in an

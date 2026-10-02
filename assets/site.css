@@ -10,7 +10,7 @@
   --hover: #eeece6; --btn-hover: #fcfdff; --code-bg: #f4f4f1; --imports-bg: #f7f7f4;
   --th-line: #c3c2b7; --anno-line: #f0efe9; --eq-big-line: #cfe0f4;
   --note-ink: #26333f; --banner-ink: #6b5312; --warn-line: #b8860b;
-  --amber: #7a5a08; --amber-bg: #fbf4e4; --amber-line: #f0e2c2;
+  --amber: #7a5a08; --amber-bg: #fbf4e4; --amber-line: #f0e2c2; --mark-bg: #fbe3a0;
   --shadow: rgba(0, 0, 0, 0.03);
   --nav: 216px;
 }
@@ -26,7 +26,7 @@
   --hover: #272b31; --btn-hover: #222831; --code-bg: #25292e; --imports-bg: #202328;
   --th-line: #4a4f57; --anno-line: #2a2e34; --eq-big-line: #2f4561;
   --note-ink: #d8dfe8; --banner-ink: #e8d39e; --warn-line: #c9a24a;
-  --amber: #e3bd66; --amber-bg: #2b2416; --amber-line: #4a3d22;
+  --amber: #e3bd66; --amber-bg: #2b2416; --amber-line: #4a3d22; --mark-bg: #5c4a1c;
   --shadow: rgba(0, 0, 0, 0.4);
   color-scheme: dark;
   }
@@ -39,7 +39,7 @@
   --hover: #272b31; --btn-hover: #222831; --code-bg: #25292e; --imports-bg: #202328;
   --th-line: #4a4f57; --anno-line: #2a2e34; --eq-big-line: #2f4561;
   --note-ink: #d8dfe8; --banner-ink: #e8d39e; --warn-line: #c9a24a;
-  --amber: #e3bd66; --amber-bg: #2b2416; --amber-line: #4a3d22;
+  --amber: #e3bd66; --amber-bg: #2b2416; --amber-line: #4a3d22; --mark-bg: #5c4a1c;
   --shadow: rgba(0, 0, 0, 0.4);
   color-scheme: dark;
 }
@@ -329,6 +329,20 @@ td code { white-space: nowrap; }
 @media (min-width: 720px) {
   .cs-ref { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
 }
+.cs-row { display: contents; }
+.cs-row[hidden] { display: none; }
+/* The row a search result points at. */
+.cs-sig { scroll-margin-top: 1.5rem; }
+.cs-sig:target, .cs-sig:target + .cs-desc { background: var(--mark-bg); }
+
+/* The filter above the cheatsheet. */
+.cs-filter {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.7rem;
+  margin: 0 0 1.1rem;
+}
+.cs-filter input { flex: 1 1 15rem; }
+.cs-count { font-size: 0.82rem; color: var(--faint); }
+.cs-none { color: var(--ink-soft); font-size: 0.92rem; }
 /* On a narrow screen the two cells stack, so only the second one draws the rule. */
 @media (max-width: 719px) {
   .cs-sig { border-bottom: 0; padding-bottom: 0.1rem; }
@@ -464,7 +478,7 @@ td .katex-display > .katex { text-align: left; font-size: 0.95em; }
   --hover: #eeece6; --btn-hover: #fcfdff; --code-bg: #f4f4f1; --imports-bg: #f7f7f4;
   --th-line: #c3c2b7; --anno-line: #f0efe9; --eq-big-line: #cfe0f4;
   --note-ink: #26333f; --banner-ink: #6b5312; --warn-line: #b8860b;
-  --amber: #7a5a08; --amber-bg: #fbf4e4; --amber-line: #f0e2c2;
+  --amber: #7a5a08; --amber-bg: #fbf4e4; --amber-line: #f0e2c2; --mark-bg: #fbe3a0;
   --shadow: rgba(0, 0, 0, 0.03);
     color-scheme: light;
   }
@@ -628,3 +642,57 @@ details.faq p { margin: 0.4rem 0 0.2rem 1.1rem; color: var(--ink-soft); font-siz
 @media print { details.faq > * { display: block !important; } }
 /* The chips under a page's header, when nothing else sits between them. */
 header + .cs-toc { margin-top: 1.3rem; }
+
+/* ---------------------------------------------------------------- search */
+
+input[type="search"], .cs-filter select {
+  font: inherit; font-size: 0.92rem; color: var(--ink);
+  background: var(--card); border: 1px solid var(--line); border-radius: 7px;
+  padding: 0.5rem 0.7rem; min-width: 0;
+}
+input[type="search"]::placeholder { color: var(--faint); }
+input[type="search"]:focus, .cs-filter select:focus {
+  outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue);
+}
+
+.nav-search { margin: 0 0 1rem; }
+.nav-search input { width: 100%; font-size: 0.86rem; padding: 0.42rem 0.6rem; }
+.sidenav li.nav-search-link { display: none; }
+@media (max-width: 860px) {
+  .nav-search { display: none; }
+  .sidenav li.nav-search-link { display: block; }
+}
+
+.search-box { margin: 1.5rem 0 0.9rem; }
+.search-box input { width: 100%; font-size: 1.05rem; padding: 0.7rem 0.9rem; }
+
+.sr-kinds {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  list-style: none; margin: 0 0 0.5rem; padding: 0;
+}
+.sr-kinds button, button.sr-try, button.sr-more {
+  font: inherit; font-size: 0.82rem; cursor: pointer;
+  padding: 0.28rem 0.65rem; border-radius: 6px;
+  background: var(--card); border: 1px solid var(--line); color: var(--ink-soft);
+}
+.sr-kinds button:hover, button.sr-try:hover, button.sr-more:hover {
+  border-color: var(--blue-line-strong); color: var(--blue-deep);
+}
+.sr-kinds button[aria-pressed="true"] {
+  background: var(--blue-pale); border-color: var(--blue-line); color: var(--blue-deep); font-weight: 600;
+}
+.sr-kinds .n { color: var(--faint); font-weight: 400; margin-left: 0.15rem; }
+button.sr-try { margin: 0.15rem 0.1rem; }
+.sr-status { font-size: 0.88rem; color: var(--ink-soft); margin: 0.5rem 0; }
+.sr-list { list-style: none; margin: 0; padding: 0; }
+.sr-item { padding: 0.75rem 0; border-top: 1px solid var(--line); }
+.sr-title { font-weight: 600; color: var(--blue-deep); text-decoration: none; overflow-wrap: anywhere; }
+.sr-title:hover, .sr-title:focus { text-decoration: underline; }
+.sr-label { display: block; font-size: 0.76rem; color: var(--faint); margin-top: 0.1rem; }
+.sr-snip { font-size: 0.88rem; color: var(--ink-soft); margin: 0.25rem 0 0; overflow-wrap: anywhere; }
+button.sr-more { margin-top: 0.9rem; font-size: 0.88rem; padding: 0.45rem 0.9rem; }
+mark { background: var(--mark-bg); color: inherit; border-radius: 2px; padding: 0 0.08em; }
+kbd {
+  font-family: "Cascadia Mono", Consolas, Menlo, monospace; font-size: 0.85em;
+  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 0.3em;
+}

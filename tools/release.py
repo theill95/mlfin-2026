@@ -58,6 +58,7 @@ BUILD = [
     ("site: revision page",            "tools/build_revision.py"),
     ("site: sidebar",                  "tools/build_nav.py"),
     ("site: cheatsheet",               "tools/build_cheatsheet.py"),
+    ("site: search index",             "tools/build_search.py"),
     ("site: PDFs of the lectures and pages", "tools/build_handouts.py"),
     ("site: download bundle",          "tools/build_download_bundle.py"),
 ]
@@ -103,6 +104,7 @@ CHECK = [
     ("session 13 deck cells",         "tools/verify/session_13_deck.py"),
     ("the setup check says ready",    "tools/verify/setup_check.py"),
     ("the PDFs match their sources", "tools/verify/handouts.py"),
+    ("links inside the site",         "tools/verify/site_links.py"),
 ]
 
 

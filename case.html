@@ -28,7 +28,11 @@
   </script>
   <nav class="sidenav" aria-label="Course pages">
     <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
+    <form class="nav-search" action="search.html" role="search">
+      <input type="search" name="q" placeholder="Search the course" aria-label="Search the course" autocomplete="off" spellcheck="false">
+    </form>
     <ul>
+      <li class="nav-search-link"><a href="search.html">Search</a></li>
       <li><a href="index.html">Sessions</a></li>
       <li><a href="case.html" aria-current="page">The case</a></li>
       <li><a href="revision.html">Revision</a></li>
@@ -53,6 +57,16 @@
       root.setAttribute("data-theme", dark ? "light" : "dark");
       try { localStorage.setItem("mlfin-theme", dark ? "light" : "dark"); } catch (e) {}
     });
+    /* "/" jumps to the search box: the page's own if it has one, else the sidebar's. */
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+      var t = e.target;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      var box = document.querySelector("[data-slash]") || document.querySelector(".nav-search input");
+      e.preventDefault();
+      if (box && box.offsetParent !== null) { box.focus(); box.select(); }
+      else location.href = "search.html";
+    });
   </script>
   <!-- nav:end -->
 
@@ -67,7 +81,7 @@
        Part 12.</p>
   </header>
 
-  <section class="card">
+  <section class="card" id="how-it-works">
     <h2>How it works</h2>
     <ul class="plain">
       <li><strong>A part after most sessions.</strong> Parts are numbered by session, so
@@ -82,7 +96,7 @@
     </ul>
   </section>
 
-  <section class="card">
+  <section class="card" id="parts">
     <h2>The report, part by part</h2>
     <p class="sub">What each part asked, what it added to the report, and the number it
        ended on, as Part 12 sums it up. "Open" starts the part in Colab.</p>
@@ -105,7 +119,7 @@
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" id="where-it-ends">
     <h2>Where it ends</h2>
     <p class="sub">Parts 1 to 3 described a year that had happened. Part 4 turned the
        report into a question about the next month and set the rules every later part

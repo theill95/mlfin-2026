@@ -20,7 +20,7 @@ TEMPLATE = ROOT / "assets" / "nav.html"
 
 PAGES = ["index.html", "math.html", "setup.html", "resources.html",
          "downloads.html", "exam_info.html", "404.html",
-         "case.html", "revision.html"]
+         "case.html", "revision.html", "search.html"]
 
 START = "  <!-- nav:start -->"
 END = "  <!-- nav:end -->"

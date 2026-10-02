@@ -29,7 +29,11 @@
   </script>
   <nav class="sidenav" aria-label="Course pages">
     <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
+    <form class="nav-search" action="search.html" role="search">
+      <input type="search" name="q" placeholder="Search the course" aria-label="Search the course" autocomplete="off" spellcheck="false">
+    </form>
     <ul>
+      <li class="nav-search-link"><a href="search.html">Search</a></li>
       <li><a href="index.html">Sessions</a></li>
       <li><a href="case.html">The case</a></li>
       <li><a href="revision.html">Revision</a></li>
@@ -53,6 +57,16 @@
       var dark = chosen ? chosen === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
       root.setAttribute("data-theme", dark ? "light" : "dark");
       try { localStorage.setItem("mlfin-theme", dark ? "light" : "dark"); } catch (e) {}
+    });
+    /* "/" jumps to the search box: the page's own if it has one, else the sidebar's. */
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+      var t = e.target;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      var box = document.querySelector("[data-slash]") || document.querySelector(".nav-search input");
+      e.preventDefault();
+      if (box && box.offsetParent !== null) { box.focus(); box.select(); }
+      else location.href = "search.html";
     });
   </script>
   <!-- nav:end -->
