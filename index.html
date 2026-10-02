@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Machine Learning in Finance</title>
+<meta name="description" content="Lectures you can run in the browser, exercises, a running case and a cheatsheet for Machine Learning in Finance at Aarhus University: thirteen sessions, from first Python to boosted trees.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:site_name" content="Machine Learning in Finance">
+<meta property="og:title" content="Machine Learning in Finance">
+<meta property="og:description" content="Lectures you can run in the browser, exercises, a running case and a cheatsheet for Machine Learning in Finance at Aarhus University: thirteen sessions, from first Python to boosted trees.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://theill95.github.io/mlfin-2026/">
+<meta property="og:image" content="https://theill95.github.io/mlfin-2026/assets/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
@@ -11,6 +22,10 @@
 <div class="shell">
 
   <!-- nav:start -->
+  <script>
+    /* Light or dark: what the reader chose with the button below, else the system's. */
+    try { var t = localStorage.getItem("mlfin-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+  </script>
   <nav class="sidenav" aria-label="Course pages">
     <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
     <ul>
@@ -22,12 +37,21 @@
       <li><a href="downloads.html">Downloads</a></li>
       <li><a href="exam_info.html">Exam info</a></li>
     </ul>
+    <button class="theme-toggle" type="button" aria-label="Switch between light and dark colours">&#9680; Light or dark</button>
     <div class="nav-foot">
       <div class="nav-owner">Jonas Theill Bøjstrup</div>
       <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>
       <div class="nav-legal">Aarhus University<br>&copy; 2026 Jonas Theill Bøjstrup</div>
     </div>
   </nav>
+  <script>
+    document.querySelector(".theme-toggle").addEventListener("click", function () {
+      var root = document.documentElement, chosen = root.getAttribute("data-theme");
+      var dark = chosen ? chosen === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      root.setAttribute("data-theme", dark ? "light" : "dark");
+      try { localStorage.setItem("mlfin-theme", dark ? "light" : "dark"); } catch (e) {}
+    });
+  </script>
   <!-- nav:end -->
 
   <main class="wrap" id="main">
@@ -49,7 +73,8 @@
   </div>
 
   <section class="card" id="start-here">
-    <h2>Start here</h2>
+    <details class="start" id="start-here-details" open>
+    <summary><h2>Start here</h2><span class="summary-hint">how the lectures, the exercises and the case work</span></summary>
     <p class="sub">If this is your first visit, two minutes on this card will save
        you time later. Everything on this site is free to use, and nothing needs to
        be installed to begin.</p>
@@ -84,7 +109,8 @@
       <h3>Three keys worth knowing</h3>
       <ul>
         <li><kbd>m</kbd> opens a menu listing every slide by title, so you can jump
-            straight to the part you want.</li>
+            straight to the part you want. Its Course tab has the session's exercises,
+            case and PDF.</li>
         <li><kbd>e</kbd> lays the whole lecture out as one long page you can scroll
             and search with your browser's own find. This is the one to use when you
             are revising. Press <kbd>e</kbd> again to go back to slides. To keep a copy,
@@ -117,9 +143,29 @@
       free books, and where AI genuinely helps rather than hurts. If you are still
       stuck, ask a friend or email <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
     </div>
+    </details>
   </section>
 
-  <section class="card">
+  <section class="card" id="sessions">
+    <h2>All sessions</h2>
+    <ul class="glance">
+      <li><span class="g-n">1</span><span class="g-main"><a class="g-title" href="#session-1">Beginning Python for financial data</a></span><span class="g-links"><a href="session_01/session_01.html">lecture</a><a href="downloads/lectures/session_01.pdf">PDF</a><a href="#" data-nb="session_01/session_01_exercises.ipynb" target="_blank" rel="noopener">exercises</a><a href="#" data-nb="session_01/session_01_case.ipynb" target="_blank" rel="noopener">case</a></span></li>
+      <li><span class="g-n">2</span><span class="g-main"><a class="g-title" href="#session-2">Functions, loops and dictionaries</a></span><span class="g-links"><a href="session_02/session_02.html">lecture</a><a href="downloads/lectures/session_02.pdf">PDF</a><a href="#" data-nb="session_02/session_02_exercises.ipynb" target="_blank" rel="noopener">exercises</a><a href="#" data-nb="session_02/session_02_case.ipynb" target="_blank" rel="noopener">case</a></span></li>
+      <li><span class="g-n">3</span><span class="g-main"><a class="g-title" href="#session-3">Packages: NumPy, pandas and matplotlib</a></span><span class="g-links"><a href="session_03/session_03.html">lecture</a><a href="downloads/lectures/session_03.pdf">PDF</a><a href="#" data-nb="session_03/session_03_exercises.ipynb" target="_blank" rel="noopener">exercises</a><a href="#" data-nb="session_03/session_03_case.ipynb" target="_blank" rel="noopener">case</a></span></li>
+      <li><span class="g-n">4</span><span class="g-main"><a class="g-title" href="#session-4">Foundations of machine learning</a></span><span class="g-links"><a href="session_04/session_04.html">lecture</a><a href="downloads/lectures/session_04.pdf">PDF</a><a href="#" data-nb="session_04/session_04_exercises.ipynb" target="_blank" rel="noopener">exercises</a><a href="#" data-nb="session_04/session_04_case.ipynb" target="_blank" rel="noopener">case</a></span></li>
+      <li><span class="g-n">5</span><span class="g-main"><a class="g-title" href="#session-5">Model selection and cross-validation</a></span><span class="g-links"><a href="session_05/session_05.html">lecture</a><a href="downloads/lectures/session_05.pdf">PDF</a><a href="#" data-nb="session_05/session_05_exercises.ipynb" target="_blank" rel="noopener">exercises</a><a href="#" data-nb="session_05/session_05_case.ipynb" target="_blank" rel="noopener">case</a></span></li>
+      <li><span class="g-n">6</span><span class="g-main"><a class="g-title" href="#session-6">Penalised regression</a></span><span class="g-links"><a href="session_06/session_06.html">lecture</a><a href="downloads/lectures/session_06.pdf">PDF</a><a href="#" data-nb="session_06/session_06_exercises.ipynb" target="_blank" rel="noopener">exercises</a><a href="#" data-nb="session_06/session_06_case.ipynb" target="_blank" rel="noopener">case</a></span></li>
+      <li><span class="g-n">7</span><span class="g-main"><a class="g-title" href="#session-7">Pricing a house in Aarhus</a> <span class="g-tag">case lecture</span></span><span class="g-links"><a href="session_07/session_07.html">lecture</a><a href="downloads/lectures/session_07.pdf">PDF</a></span></li>
+      <li><span class="g-n">8</span><span class="g-main"><a class="g-title" href="#session-8">Classification with logistic regression</a></span><span class="g-links"><a href="session_08/session_08.html">lecture</a><a href="downloads/lectures/session_08.pdf">PDF</a><a href="#" data-nb="session_08/session_08_exercises.ipynb" target="_blank" rel="noopener">exercises</a><a href="#" data-nb="session_08/session_08_case.ipynb" target="_blank" rel="noopener">case</a></span></li>
+      <li><span class="g-n">9</span><span class="g-main"><a class="g-title" href="#session-9">Classification in practice</a></span><span class="g-links"><a href="session_09/session_09.html">lecture</a><a href="downloads/lectures/session_09.pdf">PDF</a><a href="#" data-nb="session_09/session_09_exercises.ipynb" target="_blank" rel="noopener">exercises</a><a href="#" data-nb="session_09/session_09_case.ipynb" target="_blank" rel="noopener">case</a></span></li>
+      <li><span class="g-n">10</span><span class="g-main"><a class="g-title" href="#session-10">Electricity prices in West Denmark</a> <span class="g-tag">case lecture</span></span><span class="g-links"><a href="session_10/session_10.html">lecture</a><a href="downloads/lectures/session_10.pdf">PDF</a></span></li>
+      <li><span class="g-n">11</span><span class="g-main"><a class="g-title" href="#session-11">Trees and forests</a></span><span class="g-links"><a href="session_11/session_11.html">lecture</a><a href="downloads/lectures/session_11.pdf">PDF</a><a href="#" data-nb="session_11/session_11_exercises.ipynb" target="_blank" rel="noopener">exercises</a><a href="#" data-nb="session_11/session_11_case.ipynb" target="_blank" rel="noopener">case</a></span></li>
+      <li><span class="g-n">12</span><span class="g-main"><a class="g-title" href="#session-12">Boosting and reading a model</a></span><span class="g-links"><a href="session_12/session_12.html">lecture</a><a href="downloads/lectures/session_12.pdf">PDF</a><a href="#" data-nb="session_12/session_12_exercises.ipynb" target="_blank" rel="noopener">exercises</a><a href="#" data-nb="session_12/session_12_case.ipynb" target="_blank" rel="noopener">case</a></span></li>
+      <li><span class="g-n">13</span><span class="g-main"><a class="g-title" href="#session-13">The two cases with trees</a> <span class="g-tag">case lecture</span></span><span class="g-links"><a href="session_13/session_13.html">lecture</a><a href="downloads/lectures/session_13.pdf">PDF</a></span></li>
+    </ul>
+  </section>
+
+  <section class="card" id="session-1">
     <h2>Session 1 · Beginning Python for financial data</h2>
     <p class="sub">Notebooks, variables, types, functions and methods, lists, and
        reading errors. The lecture runs in your browser; the exercises and case
@@ -142,7 +188,7 @@
        <a href="downloads.html#session-1">Download this session's notebooks and data</a>.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="session-2">
     <h2>Session 2 · Functions, loops and dictionaries</h2>
     <p class="sub">For and while loops, if / elif / else, writing your own
        functions, and dictionaries, ending with volatility computed from every
@@ -165,7 +211,7 @@
        <a href="downloads.html#session-2">Download this session's notebooks and data</a>.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="session-3">
     <h2>Session 3 · Packages: NumPy, pandas and matplotlib</h2>
     <p class="sub">Working locally in VS Code, finding documentation offline, and
        the three packages every analysis rests on: arrays and matrix algebra,
@@ -188,7 +234,7 @@
        <a href="downloads.html#session-3">Download this session's notebooks and data</a>.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="session-4">
     <h2>Session 4 · Foundations of machine learning</h2>
     <p class="sub">The statistical learning framework, supervised against
        unsupervised, the three things always wrong with real data, the metrics
@@ -212,7 +258,7 @@
        <a href="downloads.html#session-4">Download this session's notebooks and data</a>.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="session-5">
     <h2>Session 5 · Model selection and cross-validation</h2>
     <p class="sub">The first model of the course, fitted with scikit-learn in
        three lines, and then the harder half: scoring it against rules that use
@@ -236,7 +282,7 @@
        <a href="downloads.html#session-5">Download this session's notebooks and data</a>.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="session-6">
     <h2>Session 6 · Penalised regression</h2>
     <p class="sub">A table with nineteen columns, and what ordinary least
        squares does with it. Then the cure: a penalty on the coefficients
@@ -261,7 +307,7 @@
        <a href="downloads.html#session-6">Download this session's notebooks and data</a>.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="session-7">
     <h2>Session 7 · Pricing a house in Aarhus</h2>
     <p class="sub">A recap with no new tool: one investigation from a raw file
        of 7,621 Aarhus house sales to a valued house, using every tool from the
@@ -276,13 +322,17 @@
         <span class="label">The map</span>
         <span class="hint">every sale in the table, on a live map</span>
       </a>
+      <a class="btn" href="downloads/lectures/session_07.pdf">
+        <span class="label">The lecture as a PDF</span>
+        <span class="hint">every slide, with every result</span>
+      </a>
     </div>
     <p class="card-foot">There are no exercises and no case for this session:
        the deck is the exercise. The data is on the
        <a href="downloads.html#session-7">downloads page</a>.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="session-8">
     <h2>Session 8 · Classification with logistic regression</h2>
     <p class="sub">The same nineteen-column table, with a label as the target:
        will the market be more volatile next month than this month? Where a
@@ -307,7 +357,7 @@
        <a href="downloads.html#session-8">Download this session's notebooks and data</a>.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="session-9">
     <h2>Session 9 · Classification in practice</h2>
     <p class="sub">What happens when the thing you predict is rare, where the
        threshold belongs once each mistake has a price, whether a probability
@@ -331,7 +381,7 @@
        <a href="downloads.html#session-9">Download this session's notebooks and data</a>.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="session-10">
     <h2>Session 10 · Electricity prices in West Denmark</h2>
     <p class="sub">Will tomorrow's price at this hour be higher than today's?
        Three years of hourly prices and wind forecasts for West Denmark, a bet
@@ -343,13 +393,21 @@
         <span class="label">▶ Interactive lecture</span>
         <span class="hint">slides with runnable code and controls, no install</span>
       </a>
+      <a class="btn" href="downloads/lectures/session_10.pdf">
+        <span class="label">The lecture as a PDF</span>
+        <span class="hint">every slide, with every result</span>
+      </a>
+      <a class="btn" href="downloads.html#session-10">
+        <span class="label">The data</span>
+        <span class="hint">26,133 hours of West Denmark</span>
+      </a>
     </div>
     <p class="card-foot">There are no exercises and no case for this session:
        the deck is the exercise. The data is on the
        <a href="downloads.html#session-10">downloads page</a>.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="session-11">
     <h2>Session 11 · Trees and forests</h2>
     <p class="sub">A model that asks questions instead of fitting slopes. How a
        tree chooses its cuts, why a deep tree fits the training days and misses
@@ -373,7 +431,7 @@
        <a href="downloads.html#session-11">Download this session's notebooks and data</a>.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="session-12">
     <h2>Session 12 · Boosting and reading a model</h2>
     <p class="sub">Small trees added one at a time, each fitted to what the
        trees before it still get wrong. How many to add, chosen on later days
@@ -398,7 +456,7 @@
        <a href="downloads.html#session-12">Download this session's notebooks and data</a>.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="session-13">
     <h2>Session 13 · The two cases with trees</h2>
     <p class="sub">The last session. The houses of Session 7 and the hours of
        Session 10 again, now with trees, forests and boosted trees: do the
@@ -410,6 +468,14 @@
       <a class="btn primary" href="session_13/session_13.html">
         <span class="label">▶ Interactive lecture</span>
         <span class="hint">slides with runnable code and controls, no install</span>
+      </a>
+      <a class="btn" href="downloads/lectures/session_13.pdf">
+        <span class="label">The lecture as a PDF</span>
+        <span class="hint">every slide, with every result</span>
+      </a>
+      <a class="btn" href="exam_info.html">
+        <span class="label">Exam info</span>
+        <span class="hint">the exam, the checklist, mock exams</span>
       </a>
     </div>
     <p class="card-foot">There are no exercises and no case for this session.
@@ -484,6 +550,11 @@
   }
 
   const slug = repoSlug();
+  // The compact list at the top links the same notebooks.
+  for (const el of document.querySelectorAll("[data-nb]")) {
+    if (slug) el.href = `https://colab.research.google.com/github/${slug}/blob/${BRANCH}/${el.dataset.nb}`;
+    else el.classList.add("disabled");
+  }
   for (const [id, path] of Object.entries(NOTEBOOKS)) {
     const el = document.getElementById(id);
     if (slug) {
@@ -493,6 +564,13 @@
       el.querySelector(".hint").textContent = "available once published to GitHub";
     }
   }
+
+  // "Start here" is open on a first visit and folded after that, one click away.
+  try {
+    const details = document.getElementById("start-here-details");
+    if (localStorage.getItem("mlfin-seen-start") === "1") details.removeAttribute("open");
+    localStorage.setItem("mlfin-seen-start", "1");
+  } catch (e) {}
 
   // Show a gentle banner if opened from a file:// path (no live features).
   if (location.protocol === "file:") {

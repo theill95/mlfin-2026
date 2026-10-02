@@ -21,6 +21,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import nbformat as nbf
+from _shared import add_site_links
 from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -620,6 +621,7 @@ md(
 
 # ---------------------------------------------------------------- write
 nb = new_notebook(cells=cells)
+add_site_links(nb, 4, "case")
 nb.metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
 nb.metadata["language_info"] = {"name": "python"}
 OUT.parent.mkdir(parents=True, exist_ok=True)

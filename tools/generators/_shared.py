@@ -31,3 +31,23 @@ if xgboost_version != "2.1.4":
         print(f"Note: you have XGBoost {xgboost_version}; the numbers here come from 2.1.4, "
               "which the setup guide's install line gives you.")
 '''
+
+
+SITE = "https://theill95.github.io/mlfin-2026/"
+
+
+def add_site_links(nb, session, kind):
+    """End the notebook's first cell with links to its lecture, the cheatsheet and
+    the course site, so a notebook opened from Colab or the ZIP leads back.
+
+    kind is "exercises" or "case"; the other notebook of the session is linked too.
+    """
+    other = "case" if kind == "exercises" else "exercises"
+    other_label = "the case" if other == "case" else "the exercises"
+    colab = (f"https://colab.research.google.com/github/theill95/mlfin-2026/blob/main/"
+             f"session_{session:02d}/session_{session:02d}_{other}.ipynb")
+    line = (f"**Course site:** [the lecture]({SITE}session_{session:02d}/session_{session:02d}.html) · "
+            f"[{other_label}, in Colab]({colab}) · [the cheatsheet]({SITE}cheatsheet.html) · "
+            f"[all sessions]({SITE})")
+    first = next(c for c in nb.cells if c.cell_type == "markdown")
+    first.source = first.source.rstrip("\n") + "\n\n" + line

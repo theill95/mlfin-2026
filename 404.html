@@ -1,4 +1,21 @@
-<script>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Served for any missing address on the site, at any depth, so every link
+     below resolves from the site's root. -->
+<base href="/mlfin-2026/">
+<title>Page not found · Machine Learning in Finance</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+
+  <!-- nav:start -->
+  <script>
     /* Light or dark: what the reader chose with the button below, else the system's. */
     try { var t = localStorage.getItem("mlfin-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
   </script>
@@ -28,3 +45,38 @@
       try { localStorage.setItem("mlfin-theme", dark ? "light" : "dark"); } catch (e) {}
     });
   </script>
+  <!-- nav:end -->
+
+  <main class="wrap" id="main">
+  <header>
+    <div class="accent"></div>
+    <div class="eyebrow">Page not found</div>
+    <h1>That page is not here</h1>
+    <p class="lede">The address may be mistyped, or the page may have moved. Everything
+       the course has is one click from these.</p>
+  </header>
+
+  <section class="card">
+    <div class="actions">
+      <a class="btn primary" href="index.html">
+        <span class="label">All sessions</span>
+        <span class="hint">lectures, exercises and the case</span>
+      </a>
+      <a class="btn" href="downloads.html">
+        <span class="label">Downloads</span>
+        <span class="hint">every notebook, data file and PDF</span>
+      </a>
+      <a class="btn" href="exam_info.html">
+        <span class="label">Exam info</span>
+        <span class="hint">the exam, the checklist, mock exams</span>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    Something missing? Email <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
+  </footer>
+  </main>
+</div>
+</body>
+</html>

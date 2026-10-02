@@ -599,6 +599,17 @@ parts.append("""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cheatsheet · Machine Learning in Finance</title>
+<meta name="description" content="Every function the course has used, one row each and grouped by topic: the call, its arguments and what it does. Allowed at the exam as a saved copy.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:site_name" content="Machine Learning in Finance">
+<meta property="og:title" content="Cheatsheet · Machine Learning in Finance">
+<meta property="og:description" content="Every function the course has used, one row each and grouped by topic: the call, its arguments and what it does. Allowed at the exam as a saved copy.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://theill95.github.io/mlfin-2026/cheatsheet.html">
+<meta property="og:image" content="https://theill95.github.io/mlfin-2026/assets/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>

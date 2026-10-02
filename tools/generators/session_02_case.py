@@ -24,6 +24,7 @@ reason.
 from pathlib import Path
 import pandas as pd
 import nbformat as nbf
+from _shared import add_site_links
 from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 
 OUT = Path(__file__).resolve().parents[2] / "session_02" / "session_02_case.ipynb"
@@ -550,6 +551,7 @@ md(
 
 # ---------------------------------------------------------------- write
 nb = new_notebook(cells=cells)
+add_site_links(nb, 2, "case")
 nb.metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
 nb.metadata["language_info"] = {"name": "python"}
 # Deterministic cell ids: nbformat assigns a fresh random uuid to every cell,

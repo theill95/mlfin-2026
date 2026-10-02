@@ -34,6 +34,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import nbformat as nbf
+from _shared import add_site_links
 from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.preprocessing import StandardScaler
@@ -1544,6 +1545,7 @@ md(
 
 # ---------------------------------------------------------------- write
 nb = new_notebook(cells=cells)
+add_site_links(nb, 6, "exercises")
 nb.metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
 nb.metadata["language_info"] = {"name": "python"}
 OUT.parent.mkdir(parents=True, exist_ok=True)

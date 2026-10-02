@@ -60,6 +60,14 @@ that build up in replacing steps. Printing from the browser would lose the live
 cells' output. `release.py` runs it and rebuilds only what changed;
 `tools/verify/handouts.py` fails if a deck was rendered again without its PDF.
 
+Every page has a light and a dark look: colours are tokens at the top of
+`assets/site.css`, the dark set follows the system unless the reader picks one
+with the sidebar's toggle (remembered in localStorage), and print is always
+light. `favicon.svg` and `assets/social-card.png` give the site its icon and its
+link preview (each page carries description and Open Graph tags); `404.html`
+answers a missing address with the sidebar; `.nojekyll` tells GitHub Pages to
+serve the files as they are, without Jekyll.
+
 Shared styling lives in `assets/site.css` and the sidebar in `assets/nav.html`,
 which `tools/build_nav.py` stamps into every page. The student ZIP is built from
 an allowlist by `tools/build_download_bundle.py`, so `tools/`, `_extensions/`
