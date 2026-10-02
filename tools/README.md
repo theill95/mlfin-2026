@@ -178,6 +178,7 @@ parse.
 ## The site pages
 
 ```bash
+python tools/build_revision.py         # revision.html, from the rendered decks
 python tools/build_nav.py              # stamp assets/nav.html into every page
 python tools/build_download_bundle.py  # downloads/mlfin-course.zip
 python tools/build_cheatsheet.py       # cheatsheet.html
@@ -192,6 +193,11 @@ the template, not the pages.
 cannot end up in a student download. It refuses anything matching its `NEVER`
 list even if a glob would have caught it, and it writes fixed timestamps so an
 unchanged bundle produces no git diff.
+
+`build_revision.py` writes `revision.html` from the rendered decks: each
+session's "What stays with you" slide and Session 13's routine, word for word,
+with a link back to the slide. The glossary is kept in the script. Render a deck
+again and the page follows on the next run.
 
 `build_cheatsheet.py` writes `cheatsheet.html`. Every example on that page is
 executed against the real course data while the page is built, and the output

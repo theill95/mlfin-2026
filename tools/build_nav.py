@@ -19,7 +19,8 @@ ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "assets" / "nav.html"
 
 PAGES = ["index.html", "math.html", "setup.html", "resources.html",
-         "downloads.html", "exam_info.html", "404.html"]
+         "downloads.html", "exam_info.html", "404.html",
+         "case.html", "revision.html"]
 
 START = "  <!-- nav:start -->"
 END = "  <!-- nav:end -->"

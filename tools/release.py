@@ -55,6 +55,7 @@ BUILD = [
     ("notebooks: session 12 exercises", "tools/generators/session_12_exercises.py"),
     ("notebooks: session 12 case",     "tools/generators/session_12_case.py"),
     ("notebook: setup check",          "tools/generators/setup_check.py"),
+    ("site: revision page",            "tools/build_revision.py"),
     ("site: sidebar",                  "tools/build_nav.py"),
     ("site: cheatsheet",               "tools/build_cheatsheet.py"),
     ("site: PDFs of the lectures and pages", "tools/build_handouts.py"),

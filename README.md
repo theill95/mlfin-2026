@@ -41,15 +41,17 @@ This repository is published:
   <https://theill95.github.io/mlfin-2026/session_13/session_13.html>
 - Repository: <https://github.com/theill95/mlfin-2026>
 
-The site has seven pages, linked from the sidebar:
+The site has nine pages, linked from the sidebar:
 
 | page | what it is |
 |:--|:--|
-| `index.html` | the sessions: lecture, exercises and case for each |
+| `index.html` | the sessions: lecture, exercises and case for each, and the questions students ask |
+| `case.html` | the course case on one page: how the parts work, each part's question, what it added and the number it ended on, with a Colab link to each |
+| `revision.html` | each session's "What stays with you" slide, Session 13's routine, and a glossary of the course's terms. **Generated** by `tools/build_revision.py` from the rendered decks, so render a deck before running it |
 | `cheatsheet.html` | every function the course has used, one row each: the call with general argument names, and what it does. **Generated** by `tools/build_cheatsheet.py`, which checks every name against the library it comes from, so do not edit it by hand. The earlier worked-example format is kept in `tools/archive/` |
 | `math.html` | the maths the course assumes: matrix and vector notation, dimensions, vectorisation, inverses and multicollinearity, and how to read the objective functions behind OLS, ridge, lasso, logistic regression and trees. Hand-written; maths renders through KaTeX from a CDN |
 | `setup.html` | installing Python and VS Code, and the extras (scripts vs notebooks, virtual environments, Git), each marked needed or optional |
-| `resources.html` | official docs, ISLP, Kaggle, and the AI-use policy |
+| `resources.html` | official docs, ISLP, Kaggle, the AI-use policy, the data and its terms, and how the materials may be reused |
 | `downloads.html` | every notebook and CSV, every lecture as a PDF, plus `downloads/mlfin-course.zip` |
 | `exam_info.html` | the exam at a glance, a get-ready checklist, the offline copies (course ZIP, the 13 lecture PDFs, cheatsheet and maths PDFs, `setup_check.ipynb` in the ZIP), the practicalities guide and three mock exam student bundles |
 
@@ -352,3 +354,16 @@ and the warning to trees, forests and boosted trees, before Part 12 sets every
 model the report has fitted side by side. Sessions 7, 10 and 13 are case
 lectures of their own (house prices in Aarhus, power prices in West Denmark,
 and both again with trees) and have no part.
+
+## Licence
+
+The course materials (the lectures, notebooks, exercises, case, cheatsheet,
+site pages, and the code in them) are © 2026 Jonas Theill Bøjstrup and
+licensed under [CC BY 4.0](LICENSE). They may be copied, adapted and taught
+from, with credit:
+
+> Jonas Theill Bøjstrup, Machine Learning in Finance, Aarhus University (2026), https://theill95.github.io/mlfin-2026/, CC BY 4.0
+
+Not covered: the data files keep their sources' terms (see [Data](#data)), and
+the libraries and tools the site is built with keep their own licences.
+Questions about reuse: jobo@econ.au.dk.

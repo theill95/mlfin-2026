@@ -30,6 +30,8 @@
     <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
     <ul>
       <li><a href="index.html" aria-current="page">Sessions</a></li>
+      <li><a href="case.html">The case</a></li>
+      <li><a href="revision.html">Revision</a></li>
       <li><a href="cheatsheet.html">Cheatsheet</a></li>
       <li><a href="math.html">Maths brush-up</a></li>
       <li><a href="setup.html">Setup &amp; tools</a></li>
@@ -41,7 +43,7 @@
     <div class="nav-foot">
       <div class="nav-owner">Jonas Theill Bøjstrup</div>
       <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>
-      <div class="nav-legal">Aarhus University<br>&copy; 2026 Jonas Theill Bøjstrup</div>
+      <div class="nav-legal">Aarhus University<br>&copy; 2026 Jonas Theill Bøjstrup<br><a href="resources.html#licence">Free to reuse, CC BY 4.0</a></div>
     </div>
   </nav>
   <script>
@@ -483,15 +485,45 @@
        <a href="downloads.html#session-13">downloads page</a>.</p>
   </section>
 
-  <div class="how">
-    <h3>How to use these materials</h3>
-    <ul>
-      <li><strong>Lecture:</strong> click <em>Interactive lecture</em>. Arrow keys move between slides; the code cells run in your browser, so you can edit them and press Run.</li>
-      <li><strong>Exercises &amp; case:</strong> click a button to open the notebook in Colab, then <strong>File → Save a copy in Drive</strong> so your work is your own. Hints and solutions are folded inside each task, and the data loads by itself with nothing to upload.</li>
-      <li><strong>Sessions 1 and 2 need nothing installed.</strong> A browser and a Google account are enough. From Session 3 you can also work locally in VS Code, which is what you will use at the exam: the <a href="setup.html">setup guide</a> walks through it.</li>
-      <li><strong>Cannot remember a function?</strong> The <a href="cheatsheet.html">cheatsheet</a> lists everything the course has used, one line each, and prints to a PDF for the exam.</li>
-    </ul>
-  </div>
+  <section class="card" id="faq">
+    <h2>Questions students ask</h2>
+    <details class="faq">
+      <summary>How do I keep my work in Colab?</summary>
+      <p>Before you type anything, choose <strong>File → Save a copy in Drive</strong>. The copy is yours; the notebook the button opened is not, and closing its tab loses what you wrote in it.</p>
+    </details>
+    <details class="faq">
+      <summary>Do I have to finish every exercise?</summary>
+      <p>No. They are rated one to five stars, and the hints and full solutions are folded under each task. Do what you can, then the case.</p>
+    </details>
+    <details class="faq">
+      <summary>Where are Parts 7, 10 and 13 of the case?</summary>
+      <p>Parts are numbered by session, and Sessions 7, 10 and 13 are case lectures of their own, so they have none. <a href="case.html">The case</a> page shows all twelve parts.</p>
+    </details>
+    <details class="faq">
+      <summary>The first code cell of a lecture takes a while. Is it broken?</summary>
+      <p>No. The page downloads Python into the browser first: 7 to 15 seconds on a good connection, longer on a slow one. Every cell after that is quick.</p>
+    </details>
+    <details class="faq">
+      <summary>My number differs from the notebook's in the third decimal.</summary>
+      <p>Your package versions differ from the course's. The <a href="setup.html#install">install line on the setup page</a> gives you the same versions; in Colab, Session 12's notebooks install the XGBoost they need by themselves.</p>
+    </details>
+    <details class="faq">
+      <summary>Can I print a lecture?</summary>
+      <p>Use its PDF instead: printing from the browser leaves out the results of the code cells. Every lecture's PDF is on its card above and on the <a href="exam_info.html#offline">Exam info page</a>.</p>
+    </details>
+    <details class="faq">
+      <summary>Can I work on my own laptop?</summary>
+      <p>Yes, and the exam is written that way. The <a href="setup.html">setup guide</a> walks through Python, VS Code and the packages, and the <a href="downloads.html">downloads page</a> has every notebook and data file.</p>
+    </details>
+    <details class="faq">
+      <summary>What can I bring to the exam?</summary>
+      <p>The cheatsheet, as a copy saved on your laptop; the official exam cover sets the other rules. The <a href="exam_info.html">Exam info page</a> has the format, a checklist and three mock exams.</p>
+    </details>
+    <details class="faq">
+      <summary>I cannot remember a function.</summary>
+      <p>The <a href="cheatsheet.html">cheatsheet</a> lists every function the course has used, one row each, with the session it came from. The <a href="revision.html">revision page</a> has each session's summary and a glossary.</p>
+    </details>
+  </section>
 
   <footer>
     Questions: <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.

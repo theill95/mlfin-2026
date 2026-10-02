@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revision · Machine Learning in Finance</title>
+<meta name="description" content="What each session of Machine Learning in Finance should leave you with, the routine behind every model, and a glossary of the course's terms.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:site_name" content="Machine Learning in Finance">
+<meta property="og:title" content="Revision · Machine Learning in Finance">
+<meta property="og:description" content="What each session of Machine Learning in Finance should leave you with, the routine behind every model, and a glossary of the course's terms.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://theill95.github.io/mlfin-2026/revision.html">
+<meta property="og:image" content="https://theill95.github.io/mlfin-2026/assets/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+
+  <!-- nav:start -->
+  <script>
+    /* Light or dark: what the reader chose with the button below, else the system's. */
+    try { var t = localStorage.getItem("mlfin-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+  </script>
+  <nav class="sidenav" aria-label="Course pages">
+    <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
+    <ul>
+      <li><a href="index.html">Sessions</a></li>
+      <li><a href="case.html">The case</a></li>
+      <li><a href="revision.html" aria-current="page">Revision</a></li>
+      <li><a href="cheatsheet.html">Cheatsheet</a></li>
+      <li><a href="math.html">Maths brush-up</a></li>
+      <li><a href="setup.html">Setup &amp; tools</a></li>
+      <li><a href="resources.html">Resources</a></li>
+      <li><a href="downloads.html">Downloads</a></li>
+      <li><a href="exam_info.html">Exam info</a></li>
+    </ul>
+    <button class="theme-toggle" type="button" aria-label="Switch between light and dark colours">&#9680; Light or dark</button>
+    <div class="nav-foot">
+      <div class="nav-owner">Jonas Theill Bøjstrup</div>
+      <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>
+      <div class="nav-legal">Aarhus University<br>&copy; 2026 Jonas Theill Bøjstrup<br><a href="resources.html#licence">Free to reuse, CC BY 4.0</a></div>
+    </div>
+  </nav>
+  <script>
+    document.querySelector(".theme-toggle").addEventListener("click", function () {
+      var root = document.documentElement, chosen = root.getAttribute("data-theme");
+      var dark = chosen ? chosen === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      root.setAttribute("data-theme", dark ? "light" : "dark");
+      try { localStorage.setItem("mlfin-theme", dark ? "light" : "dark"); } catch (e) {}
+    });
+  </script>
+  <!-- nav:end -->
+
+  <main class="wrap" id="main">
+  <header>
+    <div class="accent"></div>
+    <div class="eyebrow">Generated from the lectures</div>
+    <h1>Revision</h1>
+    <p class="lede">What each session should leave you with, as its last slide puts it,
+       then the routine every model went through, and a glossary of the course's terms.
+       Each session links back to its slide.</p>
+  </header>
+
+  <ul class="cs-toc">
+    <li><a href="#s1">Session 1</a></li> <li><a href="#s2">Session 2</a></li> <li><a href="#s3">Session 3</a></li> <li><a href="#s4">Session 4</a></li> <li><a href="#s5">Session 5</a></li> <li><a href="#s6">Session 6</a></li> <li><a href="#s8">Session 8</a></li> <li><a href="#s9">Session 9</a></li> <li><a href="#s11">Session 11</a></li> <li><a href="#s12">Session 12</a></li> <li><a href="#routine">The routine</a></li> <li><a href="#glossary">Glossary</a></li>
+  </ul>
+
+  <section class="card rv-session" id="s1">
+    <h2>Session 1 · Beginning Python for financial data</h2>
+    <p class="card-meta"><a href="session_01/session_01.html#/what-stays-with-you">the slide</a> ·
+       <a href="session_01/session_01.html">the lecture</a> ·
+       <a href="downloads/lectures/session_01.pdf">its PDF</a></p>
+    <div class="rv-grid">
+        <div class="rv-item"><p><strong>Runtime state</strong> Cells share a memory; “correct” means correct top-to-bottom from a fresh start.</p></div>
+        <div class="rv-item"><p><strong>Variables</strong> <code>=</code> assigns a name to a value; assigning again overwrites.</p></div>
+        <div class="rv-item"><p><strong>Types</strong> <code>int</code>, <code>float</code>, <code>str</code>, <code>bool</code>; and <code>"150"</code> is not 150.</p></div>
+        <div class="rv-item"><p><strong>Formatting</strong> <code>f"{r:.2%}"</code> and <code>f"{p:.2f}"</code>: the two recipes we reuse.</p></div>
+        <div class="rv-item"><p><strong>Functions &amp; methods</strong> <code>round(x, 2)</code> versus <code>ticker.upper()</code>: the dot-grammar runs the course.</p></div>
+        <div class="rv-item"><p><strong>Lists</strong> Index from 0, <code>[-1]</code> is the end, slice <code>[a:b]</code> excludes <code>b</code>.</p></div>
+        <div class="rv-item"><p><strong>Errors</strong> Read the last line first. Nothing is broken.</p></div>
+        <div class="rv-item"><p><strong>Simple return</strong> <code>(p1 - p0) / p0</code>: the object this course is about.</p></div>
+    </div>
+  </section>
+  <section class="card rv-session" id="s2">
+    <h2>Session 2 · Functions, loops and dictionaries</h2>
+    <p class="card-meta"><a href="session_02/session_02.html#/what-stays-with-you">the slide</a> ·
+       <a href="session_02/session_02.html">the lecture</a> ·
+       <a href="downloads/lectures/session_02.pdf">its PDF</a></p>
+    <div class="rv-grid">
+        <div class="rv-item"><p><strong>For loops</strong> <code>for x in items:</code> runs the body once per item.</p></div>
+        <div class="rv-item"><p><strong>While loops</strong> <code>while condition:</code> repeats until the condition is false.</p></div>
+        <div class="rv-item"><p><strong>if / elif / else</strong> Run a block only when a condition holds.</p></div>
+        <div class="rv-item"><p><strong>Functions</strong> <code>def name(args):</code> with <code>return</code>, plus defaults and a docstring.</p></div>
+        <div class="rv-item"><p><strong>Dictionaries</strong> <code>{key: value}</code>, looked up by key, not position.</p></div>
+        <div class="rv-item"><p><strong>Volatility</strong> The standard deviation of the daily returns.</p></div>
+    </div>
+  </section>
+  <section class="card rv-session" id="s3">
+    <h2>Session 3 · Packages: NumPy, pandas and matplotlib</h2>
+    <p class="card-meta"><a href="session_03/session_03.html#/what-stays-with-you">the slide</a> ·
+       <a href="session_03/session_03.html">the lecture</a> ·
+       <a href="downloads/lectures/session_03.pdf">its PDF</a></p>
+    <div class="rv-grid">
+        <div class="rv-item"><p><strong>Your own machine</strong> Install once, <code>import</code> in every notebook.</p></div>
+        <div class="rv-item"><p><strong>Looking things up</strong> Hover, or <code>help</code>. It is on your machine, not online.</p></div>
+        <div class="rv-item"><p><strong>NumPy</strong> Arrays do arithmetic all at once. <code>@</code> for matrices.</p></div>
+        <div class="rv-item"><p><strong>pandas</strong> <code>read_csv</code>, filter, new columns, <code>groupby</code>, <code>pivot</code>.</p></div>
+        <div class="rv-item"><p><strong>matplotlib</strong> <code>fig, ax = plt.subplots()</code>, then label everything.</p></div>
+        <div class="rv-item"><p><strong>Judgment</strong> The form, the scale and the baseline decide what a reader sees.</p></div>
+    </div>
+  </section>
+  <section class="card rv-session" id="s4">
+    <h2>Session 4 · Foundations of machine learning</h2>
+    <p class="card-meta"><a href="session_04/session_04.html#/what-stays-with-you">the slide</a> ·
+       <a href="session_04/session_04.html">the lecture</a> ·
+       <a href="downloads/lectures/session_04.pdf">its PDF</a></p>
+    <div class="rv-grid">
+        <div class="rv-item"><p><strong>One table</strong> Rows are observations, columns are features, one column is the target.</p></div>
+        <div class="rv-item"><p><strong><span class="math inline">Y = f(X) + \varepsilon</span></strong> You estimate <span class="math inline">f</span>. You never remove <span class="math inline">\varepsilon</span>.</p></div>
+        <div class="rv-item"><p><strong>Supervised or not</strong> A target column decides it. Number means regression, label means classification.</p></div>
+        <div class="rv-item"><p><strong>Cleaning is the work</strong> Missing, extreme, wrong scale, not numeric. In that order, most days.</p></div>
+        <div class="rv-item"><p><strong>Nothing from the future</strong> Not in a fill, not in a scaler, not in a split.</p></div>
+        <div class="rv-item"><p><strong>Pick the metric first</strong> MAE, RMSE and R² answer different questions. So do precision and recall.</p></div>
+        <div class="rv-item"><p><strong>Training error always falls</strong> Which is exactly why it cannot be used to choose a model.</p></div>
+        <div class="rv-item"><p><strong>Bias against variance</strong> Too simple misses the shape. Too flexible learns the noise.</p></div>
+    </div>
+  </section>
+  <section class="card rv-session" id="s5">
+    <h2>Session 5 · Model selection and cross-validation</h2>
+    <p class="card-meta"><a href="session_05/session_05.html#/what-stays-with-you">the slide</a> ·
+       <a href="session_05/session_05.html">the lecture</a> ·
+       <a href="downloads/lectures/session_05.pdf">its PDF</a></p>
+    <div class="rv-grid">
+        <div class="rv-item"><p><strong>Fitting a model</strong> <code>LinearRegression()</code>, <code>.fit(X, y)</code>, <code>.predict(X)</code>. Later models change only the first line.</p></div>
+        <div class="rv-item"><p><strong>X is a table, y is a column</strong> <code>train[["vol_20d"]]</code> with two brackets, <code>train["vol_next"]</code> with one.</p></div>
+        <div class="rv-item"><p><strong>Always report a baseline</strong> Compare the model against the training average and against a simple rule that uses no model.</p></div>
+        <div class="rv-item"><p><strong>Training error always prefers more columns</strong> Adding a column can never worsen the fit, so training error cannot say whether the column helps.</p></div>
+        <div class="rv-item"><p><strong>Choosing uses up data</strong> Rows used to compare candidates can no longer give an honest score for the winner.</p></div>
+        <div class="rv-item"><p><strong>One split is one measurement</strong> Moving the cut date can change the winner. Cross-validation averages over several cuts.</p></div>
+        <div class="rv-item"><p><strong>Read the folds, not only the mean</strong> A fold much worse than the others points to a period the model handles badly.</p></div>
+        <div class="rv-item"><p><strong>Folds must follow the calendar</strong> Use <code>TimeSeriesSplit</code> for a time series. <code>KFold</code> shuffles, and here it chose the worst of the three models.</p></div>
+    </div>
+  </section>
+  <section class="card rv-session" id="s6">
+    <h2>Session 6 · Penalised regression</h2>
+    <p class="card-meta"><a href="session_06/session_06.html#/what-stays-with-you">the slide</a> ·
+       <a href="session_06/session_06.html">the lecture</a> ·
+       <a href="downloads/lectures/session_06.pdf">its PDF</a></p>
+    <div class="rv-grid">
+        <div class="rv-item"><p><strong>Many columns overfit</strong> Nineteen columns fitted the training rows better than one and forecast worse. Near-copies get large, opposite coefficients that are noise.</p></div>
+        <div class="rv-item"><p><strong>A penalty holds coefficients small</strong> Ridge adds <span class="math inline">\alpha \sum \beta_j^2</span>, lasso adds <span class="math inline">\alpha \sum |\beta_j|</span>. <code>Ridge(alpha=...)</code> fits and predicts like <code>LinearRegression</code>.</p></div>
+        <div class="rv-item"><p><strong>The penalty needs standardised columns</strong> It charges by coefficient size, and size depends on units. <code>StandardScaler</code> fitted on the training rows, then a <code>Pipeline</code>.</p></div>
+        <div class="rv-item"><p><strong>Alpha is a hyperparameter</strong> Set before <code>.fit()</code>, never changed by it. Chosen by cross-validation on the training rows, on a grid in factors of ten.</p></div>
+        <div class="rv-item"><p><strong><code>GridSearchCV</code> runs the whole search</strong> Every value times every fold, the best mean kept, refitted on all training rows. <code>best_params_</code>, <code>best_score_</code>, <code>cv_results_</code>, <code>.predict()</code>.</p></div>
+        <div class="rv-item"><p><strong>Lasso gives exact zeros</strong> A compact model, and the kept set changes with the rows. Ridge spreads weight across correlated columns.</p></div>
+        <div class="rv-item"><p><strong>The scales are not the same</strong> Ridge’s useful alpha was in the thousands, lasso’s near 0.1. Read the validation curve rather than reusing a grid.</p></div>
+        <div class="rv-item"><p><strong>Forecasting, not inference</strong> Penalised coefficients are biased on purpose and have no standard errors. Fit OLS on a few chosen columns to test an effect.</p></div>
+    </div>
+  </section>
+  <section class="card rv-session" id="s8">
+    <h2>Session 8 · Classification with logistic regression</h2>
+    <p class="card-meta"><a href="session_08/session_08.html#/what-stays-with-you">the slide</a> ·
+       <a href="session_08/session_08.html">the lecture</a> ·
+       <a href="downloads/lectures/session_08.pdf">its PDF</a></p>
+    <div class="rv-grid">
+        <div class="rv-item"><p><strong>A label from a comparison</strong> <code>(table["vol_next"] &gt; table["vol_20d"]).astype(int)</code>. Predicting the majority class on every row is the share a model has to beat.</p></div>
+        <div class="rv-item"><p><strong>A straight line cannot give a probability</strong> Fitted to ones and zeros it runs below 0 and above 1. The sigmoid keeps the curve between them.</p></div>
+        <div class="rv-item"><p><strong>Logistic regression fits the log-odds</strong> <code>LogisticRegression()</code>, <code>.fit(X, y)</code>. A coefficient adds to the log-odds and <code>np.exp</code> of it multiplies the odds; the sign is what to read.</p></div>
+        <div class="rv-item"><p><strong>predict_proba, then a threshold</strong> <code>.predict_proba()</code> gives a column per class, in the order of <code>classes_</code>. <code>.predict()</code> compares the second column with one half; any other threshold is a comparison you write.</p></div>
+        <div class="rv-item"><p><strong>The confusion matrix</strong> <code>confusion_matrix</code>, with rows for what happened and columns for the prediction. Accuracy, precision and recall are built from its four counts, and the threshold trades precision against recall.</p></div>
+        <div class="rv-item"><p><strong>AUC needs no threshold</strong> <code>roc_auc_score(y, p)</code> with the probabilities, never the predicted labels. 0.5 is a random ranking; <code>scoring="roc_auc"</code> on the folds.</p></div>
+        <div class="rv-item"><p><strong>C is one over alpha</strong> The penalty is ridge’s by default, and a small <code>C</code> is a strong penalty. Chosen by <code>GridSearchCV</code> in a pipeline with a scaler. <code>penalty="l1"</code> for exact zeros.</p></div>
+        <div class="rv-item"><p><strong>Fitted by iteration</strong> Log-loss has no formula for the coefficients, so <code>.fit()</code> improves them step by step. Raise <code>max_iter</code> when the warning appears.</p></div>
+    </div>
+  </section>
+  <section class="card rv-session" id="s9">
+    <h2>Session 9 · Classification in practice</h2>
+    <p class="card-meta"><a href="session_09/session_09.html#/what-stays-with-you">the slide</a> ·
+       <a href="session_09/session_09.html">the lecture</a> ·
+       <a href="downloads/lectures/session_09.pdf">its PDF</a></p>
+    <div class="rv-grid">
+        <div class="rv-item"><p><strong>Accuracy hides a rare class</strong> 77.9 percent of borrowers did not default, so predicting that nobody defaults scores 0.779. Report recall beside accuracy, and read the confusion matrix.</p></div>
+        <div class="rv-item"><p><strong>The threshold is a decision</strong> <code>.predict()</code> uses one half. At a cost of 5 for a miss and 1 for a false alarm, one sixth is cheapest, and saved a quarter of the cost.</p></div>
+        <div class="rv-item"><p><strong>Rows that are not a time series</strong> <code>train_test_split(..., stratify=y, random_state=0)</code> for a cross-section, <code>TimeSeriesSplit</code> for days. <code>stratify</code> keeps the rare class in both halves.</p></div>
+        <div class="rv-item"><p><strong>class_weight moves the cut, not the ranking</strong> <code>class_weight="balanced"</code> raised recall from 0.311 to 0.550 and left AUC at 0.748. It also broke the probabilities.</p></div>
+        <div class="rv-item"><p><strong>Calibration: said against happened</strong> Bucket with <code>pd.cut</code> and compare each bucket with what happened. <code>brier_score_loss</code> is the one number, <code>CalibratedClassifierCV</code> the repair.</p></div>
+        <div class="rv-item"><p><strong>More than two classes</strong> <code>classes_</code> is alphabetical, <code>coef_</code> gets a row per class and <code>predict_proba</code> a column. The softmax turns the scores into probabilities.</p></div>
+        <div class="rv-item"><p><strong>Macro or weighted</strong> Macro treats the classes equally, weighted by their size. When the class you care about is the small one, read macro.</p></div>
+        <div class="rv-item"><p><strong>k-nearest neighbours</strong> <code>KNeighborsClassifier(n_neighbors=k)</code>, scaled, with k on the folds. A large k is a simple model. Logistic regression won here.</p></div>
+    </div>
+  </section>
+  <section class="card rv-session" id="s11">
+    <h2>Session 11 · Trees and forests</h2>
+    <p class="card-meta"><a href="session_11/session_11.html#/what-stays-with-you">the slide</a> ·
+       <a href="session_11/session_11.html">the lecture</a> ·
+       <a href="downloads/lectures/session_11.pdf">its PDF</a></p>
+    <div class="rv-grid">
+        <div class="rv-item"><p><strong>Linear regression has one slope</strong> When volatility was high, linear regression on <code>vol_20d</code> was 0.18 too low after a fall and 0.14 too high after a rise.</p></div>
+        <div class="rv-item"><p><strong>A tree is questions, boxes and a formula</strong> <span class="math inline">\hat f(\mathbf{x}) = \sum_m c_m \mathbf{1}\{\mathbf{x} \in R_m\}</span>: each leaf forecasts the mean of its training days.</p></div>
+        <div class="rv-item"><p><strong>Grown greedily, one cut at a time</strong> Every column and every cut, the smallest RSS, then again inside each box; a stump is one step. The best number for a box is its mean.</p></div>
+        <div class="rv-item"><p><strong>plot_tree shows it</strong> <code>plot_tree(model, feature_names=...)</code>, with <code>filled</code>, <code>impurity=False</code>, <code>precision</code> and <code>label="root"</code>. Each box shows its question, error, days and forecast.</p></div>
+        <div class="rv-item"><p><strong>Depth is the setting</strong> Without a limit: one leaf per training day, an error of 0 on them and 0.466 on the test days. Choose the size of a tree on <code>TimeSeriesSplit</code> folds.</p></div>
+        <div class="rv-item"><p><strong>Bagging and forests, for variance</strong> Averaging 20 bootstrap trees took the error from 0.410 to 0.320. Drawing columns at random makes the trees differ, and a tuned forest reached 0.226.</p></div>
+        <div class="rv-item"><p><strong>Tuning, cost and size</strong> Tuning moved the forest by 0.070 and ridge by 0.030. Each setting multiplies a grid, and 500 full trees forecast worse than ridge’s 20 coefficients.</p></div>
+        <div class="rv-item"><p><strong>A tree for a label</strong> The same cuts, judged by Gini. On the credit table the forest beat logistic regression; on the volatility table linear regression and ridge beat every tree.</p></div>
+    </div>
+  </section>
+  <section class="card rv-session" id="s12">
+    <h2>Session 12 · Boosting and reading a model</h2>
+    <p class="card-meta"><a href="session_12/session_12.html#/what-stays-with-you">the slide</a> ·
+       <a href="session_12/session_12.html">the lecture</a> ·
+       <a href="downloads/lectures/session_12.pdf">its PDF</a></p>
+    <div class="rv-grid">
+        <div class="rv-item"><p><strong>Averaging cannot remove bias</strong> 100 averaged stumps err 0.577 on the training days, against 0.600 for one. 100 stumps added one after another err 0.457.</p></div>
+        <div class="rv-item"><p><strong>Boosting fits what is left</strong> <span class="math inline">\hat f_m = \hat f_{m-1} + \nu\, h_m</span>: each small tree <span class="math inline">h_m</span> is fitted to the residuals, the negative gradient of the loss.</p></div>
+        <div class="rv-item"><p><strong>More trees can overfit</strong> At <span class="math inline">\nu = 0.1</span> the test error is lowest near 144 stumps, 0.221, and 0.265 at 3,000. Deeper trees turn up sooner.</p></div>
+        <div class="rv-item"><p><strong>Stop on a later block</strong> XGBoost stopped on 2022 at 244 stumps: 0.225. Stopped on the test days, it reported 0.204, a score those days chose.</p></div>
+        <div class="rv-item"><p><strong>XGBoost and LightGBM</strong> Bins, a penalty on each tree, growth leaf by leaf: on the credit table the same trees fit about 25 times faster than in <code>GradientBoosting</code>.</p></div>
+        <div class="rv-item"><p><strong>Boosting a label</strong> Each tree is fitted to <span class="math inline">y_i - \hat p_i</span> on the log-odds scale. On the credit table, 0.777: level with the forest.</p></div>
+        <div class="rv-item"><p><strong>Importance, two ways</strong> Counts of cuts ranked a column of random numbers first. Shuffles on the test rows ranked it last, at zero.</p></div>
+        <div class="rv-item"><p><strong>Correlated columns share importance</strong> Shuffled together, <code>late_now</code> and <code>months_late</code> cost 0.206 of AUC; a refit without either one loses under 0.02.</p></div>
+    </div>
+  </section>
+
+  <section class="card rv-session" id="routine">
+    <h2>The routine behind every model</h2>
+    <p class="card-meta">From Session 13: <a href="session_13/session_13.html#/the-routine-behind-every-model">the slide</a></p>
+    <div class="rv-grid">
+        <div class="rv-item"><p><strong>A baseline first</strong> The training average, the majority class or persistence. Every score goes next to the baseline’s.</p></div>
+        <div class="rv-item"><p><strong>A split that respects time</strong> When the rows are days or hours, the test rows come after the training rows.</p></div>
+        <div class="rv-item"><p><strong>Settings on validation rows</strong> Folds or a later block choose alpha, C, k, the depth and the number of trees.</p></div>
+        <div class="rv-item"><p><strong>The test rows once</strong> They score the model already chosen, and the folds are reported beside them.</p></div>
+        <div class="rv-item"><p><strong>A model read</strong> Its coefficients, its importance, or what it does to one row.</p></div>
+        <div class="rv-item"><p><strong>A model priced</strong> The time to fit and to predict, and who has to understand it.</p></div>
+    </div>
+  </section>
+
+  <h2 id="glossary">Glossary</h2>
+  <p class="lede">The course's terms, each with the session that introduced it.</p>
+  <dl class="glossary">
+    <dt id="g-accuracy">Accuracy <span class="g-s"><a href="session_04/session_04.html">Session 4</a>, <a href="session_08/session_08.html">Session 8</a></span></dt>
+    <dd>The share of predictions that match the label. Misleading when one class is rare: always predicting the majority class can score well.</dd>
+    <dt id="g-auc">AUC <span class="g-s"><a href="session_08/session_08.html">Session 8</a></span></dt>
+    <dd>The area under the ROC curve: the chance that a randomly chosen 1 gets a higher score than a randomly chosen 0. 0.5 is a random ranking and 1 a perfect one; no threshold is involved.</dd>
+    <dt id="g-bagging">Bagging <span class="g-s"><a href="session_11/session_11.html">Session 11</a></span></dt>
+    <dd>Grow many deep trees, each on a bootstrap sample of the training rows, and average their forecasts. The average cancels much of what one tree gets wrong by chance.</dd>
+    <dt id="g-baseline">Baseline <span class="g-s"><a href="session_04/session_04.html">Session 4</a>, <a href="session_05/session_05.html">Session 5</a></span></dt>
+    <dd>The simplest rule a model has to beat: the training average, the majority class, or persistence. A score means little until it sits next to the baseline's.</dd>
+    <dt id="g-bias-and-variance">Bias and variance <span class="g-s"><a href="session_04/session_04.html">Session 4</a></span></dt>
+    <dd>Bias is the error of a model too simple to follow the truth; variance the error of a model so flexible it follows the noise of its training rows. More flexibility trades the first for the second.</dd>
+    <dt id="g-boosting">Boosting <span class="g-s"><a href="session_12/session_12.html">Session 12</a></span></dt>
+    <dd>Start from the mean and add small trees one at a time, each fitted to what the trees so far still get wrong and shrunk by the learning rate.</dd>
+    <dt id="g-bootstrap-sample">Bootstrap sample <span class="g-s"><a href="session_11/session_11.html">Session 11</a></span></dt>
+    <dd>As many rows as the data, drawn at random with replacement, so some rows come twice and about a third not at all.</dd>
+    <dt id="g-calibration">Calibration <span class="g-s"><a href="session_09/session_09.html">Session 9</a></span></dt>
+    <dd>Whether a probability means what it says: of the days given 0.3, about 30 percent should turn out to be 1s.</dd>
+    <dt id="g-classification">Classification <span class="g-s"><a href="session_04/session_04.html">Session 4</a>, <a href="session_08/session_08.html">Session 8</a></span></dt>
+    <dd>Predicting a label, such as whether next month will be busier than this one, rather than a number.</dd>
+    <dt id="g-confusion-matrix">Confusion matrix <span class="g-s"><a href="session_04/session_04.html">Session 4</a>, <a href="session_08/session_08.html">Session 8</a></span></dt>
+    <dd>The four counts behind every score of a classifier: true positives, false positives, false negatives and true negatives.</dd>
+    <dt id="g-cross-validation">Cross-validation <span class="g-s"><a href="session_05/session_05.html">Session 5</a></span></dt>
+    <dd>Choosing between models with the training rows only: fit on some folds, score on the next, and average. Time-series folds always score rows that come after the ones fitted on.</dd>
+    <dt id="g-data-leakage">Data leakage <span class="g-s"><a href="session_04/session_04.html">Session 4</a></span></dt>
+    <dd>Information the forecast could not have had at the time, slipping into a feature or into the fit, such as a scaler fitted on the test rows. It makes a model look better than it is.</dd>
+    <dt id="g-decision-tree">Decision tree <span class="g-s"><a href="session_11/session_11.html">Session 11</a></span></dt>
+    <dd>A model that asks one question of one column at a time and forecasts the mean, or the class shares, of the training rows in each leaf.</dd>
+    <dt id="g-early-stopping">Early stopping <span class="g-s"><a href="session_12/session_12.html">Session 12</a></span></dt>
+    <dd>Add trees until the score on later rows stops improving, and keep the number of trees at which it was best.</dd>
+    <dt id="g-elastic-net">Elastic net <span class="g-s"><a href="session_06/session_06.html">Session 6</a></span></dt>
+    <dd>The ridge and lasso penalties at once, in a mix set by <code>l1_ratio</code>.</dd>
+    <dt id="g-f1">F1 <span class="g-s"><a href="session_04/session_04.html">Session 4</a>, <a href="session_09/session_09.html">Session 9</a></span></dt>
+    <dd>The harmonic mean of precision and recall, which sits close to the smaller of the two.</dd>
+    <dt id="g-feature">Feature <span class="g-s"><a href="session_04/session_04.html">Session 4</a></span></dt>
+    <dd>A column used to predict, built only from what was known when the forecast is made.</dd>
+    <dt id="g-feature-importance">Feature importance <span class="g-s"><a href="session_12/session_12.html">Session 12</a></span></dt>
+    <dd>How much a model leans on each column: from its cuts, measured on the training rows, or by permutation, on rows it did not fit.</dd>
+    <dt id="g-fold">Fold <span class="g-s"><a href="session_05/session_05.html">Session 5</a></span></dt>
+    <dd>One of the blocks the training rows are cut into for cross-validation.</dd>
+    <dt id="g-gini-impurity">Gini impurity <span class="g-s"><a href="session_11/session_11.html">Session 11</a></span></dt>
+    <dd>How mixed the labels in a box are: 2p(1 - p) for two classes, and zero when the box is pure. A classification tree cuts where it falls most.</dd>
+    <dt id="g-gradient">Gradient <span class="g-s"><a href="session_12/session_12.html">Session 12</a></span></dt>
+    <dd>The direction in which a loss rises fastest. For squared error, minus the gradient is the residual, which is why boosting fits its trees to residuals.</dd>
+    <dt id="g-grid-search">Grid search <span class="g-s"><a href="session_06/session_06.html">Session 6</a></span></dt>
+    <dd>Trying every value of a setting on the folds and keeping the best; <code>GridSearchCV</code> then refits it on all the training rows.</dd>
+    <dt id="g-hyperparameter">Hyperparameter <span class="g-s"><a href="session_06/session_06.html">Session 6</a></span></dt>
+    <dd>A setting chosen before fitting, such as alpha, C, k, the depth of a tree or the number of trees. Chosen on validation rows, never on the test rows.</dd>
+    <dt id="g-k-nearest-neighbours">k-nearest neighbours <span class="g-s"><a href="session_09/session_09.html">Session 9</a></span></dt>
+    <dd>Classify a row by a vote among the k training rows closest to it, on standardised columns.</dd>
+    <dt id="g-lasso">Lasso <span class="g-s"><a href="session_06/session_06.html">Session 6</a></span></dt>
+    <dd>Linear regression with a charge on the sum of the absolute coefficients. It sets some coefficients to exactly zero.</dd>
+    <dt id="g-learning-rate">Learning rate <span class="g-s"><a href="session_12/session_12.html">Session 12</a></span></dt>
+    <dd>The share of each new tree that boosting adds. A smaller rate needs more trees for the same fit.</dd>
+    <dt id="g-log-loss">Log loss <span class="g-s"><a href="session_08/session_08.html">Session 8</a></span></dt>
+    <dd>What logistic regression minimises: minus the log of the probability given to what happened. A confident wrong probability costs the most.</dd>
+    <dt id="g-logistic-regression">Logistic regression <span class="g-s"><a href="session_08/session_08.html">Session 8</a></span></dt>
+    <dd>A linear model for a label: a weighted sum of the columns, put through the sigmoid to become a probability.</dd>
+    <dt id="g-mae-mse-and-rmse">MAE, MSE and RMSE <span class="g-s"><a href="session_04/session_04.html">Session 4</a></span></dt>
+    <dd>The mean absolute, mean squared and root mean squared error of a forecast of a number. The RMSE is in the target's own units.</dd>
+    <dt id="g-majority-class">Majority class <span class="g-s"><a href="session_08/session_08.html">Session 8</a>, <a href="session_09/session_09.html">Session 9</a></span></dt>
+    <dd>Predicting the most common label everywhere: the baseline for accuracy.</dd>
+    <dt id="g-mean-reversion">Mean reversion <span class="g-s"><a href="session_05/session_05.html">Session 5</a></span></dt>
+    <dd>A value far from normal tends to be followed by one closer to normal, such as a calm month after a busy one.</dd>
+    <dt id="g-monotone-constraint">Monotone constraint <span class="g-s"><a href="session_13/session_13.html">Session 13</a></span></dt>
+    <dd>Forcing a model's forecast to rise, or to fall, as one column rises, everything else unchanged.</dd>
+    <dt id="g-out-of-bag">Out-of-bag <span class="g-s"><a href="session_11/session_11.html">Session 11</a></span></dt>
+    <dd>Scoring each training row with the trees whose bootstrap sample left it out. Fair for separate cases; too kind on days, whose neighbours were in the sample.</dd>
+    <dt id="g-overfitting">Overfitting <span class="g-s"><a href="session_04/session_04.html">Session 4</a></span></dt>
+    <dd>Learning the noise of the training rows along with their pattern: a lower training error and a higher test error.</dd>
+    <dt id="g-penalty">Penalty <span class="g-s"><a href="session_06/session_06.html">Session 6</a></span></dt>
+    <dd>A charge on the size of the coefficients, added to what the fit minimises, with a strength set by alpha, or by 1/C in logistic regression. Also called regularisation.</dd>
+    <dt id="g-permutation-importance">Permutation importance <span class="g-s"><a href="session_12/session_12.html">Session 12</a></span></dt>
+    <dd>How far a model's score falls when one column is shuffled, on rows the model did not fit.</dd>
+    <dt id="g-persistence">Persistence <span class="g-s"><a href="session_04/session_04.html">Session 4</a>, <a href="session_05/session_05.html">Session 5</a></span></dt>
+    <dd>Forecasting that the next value equals the latest one: next month's volatility is this month's. Hard to beat in finance.</dd>
+    <dt id="g-pipeline">Pipeline <span class="g-s"><a href="session_06/session_06.html">Session 6</a></span></dt>
+    <dd>Steps chained into one model, such as a scaler and then ridge, so cross-validation refits every step inside every fold.</dd>
+    <dt id="g-precision">Precision <span class="g-s"><a href="session_04/session_04.html">Session 4</a>, <a href="session_08/session_08.html">Session 8</a></span></dt>
+    <dd>Of the times the model said yes, the share that were right.</dd>
+    <dt id="g-random-forest">Random forest <span class="g-s"><a href="session_11/session_11.html">Session 11</a></span></dt>
+    <dd>Bagging in which each question chooses among a few columns drawn at random, so the trees differ more and their average is steadier.</dd>
+    <dt id="g-recall">Recall <span class="g-s"><a href="session_04/session_04.html">Session 4</a>, <a href="session_08/session_08.html">Session 8</a></span></dt>
+    <dd>Of the real yeses, the share the model caught.</dd>
+    <dt id="g-recursive-binary-splitting">Recursive binary splitting <span class="g-s"><a href="session_11/session_11.html">Session 11</a></span></dt>
+    <dd>How a tree grows: the best single cut, then the best cut inside each new box, never revising an earlier one.</dd>
+    <dt id="g-regression">Regression <span class="g-s"><a href="session_04/session_04.html">Session 4</a>, <a href="session_05/session_05.html">Session 5</a></span></dt>
+    <dd>Predicting a number, such as next month's volatility.</dd>
+    <dt id="g-residual">Residual <span class="g-s"><a href="session_05/session_05.html">Session 5</a>, <a href="session_12/session_12.html">Session 12</a></span></dt>
+    <dd>What happened minus what was forecast.</dd>
+    <dt id="g-return">Return <span class="g-s"><a href="session_01/session_01.html">Session 1</a>, <a href="session_04/session_04.html">Session 4</a></span></dt>
+    <dd>The relative change in a price, (p1 - p0) / p0. The log return, log(p1 / p0), adds up over time.</dd>
+    <dt id="g-ridge">Ridge <span class="g-s"><a href="session_06/session_06.html">Session 6</a></span></dt>
+    <dd>Linear regression with a charge on the sum of the squared coefficients: every coefficient shrinks towards zero, none to exactly zero.</dd>
+    <dt id="g-roc-curve">ROC curve <span class="g-s"><a href="session_08/session_08.html">Session 8</a></span></dt>
+    <dd>The recall against the false positive rate, at every threshold.</dd>
+    <dt id="g-sigmoid">Sigmoid <span class="g-s"><a href="session_08/session_08.html">Session 8</a></span></dt>
+    <dd>1 / (1 + exp(-z)): turns any number into a probability between 0 and 1.</dd>
+    <dt id="g-softmax">Softmax <span class="g-s"><a href="session_09/session_09.html">Session 9</a></span></dt>
+    <dd>The sigmoid for more than two classes: exponentiate each class's score and divide by the total.</dd>
+    <dt id="g-standardise">Standardise <span class="g-s"><a href="session_04/session_04.html">Session 4</a>, <a href="session_06/session_06.html">Session 6</a></span></dt>
+    <dd>Subtract a column's mean and divide by its standard deviation, both learned on the training rows.</dd>
+    <dt id="g-stump">Stump <span class="g-s"><a href="session_11/session_11.html">Session 11</a>, <a href="session_12/session_12.html">Session 12</a></span></dt>
+    <dd>A tree with one question and two leaves.</dd>
+    <dt id="g-supervised-learning">Supervised learning <span class="g-s"><a href="session_04/session_04.html">Session 4</a></span></dt>
+    <dd>Learning a rule from rows whose answer is known. Unsupervised learning looks for structure with no answer column.</dd>
+    <dt id="g-target">Target <span class="g-s"><a href="session_04/session_04.html">Session 4</a></span></dt>
+    <dd>The column to predict, set on the row of the features it is predicted from.</dd>
+    <dt id="g-test-rows">Test rows <span class="g-s"><a href="session_04/session_04.html">Session 4</a></span></dt>
+    <dd>Rows held back until the end and used once, to score the model that was chosen.</dd>
+    <dt id="g-threshold">Threshold <span class="g-s"><a href="session_08/session_08.html">Session 8</a>, <a href="session_09/session_09.html">Session 9</a></span></dt>
+    <dd>The probability from which a classifier says 1. The default is 0.5; when the two mistakes cost different amounts, another threshold is cheaper.</dd>
+    <dt id="g-training-rows">Training rows <span class="g-s"><a href="session_04/session_04.html">Session 4</a></span></dt>
+    <dd>The rows a model is fitted on.</dd>
+    <dt id="g-validation">Validation <span class="g-s"><a href="session_05/session_05.html">Session 5</a></span></dt>
+    <dd>Scoring candidates on rows they were not fitted on, before the test rows: the folds, or a later block.</dd>
+    <dt id="g-volatility">Volatility <span class="g-s"><a href="session_02/session_02.html">Session 2</a>, <a href="session_03/session_03.html">Session 3</a></span></dt>
+    <dd>The standard deviation of returns: how much a price moves. Annualised by the square root of 252 trading days.</dd>
+    <dt id="g-xgboost-and-lightgbm">XGBoost and LightGBM <span class="g-s"><a href="session_12/session_12.html">Session 12</a></span></dt>
+    <dd>Fast boosting libraries that cut each column only between bins. LightGBM grows its trees leaf by leaf.</dd>
+  </dl>
+
+  <footer>
+    Built from the lectures by <code>tools/build_revision.py</code>. Something missing?
+    Email <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>.
+  </footer>
+  </main>
+</div>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script>
+  // The recap boxes keep the decks' maths as TeX in span.math; typeset it once KaTeX is in.
+  window.addEventListener("load", function () {
+    if (!window.katex) return;
+    document.querySelectorAll("span.math").forEach(function (el) {
+      katex.render(el.textContent, el, { throwOnError: false, displayMode: el.classList.contains("display") });
+    });
+  });
+</script>
+</body>
+</html>

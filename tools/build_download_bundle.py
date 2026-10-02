@@ -77,7 +77,11 @@ code cell, on the Exam info page:
 
 Questions: jobo@econ.au.dk
 
-(c) 2026 Jonas Theill Bojstrup
+(c) 2026 Jonas Theill Bojstrup. The notebooks are free to reuse and adapt
+under CC BY 4.0, with credit to the course; the data files keep their
+sources' terms. Both are explained here:
+
+    https://theill95.github.io/mlfin-2026/resources.html#licence
 """
 
 

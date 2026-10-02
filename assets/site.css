@@ -103,8 +103,11 @@ a { color: var(--blue); }
   margin-top: auto; padding-top: 1.2rem;
   font-size: 0.76rem; color: var(--faint); line-height: 1.5;
 }
-.sidenav .nav-foot a { color: var(--blue); text-decoration: none; }
-.sidenav .nav-foot a:hover { text-decoration: underline; }
+.sidenav .nav-foot a {
+  display: inline; padding: 0; border-radius: 0; font-size: inherit;
+  color: var(--blue); text-decoration: none;
+}
+.sidenav .nav-foot a:hover { background: none; color: var(--blue); text-decoration: underline; }
 .sidenav .nav-owner { color: var(--ink-soft); font-weight: 600; }
 .sidenav .nav-legal {
   margin-top: 0.7rem; padding-top: 0.7rem;
@@ -345,7 +348,13 @@ td code { white-space: nowrap; }
   border-left: 3px solid var(--blue); border-radius: 0 8px 8px 0;
   padding: 0.9rem 1.1rem; margin: 1.1rem 0; overflow-x: auto;
 }
-.m-eq .katex-display { margin: 0.2rem 0; }
+.m-eq .katex-display { margin: 0.2rem 0; overflow-x: auto; overflow-y: hidden; padding: 0.1rem 0; }
+/* Several short formulas in one box: side by side when they fit, else stacked. */
+.m-row { display: flex; flex-wrap: wrap; justify-content: center; column-gap: 2.4rem; }
+@media (max-width: 620px) {
+  .m-eq { padding: 0.8rem 0.85rem; }
+  .m-eq .katex-display, .m-panel .katex-display { font-size: 0.88em; }
+}
 .m-eq.big { background: var(--blue-pale); border-color: var(--blue-line); }
 .m-say {
   font-size: 0.85rem; color: var(--ink-soft); line-height: 1.55;
@@ -579,3 +588,43 @@ details.start[open] > summary { margin-bottom: 0.4rem; }
 @media (max-width: 620px) {
   td code { white-space: normal; overflow-wrap: anywhere; }
 }
+
+/* ------------------------------------------------------------ revision */
+
+.card-meta { font-size: 0.84rem; color: var(--faint); margin: 0 0 0.9rem; }
+.rv-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.6rem; }
+@media (min-width: 700px) { .rv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.rv-item {
+  border: 1px solid var(--line); border-left: 3px solid var(--blue-line); border-radius: 0 8px 8px 0;
+  padding: 0.6rem 0.85rem; background: var(--card); font-size: 0.9rem; color: var(--ink-soft);
+}
+.rv-item p { margin: 0; }
+.rv-item strong { display: block; color: var(--blue-deep); margin-bottom: 0.15rem; }
+dl.glossary { margin: 0.6rem 0 0; }
+dl.glossary dt {
+  font-weight: 650; color: var(--blue-deep); margin-top: 0.9rem; padding-top: 0.6rem;
+  border-top: 1px solid var(--line); scroll-margin-top: 1rem;
+}
+dl.glossary dt:first-child { border-top: 0; padding-top: 0; }
+dl.glossary .g-s { font-weight: 400; font-size: 0.78rem; color: var(--faint); margin-left: 0.5rem; }
+dl.glossary .g-s a { color: var(--faint); }
+dl.glossary dd { margin: 0.25rem 0 0; color: var(--ink-soft); font-size: 0.93rem; }
+@media print { .rv-item, dl.glossary dt, dl.glossary dd { break-inside: avoid; } }
+
+/* ------------------------------------------------------------ questions */
+
+details.faq { border-top: 1px solid var(--line); padding: 0.55rem 0; }
+details.faq:first-of-type { border-top: 0; }
+details.faq summary {
+  cursor: pointer; font-weight: 600; color: var(--blue-deep); list-style: none;
+}
+details.faq summary::-webkit-details-marker { display: none; }
+details.faq summary::before {
+  content: "\25B8"; display: inline-block; width: 1.1rem; color: var(--blue);
+  transition: transform .12s;
+}
+details.faq[open] summary::before { transform: rotate(90deg); }
+details.faq p { margin: 0.4rem 0 0.2rem 1.1rem; color: var(--ink-soft); font-size: 0.93rem; }
+@media print { details.faq > * { display: block !important; } }
+/* The chips under a page's header, when nothing else sits between them. */
+header + .cs-toc { margin-top: 1.3rem; }

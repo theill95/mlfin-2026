@@ -31,6 +31,8 @@
     <div class="brand"><span class="brand-accent"></span>Machine Learning<br>in Finance</div>
     <ul>
       <li><a href="index.html">Sessions</a></li>
+      <li><a href="case.html">The case</a></li>
+      <li><a href="revision.html">Revision</a></li>
       <li><a href="cheatsheet.html">Cheatsheet</a></li>
       <li><a href="math.html" aria-current="page">Maths brush-up</a></li>
       <li><a href="setup.html">Setup &amp; tools</a></li>
@@ -42,7 +44,7 @@
     <div class="nav-foot">
       <div class="nav-owner">Jonas Theill Bøjstrup</div>
       <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a>
-      <div class="nav-legal">Aarhus University<br>&copy; 2026 Jonas Theill Bøjstrup</div>
+      <div class="nav-legal">Aarhus University<br>&copy; 2026 Jonas Theill Bøjstrup<br><a href="resources.html#licence">Free to reuse, CC BY 4.0</a></div>
     </div>
   </nav>
   <script>
@@ -119,6 +121,7 @@
     <li><a href="#probability">Probability notation</a></li>
     <li><a href="#distance">Distance and scale</a></li>
     <li><a href="#objective">Reading an objective function</a></li>
+    <li><a href="#scores">Scores, folds and samples</a></li>
     <li><a href="#trees">Notation for trees</a></li>
     <li><a href="#gallery">The equation gallery</a></li>
     <li><a href="#numpy">Notation to NumPy</a></li>
@@ -923,6 +926,62 @@
   </div>
 
   <!-- ============================================================== trees -->
+  <h2 id="scores">Scores, folds and samples</h2>
+  <p class="m-why">The arithmetic behind how a model is judged and chosen: the scores of a
+     classifier, the cross-validation estimate, the bootstrap, and the softmax.</p>
+
+  <h3>The scores of a classifier</h3>
+  <p>Every score of a classifier is built from the four counts of the confusion matrix:
+     \(TP\) and \(TN\), the right answers, \(FP\), the false alarms, and \(FN\), the
+     misses.</p>
+  <div class="m-eq">
+    <div class="m-row">
+      <div>$$\text{precision} = \frac{TP}{TP + FP}$$</div>
+      <div>$$\text{recall} = \frac{TP}{TP + FN}$$</div>
+      <div>$$F_1 = \frac{2 \cdot \text{precision} \cdot \text{recall}}{\text{precision} + \text{recall}}$$</div>
+    </div>
+    <div class="m-say">Precision asks how often a yes was right; recall, how many of the
+      real yeses were caught. \(F_1\) is their harmonic mean, which stays close to the
+      smaller of the two. Accuracy, \((TP + TN)/n\), is the mean of an indicator, as in the
+      section on trees below.</div>
+  </div>
+  <div class="m-eq">
+    $$\text{AUC} = P\big(\hat{p}_i > \hat{p}_j \;\big|\; y_i = 1,\; y_j = 0\big)$$
+    <div class="m-say">Pick one row that was a 1 and one that was a 0: the AUC is the
+      chance that the model gave the 1 the higher probability. A random ranking scores 0.5
+      and a perfect one 1, whatever the threshold, which is why the AUC needs the
+      probabilities and not the 0/1 predictions.</div>
+  </div>
+
+  <h3>The cross-validation estimate</h3>
+  <div class="m-eq">
+    $$\text{CV}_{(K)} = \frac{1}{K}\sum_{k=1}^{K} \text{MSE}_k$$
+    <div class="m-say">Cut the training rows into \(K\) folds, score the model on each fold
+      after fitting it on the others, and average. With time-series folds the model is only
+      ever fitted on rows that come before the fold it is scored on. The setting with the
+      smallest \(\text{CV}_{(K)}\) wins, and only then are the test rows used, once.</div>
+  </div>
+
+  <h3>The bootstrap</h3>
+  <div class="m-eq">
+    $$P(\text{row } i \text{ is never drawn}) = \Big(1 - \frac{1}{n}\Big)^{n} \;\to\; e^{-1} \approx 0.368$$
+    <div class="m-say">A bootstrap sample draws \(n\) rows from \(n\), with replacement.
+      Each draw misses a given row with probability \(1 - 1/n\), so about 37 percent of
+      the rows are left out of each sample and 63 percent are in. A forest can forecast
+      each row with only the trees whose sample left it out: the out-of-bag forecast. On
+      days it flatters the forest, because a day left out has its neighbours in the
+      bag.</div>
+  </div>
+
+  <h3>The softmax</h3>
+  <div class="m-eq">
+    $$P(\text{class } j) = \frac{e^{s_j}}{e^{s_1} + e^{s_2} + \cdots + e^{s_N}}$$
+    <div class="m-say">With \(N\) classes the model gives each class a score \(s_j\). The
+      exponential makes every score positive, and the division makes the \(N\)
+      probabilities add up to one. With two classes it is the sigmoid, applied to the
+      difference between the two scores.</div>
+  </div>
+
   <h2 id="trees">Notation for trees and ensembles</h2>
   <p class="m-why">Tree formulas look unlike regression formulas, but they use only two new
      pieces of notation.</p>
