@@ -26,7 +26,7 @@ errors = [o["ename"] for c in nb.cells if c.cell_type == "code"
 figures = sum(1 for c in nb.cells if c.cell_type == "code"
               for o in c.get("outputs", []) if o.get("output_type") == "display_data")
 print(text.strip().splitlines()[-1])
-if errors or figures != 1 or "ready: this laptop" not in text:
+if errors or figures != 1 or "READY: all automated checks passed" not in text or "NOT READY" in text:
     print(f"setup check failed: errors {errors}, figures {figures}")
     print(text)
     sys.exit(1)

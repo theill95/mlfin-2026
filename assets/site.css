@@ -696,3 +696,16 @@ kbd {
   font-family: "Cascadia Mono", Consolas, Menlo, monospace; font-size: 0.85em;
   border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 0.3em;
 }
+
+/* Temporary exam banner and permanent readiness guidance. */
+.exam-notice {
+  padding: 1.1rem 1.3rem; margin: 0 0 2rem;
+  border: 1px solid var(--amber-line); border-left: 5px solid var(--warn-line);
+  border-radius: 8px; background: var(--amber-bg); color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.exam-notice h2 { margin: 0 0 .65rem; font-size: 1.25rem; color: var(--ink); }
+.exam-notice p { margin: .55rem 0; }
+.exam-notice a { font-weight: 600; }
+.exam-notice .actions { margin: 1rem 0; }
+@media print { .exam-notice-temporary { display: none; } }

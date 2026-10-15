@@ -47,6 +47,24 @@ they use, and the list of package versions the course was checked with.
     requirements.txt              the package versions the course was checked with
     setup_check.ipynb             run it once before the exam, with Wi-Fi off
 
+Exam readiness (updated 15 October 2026)
+---------------------------------------
+Everyone: run this updated setup_check.ipynb in local VS Code using your exam
+Python kernel. Turn off internet, restart the kernel, then Run All. Read the
+final verdict and confirm the plot appears. Replace older copies of the check.
+A stopped run or kernel crash is not a pass. Colab does not test your laptop.
+
+Mac users: check XGBoost and LightGBM. If all checks pass, no additional install
+is needed. ONLY if an error says libomp.dylib is not loaded/not found, reconnect,
+install Homebrew from https://brew.sh if needed, follow its Next steps, then
+run `brew install libomp` in macOS Terminal (not a Python cell).
+For missing packages use the %pip command below in your exam kernel.
+For an architecture mismatch or another error, use the notebook's instructions
+and keep the full error and environment details if you need help.
+After fixing anything, restart the kernel and repeat Run All offline.
+
+https://theill95.github.io/mlfin-2026/exam_info.html#readiness
+
 Getting started
 ---------------
 1. Unzip this somewhere sensible.
@@ -63,7 +81,7 @@ The setup guide walks through all of it:
 
     https://theill95.github.io/mlfin-2026/setup.html
 
-If you would rather not install anything, every notebook also opens in Google
+For online practice only (not the offline exam), every notebook also opens in Google
 Colab straight from the course page, and loads its data by itself:
 
     https://theill95.github.io/mlfin-2026/

@@ -71,12 +71,21 @@
   <!-- nav:end -->
 
   <main class="wrap" id="main">
+<!-- exam-notice:start -->
+<aside class="exam-notice exam-notice-temporary" aria-label="Important exam preparation">
+  <h2>Important before the exam — check your laptop</h2>
+  <p>Everyone: download the updated readiness notebook and run it locally in VS Code on your exam laptop, with Wi-Fi off.</p>
+  <p><strong>Mac users:</strong> pay particular attention to XGBoost and LightGBM. Some installations need an additional library. If all checks pass, no additional installation is needed.</p>
+  <p><a href="exam_info.html#readiness">Read Exam info: download the check and fix any failures →</a></p>
+</aside>
+<!-- exam-notice:end -->
   <header>
     <div class="accent"></div>
     <div class="eyebrow">Working on your own machine</div>
     <h1>Setup &amp; tools</h1>
-    <p class="lede">Colab keeps working for everything on this course, so none of this is
-       urgent. But the exam is written on your own laptop, in VS Code, with no internet,
+    <p class="lede">Colab works for online practice, but does not test your laptop.
+       Prepare and run the <a href="exam_info.html#readiness">updated readiness check</a>
+       well before exam day. The exam is written on your own laptop, in VS Code, with no internet,
        and that should not be the first time you use it. Session 3 walked through the
        four steps below; have them done well before the exam.</p>
   </header>
@@ -109,9 +118,12 @@
         <pre class="wrap"><code>%pip install -r https://theill95.github.io/mlfin-2026/requirements.txt</code></pre>
         It installs the versions every notebook, lecture and mock exam was checked with
         (NumPy 2.3, pandas 2.3, matplotlib 3.10, scikit-learn 1.7, XGBoost 2.1.4 and
-        LightGBM 4.6), so your numbers match the ones in the materials. Run it once now,
-        even if you installed packages earlier in the course; it replaces other versions.
-        From a terminal, <code>pip install -r</code> with the same address does the same.</li>
+        LightGBM 4.6), so your numbers match the ones in the materials. For an existing
+        setup, run the readiness check first. Use this install command while online only
+        if packages are missing or their versions differ; it replaces other versions.
+        From a terminal, <code>python -m pip install -r</code> with the same address installs
+        into that Python. Then run the <a href="exam_info.html#readiness">readiness check</a>.
+        Mac users whose checks fail should follow the <a href="#macos">matching repair below</a>.</li>
   </ol>
 
   <div class="note">
@@ -119,6 +131,46 @@
     text itself. Nearly every setup problem is solved in a minute by someone who can read
     the actual message, and unsolvable by guessing.
   </div>
+
+  <section class="card" id="macos">
+    <h2>Mac users: test first, then fix only what fails</h2>
+    <p>Run the <a href="exam_info.html#readiness">updated readiness notebook</a> locally in
+       VS Code with your exam kernel and internet off. It tests actual XGBoost and LightGBM
+       model fitting and prediction, not just their installed versions.
+       <strong>If all checks pass, no additional installation is needed.</strong></p>
+    <h3>If the error says libomp.dylib is not loaded or not found</h3>
+    <p>The Python packages can be installed while the separate OpenMP runtime is missing.
+       Reconnect to the internet and:</p>
+    <ol>
+      <li>If needed, install <a href="https://brew.sh/">Homebrew from its official site</a>.
+          Follow the installer's <strong>Next steps</strong>, including the PATH setup.</li>
+      <li>In <strong>macOS Terminal</strong> (not a Python notebook cell), run:
+          <pre><code>brew install libomp</code></pre></li>
+      <li>Restart the notebook kernel, disconnect from the internet and Run All again.</li>
+    </ol>
+    <p>If <code>brew</code> is not found, finish Homebrew's Next steps and reopen Terminal.
+       Do not use <code>pip install libomp</code>. If Homebrew says the library is already
+       installed and the error persists, keep the full error and ask for help.</p>
+    <h3>Other errors need different fixes</h3>
+    <ul>
+      <li><strong>Missing Python package or wrong version:</strong> while online, run the
+          <a href="#install">course %pip command above</a> in the selected exam kernel,
+          then restart it. The course pins XGBoost 2.1.4 and LightGBM 4.6; do not blindly upgrade them.</li>
+      <li><strong>Incompatible architecture:</strong> Python and native libraries must match.
+          On Apple Silicon, prefer native arm64 Python and Homebrew rather than mixing
+          Intel/Rosetta Python with ARM libraries. The notebook prints your Python path and
+          architecture to help diagnose this. Ask for help before replacing environments.</li>
+      <li><strong>Existing Conda environment:</strong> if it passes, keep it. If it fails,
+          get help repairing that environment rather than mixing package managers.</li>
+    </ul>
+    <p>After every repair, restart the kernel and repeat the full check offline. If it still
+       fails or the kernel crashes, send the full error and printed environment details to
+       <a href="mailto:jobo@econ.au.dk">jobo@econ.au.dk</a> before exam day.</p>
+    <p class="sub">Official references:
+       <a href="https://github.com/microsoft/LightGBM/blob/v4.6.0/python-package/README.rst">LightGBM 4.6 installation</a>,
+       <a href="https://github.com/dmlc/xgboost/blob/v2.1.4/python-package/xgboost/core.py">XGBoost 2.1.4 runtime guidance</a>,
+       <a href="https://docs.brew.sh/Installation">Homebrew installation</a>.</p>
+  </section>
 
   <h2 id="three-things">Python, VS Code, and the extension are three things <span class="tag tag-need">needed</span></h2>
   <p>The commonest week-one confusion is thinking VS Code <em>is</em> Python. It is not.
@@ -162,6 +214,11 @@
       <tr><th>What you see</th><th>What it means</th><th>What to do</th></tr>
     </thead>
     <tbody>
+      <tr>
+        <td>Mac: <code>libomp.dylib</code> not loaded / not found, or incompatible architecture</td>
+        <td>A native library is missing or does not match your Python architecture.</td>
+        <td>Use the <a href="#macos">matching Mac repair instructions</a>, then restart the kernel and repeat the readiness check offline.</td>
+      </tr>
       <tr>
         <td><code>ModuleNotFoundError: No module named 'pandas'</code></td>
         <td>Python looked for the package and it is not there.</td>

@@ -179,6 +179,14 @@ keep both. Note the escaping: in a double-quoted Python string the attribute
 quotes have to be `\"`, or the string ends early and the generator will not
 parse.
 
+## Temporary exam notice
+
+`tools/build_exam_notice.py` stamps `assets/exam-notice.html` above the heading
+on the main course pages after the generated pages are built. After the exam,
+set `ENABLED = False` in that script and run the release command: it removes the
+temporary banners everywhere. The permanent Exam info readiness box and repair
+instructions remain. Edit the template, not the stamped copies.
+
 ## The site pages
 
 ```bash

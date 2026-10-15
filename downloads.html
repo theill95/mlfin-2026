@@ -71,6 +71,14 @@
   <!-- nav:end -->
 
   <main class="wrap" id="main">
+<!-- exam-notice:start -->
+<aside class="exam-notice exam-notice-temporary" aria-label="Important exam preparation">
+  <h2>Important before the exam — check your laptop</h2>
+  <p>Everyone: download the updated readiness notebook and run it locally in VS Code on your exam laptop, with Wi-Fi off.</p>
+  <p><strong>Mac users:</strong> pay particular attention to XGBoost and LightGBM. Some installations need an additional library. If all checks pass, no additional installation is needed.</p>
+  <p><a href="exam_info.html#readiness">Read Exam info: download the check and fix any failures →</a></p>
+</aside>
+<!-- exam-notice:end -->
   <header>
     <div class="accent"></div>
     <div class="eyebrow">Everything, as files</div>
@@ -83,6 +91,12 @@
 
   <section class="card" id="bundle">
     <h2>All the notebooks and data, in one file</h2>
+    <p><strong>Before the exam, everyone should run the updated readiness check (15 October 2026).</strong>
+       Replace older downloads. Mac users: check the XGBoost and LightGBM results; if all checks
+       pass, no extra installation is needed. See <a href="exam_info.html#readiness">Exam info</a>
+       for the steps and conditional fixes.</p>
+    <p><a href="setup_check.ipynb" download>Download just the updated readiness notebook</a>
+       and put it beside <code>data/</code> in your unzipped course folder.</p>
     <p class="sub">Every exercise notebook, every case notebook and every data file,
        arranged so they work as soon as you unzip them, with the list of package versions
        the course was checked with. Always the current version.</p>

@@ -71,6 +71,32 @@
   <!-- nav:end -->
 
   <main class="wrap" id="main">
+  <section class="exam-notice" id="readiness" aria-labelledby="readiness-title">
+    <h2 id="readiness-title">Important before the exam — check your laptop</h2>
+    <p><strong>Everyone:</strong> download the updated readiness notebook (15 October 2026)
+       and run it locally in VS Code on your exam laptop, with Wi-Fi and other internet
+       connections off. Select your exam Python kernel, restart it, then <strong>Run All</strong>.</p>
+    <p><strong>Mac users:</strong> pay particular attention to the XGBoost and LightGBM checks.
+       Some installations need an additional library. <strong>If all checks pass, no additional
+       installation is needed.</strong> A successful Colab run does not test your laptop.</p>
+    <div class="actions">
+      <a class="btn primary" href="setup_check.ipynb" download><span class="label">Download updated readiness check</span><span class="hint">replace the old notebook beside your data/ folder</span></a>
+      <a class="btn" href="downloads/mlfin-course.zip" download><span class="label">Download updated course ZIP</span><span class="hint">includes the check and local data</span></a>
+    </div>
+    <h3>If a check fails</h3>
+    <ul>
+      <li><strong>Missing package or wrong version:</strong> follow the <a href="setup.html#install">course package installation</a> in your selected notebook kernel.</li>
+      <li><strong>Mac error: <code>libomp.dylib</code> not loaded or not found:</strong> while online,
+          install <a href="https://brew.sh/">Homebrew</a> if needed, follow its Next steps,
+          then run <code>brew install libomp</code> in <strong>macOS Terminal</strong>.
+          See the <a href="setup.html#macos">full Mac repair instructions</a>.</li>
+      <li><strong>Architecture mismatch, missing data, or another error:</strong> use the
+          notebook's matching instructions. Keep the full error and environment details if you need help.</li>
+    </ul>
+    <p><strong>After a repair:</strong> restart the kernel and repeat the full check offline.
+       A stopped run or kernel crash is not a pass. Also rehearse a mock exam: these checks
+       cannot cover every possible exam problem.</p>
+  </section>
   <header>
     <div class="accent"></div>
     <div class="eyebrow">Prepare and practise</div>
@@ -98,12 +124,13 @@
     <ol class="checklist">
       <li><strong>Save your offline copies</strong> while you have internet: the course ZIP,
           the lecture PDFs and the cheatsheet, all below.</li>
-      <li><strong>Install Python 3.14 and the course's packages</strong> with the one install
-          line on the <a href="setup.html#install">setup page</a>, so your numbers match the
-          materials.</li>
-      <li><strong>Run the setup check with Wi-Fi off.</strong> <code>setup_check.ipynb</code> is
-          in the course ZIP: open the unzipped folder in VS Code and press Run All. It ends
-          with <em>ready</em>, or a list of what to fix.</li>
+      <li><strong>Select your local exam Python kernel in VS Code.</strong> If you have not
+          set up local Python and VS Code yet, start with the <a href="setup.html#install">setup page</a>.
+          If you already have a setup, test it below before changing it.</li>
+      <li><strong>Run the updated readiness check offline.</strong> Replace any older copy of
+          <code>setup_check.ipynb</code> with the <a href="#readiness">updated download above</a>.
+          Open the unzipped folder in VS Code, select your exam kernel, restart it and Run All.
+          Read the final verdict and confirm the plot appears; fix any failures before exam day.</li>
       <li><strong>Switch off AI and code completion in VS Code</strong>, as page 2 of the
           practicalities guide shows.</li>
       <li><strong>Sit one mock exam</strong> in three uninterrupted hours on that laptop, then
