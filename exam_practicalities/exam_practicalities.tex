@@ -17,6 +17,7 @@
 \hypersetup{colorlinks=true,urlcolor=accent,linkcolor=accent,pdftitle={Exam practicalities and preparation},pdfauthor={Machine Learning in Finance}}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{5pt}
+\frenchspacing
 \setlist[itemize]{leftmargin=1.35em,itemsep=2pt,topsep=2pt}
 \setlist[enumerate]{leftmargin=1.5em,itemsep=5pt,topsep=4pt}
 \pagestyle{fancy}
@@ -46,8 +47,16 @@
 \vspace{2pt}
 {\color{accent} A short guide for the 180-minute, offline notebook exam}\par
 \vspace{7pt}
-The exam has two parts worth 50 points each. Work in the supplied answer notebook. Check the official exam cover for the rules on permitted materials and the final submission procedure. This guide helps you prepare your laptop and make your work clear to mark.
+The exam has two parts worth 50 points each. Work in the supplied answer notebook. This guide sets out what you may use, and helps you prepare your laptop and make your work clear to mark.
 \emph{Shortcuts below are for Windows/Linux; macOS users can find the named VS Code commands through the menus or Command Palette.}
+
+\sectionhead{What you may use}
+Two things are not allowed: anything that needs the internet, and anything built on AI. Everything else is allowed. This is the official exam cover in short: all aids, no internet, no generative AI.
+\begin{itemize}
+\item \textbf{Allowed:} your own notes, books and printouts; course materials saved on your laptop (the course ZIP, the lecture PDFs, the cheatsheet); documentation saved beforehand; \texttt{help()} and the documentation VS Code shows when you hover over a name; and \textbf{VS Code's suggestion list}: type \texttt{df.} and it lists \texttt{head}, \texttt{describe}, \texttt{groupby} and the other methods that exist; inside \texttt{pd.read\_csv(} it shows the arguments.
+\item \textbf{Not allowed:} anything online (web search, Colab, online documentation, the course site, messages to anyone) and anything built on AI: chat assistants such as ChatGPT, and \textbf{AI code completion}, the grey suggested code that writes a line or a block for you, or writes code from a comment. GitHub Copilot is the best-known example.
+\end{itemize}
+A quick test for an editor feature: picking a name from a list of what already exists is fine; having code written for you is not. For anything else, use your intuition: \textbf{if it feels like cheating, it probably is.} If you are unsure about a tool, ask before the exam.
 
 \sectionhead{Before the exam}
 \begin{itemize}
@@ -58,7 +67,23 @@ The exam has two parts worth 50 points each. Work in the supplied answer noteboo
 \end{itemize}
 
 \sectionhead{Use a mock as a rehearsal}
-Set aside one uninterrupted \textbf{three-hour block}. Start a timer, turn off Wi-Fi and AI, and put away notes, the cheatsheet, worked examples, and the mock's code-solutions notebook. Use the no-suggestion VS Code setup on page 2. Work from the paper and answer notebook as you would in the exam. Save your work and rehearse the two-file hand-in at the end. \textbf{Only after the timer ends}, check the code solutions, compare your reasoning with the questions, and note what to practise next. The supplied mock code solutions deliberately omit written explanations.
+Set aside one uninterrupted \textbf{three-hour block}. Start a timer, turn off Wi-Fi, and use VS Code set up as on page 2. Use only what the exam allows, and keep the mock's code-solutions notebook closed; this also shows whether the materials you saved are the ones you need. Work from the paper and answer notebook as you would in the exam. Save your work and rehearse the two-file hand-in at the end. \textbf{Only after the timer ends}, check the code solutions, compare your reasoning with the questions, and note what to practise next. The supplied mock code solutions deliberately omit written explanations.
+
+\newpage
+\sectionhead{VS Code: switch off AI completion, keep the suggestion list}
+As page 1 explains, the suggestion list is allowed and AI completion is not. These steps switch off the one and keep the other. Do them in the VS Code profile and folder you will use for the exam.
+\begin{enumerate}
+\item \textbf{Switch off the built-in AI.} Press \texttt{Ctrl+Shift+P}, choose \texttt{Preferences: Open User Settings (JSON)}, and add these two entries \emph{inside} the existing outer braces; put a comma after an existing entry if needed.
+\begin{lstlisting}[style=vscode]
+"chat.disableAIFeatures": true,
+"editor.inlineSuggest.enabled": false
+\end{lstlisting}
+The first is the setting \texttt{Chat: Disable AI Features}: it hides built-in chat and inline AI suggestions and disables the Copilot extensions. The second stops grey suggested code after the cursor, whichever extension would supply it. Neither affects the suggestion list, the argument hints or the hover documentation.
+\item \textbf{Disable AI extensions.} Open Extensions with \texttt{Ctrl+Shift+X} and search for \texttt{@enabled}. Use the gear menu to \textbf{Disable} any AI chat, code-generation or completion extension, for example GitHub Copilot, IntelliCode or Tabnine (IntelliCode is AI; IntelliSense, the suggestion list, is not). Keep the Python and Jupyter extensions: they run the notebooks and supply the suggestion list.
+\item \textbf{Check it, with Wi-Fi on}, so that an AI extension that needs the internet would show itself. Reopen VS Code, and in a notebook code cell type \mbox{\texttt{import pandas as pd}}, then \mbox{\texttt{df = pd.DataFrame()}}, then \texttt{df.} on a new line. A list with \texttt{head} should appear. Then type the comment \texttt{\# average daily return}, press \texttt{Enter} and wait a few seconds: \textbf{no grey code should appear}. If it does, find the extension that supplies it under \texttt{@enabled} and disable it.
+\item \textbf{Followed an earlier version of this guide?} It also switched off the suggestion list. To turn the list back on, delete the other \texttt{editor.} entries it added, keeping \texttt{editor.inlineSuggest.enabled}. If you removed the \texttt{Ctrl+Space} shortcut, open Keyboard Shortcuts with \texttt{Ctrl+K Ctrl+S}, search for \texttt{Trigger Suggest}, right-click it and choose \texttt{Reset Keybinding}.
+\end{enumerate}
+{\footnotesize\color{ink}\textbf{VS Code references (checked September 2026):} \href{https://code.visualstudio.com/docs/setup/copilot}{built-in AI switch}; \href{https://code.visualstudio.com/docs/editing/intellisense}{IntelliSense settings and shortcuts}; \href{https://code.visualstudio.com/docs/configure/extensions/extension-marketplace}{extension controls}; \href{https://code.visualstudio.com/docs/configure/settings}{settings precedence}; \href{https://code.visualstudio.com/docs/datascience/jupyter-notebooks}{notebook editor}. Configure and test everything before the offline exam.}
 
 \sectionhead{While you work}
 \begin{itemize}
@@ -70,40 +95,4 @@ Set aside one uninterrupted \textbf{three-hour block}. Start a timer, turn off W
 
 \sectionhead{The two-file hand-in}
 Submit the \textbf{completed answer notebook} and the \textbf{supplied blank one-page PDF}. Put all code and written answers in the notebook. The PDF is intentionally blank and takes no answers. Use the exact filenames printed in your exam instructions, and follow the official submission directions.
-
-\newpage
-{\Large\bfseries\color{ink} VS Code: switch off AI and code completion}\par
-\vspace{3pt}
-For a strict mock, turn off AI and ordinary code suggestions. AI is prohibited in the exam; the official cover decides whether offline editor help is permitted in the sitting. Check these settings in an \texttt{.ipynb} code cell.
-
-\sectionhead{1. Disable built-in AI}
-Open Settings with \texttt{Ctrl+,}. Search for \texttt{Chat: Disable AI Features} and turn it \textbf{on}. This is the setting \texttt{chat.disableAIFeatures}. It hides built-in chat and inline AI suggestions and disables the Copilot extensions. Use the settings for the VS Code profile and folder in which you will open the exam.
-
-\sectionhead{2. Disable other AI and completion extensions}
-Open Extensions with \texttt{Ctrl+Shift+X}; search for \texttt{@enabled}. Review the enabled extensions and use the gear menu to \textbf{Disable} any separate AI chat, code-generation, or completion extension you have installed. Restart Extensions if VS Code asks. Keep the Python and Jupyter extensions needed to open and run notebooks. The built-in AI switch does not control every third-party extension.
-
-\sectionhead{3. Stop ordinary automatic suggestions}
-Press \texttt{Ctrl+Shift+P} and choose \texttt{Preferences: Open User Settings (JSON)}. Add the following entries \emph{inside} the existing outer braces; put a comma after an existing entry if needed. You may instead set them in the active Workspace settings. Check for workspace or Python-specific values that override your choices.
-\begin{lstlisting}[style=vscode]
-"chat.disableAIFeatures": true,
-"editor.quickSuggestions": {
-  "other": false,
-  "comments": false,
-  "strings": false
-},
-"editor.suggestOnTriggerCharacters": false,
-"editor.wordBasedSuggestions": "off",
-"editor.snippetSuggestions": "none",
-"editor.tabCompletion": "off",
-"editor.acceptSuggestionOnEnter": "off",
-"editor.acceptSuggestionOnCommitCharacter": false,
-"editor.parameterHints.enabled": false,
-"editor.inlineSuggest.enabled": false
-\end{lstlisting}
-These settings stop automatic lists, ghost text, snippets in suggestions, Tab completion, and parameter pop-ups. \texttt{Ctrl+Space} can still request suggestions manually. For an entirely suggestion-free rehearsal, open Keyboard Shortcuts with \texttt{Ctrl+K Ctrl+S}, search for \texttt{Trigger Suggest}, and remove its \texttt{Ctrl+Space} binding; do not use the command from the menu either.
-
-\sectionhead{4. Check that the setup actually worked}
-Close and reopen VS Code. In the \emph{same folder and profile} you will use for practice, open a notebook code cell. Type \texttt{impor}, then \texttt{np.arr}, then a function call with an opening parenthesis. Pause after each. You should see \textbf{no completion list, grey suggested code, next-edit suggestion, snippet expansion, or parameter pop-up}. A period after an object should not open a member list. \texttt{Tab} should indent rather than insert proposed code. Repeat in a \texttt{.py} file if you use one. Check \texttt{@enabled} again for AI extensions and confirm \texttt{Chat: Disable AI Features} is on. If a suggestion remains, inspect Workspace/Python-specific settings and the enabled extension that supplies it; disable that provider and repeat the notebook test. Wi-Fi off alone is not proof: ordinary completion works offline.
-
-{\footnotesize\color{ink}\textbf{VS Code references (checked September 2026):} \href{https://code.visualstudio.com/docs/setup/copilot}{built-in AI switch}; \href{https://code.visualstudio.com/docs/editing/intellisense}{IntelliSense settings and shortcuts}; \href{https://code.visualstudio.com/docs/configure/extensions/extension-marketplace}{extension controls}; \href{https://code.visualstudio.com/docs/configure/settings}{settings precedence}; \href{https://code.visualstudio.com/docs/datascience/jupyter-notebooks}{notebook editor}. Configure and test everything before the offline exam.}
 \end{document}

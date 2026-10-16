@@ -511,6 +511,7 @@ td .katex-display > .katex { text-align: left; font-size: 0.95em; }
   margin: 0.4rem 0 1rem;
 }
 @media (min-width: 720px) { .facts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.facts:last-child { margin-bottom: 0; }
 .fact {
   background: var(--blue-pale); border: 1px solid var(--blue-line); border-radius: 10px;
   padding: 0.75rem 0.9rem;
@@ -542,6 +543,17 @@ button.btn[disabled] { opacity: 0.6; cursor: progress; }
 ol.checklist { margin: 0.2rem 0 0; padding-left: 1.3rem; color: var(--ink-soft); font-size: 0.93rem; }
 ol.checklist li { margin-bottom: 0.65rem; padding-left: 0.2rem; }
 ol.checklist strong { color: var(--ink); }
+
+/* What you may use: allowed beside not allowed, stacked on a phone. */
+.rules {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.6rem 1.8rem;
+}
+@media (min-width: 620px) { .rules { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.rules h3 { margin: 0 0 0.4rem; font-size: 0.98rem; }
+.rules ul { margin: 0; padding-left: 1.1rem; color: var(--ink-soft); font-size: 0.92rem; }
+.rules li { margin-bottom: 0.55rem; }
+.rules strong { color: var(--ink); }
+.rules-note { margin-bottom: 0; }
 
 /* ---------------------------------------------------------------- home page */
 

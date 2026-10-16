@@ -290,8 +290,9 @@ Colab run does not establish that your local Mac or Windows laptop is ready.
 See [Exam info](https://theill95.github.io/mlfin-2026/exam_info.html#readiness)
 and [Setup & tools](https://theill95.github.io/mlfin-2026/setup.html#macos).
 
-Also switch off AI and code completion as the practicalities guide explains, and
-rehearse a mock exam on this laptop. This check does not verify editor settings or
+Also switch off AI completion in VS Code as the practicalities guide explains (the
+suggestion list that offers `head` after `df.` is allowed and stays on), and rehearse
+a mock exam on this laptop. This check does not verify editor settings or
 guarantee that every possible exam task will work.""")
 
 nb = new_notebook(cells=cells, metadata={

@@ -54,7 +54,7 @@ The site has ten pages, linked from the sidebar:
 | `setup.html` | installing Python and VS Code, and the extras (scripts vs notebooks, virtual environments, Git), each marked needed or optional |
 | `resources.html` | official docs, ISLP, Kaggle, the AI-use policy, the data and its terms, and how the materials may be reused |
 | `downloads.html` | every notebook and CSV, every lecture as a PDF, plus `downloads/mlfin-course.zip` |
-| `exam_info.html` | the exam at a glance, a get-ready checklist, the offline copies (course ZIP, the 13 lecture PDFs, cheatsheet and maths PDFs, `setup_check.ipynb` in the ZIP), the practicalities guide and three mock exam student bundles |
+| `exam_info.html` | the exam at a glance, what students may use, a get-ready checklist, the offline copies (course ZIP, the 13 lecture PDFs, cheatsheet and maths PDFs, `setup_check.ipynb` in the ZIP), the practicalities guide and three mock exam student bundles |
 
 The PDFs are built by `tools/build_handouts.py` (Playwright drives Edge): it opens
 each deck in Reveal's PDF view, scrolls every slide into view until every live cell

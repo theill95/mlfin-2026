@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Exam info · Machine Learning in Finance</title>
-<meta name="description" content="The exam at a glance, a checklist for getting your laptop ready, offline copies of everything, the practicalities guide and three mock exams.">
+<meta name="description" content="The exam at a glance, what you may use, a checklist for getting your laptop ready, offline copies of everything, the practicalities guide and three mock exams.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <meta property="og:site_name" content="Machine Learning in Finance">
 <meta property="og:title" content="Exam info · Machine Learning in Finance">
-<meta property="og:description" content="The exam at a glance, a checklist for getting your laptop ready, offline copies of everything, the practicalities guide and three mock exams.">
+<meta property="og:description" content="The exam at a glance, what you may use, a checklist for getting your laptop ready, offline copies of everything, the practicalities guide and three mock exams.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://theill95.github.io/mlfin-2026/exam_info.html">
 <meta property="og:image" content="https://theill95.github.io/mlfin-2026/assets/social-card.png">
@@ -101,9 +101,9 @@
     <div class="accent"></div>
     <div class="eyebrow">Prepare and practise</div>
     <h1>Exam info</h1>
-    <p class="lede">Get your laptop ready for the offline notebook exam, save a copy of
-       everything you want with you, and practise with three complete mock exams. The
-       official exam cover gives the rules for the sitting itself.</p>
+    <p class="lede">See what you may use, get your laptop ready for the offline notebook
+       exam, save a copy of everything you want with you, and practise with three complete
+       mock exams.</p>
   </header>
 
   <section class="card" id="glance">
@@ -111,12 +111,45 @@
     <div class="facts">
       <div class="fact"><strong>180 minutes</strong><span>on site, offline, in VS Code</span></div>
       <div class="fact"><strong>Two parts</strong><span>50 points each</span></div>
-      <div class="fact"><strong>No AI</strong><span>the exam cover sets the other rules</span></div>
+      <div class="fact"><strong>No AI, no internet</strong><span>everything else is allowed</span></div>
       <div class="fact"><strong>Two files</strong><span>your answer notebook and the blank PDF</span></div>
     </div>
-    <p class="card-foot"><strong>The cheatsheet is allowed</strong>, as a copy saved on your
-       laptop: the course site cannot be opened during the exam, so download the PDF below
-       beforehand.</p>
+  </section>
+
+  <section class="card" id="allowed">
+    <h2>What you may use</h2>
+    <p class="sub">Two things are not allowed: anything that needs the internet, and anything
+       built on AI. Everything else is allowed. This is the official exam cover in short: all
+       aids, no internet, no generative AI.</p>
+    <div class="rules">
+      <div>
+        <h3>Allowed</h3>
+        <ul>
+          <li>Your own notes, books and printouts.</li>
+          <li>Course materials saved on your laptop: the course ZIP, the lecture PDFs and the
+              cheatsheet, all below.</li>
+          <li>Documentation saved beforehand, <code>help()</code>, and the documentation VS Code
+              shows when you hover over a name.</li>
+          <li><strong>VS Code's suggestion list.</strong> Type <code>df.</code> and it lists
+              <code>head</code>, <code>describe</code>, <code>groupby</code> and the other
+              methods that exist; inside <code>pd.read_csv(</code> it shows the arguments.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Not allowed</h3>
+        <ul>
+          <li>Anything online: web search, Colab, online documentation, this site, messages to
+              anyone.</li>
+          <li>Anything built on AI: chat assistants such as ChatGPT, and <strong>AI code
+              completion</strong>, the grey suggested code that writes a line or a block for
+              you, or writes code from a comment. GitHub Copilot is the best-known example.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note rules-note">A quick test for an editor feature: picking a name from a list
+       of what already exists is fine; having code written for you is not. For anything else,
+       use your intuition: <strong>if it feels like cheating, it probably is.</strong> If you
+       are unsure about a tool, ask before the exam.</p>
   </section>
 
   <section class="card" id="ready">
@@ -131,8 +164,9 @@
           <code>setup_check.ipynb</code> with the <a href="#readiness">updated download above</a>.
           Open the unzipped folder in VS Code, select your exam kernel, restart it and Run All.
           Read the final verdict and confirm the plot appears; fix any failures before exam day.</li>
-      <li><strong>Switch off AI and code completion in VS Code</strong>, as page 2 of the
-          practicalities guide shows.</li>
+      <li><strong>Switch off AI completion in VS Code</strong>, as page 2 of the
+          practicalities guide shows. The suggestion list (type <code>df.</code>, pick
+          <code>head</code>) is allowed and stays on.</li>
       <li><strong>Sit one mock exam</strong> in three uninterrupted hours on that laptop, then
           read its code solutions.</li>
     </ol>
@@ -184,9 +218,9 @@
 
   <section class="card" id="practicalities">
     <h2>Practicalities and preparation</h2>
-    <p class="sub">A two-page guide to preparing offline materials, checking VS Code's AI and
-       code-completion settings, practising under exam conditions, and handing in your
-       work.</p>
+    <p class="sub">A two-page guide to what you may use, preparing offline materials,
+       switching off AI completion in VS Code, practising under exam conditions, and handing
+       in your work.</p>
     <div class="actions single-action">
       <a class="btn primary" href="downloads/exams/exam_practicalities.pdf" download>
         <span class="label">Download the practicalities guide (PDF)</span>
@@ -199,8 +233,9 @@
     <h2>Mock exams</h2>
     <p class="sub">Each ZIP contains the question paper, answer notebook, CSV data, blank PDF
        for the two-file hand-in, and a separate notebook with code solutions. Try one in an
-       uninterrupted three-hour block without aids. Open the code solutions only after your
-       attempt; they do not contain written explanations.</p>
+       uninterrupted three-hour block under the exam's rules: offline, no AI, your saved
+       materials allowed. Open the code solutions only after your attempt; they do not
+       contain written explanations.</p>
     <div class="actions mock-actions">
       <a class="btn" href="downloads/exams/MLFIN_MOCK_2026_1_student_bundle.zip" download>
         <span class="label">Mock exam 1</span>
